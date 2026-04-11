@@ -15,6 +15,14 @@ export const metadata = {
   title: 'New content',
 }
 
+/**
+ * Whisper transcription can take up to ~3 minutes on a 25MB file. Ask
+ * Vercel for 300s headroom so the platform doesn't cut off the Server
+ * Action mid-request. Vercel Hobby is capped at 60s — upgrade to Pro for
+ * the full window. Locally there's no ceiling.
+ */
+export const maxDuration = 300
+
 interface NewContentPageProps {
   params: { id: string }
 }

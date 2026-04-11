@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { cookies } from 'next/headers'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -45,13 +46,24 @@ export default async function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Upload your first clip</CardTitle>
+            <CardTitle>New content</CardTitle>
             <CardDescription>
-              Drop in a video or paste a script to generate platform-specific drafts. Ships
-              in Milestone 3.
+              Upload a video or paste a script. Whisper transcribes it and you get a clean
+              starting point for drafts.
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">Coming soon.</CardContent>
+          <CardContent>
+            {currentWorkspace ? (
+              <Link
+                href={`/workspace/${currentWorkspace.id}/content/new`}
+                className="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
+              >
+                Start new content
+              </Link>
+            ) : (
+              <span className="text-sm text-muted-foreground">No workspace selected.</span>
+            )}
+          </CardContent>
         </Card>
         <Card>
           <CardHeader>

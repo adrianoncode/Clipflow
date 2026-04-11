@@ -19,13 +19,10 @@ import { mimeForExtension, videoStoragePath } from '@/lib/content/storage-paths'
 import { updateContentItem } from '@/lib/content/update-content-item'
 import { createClient } from '@/lib/supabase/server'
 
-/**
- * Whisper transcription is synchronous and can take up to ~3 minutes for a
- * 25MB file on a slow connection. We ask Vercel for 300s headroom so the
- * platform doesn't cut us off before OpenAI responds. Note: Hobby plan is
- * capped at 60s — if you deploy there, expect timeouts on longer files.
- */
-export const maxDuration = 300
+// NOTE: `maxDuration = 300` lives on the route segments that invoke these
+// actions (new/page.tsx and [contentId]/page.tsx). Server Action modules
+// may only export async functions, so the const lives where Next.js
+// actually reads it — the page segment config.
 
 // ---------------------------------------------------------------------------
 // Types shared with the client forms

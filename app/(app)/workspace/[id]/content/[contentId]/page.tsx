@@ -10,6 +10,13 @@ import { getContentItem } from '@/lib/content/get-content-item'
  */
 export const dynamic = 'force-dynamic'
 
+/**
+ * Retries from the "failed" state run the Whisper pipeline again. Give
+ * the platform the same 300s headroom as the new-content page so long
+ * retries don't get cut off.
+ */
+export const maxDuration = 300
+
 interface ContentItemPageProps {
   params: { id: string; contentId: string }
 }
