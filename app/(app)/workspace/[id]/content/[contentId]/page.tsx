@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 
 import { ContentDetailView } from '@/components/content/content-detail-view'
 import { getContentItem } from '@/lib/content/get-content-item'
+import { hasOutputs } from '@/lib/content/has-outputs'
 
 /**
  * Force the page off the route cache so meta-refresh lands on a fresh
@@ -36,6 +37,8 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
   }
 
   const isPolling = item.status === 'uploading' || item.status === 'processing'
+  const hasExistingOutputs =
+    item.status === 'ready' ? await hasOutputs(params.contentId, params.id) : false
 
   return (
     <>
@@ -44,7 +47,11 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
         // No client-side JS, full RSC re-render every 3s.
         <meta httpEquiv="refresh" content="3" />
       ) : null}
-      <ContentDetailView item={item} workspaceId={params.id} />
+      <ContentDetailView
+        item={item}
+        workspaceId={params.id}
+        hasExistingOutputs={hasExistingOutputs}
+      />
     </>
   )
 }

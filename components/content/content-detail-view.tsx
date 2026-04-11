@@ -17,6 +17,7 @@ import type { ContentItemRow } from '@/lib/content/get-content-item'
 interface ContentDetailViewProps {
   item: ContentItemRow
   workspaceId: string
+  hasExistingOutputs: boolean
 }
 
 function formatDate(iso: string): string {
@@ -44,7 +45,11 @@ function readErrorMessage(metadata: ContentItemRow['metadata']): string {
   return 'Transcription failed for an unknown reason.'
 }
 
-export function ContentDetailView({ item, workspaceId }: ContentDetailViewProps) {
+export function ContentDetailView({
+  item,
+  workspaceId,
+  hasExistingOutputs,
+}: ContentDetailViewProps) {
   const title = item.title ?? 'Untitled'
 
   return (
@@ -102,14 +107,20 @@ export function ContentDetailView({ item, workspaceId }: ContentDetailViewProps)
         <div className="space-y-4">
           <TranscriptView text={item.transcript} />
           <div className="flex items-center gap-2">
-            <Button asChild variant="outline">
+            <Button asChild>
               <Link href={`/workspace/${workspaceId}/content/${item.id}/outputs`}>
-                Generate outputs
+                {hasExistingOutputs ? 'View outputs' : 'Generate outputs'}
               </Link>
             </Button>
-            <span className="text-xs text-muted-foreground">
-              Output studio ships in Milestone 5.
-            </span>
+            {hasExistingOutputs ? (
+              <span className="text-xs text-muted-foreground">
+                Drafts already generated — click to review or regenerate.
+              </span>
+            ) : (
+              <span className="text-xs text-muted-foreground">
+                Produces TikTok, Reels, Shorts, and LinkedIn drafts in one pass.
+              </span>
+            )}
           </div>
         </div>
       ) : null}
