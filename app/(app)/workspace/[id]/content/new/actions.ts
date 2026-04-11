@@ -1,0 +1,330 @@
+'use server'
+
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+
+import { getDecryptedAiKey } from '@/lib/ai/get-decrypted-ai-key'
+import { transcribe } from '@/lib/ai/transcription/transcribe'
+import type { TranscriptionErrorCode } from '@/lib/ai/transcription/types'
+import { getUser } from '@/lib/auth/get-user'
+import { createContentItem } from '@/lib/content/create-content-item'
+import {
+  createTextSchema,
+  createVideoSchema,
+  MAX_VIDEO_BYTES,
+  retryTranscriptionSchema,
+  startTranscriptionSchema,
+} from '@/lib/content/schemas'
+import { mimeForExtension, videoStoragePath } from '@/lib/content/storage-paths'
+import { updateContentItem } from '@/lib/content/update-content-item'
+import { createClient } from '@/lib/supabase/server'
+
+/**
+ * Whisper transcription is synchronous and can take up to ~3 minutes for a
+ * 25MB file on a slow connection. We ask Vercel for 300s headroom so the
+ * platform doesn't cut us off before OpenAI responds. Note: Hobby plan is
+ * capped at 60s — if you deploy there, expect timeouts on longer files.
+ */
+export const maxDuration = 300
+
+// ---------------------------------------------------------------------------
+// Types shared with the client forms
+// ---------------------------------------------------------------------------
+
+export type CreateVideoResult =
+  | { ok: true; contentId: string }
+  | { ok: false; error: string }
+
+export type StartTranscriptionResult =
+  | { ok: true }
+  | { ok: false; code: TranscriptionErrorCode | 'no_key' | 'already_processing' | 'unknown'; error: string }
+
+export type RetryTranscriptionState =
+  | { ok?: undefined; error?: string }
+  | { ok: true }
+  | { ok: false; error: string }
+
+export type TextFormState = { error?: string }
+
+// ---------------------------------------------------------------------------
+// Video — Step 1: insert content_items row
+// ---------------------------------------------------------------------------
+
+export async function createVideoContentAction(
+  _prev: CreateVideoResult,
+  formData: FormData,
+): Promise<CreateVideoResult> {
+  const parsed = createVideoSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    filename: formData.get('filename'),
+    ext: formData.get('ext'),
+    file_size: formData.get('file_size'),
+    mime_type: formData.get('mime_type') ?? '',
+  })
+
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  const user = await getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  const dotIndex = parsed.data.filename.lastIndexOf('.')
+  const title = dotIndex > 0 ? parsed.data.filename.slice(0, dotIndex) : parsed.data.filename
+
+  const result = await createContentItem({
+    workspaceId: parsed.data.workspace_id,
+    kind: 'video',
+    title,
+    status: 'uploading',
+    metadata: {
+      mime_type:
+        parsed.data.mime_type && parsed.data.mime_type.length > 0
+          ? parsed.data.mime_type
+          : mimeForExtension(parsed.data.ext),
+      file_size: parsed.data.file_size,
+      original_filename: parsed.data.filename,
+    },
+    createdBy: user.id,
+  })
+
+  if (!result.ok) {
+    return { ok: false, error: result.error }
+  }
+
+  revalidatePath(`/workspace/${parsed.data.workspace_id}`)
+  return { ok: true, contentId: result.id }
+}
+
+// ---------------------------------------------------------------------------
+// Video — Step 3: download from storage + Whisper + persist transcript
+// ---------------------------------------------------------------------------
+
+async function runTranscription(params: {
+  workspaceId: string
+  contentId: string
+  ext: (typeof createVideoSchema._type)['ext']
+}): Promise<StartTranscriptionResult> {
+  const path = videoStoragePath(params.workspaceId, params.contentId, params.ext)
+
+  // Atomic transition uploading -> processing. If the predicate fails we
+  // assume another caller already started transcription and bail.
+  const transition = await updateContentItem(
+    params.contentId,
+    params.workspaceId,
+    { source_url: path, status: 'processing' },
+    { status: 'uploading' },
+  )
+  if (!transition.ok) {
+    return {
+      ok: false,
+      code: 'already_processing',
+      error: 'This content is already being transcribed.',
+    }
+  }
+
+  async function fail(
+    code: TranscriptionErrorCode | 'no_key',
+    message: string,
+  ): Promise<StartTranscriptionResult> {
+    await updateContentItem(params.contentId, params.workspaceId, {
+      status: 'failed',
+      metadata: { error: { code, message } },
+    })
+    revalidatePath(`/workspace/${params.workspaceId}/content/${params.contentId}`)
+    revalidatePath(`/workspace/${params.workspaceId}`)
+    return { ok: false, code, error: message }
+  }
+
+  const key = await getDecryptedAiKey(params.workspaceId, 'openai')
+  if (!key.ok) {
+    if (key.code === 'no_key') {
+      return fail(
+        'no_key',
+        'No OpenAI key saved for this workspace. Add one in Settings → AI Keys and retry.',
+      )
+    }
+    return fail('provider_error', key.message)
+  }
+
+  const supabase = createClient()
+  const { data: blob, error: downloadError } = await supabase.storage
+    .from('content')
+    .download(path)
+  if (downloadError || !blob) {
+    return fail(
+      'provider_error',
+      downloadError?.message ?? 'Could not read the uploaded file.',
+    )
+  }
+
+  if (blob.size > MAX_VIDEO_BYTES) {
+    return fail('file_too_large', 'This file exceeds the 25MB Whisper limit.')
+  }
+
+  const filename = `source.${params.ext}`
+  const mimeType = mimeForExtension(params.ext)
+  const result = await transcribe({
+    provider: 'openai',
+    apiKey: key.plaintext,
+    blob,
+    filename,
+    mimeType,
+  })
+
+  if (!result.ok) {
+    return fail(result.code, result.message)
+  }
+
+  const ready = await updateContentItem(params.contentId, params.workspaceId, {
+    transcript: result.text,
+    status: 'ready',
+  })
+  if (!ready.ok) {
+    return fail('provider_error', ready.error)
+  }
+
+  revalidatePath(`/workspace/${params.workspaceId}/content/${params.contentId}`)
+  revalidatePath(`/workspace/${params.workspaceId}`)
+  return { ok: true }
+}
+
+export async function startTranscriptionAction(
+  _prev: StartTranscriptionResult,
+  formData: FormData,
+): Promise<StartTranscriptionResult> {
+  const parsed = startTranscriptionSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    content_id: formData.get('content_id'),
+    ext: formData.get('ext'),
+  })
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      code: 'unknown',
+      error: parsed.error.issues[0]?.message ?? 'Invalid input.',
+    }
+  }
+
+  const user = await getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  return runTranscription({
+    workspaceId: parsed.data.workspace_id,
+    contentId: parsed.data.content_id,
+    ext: parsed.data.ext,
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Video — Retry from failed state
+// ---------------------------------------------------------------------------
+
+export async function retryTranscriptionAction(
+  _prev: RetryTranscriptionState,
+  formData: FormData,
+): Promise<RetryTranscriptionState> {
+  const parsed = retryTranscriptionSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    content_id: formData.get('content_id'),
+  })
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  const user = await getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  const supabase = createClient()
+  const { data: row, error } = await supabase
+    .from('content_items')
+    .select('source_url, status')
+    .eq('id', parsed.data.content_id)
+    .eq('workspace_id', parsed.data.workspace_id)
+    .maybeSingle()
+
+  if (error || !row) {
+    return { ok: false, error: 'Content item not found.' }
+  }
+  if (row.status !== 'failed') {
+    return { ok: false, error: 'Only failed items can be retried.' }
+  }
+  if (!row.source_url) {
+    return { ok: false, error: 'No source file to retry.' }
+  }
+
+  const ext = row.source_url.split('.').pop()?.toLowerCase()
+  if (!ext) {
+    return { ok: false, error: 'Could not determine file extension.' }
+  }
+
+  // Reset to uploading so runTranscription's optimistic predicate passes.
+  const reset = await updateContentItem(
+    parsed.data.content_id,
+    parsed.data.workspace_id,
+    { status: 'uploading', metadata: {} },
+    { status: 'failed' },
+  )
+  if (!reset.ok) {
+    return { ok: false, error: 'Could not reset item for retry.' }
+  }
+
+  const result = await runTranscription({
+    workspaceId: parsed.data.workspace_id,
+    contentId: parsed.data.content_id,
+    ext: ext as (typeof createVideoSchema._type)['ext'],
+  })
+
+  if (!result.ok) {
+    return { ok: false, error: result.error }
+  }
+  return { ok: true }
+}
+
+// ---------------------------------------------------------------------------
+// Text — single action that redirects on success
+// ---------------------------------------------------------------------------
+
+export async function createTextContentAction(
+  _prev: TextFormState,
+  formData: FormData,
+): Promise<TextFormState> {
+  const parsed = createTextSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    title: formData.get('title') ?? undefined,
+    body: formData.get('body'),
+  })
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  const user = await getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  const result = await createContentItem({
+    workspaceId: parsed.data.workspace_id,
+    kind: 'text',
+    title: parsed.data.title ?? 'Untitled',
+    status: 'ready',
+    transcript: parsed.data.body,
+    createdBy: user.id,
+  })
+
+  if (!result.ok) {
+    return { error: result.error }
+  }
+
+  revalidatePath(`/workspace/${parsed.data.workspace_id}`)
+  revalidatePath(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
+  redirect(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
+}
