@@ -46,5 +46,5 @@ export async function signupAction(_prev: SignupState, formData: FormData): Prom
   }
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect('/onboarding/role')
 }

@@ -6,7 +6,7 @@ import { createMiddlewareClient } from '@/lib/supabase/middleware'
  * Route-group folders like `(app)` and `(auth)` don't appear in
  * `request.nextUrl.pathname` — we must match real URL prefixes.
  */
-const APP_ROUTES = ['/dashboard', '/workspace', '/settings']
+const APP_ROUTES = ['/dashboard', '/workspace', '/settings', '/onboarding']
 const AUTH_ROUTES = ['/login', '/signup', '/magic-link']
 
 function isPrefixOf(pathname: string, prefixes: readonly string[]): boolean {

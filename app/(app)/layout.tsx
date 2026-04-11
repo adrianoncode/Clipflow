@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { AppShell } from '@/components/workspace/app-shell'
+import { getProfile } from '@/lib/auth/get-profile'
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 
@@ -13,13 +14,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/login')
   }
 
-  const workspaces = await getWorkspaces()
+  const [profile, workspaces] = await Promise.all([getProfile(), getWorkspaces()])
+
+  // Onboarding gate: newly signed-up users must run the wizard before they
+  // can reach the main app shell. Profile may also be null if RLS or timing
+  // hides it (shouldn't happen post-M1, but be defensive).
+  if (!profile || profile.onboarded_at === null) {
+    redirect('/onboarding/role')
+  }
+
   if (workspaces.length === 0) {
     // The signup trigger guarantees every user has at least their personal
     // workspace. If this runs we either failed to create it, or RLS blocks
     // the read — route the user somewhere harmless instead of rendering a
     // broken shell.
-    redirect('/onboarding')
+    redirect('/onboarding/role')
   }
 
   const cookieStore = cookies()

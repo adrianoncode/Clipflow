@@ -28,6 +28,8 @@ export interface Database {
           email: string
           full_name: string | null
           avatar_url: string | null
+          onboarded_at: string | null
+          role_type: 'solo' | 'team' | 'agency' | null
           created_at: string
           updated_at: string
         }
@@ -36,6 +38,8 @@ export interface Database {
           email: string
           full_name?: string | null
           avatar_url?: string | null
+          onboarded_at?: string | null
+          role_type?: 'solo' | 'team' | 'agency' | null
           created_at?: string
           updated_at?: string
         }
@@ -89,6 +93,7 @@ export interface Database {
           ciphertext: string
           iv: string
           auth_tag: string
+          masked_preview: string | null
           created_by: string
           created_at: string
         }
@@ -100,6 +105,7 @@ export interface Database {
           ciphertext: string
           iv: string
           auth_tag: string
+          masked_preview?: string | null
           created_by: string
           created_at?: string
         }
@@ -238,6 +244,10 @@ export interface Database {
       is_workspace_editor_or_above: {
         Args: { _workspace_id: string }
         Returns: boolean
+      }
+      create_workspace_with_owner: {
+        Args: { _name: string; _slug: string; _type: WorkspaceType }
+        Returns: string
       }
     }
     Enums: {
