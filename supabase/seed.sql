@@ -1,0 +1,2 @@
+-- Seed data for local development.
+-- Intentionally empty in M1 — add fixtures here as needed for later milestones.
