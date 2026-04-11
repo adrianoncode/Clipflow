@@ -20,6 +20,7 @@
     "db:types": "supabase gen types typescript --local --schema public > lib/supabase/types.ts"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-slot": "^1.1.0",
     "@supabase/ssr": "^0.10.2",

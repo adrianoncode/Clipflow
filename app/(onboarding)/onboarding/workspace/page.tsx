@@ -12,7 +12,7 @@ import { OnboardingStepper } from '@/components/onboarding/stepper'
 import { WorkspaceSoloForm } from '@/components/onboarding/workspace-solo-form'
 import { WorkspaceTeamForm } from '@/components/onboarding/workspace-team-form'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
-import { ONBOARDING_ROLE_COOKIE } from '@/app/(onboarding)/onboarding/role/actions'
+import { ONBOARDING_ROLE_COOKIE } from '@/app/(onboarding)/onboarding/cookies'
 
 export const metadata = {
   title: 'Workspace setup',

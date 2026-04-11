@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
 import { createClient } from '@/lib/supabase/server'
-import { ONBOARDING_ROLE_COOKIE } from '@/app/(onboarding)/onboarding/role/actions'
+import { ONBOARDING_ROLE_COOKIE } from '@/app/(onboarding)/onboarding/cookies'
 
 const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
 

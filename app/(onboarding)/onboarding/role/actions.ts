@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
-export const ONBOARDING_ROLE_COOKIE = 'clipflow.onboarding_role'
+import { ONBOARDING_ROLE_COOKIE } from '@/app/(onboarding)/onboarding/cookies'
 
 const schema = z.object({
   role: z.enum(['solo', 'team', 'agency']),
