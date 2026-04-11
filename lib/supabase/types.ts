@@ -5,9 +5,14 @@
 //   pnpm db:types
 //
 // The hand-written types below are kept in sync with
-// supabase/migrations/20260411000000_init.sql so that the generic parameter on
-// `createServerClient<Database>()` gives us real field-level type safety even
-// before `pnpm db:types` has run.
+// supabase/migrations/20260411000000_init.sql and 20260412000000_onboarding.sql
+// so that the generic parameter on `createServerClient<Database>()` gives us
+// real field-level type safety even before `pnpm db:types` has run.
+//
+// NOTE: Update types are spelled out explicitly (not derived via
+// `Partial<Insert>`) because the self-referential lookup
+// `Partial<Database['public']['Tables']['x']['Insert']>` causes TypeScript's
+// Supabase-js query builder inference to collapse to `never`.
 // ---------------------------------------------------------------------------
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
@@ -18,8 +23,10 @@ export type ContentKind = 'video' | 'text'
 export type ContentStatus = 'uploading' | 'processing' | 'ready' | 'failed'
 export type OutputPlatform = 'tiktok' | 'instagram_reels' | 'youtube_shorts' | 'linkedin'
 export type OutputState = 'draft' | 'review' | 'approved' | 'exported'
+export type OnboardingRoleType = 'solo' | 'team' | 'agency'
+export type AiProvider = 'openai' | 'anthropic' | 'google'
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       profiles: {
@@ -29,7 +36,7 @@ export interface Database {
           full_name: string | null
           avatar_url: string | null
           onboarded_at: string | null
-          role_type: 'solo' | 'team' | 'agency' | null
+          role_type: OnboardingRoleType | null
           created_at: string
           updated_at: string
         }
@@ -39,11 +46,20 @@ export interface Database {
           full_name?: string | null
           avatar_url?: string | null
           onboarded_at?: string | null
-          role_type?: 'solo' | 'team' | 'agency' | null
+          role_type?: OnboardingRoleType | null
           created_at?: string
           updated_at?: string
         }
-        Update: Partial<Database['public']['Tables']['profiles']['Insert']>
+        Update: {
+          id?: string
+          email?: string
+          full_name?: string | null
+          avatar_url?: string | null
+          onboarded_at?: string | null
+          role_type?: OnboardingRoleType | null
+          created_at?: string
+          updated_at?: string
+        }
         Relationships: []
       }
       workspaces: {
@@ -65,7 +81,15 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
-        Update: Partial<Database['public']['Tables']['workspaces']['Insert']>
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          type?: WorkspaceType
+          owner_id?: string
+          created_at?: string
+          updated_at?: string
+        }
         Relationships: []
       }
       workspace_members: {
@@ -81,14 +105,19 @@ export interface Database {
           role: WorkspaceRole
           created_at?: string
         }
-        Update: Partial<Database['public']['Tables']['workspace_members']['Insert']>
+        Update: {
+          workspace_id?: string
+          user_id?: string
+          role?: WorkspaceRole
+          created_at?: string
+        }
         Relationships: []
       }
       ai_keys: {
         Row: {
           id: string
           workspace_id: string
-          provider: 'openai' | 'anthropic' | 'google'
+          provider: AiProvider
           label: string | null
           ciphertext: string
           iv: string
@@ -100,7 +129,7 @@ export interface Database {
         Insert: {
           id?: string
           workspace_id: string
-          provider: 'openai' | 'anthropic' | 'google'
+          provider: AiProvider
           label?: string | null
           ciphertext: string
           iv: string
@@ -109,7 +138,18 @@ export interface Database {
           created_by: string
           created_at?: string
         }
-        Update: Partial<Database['public']['Tables']['ai_keys']['Insert']>
+        Update: {
+          id?: string
+          workspace_id?: string
+          provider?: AiProvider
+          label?: string | null
+          ciphertext?: string
+          iv?: string
+          auth_tag?: string
+          masked_preview?: string | null
+          created_by?: string
+          created_at?: string
+        }
         Relationships: []
       }
       projects: {
@@ -131,7 +171,15 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
-        Update: Partial<Database['public']['Tables']['projects']['Insert']>
+        Update: {
+          id?: string
+          workspace_id?: string
+          name?: string
+          description?: string | null
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
         Relationships: []
       }
       brand_voices: {
@@ -153,7 +201,15 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
-        Update: Partial<Database['public']['Tables']['brand_voices']['Insert']>
+        Update: {
+          id?: string
+          workspace_id?: string
+          name?: string
+          description?: string | null
+          guidelines?: Json
+          created_at?: string
+          updated_at?: string
+        }
         Relationships: []
       }
       content_items: {
@@ -185,7 +241,20 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
-        Update: Partial<Database['public']['Tables']['content_items']['Insert']>
+        Update: {
+          id?: string
+          workspace_id?: string
+          project_id?: string | null
+          kind?: ContentKind
+          status?: ContentStatus
+          title?: string | null
+          source_url?: string | null
+          transcript?: string | null
+          metadata?: Json
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+        }
         Relationships: []
       }
       outputs: {
@@ -209,7 +278,16 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
-        Update: Partial<Database['public']['Tables']['outputs']['Insert']>
+        Update: {
+          id?: string
+          content_id?: string
+          workspace_id?: string
+          platform?: OutputPlatform
+          body?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
         Relationships: []
       }
       output_states: {
@@ -231,11 +309,21 @@ export interface Database {
           note?: string | null
           created_at?: string
         }
-        Update: Partial<Database['public']['Tables']['output_states']['Insert']>
+        Update: {
+          id?: string
+          output_id?: string
+          workspace_id?: string
+          state?: OutputState
+          changed_by?: string | null
+          note?: string | null
+          created_at?: string
+        }
         Relationships: []
       }
     }
-    Views: Record<string, never>
+    Views: {
+      [_ in never]: never
+    }
     Functions: {
       is_workspace_member: {
         Args: { _workspace_id: string; _role?: WorkspaceRole | null }
@@ -258,6 +346,8 @@ export interface Database {
       output_platform: OutputPlatform
       output_state: OutputState
     }
-    CompositeTypes: Record<string, never>
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
 }
