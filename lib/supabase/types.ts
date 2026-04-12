@@ -79,6 +79,7 @@ export type Database = {
           slug: string
           type: WorkspaceType
           owner_id: string
+          branding: Json
           created_at: string
           updated_at: string
         }
@@ -88,6 +89,7 @@ export type Database = {
           slug: string
           type: WorkspaceType
           owner_id: string
+          branding?: Json
           created_at?: string
           updated_at?: string
         }
@@ -97,6 +99,7 @@ export type Database = {
           slug?: string
           type?: WorkspaceType
           owner_id?: string
+          branding?: Json
           created_at?: string
           updated_at?: string
         }
@@ -600,6 +603,75 @@ export type Database = {
           link?: string | null
           read?: boolean
           created_at?: string
+        }
+        Relationships: []
+      }
+      voice_clones: {
+        Row: {
+          id: string
+          workspace_id: string
+          name: string
+          elevenlabs_voice_id: string
+          is_default: boolean
+          sample_url: string | null
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          workspace_id: string
+          name: string
+          elevenlabs_voice_id: string
+          is_default?: boolean
+          sample_url?: string | null
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          workspace_id?: string
+          name?: string
+          elevenlabs_voice_id?: string
+          is_default?: boolean
+          sample_url?: string | null
+          created_by?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      algorithm_updates: {
+        Row: {
+          id: string
+          source: string
+          title: string
+          summary: string | null
+          url: string | null
+          platforms: string[]
+          ai_recommendations: string[]
+          published_at: string | null
+          fetched_at: string
+        }
+        Insert: {
+          id?: string
+          source: string
+          title: string
+          summary?: string | null
+          url?: string | null
+          platforms?: string[]
+          ai_recommendations?: string[]
+          published_at?: string | null
+          fetched_at?: string
+        }
+        Update: {
+          id?: string
+          source?: string
+          title?: string
+          summary?: string | null
+          url?: string | null
+          platforms?: string[]
+          ai_recommendations?: string[]
+          published_at?: string | null
+          fetched_at?: string
         }
         Relationships: []
       }
