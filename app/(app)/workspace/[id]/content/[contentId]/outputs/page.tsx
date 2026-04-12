@@ -13,9 +13,11 @@ import { GenerateOutputsForm } from '@/components/outputs/generate-outputs-form'
 import { OutputsGrid } from '@/components/outputs/outputs-grid'
 import { RegenerateButton } from '@/components/outputs/regenerate-button'
 import { ReviewLinkPanel } from '@/components/outputs/review-link-panel'
+import { ReviewCommentsPanel } from '@/components/review/review-comments-panel'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getOutputs } from '@/lib/content/get-outputs'
 import { getReviewLinksForContent } from '@/lib/review/get-review-links-for-content'
+import { getReviewCommentsForContent } from '@/lib/review/get-review-comments-for-content'
 
 /**
  * `force-dynamic` so we never cache the generated outputs — the route
@@ -50,8 +52,11 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
     redirect(`/workspace/${params.id}/content/${params.contentId}`)
   }
 
-  const outputs = await getOutputs(params.contentId, params.id)
-  const reviewLinks = await getReviewLinksForContent(params.contentId, params.id)
+  const [outputs, reviewLinks, reviewComments] = await Promise.all([
+    getOutputs(params.contentId, params.id),
+    getReviewLinksForContent(params.contentId, params.id),
+    getReviewCommentsForContent(params.contentId, params.id),
+  ])
   const title = item.title ?? 'Untitled'
 
   return (
@@ -102,6 +107,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
             contentId={params.contentId}
             links={reviewLinks}
           />
+          <ReviewCommentsPanel comments={reviewComments} />
         </>
       )}
     </div>
