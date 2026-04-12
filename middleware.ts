@@ -8,6 +8,8 @@ import { createMiddlewareClient } from '@/lib/supabase/middleware'
  */
 const APP_ROUTES = ['/dashboard', '/workspace', '/settings', '/onboarding']
 const AUTH_ROUTES = ['/login', '/signup', '/magic-link']
+/** Routes that are intentionally public — skip all auth checks. */
+const PUBLIC_ROUTES = ['/review']
 
 function isPrefixOf(pathname: string, prefixes: readonly string[]): boolean {
   return prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`))
@@ -23,6 +25,10 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
+
+  // Public routes (e.g. /review/[token]) bypass auth entirely.
+  if (isPrefixOf(pathname, PUBLIC_ROUTES)) return response()
+
   const isAppRoute = isPrefixOf(pathname, APP_ROUTES)
   const isAuthRoute = isPrefixOf(pathname, AUTH_ROUTES)
 

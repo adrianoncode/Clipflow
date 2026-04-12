@@ -339,6 +339,72 @@ export type Database = {
         }
         Relationships: []
       }
+      review_links: {
+        Row: {
+          id: string
+          token: string
+          workspace_id: string
+          content_id: string
+          created_by: string
+          label: string | null
+          expires_at: string | null
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          token?: string
+          workspace_id: string
+          content_id: string
+          created_by: string
+          label?: string | null
+          expires_at?: string | null
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          token?: string
+          workspace_id?: string
+          content_id?: string
+          created_by?: string
+          label?: string | null
+          expires_at?: string | null
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      review_comments: {
+        Row: {
+          id: string
+          review_link_id: string
+          output_id: string | null
+          reviewer_name: string
+          reviewer_email: string | null
+          body: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          review_link_id: string
+          output_id?: string | null
+          reviewer_name: string
+          reviewer_email?: string | null
+          body: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          review_link_id?: string
+          output_id?: string | null
+          reviewer_name?: string
+          reviewer_email?: string | null
+          body?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           id: string

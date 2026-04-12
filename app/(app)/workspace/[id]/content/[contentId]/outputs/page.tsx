@@ -11,8 +11,10 @@ import {
 import { GenerateOutputsForm } from '@/components/outputs/generate-outputs-form'
 import { OutputsGrid } from '@/components/outputs/outputs-grid'
 import { RegenerateButton } from '@/components/outputs/regenerate-button'
+import { ReviewLinkPanel } from '@/components/outputs/review-link-panel'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getOutputs } from '@/lib/content/get-outputs'
+import { getReviewLinksForContent } from '@/lib/review/get-review-links-for-content'
 
 /**
  * `force-dynamic` so we never cache the generated outputs — the route
@@ -48,6 +50,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
   }
 
   const outputs = await getOutputs(params.contentId, params.id)
+  const reviewLinks = await getReviewLinksForContent(params.contentId, params.id)
   const title = item.title ?? 'Untitled'
 
   return (
@@ -66,7 +69,9 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
           </p>
         </div>
         {outputs.length > 0 ? (
-          <RegenerateButton workspaceId={params.id} contentId={params.contentId} />
+          <div className="flex flex-wrap gap-2">
+            <RegenerateButton workspaceId={params.id} contentId={params.contentId} />
+          </div>
         ) : null}
       </div>
 
@@ -88,7 +93,14 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
           </CardContent>
         </Card>
       ) : (
-        <OutputsGrid outputs={outputs} contentId={params.contentId} />
+        <>
+          <OutputsGrid outputs={outputs} contentId={params.contentId} />
+          <ReviewLinkPanel
+            workspaceId={params.id}
+            contentId={params.contentId}
+            links={reviewLinks}
+          />
+        </>
       )}
     </div>
   )
