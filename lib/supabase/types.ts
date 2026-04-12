@@ -282,6 +282,7 @@ export type Database = {
           body: string | null
           metadata: Json
           is_starred: boolean
+          scheduled_for: string | null
           created_at: string
           updated_at: string
         }
@@ -293,6 +294,7 @@ export type Database = {
           body?: string | null
           metadata?: Json
           is_starred?: boolean
+          scheduled_for?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -304,6 +306,7 @@ export type Database = {
           body?: string | null
           metadata?: Json
           is_starred?: boolean
+          scheduled_for?: string | null
           created_at?: string
           updated_at?: string
         }
