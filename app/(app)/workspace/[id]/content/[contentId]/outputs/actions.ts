@@ -3,16 +3,13 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-import { generate } from '@/lib/ai/generate/generate'
 import { DEFAULT_MODELS } from '@/lib/ai/generate/models'
 import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
-import { getPromptBuilder } from '@/lib/ai/prompts/get-prompt'
 import { getUser } from '@/lib/auth/get-user'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { deleteOutputsForContent } from '@/lib/outputs/delete-outputs-for-content'
-import { insertOutputWithDraftState } from '@/lib/outputs/insert-output'
-import { renderOutputMarkdown } from '@/lib/outputs/render-markdown'
 import { generateOutputsSchema } from '@/lib/outputs/schemas'
+import { runOnePlatform } from '@/lib/outputs/run-one-platform'
 import type { OutputPlatform } from '@/lib/supabase/types'
 
 // NOTE: `export const maxDuration = 300` lives on the route segment
@@ -36,12 +33,6 @@ export type GenerateOutputsState =
       code: 'no_key' | 'content_not_ready' | 'decrypt_failed' | 'unknown'
       error: string
     }
-
-interface PlatformResult {
-  platform: OutputPlatform
-  ok: boolean
-  error?: string
-}
 
 const PLATFORMS: readonly OutputPlatform[] = [
   'tiktok',
@@ -109,7 +100,7 @@ export async function generateOutputsAction(
 
   // Extract narrowed values into locals — TypeScript loses the discriminated-
   // union narrowing for `pick` and the defaulted `parsed.data` when we hand
-  // them to the nested runOnePlatform closure.
+  // them to Promise.allSettled callbacks.
   const workspaceId = parsed.data.workspace_id
   const contentId = parsed.data.content_id
   const userId = user.id
@@ -127,44 +118,22 @@ export async function generateOutputsAction(
     return { ok: false, code: 'unknown', error: cleared.error }
   }
 
-  async function runOnePlatform(platform: OutputPlatform): Promise<PlatformResult> {
-    const build = getPromptBuilder(platform)
-    const prompt = build({
-      transcript,
-      sourceKind,
-      sourceTitle: title,
-    })
-
-    const gen = await generate({
-      provider,
-      apiKey,
-      model,
-      system: prompt.system,
-      user: prompt.user,
-    })
-    if (!gen.ok) {
-      return { platform, ok: false, error: gen.message }
-    }
-
-    const markdown = renderOutputMarkdown(platform, gen.json)
-    const insert = await insertOutputWithDraftState({
-      workspaceId,
-      contentId,
-      platform,
-      body: markdown,
-      structured: gen.json,
-      provider,
-      model,
-      userId,
-    })
-
-    if (!insert.ok) {
-      return { platform, ok: false, error: insert.error }
-    }
-    return { platform, ok: true }
-  }
-
-  const settled = await Promise.allSettled(PLATFORMS.map(runOnePlatform))
+  const settled = await Promise.allSettled(
+    PLATFORMS.map((platform) =>
+      runOnePlatform({
+        platform,
+        transcript,
+        sourceKind,
+        sourceTitle: title,
+        provider,
+        apiKey,
+        model,
+        workspaceId,
+        contentId,
+        userId,
+      }),
+    ),
+  )
 
   const generated: OutputPlatform[] = []
   const failed: Array<{ platform: OutputPlatform; error: string }> = []
