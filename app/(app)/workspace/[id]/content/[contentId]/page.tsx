@@ -4,6 +4,7 @@ import { ContentDetailView } from '@/components/content/content-detail-view'
 import { RealtimeStatusWatcher } from '@/components/content/realtime-status-watcher'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { hasOutputs } from '@/lib/content/has-outputs'
+import { getProjects } from '@/lib/projects/get-projects'
 
 /**
  * Force the page off the route cache so meta-refresh lands on a fresh
@@ -38,8 +39,10 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
   }
 
   const isPolling = item.status === 'uploading' || item.status === 'processing'
-  const hasExistingOutputs =
-    item.status === 'ready' ? await hasOutputs(params.contentId, params.id) : false
+  const [hasExistingOutputs, projects] = await Promise.all([
+    item.status === 'ready' ? hasOutputs(params.contentId, params.id) : Promise.resolve(false),
+    getProjects(params.id),
+  ])
 
   return (
     <>
@@ -52,6 +55,7 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
         item={item}
         workspaceId={params.id}
         hasExistingOutputs={hasExistingOutputs}
+        projects={projects}
       />
     </>
   )

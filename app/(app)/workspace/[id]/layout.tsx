@@ -18,6 +18,7 @@ interface WorkspaceSummary {
 
 const workspaceNav = (id: string) => [
   { href: `/workspace/${id}`, label: 'Content' },
+  { href: `/workspace/${id}/projects`, label: 'Projects' },
   { href: `/workspace/${id}/ideas`, label: 'Ideas' },
   { href: `/workspace/${id}/channels`, label: 'Channels' },
 ]

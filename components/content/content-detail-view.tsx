@@ -13,12 +13,15 @@ import { ContentStatusBadge } from '@/components/content/content-status-badge'
 import { FollowUpTopicsDialog } from '@/components/content/follow-up-topics-dialog'
 import { RetryTranscriptionButton } from '@/components/content/retry-transcription-button'
 import { TranscriptView } from '@/components/content/transcript-view'
+import { AssignToProjectSelector } from '@/components/projects/assign-to-project-selector'
 import type { ContentItemRow } from '@/lib/content/get-content-item'
+import type { ProjectRow } from '@/lib/projects/get-projects'
 
 interface ContentDetailViewProps {
   item: ContentItemRow
   workspaceId: string
   hasExistingOutputs: boolean
+  projects?: Pick<ProjectRow, 'id' | 'name'>[]
 }
 
 function formatDate(iso: string): string {
@@ -50,6 +53,7 @@ export function ContentDetailView({
   item,
   workspaceId,
   hasExistingOutputs,
+  projects = [],
 }: ContentDetailViewProps) {
   const title = item.title ?? 'Untitled'
 
@@ -70,6 +74,14 @@ export function ContentDetailView({
               : item.kind === 'url' ? 'Website'
               : 'Text'} · added {formatDate(item.created_at)}
           </p>
+          {projects.length > 0 && (
+            <AssignToProjectSelector
+              workspaceId={workspaceId}
+              contentId={item.id}
+              currentProjectId={item.project_id}
+              projects={projects}
+            />
+          )}
         </div>
         <ContentStatusBadge status={item.status} />
       </div>
