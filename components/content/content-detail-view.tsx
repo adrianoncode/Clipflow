@@ -13,9 +13,12 @@ import { ContentStatusBadge } from '@/components/content/content-status-badge'
 import { FollowUpTopicsDialog } from '@/components/content/follow-up-topics-dialog'
 import { RetryTranscriptionButton } from '@/components/content/retry-transcription-button'
 import { TranscriptView } from '@/components/content/transcript-view'
+import { VideoPlayer } from '@/components/content/video-player'
 import { AssignToProjectSelector } from '@/components/projects/assign-to-project-selector'
 import { AutoTagButton } from '@/components/content/auto-tag-button'
 import { SentimentAnalysisButton } from '@/components/content/sentiment-analysis-button'
+import { ShowNotesPanel } from '@/components/content/show-notes-panel'
+import { NewsletterPanel } from '@/components/content/newsletter-panel'
 import type { SentimentResult } from '@/app/(app)/workspace/[id]/content/[contentId]/actions'
 import { DeleteContentButton } from '@/components/content/delete-content-button'
 import { RenameContentForm } from '@/components/content/rename-content-form'
@@ -27,6 +30,7 @@ interface ContentDetailViewProps {
   workspaceId: string
   hasExistingOutputs: boolean
   projects?: Pick<ProjectRow, 'id' | 'name'>[]
+  signedUrl?: string
 }
 
 function formatDate(iso: string): string {
@@ -59,6 +63,7 @@ export function ContentDetailView({
   workspaceId,
   hasExistingOutputs,
   projects = [],
+  signedUrl,
 }: ContentDetailViewProps) {
   const title = item.title ?? 'Untitled'
 
@@ -94,6 +99,13 @@ export function ContentDetailView({
         </div>
         <ContentStatusBadge status={item.status} />
       </div>
+
+      {signedUrl ? (
+        <VideoPlayer
+          signedUrl={signedUrl}
+          title={item.title ?? undefined}
+        />
+      ) : null}
 
       {item.status === 'uploading' || item.status === 'processing' ? (
         <Card>
@@ -176,6 +188,18 @@ export function ContentDetailView({
                 ? (item.metadata as Record<string, unknown>).sentiment
                 : null) as SentimentResult | null
             }
+          />
+          <ShowNotesPanel
+            workspaceId={workspaceId}
+            contentId={item.id}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            initialShowNotes={((item.metadata as any)?.show_notes) ?? null}
+          />
+          <NewsletterPanel
+            workspaceId={workspaceId}
+            contentId={item.id}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            initialNewsletter={((item.metadata as any)?.newsletter) ?? null}
           />
         </div>
       ) : null}

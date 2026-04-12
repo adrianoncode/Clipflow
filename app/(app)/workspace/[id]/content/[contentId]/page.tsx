@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { ContentDetailView } from '@/components/content/content-detail-view'
 import { RealtimeStatusWatcher } from '@/components/content/realtime-status-watcher'
 import { getContentItem } from '@/lib/content/get-content-item'
+import { getSignedUrl } from '@/lib/content/get-signed-url'
 import { hasOutputs } from '@/lib/content/has-outputs'
 import { getProjects } from '@/lib/projects/get-projects'
 
@@ -39,9 +40,16 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
   }
 
   const isPolling = item.status === 'uploading' || item.status === 'processing'
-  const [hasExistingOutputs, projects] = await Promise.all([
+
+  const needsSignedUrl =
+    item.kind === 'video' &&
+    item.source_url != null &&
+    !item.source_url.startsWith('http')
+
+  const [hasExistingOutputs, projects, signedUrl] = await Promise.all([
     item.status === 'ready' ? hasOutputs(params.contentId, params.id) : Promise.resolve(false),
     getProjects(params.id),
+    needsSignedUrl ? getSignedUrl(item.source_url!) : Promise.resolve(null),
   ])
 
   return (
@@ -56,6 +64,7 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
         workspaceId={params.id}
         hasExistingOutputs={hasExistingOutputs}
         projects={projects}
+        signedUrl={signedUrl ?? undefined}
       />
     </>
   )

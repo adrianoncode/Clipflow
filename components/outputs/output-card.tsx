@@ -10,6 +10,7 @@ import { OutputStateBadge } from '@/components/outputs/output-state-badge'
 import { OutputActions } from '@/components/outputs/output-actions'
 import { PerformanceTracker } from '@/components/outputs/performance-tracker'
 import { StateTransitionPills } from '@/components/outputs/state-transition-pills'
+import { ViralityScore } from '@/components/outputs/virality-score'
 import type { OutputRow } from '@/lib/content/get-outputs'
 import type { OutputPlatform } from '@/lib/supabase/types'
 
@@ -59,6 +60,14 @@ export function OutputCard({ output, contentId, workspaceId }: OutputCardProps) 
           workspaceId={output.workspace_id}
           currentState={output.latest_state}
         />
+        {(workspaceId ?? output.workspace_id) && (
+          <ViralityScore
+            outputId={output.id}
+            workspaceId={workspaceId ?? output.workspace_id}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            initialVirality={((output.metadata as any)?.virality) ?? null}
+          />
+        )}
         {(workspaceId ?? output.workspace_id) && (
           <PerformanceTracker
             outputId={output.id}

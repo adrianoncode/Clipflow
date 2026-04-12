@@ -682,3 +682,106 @@ export async function generateHookVariantsAction(
 
   return { ok: true, variants: validated }
 }
+
+// ---------------------------------------------------------------------------
+// Virality Score
+// ---------------------------------------------------------------------------
+
+export interface ViralityResult {
+  overall: number
+  hook_strength: number
+  scroll_stop_power: number
+  shareability: number
+  engagement_bait: number
+  verdict: string
+  tips: string[]
+}
+
+export type GetViralityScoreState =
+  | { ok?: undefined }
+  | { ok: true; virality: ViralityResult }
+  | { ok: false; error: string }
+
+export async function getViralityScoreAction(
+  _prev: GetViralityScoreState,
+  formData: FormData,
+): Promise<GetViralityScoreState> {
+  const workspaceId = formData.get('workspace_id')?.toString() ?? ''
+  const outputId = formData.get('output_id')?.toString() ?? ''
+
+  if (!workspaceId || !outputId) return { ok: false, error: 'Invalid input.' }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const supabase = createClient()
+  const { data: output, error: fetchError } = await supabase
+    .from('outputs')
+    .select('id, body, platform, metadata')
+    .eq('id', outputId)
+    .eq('workspace_id', workspaceId)
+    .single()
+
+  if (fetchError || !output) {
+    return { ok: false, error: 'Output not found.' }
+  }
+
+  const pick = await pickGenerationProvider(workspaceId)
+  if (!pick.ok) return { ok: false, error: pick.message }
+
+  const systemPrompt =
+    'You are a viral content expert with deep knowledge of social media algorithms. Score this social media post on its viral potential. Return a JSON object with: { "overall": number 0-100, "hook_strength": number 0-100, "scroll_stop_power": number 0-100, "shareability": number 0-100, "engagement_bait": number 0-100, "verdict": string (one of: "🔥 High viral potential", "⚡ Good potential", "📈 Decent", "💤 Needs work"), "tips": string[] (2-3 specific actionable improvements to boost virality) }'
+
+  const userPrompt = `Platform: ${output.platform}\n\nContent:\n${(output.body as string | null ?? '').slice(0, 2000)}`
+
+  const gen = await generate({
+    provider: pick.provider,
+    apiKey: pick.apiKey,
+    model: DEFAULT_MODELS[pick.provider],
+    system: systemPrompt,
+    user: userPrompt,
+  })
+
+  if (!gen.ok) return { ok: false, error: gen.message }
+
+  let parsedResult: ViralityResult | null = null
+  try {
+    const raw = gen.json as unknown
+    if (typeof raw === 'object' && raw !== null && 'overall' in raw) {
+      parsedResult = raw as ViralityResult
+    } else if (typeof raw === 'string') {
+      parsedResult = JSON.parse(raw) as ViralityResult
+    } else {
+      const obj = raw as Record<string, unknown>
+      const candidate = Object.values(obj)[0]
+      if (typeof candidate === 'object' && candidate !== null) {
+        parsedResult = candidate as ViralityResult
+      } else if (typeof candidate === 'string') {
+        parsedResult = JSON.parse(candidate) as ViralityResult
+      }
+    }
+  } catch {
+    return { ok: false, error: 'Could not parse virality response.' }
+  }
+
+  if (!parsedResult || typeof parsedResult.overall !== 'number') {
+    return { ok: false, error: 'Virality response is missing expected fields.' }
+  }
+
+  const existingMetadata =
+    output.metadata && typeof output.metadata === 'object' && !Array.isArray(output.metadata)
+      ? (output.metadata as Record<string, unknown>)
+      : {}
+
+  const { error: updateError } = await supabase
+    .from('outputs')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ metadata: { ...existingMetadata, virality: parsedResult } as any })
+    .eq('id', outputId)
+    .eq('workspace_id', workspaceId)
+
+  if (updateError) return { ok: false, error: updateError.message }
+
+  revalidatePath(`/workspace/${workspaceId}/content`)
+  return { ok: true, virality: parsedResult }
+}

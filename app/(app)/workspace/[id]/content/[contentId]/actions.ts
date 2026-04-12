@@ -421,6 +421,218 @@ export async function analyzeSentimentAction(
   return { ok: true, sentiment: parsedResult }
 }
 
+// ── Show Notes ────────────────────────────────────────────────────────────────
+
+const showNotesSchema = z.object({
+  workspace_id: z.string().uuid(),
+  content_id: z.string().uuid(),
+})
+
+export interface ShowNotesResult {
+  summary: string
+  keyPoints: string[]
+  topics: Array<{ time: string; topic: string }>
+  resourcesMentioned: string[]
+  quotableQuotes: string[]
+  callToAction: string
+}
+
+export type GenerateShowNotesState =
+  | { ok?: undefined }
+  | { ok: true; showNotes: ShowNotesResult }
+  | { ok: false; code: 'no_key' | 'unknown'; error: string }
+
+export async function generateShowNotesAction(
+  _prev: GenerateShowNotesState,
+  formData: FormData,
+): Promise<GenerateShowNotesState> {
+  const parsed = showNotesSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    content_id: formData.get('content_id'),
+  })
+  if (!parsed.success) {
+    return { ok: false, code: 'unknown', error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const item = await getContentItem(parsed.data.content_id, parsed.data.workspace_id)
+  if (!item || !item.transcript) {
+    return { ok: false, code: 'unknown', error: 'Content has no transcript.' }
+  }
+
+  const pick = await pickGenerationProvider(parsed.data.workspace_id)
+  if (!pick.ok) {
+    return { ok: false, code: pick.code === 'no_key' ? 'no_key' : 'unknown', error: pick.message }
+  }
+
+  const systemPrompt =
+    'You are a professional podcast producer. Generate comprehensive show notes from the provided transcript. Return a JSON object with: { "summary": string (2-3 sentence episode summary), "keyPoints": string[] (5-7 main takeaways), "topics": Array<{time: string, topic: string}> (estimated timestamps like \'0:00\', \'2:30\' for major topic shifts — estimate based on content flow), "resourcesMentioned": string[] (any books, tools, people, websites mentioned), "quotableQuotes": string[] (2-3 most impactful quotes from transcript), "callToAction": string (suggested CTA for the episode) }'
+  const userPrompt = item.transcript.slice(0, 6000)
+
+  const gen = await generate({
+    provider: pick.provider,
+    apiKey: pick.apiKey,
+    model: DEFAULT_MODELS[pick.provider],
+    system: systemPrompt,
+    user: userPrompt,
+  })
+
+  if (!gen.ok) return { ok: false, code: 'unknown', error: gen.message }
+
+  let parsedResult: ShowNotesResult | null = null
+  try {
+    const raw = gen.json as unknown
+    if (typeof raw === 'object' && raw !== null && 'summary' in raw) {
+      parsedResult = raw as ShowNotesResult
+    } else if (typeof raw === 'string') {
+      parsedResult = JSON.parse(raw) as ShowNotesResult
+    } else {
+      const obj = raw as Record<string, unknown>
+      const candidate = Object.values(obj)[0]
+      if (typeof candidate === 'object' && candidate !== null) {
+        parsedResult = candidate as ShowNotesResult
+      } else if (typeof candidate === 'string') {
+        parsedResult = JSON.parse(candidate) as ShowNotesResult
+      }
+    }
+  } catch {
+    return { ok: false, code: 'unknown', error: 'Could not parse show notes response.' }
+  }
+
+  if (!parsedResult?.summary) {
+    return { ok: false, code: 'unknown', error: 'Show notes response is missing expected fields.' }
+  }
+
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = createClient()
+
+  const existingMetadata =
+    item.metadata && typeof item.metadata === 'object' && !Array.isArray(item.metadata)
+      ? (item.metadata as Record<string, unknown>)
+      : {}
+
+  const { error } = await supabase
+    .from('content_items')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ metadata: { ...existingMetadata, show_notes: parsedResult } as any })
+    .eq('id', parsed.data.content_id)
+    .eq('workspace_id', parsed.data.workspace_id)
+
+  if (error) return { ok: false, code: 'unknown', error: error.message }
+
+  revalidatePath(`/workspace/${parsed.data.workspace_id}/content/${parsed.data.content_id}`)
+  return { ok: true, showNotes: parsedResult }
+}
+
+// ── Newsletter ─────────────────────────────────────────────────────────────────
+
+const newsletterSchema = z.object({
+  workspace_id: z.string().uuid(),
+  content_id: z.string().uuid(),
+  tone: z.enum(['conversational', 'professional', 'storytelling']).default('conversational'),
+})
+
+export interface NewsletterResult {
+  subject: string
+  preheader: string
+  greeting: string
+  body: string
+  cta: string
+  ctaNote: string
+}
+
+export type GenerateNewsletterState =
+  | { ok?: undefined }
+  | { ok: true; newsletter: NewsletterResult }
+  | { ok: false; code: 'no_key' | 'unknown'; error: string }
+
+export async function generateNewsletterAction(
+  _prev: GenerateNewsletterState,
+  formData: FormData,
+): Promise<GenerateNewsletterState> {
+  const parsed = newsletterSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    content_id: formData.get('content_id'),
+    tone: formData.get('tone') ?? 'conversational',
+  })
+  if (!parsed.success) {
+    return { ok: false, code: 'unknown', error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const item = await getContentItem(parsed.data.content_id, parsed.data.workspace_id)
+  if (!item || !item.transcript) {
+    return { ok: false, code: 'unknown', error: 'Content has no transcript.' }
+  }
+
+  const pick = await pickGenerationProvider(parsed.data.workspace_id)
+  if (!pick.ok) {
+    return { ok: false, code: pick.code === 'no_key' ? 'no_key' : 'unknown', error: pick.message }
+  }
+
+  const systemPrompt =
+    'You are an expert newsletter writer. Convert the provided transcript into a newsletter email. Return JSON: { "subject": string (compelling email subject line), "preheader": string (preview text, max 90 chars), "greeting": string (opening line), "body": string (main newsletter body in markdown, 200-400 words, engaging and well-structured), "cta": string (call to action text), "ctaNote": string (brief note about what action to take) }'
+  const userPrompt = `Tone: ${parsed.data.tone}\n\nTranscript:\n${item.transcript.slice(0, 5000)}`
+
+  const gen = await generate({
+    provider: pick.provider,
+    apiKey: pick.apiKey,
+    model: DEFAULT_MODELS[pick.provider],
+    system: systemPrompt,
+    user: userPrompt,
+  })
+
+  if (!gen.ok) return { ok: false, code: 'unknown', error: gen.message }
+
+  let parsedResult: NewsletterResult | null = null
+  try {
+    const raw = gen.json as unknown
+    if (typeof raw === 'object' && raw !== null && 'subject' in raw) {
+      parsedResult = raw as NewsletterResult
+    } else if (typeof raw === 'string') {
+      parsedResult = JSON.parse(raw) as NewsletterResult
+    } else {
+      const obj = raw as Record<string, unknown>
+      const candidate = Object.values(obj)[0]
+      if (typeof candidate === 'object' && candidate !== null) {
+        parsedResult = candidate as NewsletterResult
+      } else if (typeof candidate === 'string') {
+        parsedResult = JSON.parse(candidate) as NewsletterResult
+      }
+    }
+  } catch {
+    return { ok: false, code: 'unknown', error: 'Could not parse newsletter response.' }
+  }
+
+  if (!parsedResult?.subject) {
+    return { ok: false, code: 'unknown', error: 'Newsletter response is missing expected fields.' }
+  }
+
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = createClient()
+
+  const existingMetadata =
+    item.metadata && typeof item.metadata === 'object' && !Array.isArray(item.metadata)
+      ? (item.metadata as Record<string, unknown>)
+      : {}
+
+  const { error } = await supabase
+    .from('content_items')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ metadata: { ...existingMetadata, newsletter: parsedResult } as any })
+    .eq('id', parsed.data.content_id)
+    .eq('workspace_id', parsed.data.workspace_id)
+
+  if (error) return { ok: false, code: 'unknown', error: error.message }
+
+  revalidatePath(`/workspace/${parsed.data.workspace_id}/content/${parsed.data.content_id}`)
+  return { ok: true, newsletter: parsedResult }
+}
+
 // ── Delete content item ───────────────────────────────────────────────────────
 
 export type DeleteContentState =
