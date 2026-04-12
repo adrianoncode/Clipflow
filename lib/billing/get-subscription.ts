@@ -42,10 +42,36 @@ export async function getSubscription(workspaceId: string): Promise<Subscription
 }
 
 /**
+ * Admin email(s) that always get agency-tier access, regardless of Stripe.
+ * Used for the founder's own testing. Remove when Stripe billing is live.
+ */
+const ADMIN_EMAILS = ['adrianberisha680@gmail.com']
+
+/**
  * Returns just the plan name for a workspace — cheap shortcut when you
  * only need the plan (e.g. for limit checks).
  */
 export async function getWorkspacePlan(workspaceId: string): Promise<BillingPlan> {
+  // Admin override — check if workspace owner is an admin
+  const supabase = createClient()
+  const { data: ws } = await supabase
+    .from('workspaces')
+    .select('owner_id')
+    .eq('id', workspaceId)
+    .maybeSingle()
+
+  if (ws?.owner_id) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('id', ws.owner_id)
+      .maybeSingle()
+
+    if (profile?.email && ADMIN_EMAILS.includes(profile.email)) {
+      return 'agency'
+    }
+  }
+
   const sub = await getSubscription(workspaceId)
   // Treat canceled/expired subscriptions as free
   if (sub.status && !['active', 'trialing'].includes(sub.status)) {
