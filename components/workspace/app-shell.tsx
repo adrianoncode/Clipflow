@@ -21,6 +21,7 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
     { href: '/analytics', label: 'Analytics' },
     { href: `/workspace/${currentWorkspaceId}/trends`, label: 'Trends' },
     { href: `/workspace/${currentWorkspaceId}/competitors`, label: 'Competitors' },
+    { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Scheduler' },
     { href: '/clients', label: 'Clients' },
     { href: '/settings', label: 'Settings' },
     { href: '/billing', label: 'Billing' },

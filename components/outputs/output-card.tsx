@@ -11,6 +11,7 @@ import { OutputActions } from '@/components/outputs/output-actions'
 import { PerformanceTracker } from '@/components/outputs/performance-tracker'
 import { StateTransitionPills } from '@/components/outputs/state-transition-pills'
 import { ViralityScore } from '@/components/outputs/virality-score'
+import { SchedulePostButton } from '@/components/scheduler/schedule-post-button'
 import type { OutputRow } from '@/lib/content/get-outputs'
 import type { OutputPlatform } from '@/lib/supabase/types'
 
@@ -19,6 +20,14 @@ const PLATFORM_LABELS: Record<OutputPlatform, string> = {
   instagram_reels: 'Instagram Reels',
   youtube_shorts: 'YouTube Shorts',
   linkedin: 'LinkedIn',
+}
+
+// Maps OutputPlatform to the platform key used by the social scheduler
+const SCHEDULER_PLATFORM: Record<OutputPlatform, string> = {
+  tiktok: 'tiktok',
+  instagram_reels: 'instagram',
+  youtube_shorts: 'youtube_shorts',
+  linkedin: 'linkedin',
 }
 
 const PLATFORM_DESCRIPTIONS: Record<OutputPlatform, string> = {
@@ -79,6 +88,13 @@ export function OutputCard({ output, contentId, workspaceId }: OutputCardProps) 
                 recorded_at: string
               } | null) ?? null
             }
+          />
+        )}
+        {(workspaceId ?? output.workspace_id) && (
+          <SchedulePostButton
+            outputId={output.id}
+            workspaceId={workspaceId ?? output.workspace_id}
+            platform={SCHEDULER_PLATFORM[output.platform]}
           />
         )}
       </CardFooter>

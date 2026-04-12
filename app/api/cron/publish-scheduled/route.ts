@@ -1,0 +1,86 @@
+import { NextRequest, NextResponse } from 'next/server'
+
+import { createAdminClient } from '@/lib/supabase/admin'
+import { publishPost } from '@/lib/scheduler/publish-post'
+
+export const dynamic = 'force-dynamic'
+
+export async function POST(req: NextRequest) {
+  // Verify cron secret
+  const secret = req.headers.get('x-cron-secret') ?? req.nextUrl.searchParams.get('secret')
+  if (secret !== process.env.CRON_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const supabase = createAdminClient()
+
+  // Find posts due for publishing (scheduled_for <= now, status = 'scheduled')
+  const now = new Date().toISOString()
+  const { data: duePosts } = await supabase
+    .from('scheduled_posts')
+    .select('id, platform, output_id, social_account_id, workspace_id')
+    .eq('status', 'scheduled')
+    .lte('scheduled_for', now)
+    .limit(10)
+
+  if (!duePosts?.length) {
+    return NextResponse.json({ ok: true, published: 0 })
+  }
+
+  // Fetch output bodies for due posts
+  const outputIds = [...new Set(duePosts.map((p) => p.output_id))]
+  const { data: outputs } = await supabase
+    .from('outputs')
+    .select('id, body')
+    .in('id', outputIds)
+
+  const outputBodyMap = new Map<string, string>()
+  for (const o of outputs ?? []) outputBodyMap.set(o.id, o.body ?? '')
+
+  const results = []
+  for (const post of duePosts) {
+    // Mark as publishing
+    await supabase
+      .from('scheduled_posts')
+      .update({ status: 'publishing' })
+      .eq('id', post.id)
+
+    // Get access token
+    let accessToken = ''
+    if (post.social_account_id) {
+      const { data: account } = await supabase
+        .from('social_accounts')
+        .select('access_token')
+        .eq('id', post.social_account_id)
+        .maybeSingle()
+      accessToken = account?.access_token ?? ''
+    }
+
+    const content = outputBodyMap.get(post.output_id) ?? ''
+    const result = await publishPost(post.platform, accessToken, content)
+
+    if (result.ok) {
+      await supabase
+        .from('scheduled_posts')
+        .update({
+          status: 'published',
+          published_at: new Date().toISOString(),
+          platform_post_id: result.platformPostId,
+        })
+        .eq('id', post.id)
+    } else {
+      await supabase
+        .from('scheduled_posts')
+        .update({ status: 'failed', error_message: result.error })
+        .eq('id', post.id)
+    }
+
+    results.push({ id: post.id, platform: post.platform, ok: result.ok })
+  }
+
+  return NextResponse.json({
+    ok: true,
+    published: results.filter((r) => r.ok).length,
+    results,
+  })
+}

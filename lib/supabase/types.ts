@@ -483,6 +483,90 @@ export type Database = {
         }
         Relationships: []
       }
+      social_accounts: {
+        Row: {
+          id: string
+          workspace_id: string
+          user_id: string
+          platform: string
+          platform_user_id: string
+          platform_username: string | null
+          access_token: string
+          refresh_token: string | null
+          expires_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          workspace_id: string
+          user_id: string
+          platform: string
+          platform_user_id: string
+          platform_username?: string | null
+          access_token: string
+          refresh_token?: string | null
+          expires_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          workspace_id?: string
+          user_id?: string
+          platform?: string
+          platform_user_id?: string
+          platform_username?: string | null
+          access_token?: string
+          refresh_token?: string | null
+          expires_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      scheduled_posts: {
+        Row: {
+          id: string
+          workspace_id: string
+          output_id: string
+          social_account_id: string | null
+          platform: string
+          scheduled_for: string
+          status: string
+          published_at: string | null
+          platform_post_id: string | null
+          error_message: string | null
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          workspace_id: string
+          output_id: string
+          social_account_id?: string | null
+          platform: string
+          scheduled_for: string
+          status?: string
+          published_at?: string | null
+          platform_post_id?: string | null
+          error_message?: string | null
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          workspace_id?: string
+          output_id?: string
+          social_account_id?: string | null
+          platform?: string
+          scheduled_for?: string
+          status?: string
+          published_at?: string | null
+          platform_post_id?: string | null
+          error_message?: string | null
+          created_by?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
