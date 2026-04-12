@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useActionState } from 'react'
+import { useFormState } from 'react-dom'
 import { useFormStatus } from 'react-dom'
 import { Star, ChevronDown, ChevronUp } from 'lucide-react'
 
@@ -66,7 +66,7 @@ export function PerformanceTracker({
   const [open, setOpen] = useState(false)
   const [rating, setRating] = useState(initialPerformance?.rating ?? 0)
 
-  const [state, formAction] = useActionState<SaveOutputPerformanceState, FormData>(
+  const [state, formAction] = useFormState(
     saveOutputPerformanceAction,
     {},
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useFormState } from 'react-dom'
 import { useFormStatus } from 'react-dom'
 import { Sparkles } from 'lucide-react'
 
@@ -26,7 +26,7 @@ function SubmitBtn() {
 }
 
 export function AiCoachPanel({ workspaceId, outputBodies }: AiCoachPanelProps) {
-  const [state, formAction] = useActionState<AiCoachFeedbackState, FormData>(
+  const [state, formAction] = useFormState(
     getAiCoachFeedbackAction,
     {},
   )

@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useFormState } from 'react-dom'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
@@ -51,7 +52,8 @@ export function ReframeClient({
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const initialState: StartReframeState = {}
-  const [actionState, formAction, isPending] = useActionState(startReframeAction, initialState)
+  const [actionState, formAction] = useFormState(startReframeAction, initialState)
+  const [isPending, setIsPending] = useState(false)
 
   // When action succeeds, capture the jobId
   useEffect(() => {

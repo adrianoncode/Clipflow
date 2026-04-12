@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useFormState } from 'react-dom'
 import { useFormStatus } from 'react-dom'
 import { Tag } from 'lucide-react'
 
@@ -25,7 +25,7 @@ function SubmitBtn() {
 }
 
 export function AutoTagButton({ workspaceId, contentId, currentTags }: AutoTagButtonProps) {
-  const [state, formAction] = useActionState<AutoTagState, FormData>(
+  const [state, formAction] = useFormState(
     autoTagContentAction,
     {},
   )

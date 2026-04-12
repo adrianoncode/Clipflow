@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useFormState } from 'react-dom'
 import { useFormStatus } from 'react-dom'
 import { BarChart2 } from 'lucide-react'
 
@@ -30,7 +30,7 @@ export function SentimentAnalysisButton({
   contentId,
   initialSentiment,
 }: SentimentAnalysisButtonProps) {
-  const [state, formAction] = useActionState<AnalyzeSentimentState, FormData>(
+  const [state, formAction] = useFormState(
     analyzeSentimentAction,
     {},
   )
