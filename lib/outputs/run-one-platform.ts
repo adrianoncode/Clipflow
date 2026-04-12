@@ -5,6 +5,7 @@ import type { AiProvider } from '@/lib/ai/providers/types'
 import { getPromptBuilder } from '@/lib/ai/prompts/get-prompt'
 import { getLanguageInstruction } from '@/lib/ai/prompts/languages'
 import { getActiveBrandVoice, buildBrandVoiceInstruction } from '@/lib/brand-voice/get-active-brand-voice'
+import { getActivePersona, buildPersonaInstruction } from '@/lib/personas/get-active-persona'
 import { insertOutputWithDraftState } from '@/lib/outputs/insert-output'
 import { renderOutputMarkdown } from '@/lib/outputs/render-markdown'
 import type { ContentKind, OutputPlatform } from '@/lib/supabase/types'
@@ -51,7 +52,11 @@ export async function runOnePlatform(
   const brandVoice = await getActiveBrandVoice(workspaceId)
   const brandVoiceInstruction = buildBrandVoiceInstruction(brandVoice)
 
-  const system = prompt.system + (langInstruction ?? '') + brandVoiceInstruction
+  // Inject AI persona if one is active for this workspace.
+  const persona = await getActivePersona(workspaceId)
+  const personaInstruction = buildPersonaInstruction(persona)
+
+  const system = prompt.system + (langInstruction ?? '') + brandVoiceInstruction + personaInstruction
 
   const gen = await generate({ provider, apiKey, model, system, user: prompt.user })
   if (!gen.ok) {

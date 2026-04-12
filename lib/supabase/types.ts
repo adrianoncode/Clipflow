@@ -603,6 +603,45 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_personas: {
+        Row: {
+          id: string
+          workspace_id: string
+          name: string
+          backstory: string
+          expertise_areas: string[]
+          writing_quirks: string
+          example_responses: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          workspace_id: string
+          name: string
+          backstory?: string
+          expertise_areas?: string[]
+          writing_quirks?: string
+          example_responses?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          workspace_id?: string
+          name?: string
+          backstory?: string
+          expertise_areas?: string[]
+          writing_quirks?: string
+          example_responses?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       webhooks: {
         Row: {
           id: string
