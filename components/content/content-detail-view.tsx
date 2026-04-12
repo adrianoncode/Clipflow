@@ -1,4 +1,12 @@
 import Link from 'next/link'
+import {
+  Clapperboard,
+  MessageSquare,
+  Move,
+  Sparkles,
+  Globe,
+  Scissors,
+} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -59,6 +67,26 @@ function readErrorMessage(metadata: ContentItemRow['metadata']): string {
   return 'Transcription failed for an unknown reason.'
 }
 
+interface ToolCardProps {
+  icon: React.ReactNode
+  label: string
+  href: string
+}
+
+function ToolCard({ icon, label, href }: ToolCardProps) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-2.5 rounded-xl border border-border/50 bg-card p-3 text-sm font-medium transition-all card-hover hover:text-foreground text-muted-foreground"
+    >
+      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted">
+        {icon}
+      </span>
+      {label}
+    </Link>
+  )
+}
+
 export function ContentDetailView({
   item,
   workspaceId,
@@ -74,7 +102,7 @@ export function ContentDetailView({
         <div className="space-y-1">
           <Link
             href={`/workspace/${workspaceId}`}
-            className="text-xs text-muted-foreground underline-offset-4 hover:underline"
+            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             ← Back to workspace
           </Link>
@@ -109,10 +137,10 @@ export function ContentDetailView({
       ) : null}
 
       {item.status === 'uploading' || item.status === 'processing' ? (
-        <Card>
+        <Card className="border-border/50">
           <CardHeader>
             <CardTitle>
-              {item.status === 'uploading' ? 'Waiting for upload to finish' : 'Transcribing…'}
+              {item.status === 'uploading' ? 'Waiting for upload to finish' : 'Transcribing...'}
             </CardTitle>
             <CardDescription>
               {item.status === 'uploading'
@@ -121,13 +149,13 @@ export function ContentDetailView({
             </CardDescription>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            Auto-refreshing every 3 seconds…
+            Auto-refreshing every 3 seconds...
           </CardContent>
         </Card>
       ) : null}
 
       {item.status === 'failed' ? (
-        <Card>
+        <Card className="border-destructive/30">
           <CardHeader>
             <CardTitle>Transcription failed</CardTitle>
             <CardDescription>Fix the issue and try again.</CardDescription>
@@ -142,62 +170,71 @@ export function ContentDetailView({
       ) : null}
 
       {item.status === 'ready' && item.transcript ? (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <TranscriptView
             text={item.transcript}
             workspaceId={workspaceId}
             contentId={item.id}
           />
-          <div className="flex flex-wrap items-center gap-2">
-            <Button asChild>
-              <Link href={`/workspace/${workspaceId}/content/${item.id}/outputs`}>
-                {hasExistingOutputs ? 'View outputs' : 'Generate outputs'}
-              </Link>
-            </Button>
-            <Link
-              href={`/workspace/${workspaceId}/content/${item.id}/broll`}
-              className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent"
-            >
-              🎬 Find B-Roll
+
+          {/* Primary action */}
+          <Button asChild className="rounded-xl shadow-lg shadow-primary/20">
+            <Link href={`/workspace/${workspaceId}/content/${item.id}/outputs`}>
+              {hasExistingOutputs ? 'View outputs' : 'Generate outputs'}
             </Link>
-            {item.kind === 'video' ? (
-              <Link
-                href={`/workspace/${workspaceId}/content/${item.id}/reframe`}
-                className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent"
-              >
-                ↕ Auto-Reframe
-              </Link>
-            ) : null}
-            <Link
-              href={`/workspace/${workspaceId}/content/${item.id}/subtitles`}
-              className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent"
-            >
-              💬 Subtitles
-            </Link>
-            <Link
-              href={`/workspace/${workspaceId}/content/${item.id}/avatar`}
-              className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent"
-            >
-              💡 AI Avatar
-            </Link>
-            {item.kind === 'video' ? (
-              <Link
-                href={`/workspace/${workspaceId}/content/${item.id}/dub`}
-                className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent"
-              >
-                🌍 Auto-Dub
-              </Link>
-            ) : null}
-            {hasExistingOutputs ? (
-              <span className="text-xs text-muted-foreground">
-                Drafts already generated — click to review or regenerate.
-              </span>
-            ) : (
-              <span className="text-xs text-muted-foreground">
-                Produces TikTok, Reels, Shorts, and LinkedIn drafts in one pass.
-              </span>
-            )}
+          </Button>
+
+          {hasExistingOutputs ? (
+            <p className="text-xs text-muted-foreground">
+              Drafts already generated -- click to review or regenerate.
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Produces TikTok, Reels, Shorts, and LinkedIn drafts in one pass.
+            </p>
+          )}
+
+          {/* AI Tools grid */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/50">AI Tools</h3>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <ToolCard
+                icon={<Clapperboard className="h-4 w-4 text-muted-foreground" />}
+                label="B-Roll"
+                href={`/workspace/${workspaceId}/content/${item.id}/broll`}
+              />
+              <ToolCard
+                icon={<MessageSquare className="h-4 w-4 text-muted-foreground" />}
+                label="Subtitles"
+                href={`/workspace/${workspaceId}/content/${item.id}/subtitles`}
+              />
+              {item.kind === 'video' ? (
+                <ToolCard
+                  icon={<Move className="h-4 w-4 text-muted-foreground" />}
+                  label="Reframe"
+                  href={`/workspace/${workspaceId}/content/${item.id}/reframe`}
+                />
+              ) : null}
+              <ToolCard
+                icon={<Sparkles className="h-4 w-4 text-muted-foreground" />}
+                label="AI Avatar"
+                href={`/workspace/${workspaceId}/content/${item.id}/avatar`}
+              />
+              {item.kind === 'video' ? (
+                <ToolCard
+                  icon={<Globe className="h-4 w-4 text-muted-foreground" />}
+                  label="Auto-Dub"
+                  href={`/workspace/${workspaceId}/content/${item.id}/dub`}
+                />
+              ) : null}
+              <ToolCard
+                icon={<Scissors className="h-4 w-4 text-muted-foreground" />}
+                label="Clip Finder"
+                href={`/workspace/${workspaceId}/content/${item.id}`}
+              />
+            </div>
           </div>
+
           <FollowUpTopicsDialog workspaceId={workspaceId} contentId={item.id} />
           <AutoTagButton
             workspaceId={workspaceId}
@@ -246,17 +283,17 @@ export function ContentDetailView({
       ) : null}
 
       {item.status === 'ready' && !item.transcript ? (
-        <Card>
+        <Card className="border-border/50">
           <CardHeader>
             <CardTitle>No transcript stored</CardTitle>
             <CardDescription>
-              This content is marked ready but has no transcript text — likely an older row.
+              This content is marked ready but has no transcript text -- likely an older row.
             </CardDescription>
           </CardHeader>
         </Card>
       ) : null}
 
-      <div className="border-t pt-4">
+      <div className="border-t border-border/50 pt-4">
         <DeleteContentButton workspaceId={workspaceId} contentId={item.id} />
       </div>
     </div>
