@@ -1,5 +1,6 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
@@ -9,6 +10,9 @@ import { buildFollowUpTopicsPrompt } from '@/lib/ai/prompts/follow-up-topics'
 import { getUser } from '@/lib/auth/get-user'
 import { generate } from '@/lib/ai/generate/generate'
 import { getContentItem } from '@/lib/content/get-content-item'
+import { deleteContentItem } from '@/lib/content/delete-content-item'
+
+// ── Follow-up topics ──────────────────────────────────────────────────────────
 
 const followUpSchema = z.object({
   workspace_id: z.string().uuid(),
@@ -86,4 +90,30 @@ export async function suggestFollowUpTopicsAction(
   }
 
   return { ok: true, topics: validated }
+}
+
+// ── Delete content item ───────────────────────────────────────────────────────
+
+export type DeleteContentState =
+  | { ok?: undefined }
+  | { ok: true }
+  | { ok: false; error: string }
+
+export async function deleteContentAction(
+  _prev: DeleteContentState,
+  formData: FormData,
+): Promise<DeleteContentState> {
+  const workspaceId = formData.get('workspace_id')?.toString() ?? ''
+  const contentId = formData.get('content_id')?.toString() ?? ''
+
+  if (!workspaceId || !contentId) return { ok: false, error: 'Invalid input.' }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const result = await deleteContentItem(contentId, workspaceId)
+  if (!result.ok) return { ok: false, error: result.error }
+
+  revalidatePath(`/workspace/${workspaceId}`)
+  redirect(`/workspace/${workspaceId}`)
 }

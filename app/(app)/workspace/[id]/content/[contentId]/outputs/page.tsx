@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { ExportAllButton } from '@/components/outputs/export-all-button'
 import { GenerateOutputsForm } from '@/components/outputs/generate-outputs-form'
 import { OutputsGrid } from '@/components/outputs/outputs-grid'
 import { RegenerateButton } from '@/components/outputs/regenerate-button'
@@ -70,6 +71,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
         </div>
         {outputs.length > 0 ? (
           <div className="flex flex-wrap gap-2">
+            <ExportAllButton outputs={outputs} contentTitle={title} />
             <RegenerateButton workspaceId={params.id} contentId={params.contentId} />
           </div>
         ) : null}

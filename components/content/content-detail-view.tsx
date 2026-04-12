@@ -14,6 +14,7 @@ import { FollowUpTopicsDialog } from '@/components/content/follow-up-topics-dial
 import { RetryTranscriptionButton } from '@/components/content/retry-transcription-button'
 import { TranscriptView } from '@/components/content/transcript-view'
 import { AssignToProjectSelector } from '@/components/projects/assign-to-project-selector'
+import { DeleteContentButton } from '@/components/content/delete-content-button'
 import type { ContentItemRow } from '@/lib/content/get-content-item'
 import type { ProjectRow } from '@/lib/projects/get-projects'
 
@@ -152,6 +153,10 @@ export function ContentDetailView({
           </CardHeader>
         </Card>
       ) : null}
+
+      <div className="border-t pt-4">
+        <DeleteContentButton workspaceId={workspaceId} contentId={item.id} />
+      </div>
     </div>
   )
 }

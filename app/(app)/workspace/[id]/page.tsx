@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
-import { ContentList } from '@/components/content/content-list'
+import { ContentListWithSearch } from '@/components/content/content-list-with-search'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getContentItems } from '@/lib/content/get-content-items'
 
@@ -39,7 +39,7 @@ export default async function WorkspaceHomePage({ params }: WorkspaceHomePagePro
       {atLimit ? (
         <p className="text-xs text-muted-foreground">Showing the 50 most recent items.</p>
       ) : null}
-      <ContentList items={items} workspaceId={params.id} />
+      <ContentListWithSearch items={items} workspaceId={params.id} />
     </div>
   )
 }
