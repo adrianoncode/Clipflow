@@ -2,10 +2,13 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
 import { OutputStateBadge } from '@/components/outputs/output-state-badge'
+import { OutputActions } from '@/components/outputs/output-actions'
+import { StateTransitionPills } from '@/components/outputs/state-transition-pills'
 import type { OutputRow } from '@/lib/content/get-outputs'
 import type { OutputPlatform } from '@/lib/supabase/types'
 
@@ -25,9 +28,10 @@ const PLATFORM_DESCRIPTIONS: Record<OutputPlatform, string> = {
 
 interface OutputCardProps {
   output: OutputRow
+  contentId: string
 }
 
-export function OutputCard({ output }: OutputCardProps) {
+export function OutputCard({ output, contentId }: OutputCardProps) {
   return (
     <Card className="flex h-full flex-col">
       <CardHeader className="space-y-2">
@@ -46,6 +50,14 @@ export function OutputCard({ output }: OutputCardProps) {
           {output.body ?? '(empty)'}
         </div>
       </CardContent>
+      <CardFooter className="flex flex-col items-start gap-3">
+        <OutputActions output={output} contentId={contentId} />
+        <StateTransitionPills
+          outputId={output.id}
+          workspaceId={output.workspace_id}
+          currentState={output.latest_state}
+        />
+      </CardFooter>
     </Card>
   )
 }

@@ -88,7 +88,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
           </CardContent>
         </Card>
       ) : (
-        <OutputsGrid outputs={outputs} />
+        <OutputsGrid outputs={outputs} contentId={params.contentId} />
       )}
     </div>
   )
