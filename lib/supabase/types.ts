@@ -567,6 +567,81 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          workspace_id: string | null
+          type: string
+          title: string
+          body: string | null
+          link: string | null
+          read: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          workspace_id?: string | null
+          type: string
+          title: string
+          body?: string | null
+          link?: string | null
+          read?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          workspace_id?: string | null
+          type?: string
+          title?: string
+          body?: string | null
+          link?: string | null
+          read?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      webhooks: {
+        Row: {
+          id: string
+          workspace_id: string
+          name: string
+          url: string
+          events: string[]
+          is_active: boolean
+          created_by: string | null
+          created_at: string
+          last_triggered_at: string | null
+          last_status: number | null
+        }
+        Insert: {
+          id?: string
+          workspace_id: string
+          name: string
+          url: string
+          events?: string[]
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string
+          last_triggered_at?: string | null
+          last_status?: number | null
+        }
+        Update: {
+          id?: string
+          workspace_id?: string
+          name?: string
+          url?: string
+          events?: string[]
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string
+          last_triggered_at?: string | null
+          last_status?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

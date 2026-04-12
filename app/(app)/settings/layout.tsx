@@ -8,6 +8,7 @@ const sections = [
   { href: '/settings/templates', label: 'Templates' },
   { href: '/settings/reports', label: 'Reports' },
   { href: '/settings/extension', label: 'Extension' },
+  { href: '/settings/webhooks', label: 'Webhooks' },
 ]
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { SignoutButton } from '@/components/auth/signout-button'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { WorkspaceSwitcher } from '@/components/workspace/workspace-switcher'
+import { GlobalSearch } from '@/components/workspace/global-search'
+import { NotificationBell } from '@/components/workspace/notification-bell'
 import type { WorkspaceSummary } from '@/lib/auth/get-workspaces'
 
 interface AppShellProps {
@@ -22,6 +24,7 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
     { href: `/workspace/${currentWorkspaceId}/trends`, label: 'Trends' },
     { href: `/workspace/${currentWorkspaceId}/competitors`, label: 'Competitors' },
     { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Scheduler' },
+    { href: `/workspace/${currentWorkspaceId}/calendar`, label: 'Calendar' },
     { href: '/clients', label: 'Clients' },
     { href: '/settings', label: 'Settings' },
     { href: '/billing', label: 'Billing' },
@@ -42,8 +45,10 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
           >
             <span className="text-base leading-none">+</span>
           </Link>
+          <GlobalSearch workspaceId={currentWorkspaceId} />
         </div>
         <div className="flex items-center gap-3">
+          <NotificationBell initialCount={0} />
           <ThemeToggle />
           <span className="hidden text-xs text-muted-foreground sm:inline">{user.email}</span>
           <SignoutButton />

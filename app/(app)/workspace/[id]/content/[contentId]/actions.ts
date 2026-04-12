@@ -633,6 +633,124 @@ export async function generateNewsletterAction(
   return { ok: true, newsletter: parsedResult }
 }
 
+// ── Find best clips ───────────────────────────────────────────────────────────
+
+const findClipsSchema = z.object({
+  workspace_id: z.string().uuid(),
+  content_id: z.string().uuid(),
+})
+
+export interface BestClip {
+  quote: string
+  reason: string
+  position_pct: number
+  type: 'hook' | 'insight' | 'story' | 'controversial' | 'funny'
+  energy: 'high' | 'medium'
+  estimated_duration: string
+}
+
+export type FindBestClipsState =
+  | { ok?: undefined }
+  | { ok: true; clips: BestClip[] }
+  | { ok: false; code: 'no_key' | 'unknown'; error: string }
+
+export async function findBestClipsAction(
+  _prev: FindBestClipsState,
+  formData: FormData,
+): Promise<FindBestClipsState> {
+  const parsed = findClipsSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    content_id: formData.get('content_id'),
+  })
+  if (!parsed.success) {
+    return { ok: false, code: 'unknown', error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const item = await getContentItem(parsed.data.content_id, parsed.data.workspace_id)
+  if (!item || !item.transcript) {
+    return { ok: false, code: 'unknown', error: 'Content has no transcript to analyze.' }
+  }
+
+  const pick = await pickGenerationProvider(parsed.data.workspace_id)
+  if (!pick.ok) {
+    return { ok: false, code: pick.code === 'no_key' ? 'no_key' : 'unknown', error: pick.message }
+  }
+
+  const systemPrompt =
+    'You are a viral content editor. Analyze this transcript and find the 3-5 best clip-worthy moments. For each clip, identify: the exact quote, why it\'s clip-worthy, estimated start position (as percentage 0-100 of total content), and clip type. Return JSON: { "clips": [{ "quote": string (exact words, 10-50 words), "reason": string (why this is clip-worthy), "position_pct": number (0-100), "type": "hook"|"insight"|"story"|"controversial"|"funny", "energy": "high"|"medium", "estimated_duration": string (e.g. "15-30 seconds") }] }'
+
+  const userPrompt = item.transcript.slice(0, 8000)
+
+  const gen = await generate({
+    provider: pick.provider,
+    apiKey: pick.apiKey,
+    model: DEFAULT_MODELS[pick.provider],
+    system: systemPrompt,
+    user: userPrompt,
+  })
+
+  if (!gen.ok) {
+    return { ok: false, code: 'unknown', error: gen.message }
+  }
+
+  let clips: BestClip[] = []
+  try {
+    const raw = gen.json as unknown
+    let clipsArr: unknown[] = []
+
+    if (typeof raw === 'object' && raw !== null && 'clips' in raw) {
+      const obj = raw as Record<string, unknown>
+      if (Array.isArray(obj.clips)) {
+        clipsArr = obj.clips
+      }
+    } else if (Array.isArray(raw)) {
+      clipsArr = raw
+    }
+
+    clips = clipsArr
+      .filter((c): c is Record<string, unknown> => typeof c === 'object' && c !== null)
+      .map((c) => ({
+        quote: typeof c.quote === 'string' ? c.quote : '',
+        reason: typeof c.reason === 'string' ? c.reason : '',
+        position_pct: typeof c.position_pct === 'number' ? c.position_pct : 0,
+        type: (['hook', 'insight', 'story', 'controversial', 'funny'] as const).includes(c.type as 'hook')
+          ? (c.type as BestClip['type'])
+          : 'insight',
+        energy: (c.energy === 'high' ? 'high' : 'medium') as BestClip['energy'],
+        estimated_duration: typeof c.estimated_duration === 'string' ? c.estimated_duration : '15-30 seconds',
+      }))
+      .filter((c) => c.quote.length > 0)
+  } catch {
+    return { ok: false, code: 'unknown', error: 'Could not parse clips response.' }
+  }
+
+  if (clips.length === 0) {
+    return { ok: false, code: 'unknown', error: 'No clips found. Try again.' }
+  }
+
+  // Store in metadata
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = createClient()
+
+  const existingMetadata =
+    item.metadata && typeof item.metadata === 'object' && !Array.isArray(item.metadata)
+      ? (item.metadata as Record<string, unknown>)
+      : {}
+
+  await supabase
+    .from('content_items')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ metadata: { ...existingMetadata, best_clips: clips } as any })
+    .eq('id', parsed.data.content_id)
+    .eq('workspace_id', parsed.data.workspace_id)
+
+  revalidatePath(`/workspace/${parsed.data.workspace_id}/content/${parsed.data.content_id}`)
+  return { ok: true, clips }
+}
+
 // ── Delete content item ───────────────────────────────────────────────────────
 
 export type DeleteContentState =

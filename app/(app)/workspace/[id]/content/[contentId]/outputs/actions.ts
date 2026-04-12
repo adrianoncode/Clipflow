@@ -684,6 +684,252 @@ export async function generateHookVariantsAction(
 }
 
 // ---------------------------------------------------------------------------
+// A/B Hook Testing — 3 variants with psychological triggers
+// ---------------------------------------------------------------------------
+
+export interface AbHookVariant {
+  hook: string
+  trigger: string
+  explanation: string
+  winner: boolean
+}
+
+export type GenerateAbHookVariantsState =
+  | { ok?: undefined }
+  | { ok: true; variants: AbHookVariant[] }
+  | { ok: false; error: string }
+
+export async function generateAbHookVariantsAction(
+  _prev: GenerateAbHookVariantsState,
+  formData: FormData,
+): Promise<GenerateAbHookVariantsState> {
+  const outputId = formData.get('output_id')?.toString() ?? ''
+  const workspaceId = formData.get('workspace_id')?.toString() ?? ''
+
+  if (!outputId || !workspaceId) return { ok: false, error: 'Invalid input.' }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const supabase = createClient()
+  const { data: output, error: fetchError } = await supabase
+    .from('outputs')
+    .select('id, body, platform, metadata')
+    .eq('id', outputId)
+    .eq('workspace_id', workspaceId)
+    .maybeSingle()
+
+  if (fetchError || !output) return { ok: false, error: 'Output not found.' }
+
+  const pick = await pickGenerationProvider(workspaceId)
+  if (!pick.ok) return { ok: false, error: pick.message }
+
+  const body = (output.body as string | null) ?? ''
+  const platform = (output.platform as string) ?? ''
+
+  const systemPrompt =
+    'You are a viral content expert. Generate 3 alternative hooks for this social media post. Each hook should use a different psychological trigger: 1) Curiosity gap, 2) Bold claim/controversy, 3) Personal story/vulnerability. Return JSON: { "variants": [{"hook": string, "trigger": string, "explanation": string}] }'
+  const userPrompt = `Platform: ${platform}\n\nOriginal post:\n${body.slice(0, 1500)}`
+
+  const gen = await generate({
+    provider: pick.provider,
+    apiKey: pick.apiKey,
+    model: DEFAULT_MODELS[pick.provider],
+    system: systemPrompt,
+    user: userPrompt,
+  })
+
+  if (!gen.ok) return { ok: false, error: gen.message }
+
+  let variants: AbHookVariant[] = []
+  try {
+    const raw = gen.json as unknown
+    const obj = raw as Record<string, unknown>
+    const arr = Array.isArray(obj?.variants) ? obj.variants : []
+    variants = arr
+      .filter((v): v is Record<string, unknown> => typeof v === 'object' && v !== null)
+      .map((v) => ({
+        hook: typeof v.hook === 'string' ? v.hook : '',
+        trigger: typeof v.trigger === 'string' ? v.trigger : '',
+        explanation: typeof v.explanation === 'string' ? v.explanation : '',
+        winner: false,
+      }))
+      .filter((v) => v.hook.length > 0)
+  } catch {
+    return { ok: false, error: 'Could not parse hook variants.' }
+  }
+
+  if (variants.length === 0) return { ok: false, error: 'No variants generated. Try again.' }
+
+  const existingMetadata =
+    output.metadata && typeof output.metadata === 'object' && !Array.isArray(output.metadata)
+      ? (output.metadata as Record<string, unknown>)
+      : {}
+
+  await supabase
+    .from('outputs')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ metadata: { ...existingMetadata, hook_variants: variants } as any })
+    .eq('id', outputId)
+    .eq('workspace_id', workspaceId)
+
+  revalidatePath(`/workspace/${workspaceId}/content`)
+  return { ok: true, variants }
+}
+
+export type SetHookWinnerState =
+  | { ok?: undefined }
+  | { ok: true }
+  | { ok: false; error: string }
+
+export async function setHookWinnerAction(
+  _prev: SetHookWinnerState,
+  formData: FormData,
+): Promise<SetHookWinnerState> {
+  const outputId = formData.get('output_id')?.toString() ?? ''
+  const workspaceId = formData.get('workspace_id')?.toString() ?? ''
+  const winnerIndex = parseInt(formData.get('winner_index')?.toString() ?? '', 10)
+
+  if (!outputId || !workspaceId || isNaN(winnerIndex)) return { ok: false, error: 'Invalid input.' }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const supabase = createClient()
+  const { data: output, error: fetchError } = await supabase
+    .from('outputs')
+    .select('id, metadata')
+    .eq('id', outputId)
+    .eq('workspace_id', workspaceId)
+    .maybeSingle()
+
+  if (fetchError || !output) return { ok: false, error: 'Output not found.' }
+
+  const existingMetadata =
+    output.metadata && typeof output.metadata === 'object' && !Array.isArray(output.metadata)
+      ? (output.metadata as Record<string, unknown>)
+      : {}
+
+  const existingVariants = Array.isArray(existingMetadata.hook_variants)
+    ? (existingMetadata.hook_variants as AbHookVariant[])
+    : []
+
+  const updated = existingVariants.map((v, i) => ({ ...v, winner: i === winnerIndex }))
+
+  const { error } = await supabase
+    .from('outputs')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ metadata: { ...existingMetadata, hook_variants: updated } as any })
+    .eq('id', outputId)
+    .eq('workspace_id', workspaceId)
+
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath(`/workspace/${workspaceId}/content`)
+  return { ok: true }
+}
+
+// ---------------------------------------------------------------------------
+// Engagement Predictor
+// ---------------------------------------------------------------------------
+
+export interface EngagementPrediction {
+  estimated_views: string
+  estimated_likes_pct: number
+  estimated_comments_pct: number
+  estimated_shares_pct: number
+  viral_probability: number
+  best_posting_time: string
+  audience_fit: string
+  algorithm_notes: string
+}
+
+export type PredictEngagementState =
+  | { ok?: undefined }
+  | { ok: true; prediction: EngagementPrediction }
+  | { ok: false; error: string }
+
+export async function predictEngagementAction(
+  _prev: PredictEngagementState,
+  formData: FormData,
+): Promise<PredictEngagementState> {
+  const outputId = formData.get('output_id')?.toString() ?? ''
+  const workspaceId = formData.get('workspace_id')?.toString() ?? ''
+
+  if (!outputId || !workspaceId) return { ok: false, error: 'Invalid input.' }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const supabase = createClient()
+  const { data: output, error: fetchError } = await supabase
+    .from('outputs')
+    .select('id, body, platform, metadata')
+    .eq('id', outputId)
+    .eq('workspace_id', workspaceId)
+    .maybeSingle()
+
+  if (fetchError || !output) return { ok: false, error: 'Output not found.' }
+
+  const pick = await pickGenerationProvider(workspaceId)
+  if (!pick.ok) return { ok: false, error: pick.message }
+
+  const body = (output.body as string | null) ?? ''
+  const platform = (output.platform as string) ?? ''
+
+  const systemPrompt =
+    'You are a social media data analyst with access to platform algorithm patterns. Predict the engagement potential for this post. Return JSON: { "estimated_views": string (e.g. \'2K-8K\'), "estimated_likes_pct": number (like rate 0-10), "estimated_comments_pct": number (comment rate 0-5), "estimated_shares_pct": number (share rate 0-3), "viral_probability": number (0-100), "best_posting_time": string (e.g. \'Tuesday 7-9pm\'), "audience_fit": string (who will resonate most), "algorithm_notes": string (2 sentences on why algorithm will or won\'t push this) }'
+  const userPrompt = `Platform: ${platform}\n\nContent:\n${body.slice(0, 1500)}`
+
+  const gen = await generate({
+    provider: pick.provider,
+    apiKey: pick.apiKey,
+    model: DEFAULT_MODELS[pick.provider],
+    system: systemPrompt,
+    user: userPrompt,
+  })
+
+  if (!gen.ok) return { ok: false, error: gen.message }
+
+  let prediction: EngagementPrediction | null = null
+  try {
+    const raw = gen.json as unknown
+    if (typeof raw === 'object' && raw !== null && 'estimated_views' in raw) {
+      prediction = raw as EngagementPrediction
+    } else if (typeof raw === 'string') {
+      prediction = JSON.parse(raw) as EngagementPrediction
+    } else {
+      const obj = raw as Record<string, unknown>
+      const candidate = Object.values(obj)[0]
+      if (typeof candidate === 'object' && candidate !== null) {
+        prediction = candidate as EngagementPrediction
+      }
+    }
+  } catch {
+    return { ok: false, error: 'Could not parse engagement prediction.' }
+  }
+
+  if (!prediction?.estimated_views) {
+    return { ok: false, error: 'Engagement prediction missing expected fields.' }
+  }
+
+  const existingMetadata =
+    output.metadata && typeof output.metadata === 'object' && !Array.isArray(output.metadata)
+      ? (output.metadata as Record<string, unknown>)
+      : {}
+
+  await supabase
+    .from('outputs')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ metadata: { ...existingMetadata, engagement_prediction: prediction } as any })
+    .eq('id', outputId)
+    .eq('workspace_id', workspaceId)
+
+  revalidatePath(`/workspace/${workspaceId}/content`)
+  return { ok: true, prediction }
+}
+
+// ---------------------------------------------------------------------------
 // Virality Score
 // ---------------------------------------------------------------------------
 

@@ -19,7 +19,8 @@ import { AutoTagButton } from '@/components/content/auto-tag-button'
 import { SentimentAnalysisButton } from '@/components/content/sentiment-analysis-button'
 import { ShowNotesPanel } from '@/components/content/show-notes-panel'
 import { NewsletterPanel } from '@/components/content/newsletter-panel'
-import type { SentimentResult } from '@/app/(app)/workspace/[id]/content/[contentId]/actions'
+import { ClipFinder } from '@/components/content/clip-finder'
+import type { SentimentResult, BestClip } from '@/app/(app)/workspace/[id]/content/[contentId]/actions'
 import { DeleteContentButton } from '@/components/content/delete-content-button'
 import { RenameContentForm } from '@/components/content/rename-content-form'
 import type { ContentItemRow } from '@/lib/content/get-content-item'
@@ -173,6 +174,20 @@ export function ContentDetailView({
             >
               💬 Subtitles
             </Link>
+            <Link
+              href={`/workspace/${workspaceId}/content/${item.id}/avatar`}
+              className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent"
+            >
+              💡 AI Avatar
+            </Link>
+            {item.kind === 'video' ? (
+              <Link
+                href={`/workspace/${workspaceId}/content/${item.id}/dub`}
+                className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent"
+              >
+                🌍 Auto-Dub
+              </Link>
+            ) : null}
             {hasExistingOutputs ? (
               <span className="text-xs text-muted-foreground">
                 Drafts already generated — click to review or regenerate.
@@ -220,6 +235,12 @@ export function ContentDetailView({
             contentId={item.id}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             initialNewsletter={((item.metadata as any)?.newsletter) ?? null}
+          />
+          <ClipFinder
+            workspaceId={workspaceId}
+            contentId={item.id}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            initialClips={((item.metadata as any)?.best_clips as BestClip[]) ?? null}
           />
         </div>
       ) : null}

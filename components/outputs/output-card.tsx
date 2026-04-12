@@ -11,9 +11,12 @@ import { OutputActions } from '@/components/outputs/output-actions'
 import { PerformanceTracker } from '@/components/outputs/performance-tracker'
 import { StateTransitionPills } from '@/components/outputs/state-transition-pills'
 import { ViralityScore } from '@/components/outputs/virality-score'
+import { HookAbTest } from '@/components/outputs/hook-ab-test'
+import { EngagementPredictor } from '@/components/outputs/engagement-predictor'
 import { SchedulePostButton } from '@/components/scheduler/schedule-post-button'
 import type { OutputRow } from '@/lib/content/get-outputs'
 import type { OutputPlatform } from '@/lib/supabase/types'
+import type { AbHookVariant, EngagementPrediction } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
 
 const PLATFORM_LABELS: Record<OutputPlatform, string> = {
   tiktok: 'TikTok',
@@ -75,6 +78,24 @@ export function OutputCard({ output, contentId, workspaceId }: OutputCardProps) 
             workspaceId={workspaceId ?? output.workspace_id}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             initialVirality={((output.metadata as any)?.virality) ?? null}
+          />
+        )}
+        {(workspaceId ?? output.workspace_id) && (
+          <HookAbTest
+            outputId={output.id}
+            workspaceId={workspaceId ?? output.workspace_id}
+            initialVariants={
+              ((output.metadata as Record<string, unknown> | null)?.hook_variants as AbHookVariant[] | null) ?? null
+            }
+          />
+        )}
+        {(workspaceId ?? output.workspace_id) && (
+          <EngagementPredictor
+            outputId={output.id}
+            workspaceId={workspaceId ?? output.workspace_id}
+            initialPrediction={
+              ((output.metadata as Record<string, unknown> | null)?.engagement_prediction as EngagementPrediction | null) ?? null
+            }
           />
         )}
         {(workspaceId ?? output.workspace_id) && (
