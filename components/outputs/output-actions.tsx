@@ -8,7 +8,9 @@ import { FormMessage } from '@/components/ui/form-message'
 import { EditOutputDialog } from '@/components/outputs/edit-output-dialog'
 import {
   regenerateOutputAction,
+  starOutputAction,
   type RegenerateOutputState,
+  type StarOutputState,
 } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
 import type { OutputRow } from '@/lib/content/get-outputs'
 
@@ -18,6 +20,7 @@ interface OutputActionsProps {
 }
 
 const initialRegenerateState: RegenerateOutputState = {}
+const initialStarState: StarOutputState = {}
 
 function RegenerateSubmitButton() {
   const { pending } = useFormStatus()
@@ -31,7 +34,9 @@ function RegenerateSubmitButton() {
 export function OutputActions({ output, contentId }: OutputActionsProps) {
   const [editOpen, setEditOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [starred, setStarred] = useState((output as OutputRow & { is_starred?: boolean }).is_starred ?? false)
   const [regenState, regenFormAction] = useFormState(regenerateOutputAction, initialRegenerateState)
+  const [, starFormAction] = useFormState(starOutputAction, initialStarState)
 
   function handleCopy() {
     if (!output.body) return
@@ -55,6 +60,19 @@ export function OutputActions({ output, contentId }: OutputActionsProps) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-1">
+        {/* Star button — optimistic toggle */}
+        <form
+          action={starFormAction}
+          onSubmit={() => setStarred((s) => !s)}
+        >
+          <input type="hidden" name="output_id" value={output.id} />
+          <input type="hidden" name="workspace_id" value={output.workspace_id} />
+          <input type="hidden" name="starred" value={String(!starred)} />
+          <Button type="submit" variant="ghost" size="sm" title={starred ? 'Unstar' : 'Mark as strong'}>
+            {starred ? '⭐ Starred' : '☆ Star'}
+          </Button>
+        </form>
+
         <Button variant="ghost" size="sm" onClick={() => setEditOpen(true)}>
           Edit
         </Button>

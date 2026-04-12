@@ -18,6 +18,7 @@ import {
 } from '@/lib/outputs/schemas'
 import { renderOutputMarkdown } from '@/lib/outputs/render-markdown'
 import { runOnePlatform } from '@/lib/outputs/run-one-platform'
+import { toggleOutputStar } from '@/lib/outputs/star-output'
 import { transitionOutputState } from '@/lib/outputs/transition-output-state'
 import { updateOutput } from '@/lib/outputs/update-output'
 import type { OutputPlatform } from '@/lib/supabase/types'
@@ -333,5 +334,31 @@ export async function regenerateOutputAction(
   }
 
   revalidatePath(`/workspace/${workspace_id}/content/${content_id}/outputs`)
+  return { ok: true }
+}
+
+// ---------------------------------------------------------------------------
+// Star / unstar output
+// ---------------------------------------------------------------------------
+
+export type StarOutputState = { ok?: boolean; error?: string }
+
+export async function starOutputAction(
+  _prev: StarOutputState,
+  formData: FormData,
+): Promise<StarOutputState> {
+  const outputId = formData.get('output_id')?.toString() ?? ''
+  const workspaceId = formData.get('workspace_id')?.toString() ?? ''
+  const starred = formData.get('starred') === 'true'
+
+  if (!outputId || !workspaceId) return { ok: false, error: 'Invalid input.' }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const result = await toggleOutputStar(outputId, workspaceId, starred)
+  if (!result.ok) return { ok: false, error: result.error }
+
+  revalidatePath(`/workspace/${workspaceId}/content`)
   return { ok: true }
 }

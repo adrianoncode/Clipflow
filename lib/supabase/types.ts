@@ -275,6 +275,7 @@ export type Database = {
           platform: OutputPlatform
           body: string | null
           metadata: Json
+          is_starred: boolean
           created_at: string
           updated_at: string
         }
@@ -285,6 +286,7 @@ export type Database = {
           platform: OutputPlatform
           body?: string | null
           metadata?: Json
+          is_starred?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -295,6 +297,7 @@ export type Database = {
           platform?: OutputPlatform
           body?: string | null
           metadata?: Json
+          is_starred?: boolean
           created_at?: string
           updated_at?: string
         }

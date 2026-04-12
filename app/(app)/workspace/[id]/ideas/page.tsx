@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { GapAnalysisPanel } from '@/components/ideas/gap-analysis-panel'
 import { IdeasPanel } from '@/components/ideas/ideas-panel'
 
 interface IdeasPageProps {
@@ -23,6 +24,10 @@ export default function IdeasPage({ params }: IdeasPageProps) {
       </div>
 
       <IdeasPanel workspaceId={params.id} />
+
+      <hr className="border-border" />
+
+      <GapAnalysisPanel workspaceId={params.id} />
     </div>
   )
 }
