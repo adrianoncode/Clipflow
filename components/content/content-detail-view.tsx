@@ -167,6 +167,12 @@ export function ContentDetailView({
                 ↕ Auto-Reframe
               </Link>
             ) : null}
+            <Link
+              href={`/workspace/${workspaceId}/content/${item.id}/subtitles`}
+              className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent"
+            >
+              💬 Subtitles
+            </Link>
             {hasExistingOutputs ? (
               <span className="text-xs text-muted-foreground">
                 Drafts already generated — click to review or regenerate.
