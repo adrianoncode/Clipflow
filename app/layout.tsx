@@ -10,10 +10,56 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Clipflow',
+    default: 'Clipflow — AI Content Repurposing for Creators & Agencies',
     template: '%s | Clipflow',
   },
-  description: 'Content repurposing for creators and teams.',
+  description:
+    'Turn one video into TikTok, Instagram Reels, YouTube Shorts & LinkedIn posts in seconds. AI-powered content repurposing with auto-subtitles, B-Roll, virality scoring, and social scheduling. BYOK — bring your own AI key.',
+  keywords: [
+    'content repurposing',
+    'AI content creator',
+    'TikTok content generator',
+    'Instagram Reels generator',
+    'YouTube Shorts generator',
+    'LinkedIn post generator',
+    'video to social media',
+    'AI video editor',
+    'social media automation',
+    'content scheduling tool',
+    'auto subtitles',
+    'AI B-Roll',
+    'virality score',
+    'social media management',
+    'content marketing tool',
+    'BYOK AI',
+    'video repurposing',
+    'short form content',
+    'content creator tools',
+    'agency content tool',
+    'OpusClip alternative',
+    'Klap alternative',
+    'Clipflow',
+  ],
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://clipflow.to',
+    siteName: 'Clipflow',
+    title: 'Clipflow — AI Content Repurposing for Creators & Agencies',
+    description:
+      'Turn one video into TikTok, Reels, Shorts & LinkedIn posts in seconds. Auto-subtitles, B-Roll, virality scoring & scheduling.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Clipflow — AI Content Repurposing',
+    description:
+      'One video → TikTok, Reels, Shorts & LinkedIn. AI-powered with BYOK.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  metadataBase: new URL('https://clipflow.to'),
 }
 
 export default function RootLayout({

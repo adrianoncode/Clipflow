@@ -1,41 +1,111 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Clipflow — Turn One Video into TikTok, Reels, Shorts & LinkedIn Posts',
+  description:
+    'AI-powered content repurposing platform. Upload a video, paste a script, or drop a YouTube link — get platform-native drafts for TikTok, Instagram Reels, YouTube Shorts, and LinkedIn in seconds. Auto-subtitles, B-Roll, virality scoring, social scheduling. Free to start.',
+  alternates: {
+    canonical: 'https://clipflow.to',
+  },
+}
 
 const FEATURES = [
   {
     icon: '🎬',
-    title: 'Upload once',
+    title: 'Upload once, publish everywhere',
     description:
-      'Drop a video, paste a YouTube URL, or type a script. Clipflow handles the transcription automatically.',
+      'Drop a video, paste a YouTube URL, or type a script. AI transcription turns any content into platform-ready drafts.',
   },
   {
     icon: '✍️',
-    title: 'Four drafts instantly',
+    title: 'Four platform drafts in seconds',
     description:
-      'Get platform-specific content for TikTok, Instagram Reels, YouTube Shorts, and LinkedIn — all at once.',
+      'Get TikTok scripts, Instagram Reels captions, YouTube Shorts hooks, and LinkedIn posts — all generated simultaneously.',
   },
   {
     icon: '🎙️',
-    title: 'Your voice, always',
+    title: 'Brand voice consistency',
     description:
-      'Set your tone, keywords to avoid, and an example hook. Every draft sounds like you.',
+      'Set your tone, keywords to avoid, and example hooks. Every AI-generated draft matches your unique voice.',
   },
   {
-    icon: '🌍',
-    title: 'Any language',
+    icon: '💬',
+    title: 'Animated subtitles & auto-captions',
     description:
-      'Input in any language and output in 20+ languages. Built for global creators and agencies.',
+      'Generate word-level subtitles with 3 styles. Download SRT/VTT files or preview with live animated overlay.',
   },
   {
-    icon: '👥',
-    title: 'Client review links',
+    icon: '🎬',
+    title: 'AI B-Roll from Pexels',
     description:
-      'Share a review link. Clients leave comments on individual outputs — no account needed.',
+      'AI extracts visual keywords from your script, finds matching stock footage from Pexels. One click to find perfect B-Roll.',
+  },
+  {
+    icon: '🔥',
+    title: 'Virality score & engagement predictor',
+    description:
+      'AI scores every output on hook strength, scroll-stop power, shareability. Predicts views and best posting time.',
+  },
+  {
+    icon: '✂️',
+    title: 'Auto clip finder',
+    description:
+      'AI identifies the 3-5 most viral moments in your transcript. Find the best clips without watching the entire video.',
+  },
+  {
+    icon: '↕️',
+    title: 'Auto-reframing (9:16)',
+    description:
+      'Automatically crop landscape video to vertical 9:16, 1:1, or 4:5 format via Replicate AI. Ready for TikTok and Reels.',
   },
   {
     icon: '📅',
-    title: 'Publishing schedule',
+    title: 'Social scheduler & content calendar',
     description:
-      'Assign dates to approved outputs and see your full posting calendar at a glance.',
+      'Schedule posts to TikTok, Instagram, and LinkedIn. View your publishing calendar with color-coded platform badges.',
+  },
+  {
+    icon: '🎯',
+    title: 'A/B hook testing',
+    description:
+      'Generate 3 hook variants using different psychological triggers. Track which hook performs best.',
+  },
+  {
+    icon: '📊',
+    title: 'Analytics & performance tracking',
+    description:
+      'Track output performance with 5-star ratings, engagement notes, ROI dashboard, and weekly email reports.',
+  },
+  {
+    icon: '👥',
+    title: 'Client review & team collaboration',
+    description:
+      'Share review links — clients leave comments without an account. Multi-client dashboard for agencies.',
+  },
+  {
+    icon: '🌍',
+    title: 'Auto-dubbing in 15+ languages',
+    description:
+      'Translate and dub your content into Spanish, German, French, Japanese, and 12 more languages via ElevenLabs.',
+  },
+  {
+    icon: '🎭',
+    title: 'AI avatar video generation',
+    description:
+      'Enter a script, get a talking head video. AI avatar reads your content — perfect for faceless channels.',
+  },
+  {
+    icon: '⚡',
+    title: 'Zapier & Make webhooks',
+    description:
+      'Connect Clipflow to 5000+ apps. Trigger automations when content is ready, outputs generated, or posts published.',
+  },
+  {
+    icon: '🔑',
+    title: 'BYOK — zero AI markup',
+    description:
+      'Bring your own OpenAI, Anthropic, or Google key. You pay your AI provider directly — we never charge a markup.',
   },
 ]
 
@@ -83,7 +153,8 @@ export default function HomePage() {
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-balance text-lg text-muted-foreground">
             Upload a clip, paste a script, or drop a YouTube link. Clipflow generates
-            platform-native drafts for TikTok, Reels, Shorts, and LinkedIn — in seconds.
+            platform-native drafts for TikTok, Instagram Reels, YouTube Shorts, and LinkedIn — with
+            AI subtitles, B-Roll, virality scoring, and social scheduling. All in seconds.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
@@ -154,10 +225,13 @@ export default function HomePage() {
         {/* Features grid */}
         <section className="py-16">
           <div className="mx-auto max-w-4xl px-4 sm:px-6">
-            <h2 className="mb-10 text-center text-2xl font-semibold tracking-tight">
-              Everything you need
+            <h2 className="mb-2 text-center text-2xl font-semibold tracking-tight">
+              Everything you need to dominate short-form content
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <p className="mb-10 text-center text-sm text-muted-foreground">
+              16 AI-powered tools. One platform. Zero AI markup.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {FEATURES.map((f) => (
                 <div
                   key={f.title}
@@ -280,9 +354,58 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t py-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Clipflow
+      <footer className="border-t py-8 text-center text-xs text-muted-foreground">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6">
+          <p className="font-medium">Clipflow — AI Content Repurposing Platform</p>
+          <p className="mt-2">
+            Turn one video into TikTok, Instagram Reels, YouTube Shorts &amp; LinkedIn posts.
+            Auto-subtitles, B-Roll, virality scoring, social scheduling, A/B testing, and more.
+          </p>
+          <p className="mt-4">© {new Date().getFullYear()} Clipflow. All rights reserved.</p>
+        </div>
       </footer>
+
+      {/* JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'SoftwareApplication',
+            name: 'Clipflow',
+            applicationCategory: 'BusinessApplication',
+            operatingSystem: 'Web',
+            url: 'https://clipflow.to',
+            description:
+              'AI-powered content repurposing platform. Upload a video, get TikTok, Instagram Reels, YouTube Shorts & LinkedIn drafts in seconds.',
+            offers: [
+              { '@type': 'Offer', price: '0', priceCurrency: 'USD', name: 'Free' },
+              { '@type': 'Offer', price: '19', priceCurrency: 'USD', name: 'Solo' },
+              { '@type': 'Offer', price: '49', priceCurrency: 'USD', name: 'Team' },
+              { '@type': 'Offer', price: '99', priceCurrency: 'USD', name: 'Agency' },
+            ],
+            featureList: [
+              'AI content repurposing',
+              'TikTok content generation',
+              'Instagram Reels generator',
+              'YouTube Shorts generator',
+              'LinkedIn post generator',
+              'Animated subtitles',
+              'AI B-Roll from Pexels',
+              'Virality scoring',
+              'Social media scheduler',
+              'A/B hook testing',
+              'Auto-reframing 9:16',
+              'AI avatar video',
+              'Auto-dubbing 15+ languages',
+              'Zapier webhooks',
+              'Client review links',
+              'Brand voice',
+              'BYOK AI keys',
+            ],
+          }),
+        }}
+      />
     </div>
   )
 }
