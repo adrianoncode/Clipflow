@@ -15,6 +15,7 @@ import {
   Users,
   Settings as SettingsIcon,
   CreditCard,
+  Share2,
 } from 'lucide-react'
 
 import { SignoutButton } from '@/components/auth/signout-button'
@@ -53,6 +54,7 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
         { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: Columns3 },
         { href: `/workspace/${currentWorkspaceId}/calendar`, label: 'Calendar', icon: CalendarDays },
         { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Scheduler', icon: Clock },
+        { href: `/workspace/${currentWorkspaceId}/schedule/connect`, label: 'Channels', icon: Share2 },
       ],
     },
     {
