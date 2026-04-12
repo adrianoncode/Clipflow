@@ -65,5 +65,8 @@ export async function createWorkspaceAction(
     sameSite: 'lax',
   })
 
+  if (parsed.data.type === 'client') {
+    redirect(`/workspace/${newWorkspaceId}/onboarding`)
+  }
   redirect(`/workspace/${newWorkspaceId}`)
 }

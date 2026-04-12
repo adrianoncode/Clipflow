@@ -5,6 +5,7 @@ const sections = [
   { href: '/settings/workspace', label: 'Workspace' },
   { href: '/settings/ai-keys', label: 'AI keys' },
   { href: '/settings/brand-voice', label: 'Brand Voice' },
+  { href: '/settings/reports', label: 'Reports' },
 ]
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

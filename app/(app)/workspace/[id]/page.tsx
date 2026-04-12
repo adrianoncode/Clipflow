@@ -31,6 +31,14 @@ export default async function WorkspaceHomePage({ params }: WorkspaceHomePagePro
           <p className="text-sm text-muted-foreground">
             Everything in <span className="font-medium">{workspace.name}</span>.
           </p>
+          {workspace.role === 'owner' ? (
+            <Link
+              href={`/workspace/${params.id}/settings/limits`}
+              className="mt-1 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              View usage &amp; limits
+            </Link>
+          ) : null}
         </div>
         {canCreate ? (
           <Button asChild>
