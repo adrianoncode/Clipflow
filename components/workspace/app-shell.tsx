@@ -16,6 +16,9 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
   const navItems = [
     { href: '/dashboard', label: 'Dashboard' },
     { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline' },
+    { href: `/workspace/${currentWorkspaceId}/ghostwriter`, label: 'Ghostwriter' },
+    { href: `/workspace/${currentWorkspaceId}/batch`, label: 'Batch' },
+    { href: '/analytics', label: 'Analytics' },
     { href: '/settings', label: 'Settings' },
     { href: '/billing', label: 'Billing' },
   ]

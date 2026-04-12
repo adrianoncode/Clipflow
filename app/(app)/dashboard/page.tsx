@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AddAiKeyBanner } from '@/components/dashboard/add-ai-key-banner'
 import { GettingStartedChecklist } from '@/components/dashboard/getting-started-checklist'
 import { ContentStatusBadge } from '@/components/content/content-status-badge'
+import { RecycleSuggestions } from '@/components/content/recycle-suggestions'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getActiveBrandVoice } from '@/lib/brand-voice/get-active-brand-voice'
 import { getUser } from '@/lib/auth/get-user'
@@ -27,6 +28,7 @@ import { getWorkspaceUsage } from '@/lib/billing/get-usage'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { PLANS } from '@/lib/billing/plans'
 import { getWorkspaceStats } from '@/lib/dashboard/get-workspace-stats'
+import { getRecyclableContent } from '@/lib/content/get-recyclable-content'
 
 export const dynamic = 'force-dynamic'
 
@@ -122,15 +124,16 @@ export default async function DashboardPage() {
   const currentWorkspace =
     workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal ?? workspaces[0]
 
-  const [aiKeys, stats, usage, plan, brandVoice] = currentWorkspace
+  const [aiKeys, stats, usage, plan, brandVoice, recyclable] = currentWorkspace
     ? await Promise.all([
         getAiKeys(currentWorkspace.id),
         getWorkspaceStats(currentWorkspace.id),
         getWorkspaceUsage(currentWorkspace.id),
         getWorkspacePlan(currentWorkspace.id),
         getActiveBrandVoice(currentWorkspace.id),
+        getRecyclableContent(currentWorkspace.id),
       ])
-    : [[], null, null, 'free' as const, null]
+    : [[], null, null, 'free' as const, null, []]
 
   const showAiKeyNudge =
     !!currentWorkspace && currentWorkspace.role === 'owner' && aiKeys.length === 0
@@ -354,7 +357,12 @@ export default async function DashboardPage() {
               </Card>
             )}
 
-            {/* Empty state */}
+            {/* Recycle suggestions */}
+            {currentWorkspace && recyclable && recyclable.length > 0 && (
+              <RecycleSuggestions items={recyclable} workspaceId={currentWorkspace.id} />
+            )}
+
+          {/* Empty state */}
             {stats.totalContent === 0 && currentWorkspace && (
               <div className="grid gap-4 sm:grid-cols-2">
                 <Card>
