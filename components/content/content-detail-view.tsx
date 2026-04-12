@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/card'
 import { FormMessage } from '@/components/ui/form-message'
 import { ContentStatusBadge } from '@/components/content/content-status-badge'
+import { FollowUpTopicsDialog } from '@/components/content/follow-up-topics-dialog'
 import { RetryTranscriptionButton } from '@/components/content/retry-transcription-button'
 import { TranscriptView } from '@/components/content/transcript-view'
 import type { ContentItemRow } from '@/lib/content/get-content-item'
@@ -125,6 +126,7 @@ export function ContentDetailView({
               </span>
             )}
           </div>
+          <FollowUpTopicsDialog workspaceId={workspaceId} contentId={item.id} />
         </div>
       ) : null}
 
