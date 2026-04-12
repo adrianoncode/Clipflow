@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { ArrowRight, Check, X, ChevronDown, Zap, Star } from 'lucide-react'
+import { ArrowRight, Check, X, ChevronDown, Zap } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Clipflow — Turn One Video into TikTok, Reels, Shorts & LinkedIn Posts',
@@ -259,98 +259,144 @@ export default function HomePage() {
           </div>
 
           {/* ── Mockup ── */}
-          <div className="animate-float" style={{
-            position: 'relative', marginTop: 64, width: '100%', maxWidth: 1060,
-            padding: '0 24px',
-          }}>
-            {/* Glow below mockup */}
-            <div style={{
-              position: 'absolute', bottom: -60, left: '50%', transform: 'translateX(-50%)',
-              width: '80%', height: 200,
-              background: 'radial-gradient(ellipse at 50% 100%, rgba(124,58,237,0.35) 0%, transparent 70%)',
-              filter: 'blur(20px)', pointerEvents: 'none',
-            }} />
+          <div style={{ position: 'relative', marginTop: 72, width: '100%', maxWidth: 1100, padding: '0 20px' }}>
 
-            {/* Window */}
-            <div style={{
-              background: '#0d0d10', border: '1px solid rgba(255,255,255,0.09)',
-              borderRadius: 16, overflow: 'hidden',
-              boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)',
+            {/* Multi-layer glow */}
+            <div style={{ position: 'absolute', inset: '-40px -60px', pointerEvents: 'none', zIndex: 0 }}>
+              <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translateX(-50%)', width: 700, height: 400, background: 'radial-gradient(ellipse, rgba(124,58,237,0.28) 0%, transparent 65%)', filter: 'blur(40px)' }} />
+              <div style={{ position: 'absolute', top: '20%', left: '30%', width: 300, height: 300, background: 'radial-gradient(ellipse, rgba(192,38,211,0.12) 0%, transparent 70%)', filter: 'blur(50px)' }} />
+              <div style={{ position: 'absolute', top: '20%', right: '25%', width: 280, height: 280, background: 'radial-gradient(ellipse, rgba(59,130,246,0.1) 0%, transparent 70%)', filter: 'blur(50px)' }} />
+            </div>
+
+            {/* Window wrapper — slight perspective tilt */}
+            <div className="animate-float" style={{
+              position: 'relative', zIndex: 1,
+              borderRadius: 14,
+              border: '1px solid rgba(255,255,255,0.1)',
+              boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 40px 120px rgba(0,0,0,0.7), 0 0 80px rgba(124,58,237,0.12)',
+              overflow: 'hidden',
+              background: '#0c0c0f',
             }}>
-              {/* Chrome bar */}
+
+              {/* Title bar — macOS style */}
               <div style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)',
+                display: 'flex', alignItems: 'center', height: 40,
+                padding: '0 14px', gap: 8,
+                background: '#111114',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
               }}>
-                {['rgba(255,96,96,0.6)','rgba(255,189,68,0.6)','rgba(78,205,78,0.6)'].map((c,i) => (
-                  <span key={i} style={{ width: 11, height: 11, borderRadius: '50%', background: c }} />
-                ))}
+                {/* Traffic lights */}
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f57', boxShadow: '0 0 0 0.5px rgba(0,0,0,0.3)' }} />
+                  <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#febc2e', boxShadow: '0 0 0 0.5px rgba(0,0,0,0.3)' }} />
+                  <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#28c840', boxShadow: '0 0 0 0.5px rgba(0,0,0,0.3)' }} />
+                </div>
+                {/* Address bar */}
                 <div style={{
-                  flex: 1, margin: '0 12px', height: 24, borderRadius: 6,
-                  background: 'rgba(255,255,255,0.04)',
+                  flex: 1, height: 24, borderRadius: 6, margin: '0 48px',
+                  background: 'rgba(255,255,255,0.05)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 11, color: 'rgba(255,255,255,0.2)',
+                  fontSize: 11, color: 'rgba(255,255,255,0.22)',
+                  letterSpacing: '0.01em',
                 }}>
-                  clipflow.to/workspace/my-workspace/content/demo/outputs
+                  clipflow.to
                 </div>
               </div>
 
-              {/* App UI */}
-              <div style={{ padding: '20px 20px 24px' }}>
-                {/* Page header */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: 15, fontWeight: 600 }}>Product Demo Script.mp4</div>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 3 }}>4 of 4 drafts generated · 24 seconds</div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <span style={{ padding: '5px 12px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: 'rgba(52,211,153,0.12)', color: 'rgba(52,211,153,0.9)', border: '1px solid rgba(52,211,153,0.2)' }}>
-                      ✓ All ready
-                    </span>
-                    <span style={{ padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 500, background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer' }}>
-                      Regenerate all
-                    </span>
-                  </div>
-                </div>
+              {/* App layout: sidebar + main */}
+              <div style={{ display: 'flex', height: 420 }}>
 
-                {/* Cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                {/* Sidebar */}
+                <div style={{
+                  width: 200, flexShrink: 0,
+                  background: '#0e0e12',
+                  borderRight: '1px solid rgba(255,255,255,0.06)',
+                  padding: '14px 10px',
+                  display: 'flex', flexDirection: 'column', gap: 2,
+                }}>
+                  {/* Workspace selector */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '6px 8px', marginBottom: 10,
+                    borderRadius: 8, background: 'rgba(255,255,255,0.04)',
+                  }}>
+                    <span style={{ width: 20, height: 20, borderRadius: 6, background: 'linear-gradient(135deg,#7c3aed,#c026d3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', flexShrink: 0 }}>C</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>My Workspace</span>
+                  </div>
+                  {/* Nav groups */}
                   {[
-                    { p: 'TikTok', score: 94, sc: '#34d399', bg: 'rgba(236,72,153,0.08)', bb: 'rgba(236,72,153,0.18)', bc: '#f9a8d4', hook: '"POV: You\'re spending 8 hours editing one video 😭"', tags: ['Hook','Script','Caption'] },
-                    { p: 'Instagram Reels', score: 89, sc: '#34d399', bg: 'rgba(168,85,247,0.08)', bb: 'rgba(168,85,247,0.18)', bc: '#d8b4fe', hook: '"The workflow saving creators 6+ hours a week ✨"', tags: ['Hook','Caption','Hashtags'] },
-                    { p: 'YouTube Shorts', score: 85, sc: '#fbbf24', bg: 'rgba(239,68,68,0.08)', bb: 'rgba(239,68,68,0.18)', bc: '#fca5a5', hook: '"I automated my entire content pipeline — here\'s how"', tags: ['Title','Script','Desc'] },
-                    { p: 'LinkedIn', score: 81, sc: '#fbbf24', bg: 'rgba(59,130,246,0.08)', bb: 'rgba(59,130,246,0.18)', bc: '#93c5fd', hook: '"Most creators waste 80% of their time on distribution. Here\'s what changed:"', tags: ['Post','Hashtags'] },
-                  ].map((c) => (
-                    <div key={c.p} style={{
-                      background: c.bg, border: `1px solid ${c.bb}`,
-                      borderRadius: 12, padding: '14px 14px 12px', textAlign: 'left',
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: c.bc, background: `${c.bb}`, padding: '3px 8px', borderRadius: 999 }}>{c.p}</span>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: c.sc, fontVariantNumeric: 'tabular-nums' }}>
-                          {c.score}<span style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', fontWeight: 400 }}>/100</span>
-                        </span>
-                      </div>
-                      <p style={{ fontSize: 12, lineHeight: 1.55, color: 'rgba(255,255,255,0.6)', marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                        {c.hook}
-                      </p>
-                      <div style={{ display: 'flex', gap: 5 }}>
-                        {c.tags.map((t) => (
-                          <span key={t} style={{ fontSize: 10, padding: '3px 7px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)' }}>{t}</span>
-                        ))}
-                      </div>
+                    { label: 'CONTENT', items: [{ icon: '◈', name: 'Dashboard', active: false }, { icon: '▤', name: 'Pipeline', active: false }] },
+                    { label: 'AI TOOLS', items: [{ icon: '✦', name: 'Ghostwriter', active: false }, { icon: '⚡', name: 'Outputs', active: true }] },
+                    { label: 'WORKSPACE', items: [{ icon: '◷', name: 'Scheduler', active: false }, { icon: '⚙', name: 'Settings', active: false }] },
+                  ].map((g) => (
+                    <div key={g.label} style={{ marginBottom: 10 }}>
+                      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.2)', padding: '0 8px', marginBottom: 3 }}>{g.label}</p>
+                      {g.items.map((item) => (
+                        <div key={item.name} style={{
+                          display: 'flex', alignItems: 'center', gap: 7,
+                          padding: '5px 8px', borderRadius: 6, cursor: 'pointer',
+                          background: item.active ? 'rgba(124,58,237,0.15)' : 'transparent',
+                          borderLeft: item.active ? '2px solid rgba(139,92,246,0.8)' : '2px solid transparent',
+                        }}>
+                          <span style={{ fontSize: 11, color: item.active ? '#a78bfa' : 'rgba(255,255,255,0.3)' }}>{item.icon}</span>
+                          <span style={{ fontSize: 12, color: item.active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.35)', fontWeight: item.active ? 500 : 400 }}>{item.name}</span>
+                        </div>
+                      ))}
                     </div>
                   ))}
+                </div>
+
+                {/* Main content */}
+                <div style={{ flex: 1, padding: '18px 18px', overflowY: 'auto', background: '#0c0c0f' }}>
+                  {/* Top bar */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+                    <div>
+                      <p style={{ fontSize: 14, fontWeight: 600 }}>Product Demo Script.mp4</p>
+                      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>4 drafts generated · 24s · gpt-4o-mini</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: 7, alignItems: 'center' }}>
+                      <span style={{ fontSize: 10, fontWeight: 600, padding: '4px 10px', borderRadius: 999, background: 'rgba(52,211,153,0.1)', color: '#34d399', border: '1px solid rgba(52,211,153,0.2)' }}>✓ Ready</span>
+                      <span style={{ fontSize: 10, fontWeight: 500, padding: '4px 10px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.07)' }}>Regenerate</span>
+                    </div>
+                  </div>
+
+                  {/* Output cards — 2x2 grid for better readability */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    {[
+                      { p: 'TikTok', score: 94, scoreColor: '#34d399', badgeBg: 'rgba(236,72,153,0.1)', badgeBorder: 'rgba(236,72,153,0.25)', badgeText: '#f9a8d4', cardBorder: 'rgba(236,72,153,0.15)', hook: '"POV: You\'re spending 8 hours editing one video 😭 — let me fix that"', state: 'Draft' },
+                      { p: 'Instagram Reels', score: 89, scoreColor: '#34d399', badgeBg: 'rgba(168,85,247,0.1)', badgeBorder: 'rgba(168,85,247,0.25)', badgeText: '#d8b4fe', cardBorder: 'rgba(168,85,247,0.15)', hook: '"The content workflow saving creators 6+ hours every single week ✨"', state: 'Draft' },
+                      { p: 'YouTube Shorts', score: 85, scoreColor: '#fbbf24', badgeBg: 'rgba(239,68,68,0.1)', badgeBorder: 'rgba(239,68,68,0.25)', badgeText: '#fca5a5', cardBorder: 'rgba(239,68,68,0.15)', hook: '"I automated my entire content pipeline — here\'s exactly how I did it"', state: 'Review' },
+                      { p: 'LinkedIn', score: 81, scoreColor: '#fbbf24', badgeBg: 'rgba(59,130,246,0.1)', badgeBorder: 'rgba(59,130,246,0.25)', badgeText: '#93c5fd', cardBorder: 'rgba(59,130,246,0.15)', hook: '"Most creators waste 80% of their time on distribution. Here\'s what I changed:"', state: 'Draft' },
+                    ].map((c) => (
+                      <div key={c.p} style={{
+                        padding: '13px 14px', borderRadius: 10,
+                        background: 'rgba(255,255,255,0.025)',
+                        border: `1px solid ${c.cardBorder}`,
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: c.badgeBg, color: c.badgeText, border: `1px solid ${c.badgeBorder}` }}>{c.p}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 4, background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)' }}>{c.state}</span>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: c.scoreColor, fontVariantNumeric: 'tabular-nums' }}>{c.score}<span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', fontWeight: 400 }}>/100</span></span>
+                          </div>
+                        </div>
+                        <p style={{ fontSize: 11.5, lineHeight: 1.6, color: 'rgba(255,255,255,0.55)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {c.hook}
+                        </p>
+                        <div style={{ display: 'flex', gap: 5, marginTop: 8 }}>
+                          {['Hook', 'Script', 'Schedule'].map((t) => (
+                            <span key={t} style={{ fontSize: 9.5, padding: '2px 7px', borderRadius: 5, background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.28)' }}>{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Bottom page fade */}
-            <div style={{
-              position: 'absolute', bottom: 0, left: 0, right: 0, height: 100,
-              background: 'linear-gradient(to top, #050506, transparent)',
-              pointerEvents: 'none',
-            }} />
+            {/* Bottom fade */}
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 120, background: 'linear-gradient(to top, #050506, transparent)', pointerEvents: 'none', zIndex: 2 }} />
           </div>
         </section>
 
@@ -380,27 +426,39 @@ export default function HomePage() {
         </section>
 
         {/* ══ SOCIAL PROOF ═════════════════════════════════════════════ */}
-        <section style={{ padding: '80px 24px' }}>
-          <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-            <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', marginBottom: 40 }}>
-              Trusted by creators & agencies worldwide
+        <section style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '96px 24px' }}>
+          <div style={{ maxWidth: 1040, margin: '0 auto' }}>
+            <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.18)', marginBottom: 56 }}>
+              What people are saying
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
               {[
-                { quote: '"Clipflow cut my production time from 6 hours to 20 minutes. It\'s genuinely insane how good the output quality is."', name: 'Sarah K.', role: 'Creator · 280k followers' },
-                { quote: '"Finally a tool that writes LinkedIn posts that don\'t sound like AI slop. The brand voice feature is a game changer."', name: 'Marcus T.', role: 'B2B Agency Owner' },
-                { quote: '"The BYOK model alone sold me. We\'re a team of 12 and the AI cost savings are hundreds of dollars a month."', name: 'Priya M.', role: 'Head of Content · Series A startup' },
-              ].map((t) => (
-                <div key={t.name} className="glass-card" style={{ borderRadius: 20, padding: '28px 28px 24px', transition: 'all 0.2s' }}>
-                  <div style={{ display: 'flex', gap: 3, marginBottom: 16 }}>
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} style={{ width: 13, height: 13, color: '#fbbf24', fill: '#fbbf24' }} />
-                    ))}
+                { quote: 'Clipflow cut my production time from 6 hours to 20 minutes. The output quality is genuinely insane — it sounds like me, not a bot.', name: 'Sarah K.', role: 'Creator', company: '280k followers', initials: 'SK', color: '#7c3aed' },
+                { quote: 'Finally a tool that writes LinkedIn posts that don\'t sound like AI slop. The brand voice feature alone is worth the subscription.', name: 'Marcus T.', role: 'Agency Owner', company: 'Content & Co.', initials: 'MT', color: '#0ea5e9' },
+                { quote: 'The BYOK model sold me immediately. We\'re a team of 12 — the AI cost savings add up to hundreds of dollars every month.', name: 'Priya M.', role: 'Head of Content', company: 'Series A startup', initials: 'PM', color: '#10b981' },
+              ].map((t, i) => (
+                <div key={t.name} style={{
+                  padding: '32px 32px 28px',
+                  background: 'rgba(255,255,255,0.022)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: i === 0 ? '20px 4px 4px 20px' : i === 2 ? '4px 20px 20px 4px' : 4,
+                  display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                }}>
+                  <div>
+                    <div style={{ fontSize: 52, lineHeight: 1, color: 'rgba(124,58,237,0.3)', fontFamily: 'Georgia, serif', marginBottom: 14, marginTop: -8 }}>&ldquo;</div>
+                    <p style={{ fontSize: 15, lineHeight: 1.75, color: 'rgba(255,255,255,0.62)', fontWeight: 400 }}>{t.quote}</p>
                   </div>
-                  <p style={{ fontSize: 14, lineHeight: 1.7, color: 'rgba(255,255,255,0.55)' }}>{t.quote}</p>
-                  <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p style={{ fontSize: 13, fontWeight: 600 }}>{t.name}</p>
-                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>{t.role}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 28 }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                      background: `${t.color}22`, border: `1px solid ${t.color}44`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 12, fontWeight: 700, color: t.color,
+                    }}>{t.initials}</div>
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>{t.name}</p>
+                      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{t.role} · {t.company}</p>
+                    </div>
                   </div>
                 </div>
               ))}
