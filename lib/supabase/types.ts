@@ -25,6 +25,16 @@ export type OutputPlatform = 'tiktok' | 'instagram_reels' | 'youtube_shorts' | '
 export type OutputState = 'draft' | 'review' | 'approved' | 'exported'
 export type OnboardingRoleType = 'solo' | 'team' | 'agency'
 export type AiProvider = 'openai' | 'anthropic' | 'google'
+export type BillingPlan = 'free' | 'solo' | 'team' | 'agency'
+export type SubscriptionStatus =
+  | 'trialing'
+  | 'active'
+  | 'past_due'
+  | 'canceled'
+  | 'unpaid'
+  | 'incomplete'
+  | 'incomplete_expired'
+  | 'paused'
 
 export type Database = {
   public: {
@@ -320,6 +330,45 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          id: string
+          workspace_id: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          plan: BillingPlan
+          status: SubscriptionStatus | null
+          current_period_end: string | null
+          cancel_at_period_end: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          workspace_id: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          plan?: BillingPlan
+          status?: SubscriptionStatus | null
+          current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          workspace_id?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          plan?: BillingPlan
+          status?: SubscriptionStatus | null
+          current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -345,6 +394,8 @@ export type Database = {
       content_status: ContentStatus
       output_platform: OutputPlatform
       output_state: OutputState
+      billing_plan: BillingPlan
+      subscription_status: SubscriptionStatus
     }
     CompositeTypes: {
       [_ in never]: never

@@ -6,8 +6,8 @@ import { redirect } from 'next/navigation'
 import { DEFAULT_MODELS } from '@/lib/ai/generate/models'
 import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { getUser } from '@/lib/auth/get-user'
+import { checkLimit } from '@/lib/billing/check-limit'
 import { getContentItem } from '@/lib/content/get-content-item'
-import { createClient } from '@/lib/supabase/server'
 import { deleteOutputsForContent } from '@/lib/outputs/delete-outputs-for-content'
 import { deleteSingleOutput } from '@/lib/outputs/delete-single-output'
 import {
@@ -74,6 +74,11 @@ export async function generateOutputsAction(
   const user = await getUser()
   if (!user) {
     redirect('/login')
+  }
+
+  const outputLimit = await checkLimit(parsed.data.workspace_id, 'outputs')
+  if (!outputLimit.ok) {
+    return { ok: false, code: 'unknown', error: outputLimit.message ?? 'Monthly output limit reached. Upgrade your plan.' }
   }
 
   const item = await getContentItem(parsed.data.content_id, parsed.data.workspace_id)

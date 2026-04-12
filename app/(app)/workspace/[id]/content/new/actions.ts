@@ -7,6 +7,7 @@ import { getDecryptedAiKey } from '@/lib/ai/get-decrypted-ai-key'
 import { transcribe } from '@/lib/ai/transcription/transcribe'
 import type { TranscriptionErrorCode } from '@/lib/ai/transcription/types'
 import { getUser } from '@/lib/auth/get-user'
+import { checkLimit } from '@/lib/billing/check-limit'
 import { createContentItem } from '@/lib/content/create-content-item'
 import {
   createTextSchema,
@@ -70,6 +71,11 @@ export async function createVideoContentAction(
   const user = await getUser()
   if (!user) {
     redirect('/login')
+  }
+
+  const limit = await checkLimit(parsed.data.workspace_id, 'content_items')
+  if (!limit.ok) {
+    return { ok: false, error: limit.message ?? 'Monthly content limit reached. Upgrade your plan.' }
   }
 
   const dotIndex = parsed.data.filename.lastIndexOf('.')
@@ -312,6 +318,11 @@ export async function createTextContentAction(
     redirect('/login')
   }
 
+  const limit = await checkLimit(parsed.data.workspace_id, 'content_items')
+  if (!limit.ok) {
+    return { error: limit.message ?? 'Monthly content limit reached. Upgrade your plan.' }
+  }
+
   const result = await createContentItem({
     workspaceId: parsed.data.workspace_id,
     kind: 'text',
@@ -350,6 +361,11 @@ export async function createYoutubeContentAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  const limit = await checkLimit(parsed.data.workspace_id, 'content_items')
+  if (!limit.ok) {
+    return { error: limit.message ?? 'Monthly content limit reached. Upgrade your plan.' }
+  }
 
   const fetched = await fetchYoutubeTranscript(parsed.data.url)
   if (!fetched.ok) {
@@ -394,6 +410,11 @@ export async function createUrlContentAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  const limit = await checkLimit(parsed.data.workspace_id, 'content_items')
+  if (!limit.ok) {
+    return { error: limit.message ?? 'Monthly content limit reached. Upgrade your plan.' }
+  }
 
   const fetched = await fetchUrlText(parsed.data.url)
   if (!fetched.ok) {

@@ -14,6 +14,7 @@ interface AppShellProps {
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/settings', label: 'Settings' },
+  { href: '/billing', label: 'Billing' },
 ]
 
 export function AppShell({ user, workspaces, currentWorkspaceId, children }: AppShellProps) {
