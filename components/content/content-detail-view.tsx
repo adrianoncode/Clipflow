@@ -15,6 +15,7 @@ import { RetryTranscriptionButton } from '@/components/content/retry-transcripti
 import { TranscriptView } from '@/components/content/transcript-view'
 import { AssignToProjectSelector } from '@/components/projects/assign-to-project-selector'
 import { DeleteContentButton } from '@/components/content/delete-content-button'
+import { RenameContentForm } from '@/components/content/rename-content-form'
 import type { ContentItemRow } from '@/lib/content/get-content-item'
 import type { ProjectRow } from '@/lib/projects/get-projects'
 
@@ -68,7 +69,11 @@ export function ContentDetailView({
           >
             ← Back to workspace
           </Link>
-          <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+          <RenameContentForm
+            workspaceId={workspaceId}
+            contentId={item.id}
+            currentTitle={title}
+          />
           <p className="text-xs text-muted-foreground">
             {item.kind === 'video' ? 'Video / audio'
               : item.kind === 'youtube' ? 'YouTube'

@@ -92,6 +92,48 @@ export async function suggestFollowUpTopicsAction(
   return { ok: true, topics: validated }
 }
 
+// ── Rename content item ───────────────────────────────────────────────────────
+
+const renameSchema = z.object({
+  workspace_id: z.string().uuid(),
+  content_id: z.string().uuid(),
+  title: z.string().trim().min(1, 'Title cannot be empty.').max(200),
+})
+
+export type RenameContentState =
+  | { ok?: undefined }
+  | { ok: true }
+  | { ok: false; error: string }
+
+export async function renameContentAction(
+  _prev: RenameContentState,
+  formData: FormData,
+): Promise<RenameContentState> {
+  const parsed = renameSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    content_id: formData.get('content_id'),
+    title: formData.get('title'),
+  })
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = createClient()
+  const { error } = await supabase
+    .from('content_items')
+    .update({ title: parsed.data.title })
+    .eq('id', parsed.data.content_id)
+    .eq('workspace_id', parsed.data.workspace_id)
+
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath(`/workspace/${parsed.data.workspace_id}/content/${parsed.data.content_id}`)
+  revalidatePath(`/workspace/${parsed.data.workspace_id}`)
+  return { ok: true }
+}
+
 // ── Delete content item ───────────────────────────────────────────────────────
 
 export type DeleteContentState =
