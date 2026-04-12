@@ -78,13 +78,13 @@ export function AiKeyForm({
                 type="button"
                 onClick={() => setProvider(p.value)}
                 className={cn(
-                  'flex flex-col items-start gap-0.5 rounded-md border px-3 py-2 text-left text-sm transition-colors',
+                  'flex flex-col items-start gap-0.5 rounded-lg border-2 px-3 py-2.5 text-left text-sm transition-all',
                   isActive
-                    ? 'border-primary bg-primary/10'
-                    : 'border-input bg-background hover:bg-accent',
+                    ? 'border-primary bg-primary/15 ring-1 ring-primary/30'
+                    : 'border-border bg-card hover:border-primary/40 hover:bg-accent',
                 )}
               >
-                <span className="font-medium">{p.label}</span>
+                <span className="font-semibold">{p.label}</span>
                 <span className="text-xs text-muted-foreground">{p.hint}</span>
               </button>
             )
