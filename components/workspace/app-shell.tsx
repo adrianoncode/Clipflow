@@ -19,6 +19,8 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
     { href: `/workspace/${currentWorkspaceId}/ghostwriter`, label: 'Ghostwriter' },
     { href: `/workspace/${currentWorkspaceId}/batch`, label: 'Batch' },
     { href: '/analytics', label: 'Analytics' },
+    { href: `/workspace/${currentWorkspaceId}/trends`, label: 'Trends' },
+    { href: `/workspace/${currentWorkspaceId}/competitors`, label: 'Competitors' },
     { href: '/clients', label: 'Clients' },
     { href: '/settings', label: 'Settings' },
     { href: '/billing', label: 'Billing' },
