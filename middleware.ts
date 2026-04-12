@@ -9,7 +9,7 @@ import { createMiddlewareClient } from '@/lib/supabase/middleware'
 const APP_ROUTES = ['/dashboard', '/workspace', '/settings', '/onboarding']
 const AUTH_ROUTES = ['/login', '/signup', '/magic-link']
 /** Routes that are intentionally public — skip all auth checks. */
-const PUBLIC_ROUTES = ['/review']
+const PUBLIC_ROUTES = ['/review', '/invite']
 
 function isPrefixOf(pathname: string, prefixes: readonly string[]): boolean {
   return prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`))

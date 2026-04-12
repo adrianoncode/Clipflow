@@ -22,6 +22,7 @@ const workspaceNav = (id: string) => [
   { href: `/workspace/${id}/schedule`, label: 'Schedule' },
   { href: `/workspace/${id}/ideas`, label: 'Ideas' },
   { href: `/workspace/${id}/channels`, label: 'Channels' },
+  { href: `/workspace/${id}/members`, label: 'Members' },
 ]
 
 export default async function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {

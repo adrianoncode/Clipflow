@@ -123,6 +123,42 @@ export type Database = {
         }
         Relationships: []
       }
+      workspace_invites: {
+        Row: {
+          id: string
+          token: string
+          workspace_id: string
+          invited_by: string
+          email: string | null
+          role: WorkspaceRole
+          is_accepted: boolean
+          expires_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          token?: string
+          workspace_id: string
+          invited_by: string
+          email?: string | null
+          role?: WorkspaceRole
+          is_accepted?: boolean
+          expires_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          token?: string
+          workspace_id?: string
+          invited_by?: string
+          email?: string | null
+          role?: WorkspaceRole
+          is_accepted?: boolean
+          expires_at?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       ai_keys: {
         Row: {
           id: string
