@@ -1,15 +1,17 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { RssInputForm } from '@/components/content/rss-input-form'
 import { TextInputForm } from '@/components/content/text-input-form'
 import { UrlInputForm } from '@/components/content/url-input-form'
 import { VideoUploadForm } from '@/components/content/video-upload-form'
+import { VoiceRecorder } from '@/components/content/voice-recorder'
 import { YoutubeInputForm } from '@/components/content/youtube-input-form'
 import { cn } from '@/lib/utils'
 
-type TabKey = 'video' | 'youtube' | 'url' | 'rss' | 'text'
+type TabKey = 'video' | 'voice' | 'youtube' | 'url' | 'rss' | 'text'
 
 interface NewContentTabsProps {
   workspaceId: string
@@ -18,6 +20,7 @@ interface NewContentTabsProps {
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'video', label: 'Video upload' },
+  { key: 'voice', label: 'Voice' },
   { key: 'youtube', label: 'YouTube URL' },
   { key: 'url', label: 'Website URL' },
   { key: 'rss', label: 'Podcast RSS' },
@@ -25,6 +28,7 @@ const TABS: { key: TabKey; label: string }[] = [
 ]
 
 export function NewContentTabs({ workspaceId, hasOpenAiKey }: NewContentTabsProps) {
+  const router = useRouter()
   const [active, setActive] = useState<TabKey>('video')
 
   return (
@@ -61,6 +65,20 @@ export function NewContentTabs({ workspaceId, hasOpenAiKey }: NewContentTabsProp
       <div role="tabpanel" id="tabpanel-video" aria-labelledby="tab-video" hidden={active !== 'video'}>
         {active === 'video' ? (
           <VideoUploadForm workspaceId={workspaceId} hasOpenAiKey={hasOpenAiKey} />
+        ) : null}
+      </div>
+
+      <div role="tabpanel" id="tabpanel-voice" aria-labelledby="tab-voice" hidden={active !== 'voice'}>
+        {active === 'voice' ? (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Record audio directly in the browser. The recording will be transcribed with Whisper.
+            </p>
+            <VoiceRecorder
+              workspaceId={workspaceId}
+              onCreated={(id) => router.push(`/workspace/${workspaceId}/content/${id}`)}
+            />
+          </div>
         ) : null}
       </div>
 
