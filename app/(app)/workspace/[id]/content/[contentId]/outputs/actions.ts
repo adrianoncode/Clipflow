@@ -4,10 +4,12 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { DEFAULT_MODELS } from '@/lib/ai/generate/models'
+import { generate } from '@/lib/ai/generate/generate'
 import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { getUser } from '@/lib/auth/get-user'
 import { checkLimit } from '@/lib/billing/check-limit'
 import { getContentItem } from '@/lib/content/get-content-item'
+import { createClient } from '@/lib/supabase/server'
 import { deleteOutputsForContent } from '@/lib/outputs/delete-outputs-for-content'
 import { deleteSingleOutput } from '@/lib/outputs/delete-single-output'
 import {
@@ -361,4 +363,80 @@ export async function starOutputAction(
 
   revalidatePath(`/workspace/${workspaceId}/content`)
   return { ok: true }
+}
+
+// ---------------------------------------------------------------------------
+// Hook variants — 4 styles for any output's hook
+// ---------------------------------------------------------------------------
+
+export interface HookVariant {
+  style: string
+  hook: string
+}
+
+export type HookVariantsState =
+  | { ok?: undefined }
+  | { ok: true; variants: HookVariant[] }
+  | { ok: false; error: string }
+
+export async function generateHookVariantsAction(
+  _prev: HookVariantsState,
+  formData: FormData,
+): Promise<HookVariantsState> {
+  const outputId = formData.get('output_id')?.toString() ?? ''
+  const workspaceId = formData.get('workspace_id')?.toString() ?? ''
+  const contentId = formData.get('content_id')?.toString() ?? ''
+  const platform = formData.get('platform')?.toString() ?? ''
+
+  if (!outputId || !workspaceId || !contentId) return { ok: false, error: 'Invalid input.' }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const item = await getContentItem(contentId, workspaceId)
+  if (!item?.transcript) return { ok: false, error: 'No transcript found.' }
+
+  // Get current hook from the output's metadata
+  const supabase = (await import('@/lib/supabase/server')).createClient()
+  const { data: output } = await supabase
+    .from('outputs')
+    .select('metadata')
+    .eq('id', outputId)
+    .eq('workspace_id', workspaceId)
+    .maybeSingle()
+
+  const currentHook =
+    (output?.metadata as Record<string, unknown> | null)?.hook as string | undefined ??
+    'Make this hook go viral.'
+
+  const pick = await pickGenerationProvider(workspaceId)
+  if (!pick.ok) return { ok: false, error: pick.message }
+
+  const { buildHookVariantsPrompt } = await import('@/lib/ai/prompts/hook-variants')
+  const prompt = buildHookVariantsPrompt({ platform, currentHook, transcript: item.transcript })
+
+  const gen = await generate({
+    provider: pick.provider,
+    apiKey: pick.apiKey,
+    model: DEFAULT_MODELS[pick.provider],
+    system: prompt.system,
+    user: prompt.user,
+  })
+
+  if (!gen.ok) return { ok: false, error: gen.message }
+
+  const raw = gen.json as unknown as { variants?: unknown[] }
+  const variants = Array.isArray(raw?.variants) ? raw.variants : []
+
+  const validated: HookVariant[] = variants
+    .filter((v): v is Record<string, unknown> => typeof v === 'object' && v !== null)
+    .map((v) => ({
+      style: typeof v.style === 'string' ? v.style : 'variant',
+      hook: typeof v.hook === 'string' ? v.hook : '',
+    }))
+    .filter((v) => v.hook.length > 0)
+
+  if (validated.length === 0) return { ok: false, error: 'No variants generated. Try again.' }
+
+  return { ok: true, variants: validated }
 }

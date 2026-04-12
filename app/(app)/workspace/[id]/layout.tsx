@@ -19,6 +19,7 @@ interface WorkspaceSummary {
 const workspaceNav = (id: string) => [
   { href: `/workspace/${id}`, label: 'Content' },
   { href: `/workspace/${id}/ideas`, label: 'Ideas' },
+  { href: `/workspace/${id}/channels`, label: 'Channels' },
 ]
 
 export default async function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {

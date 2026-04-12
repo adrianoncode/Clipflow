@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 
 import { ContentDetailView } from '@/components/content/content-detail-view'
+import { RealtimeStatusWatcher } from '@/components/content/realtime-status-watcher'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { hasOutputs } from '@/lib/content/has-outputs'
 
@@ -43,9 +44,9 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
   return (
     <>
       {isPolling ? (
-        // Meta-refresh header: cheap auto-poll while transcription runs.
-        // No client-side JS, full RSC re-render every 3s.
-        <meta httpEquiv="refresh" content="3" />
+        // Realtime watcher replaces meta-refresh — no page flicker,
+        // router.refresh() fires only when status actually changes.
+        <RealtimeStatusWatcher contentId={item.id} workspaceId={params.id} />
       ) : null}
       <ContentDetailView
         item={item}
