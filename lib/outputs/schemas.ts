@@ -8,6 +8,7 @@ import { z } from 'zod'
 export const generateOutputsSchema = z.object({
   workspace_id: z.string().uuid(),
   content_id: z.string().uuid(),
+  target_language: z.string().length(2).optional().default('en'),
 })
 
 export type GenerateOutputsInput = z.infer<typeof generateOutputsSchema>

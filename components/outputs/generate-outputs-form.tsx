@@ -5,6 +5,7 @@ import { useFormState, useFormStatus } from 'react-dom'
 
 import { Button } from '@/components/ui/button'
 import { FormMessage } from '@/components/ui/form-message'
+import { OUTPUT_LANGUAGES } from '@/lib/ai/prompts/languages'
 import {
   generateOutputsAction,
   type GenerateOutputsState,
@@ -48,6 +49,27 @@ export function GenerateOutputsForm({
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="workspace_id" value={workspaceId} />
       <input type="hidden" name="content_id" value={contentId} />
+
+      <div className="space-y-1">
+        <label htmlFor="target_language" className="text-sm font-medium">
+          Output language
+        </label>
+        <select
+          id="target_language"
+          name="target_language"
+          defaultValue="en"
+          className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring sm:w-56"
+        >
+          {OUTPUT_LANGUAGES.map((lang) => (
+            <option key={lang.code} value={lang.code}>
+              {lang.label} ({lang.nativeName})
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground">
+          Select the language for generated content. Input can be in any language.
+        </p>
+      </div>
 
       {hardError ? (
         <FormMessage variant="error">

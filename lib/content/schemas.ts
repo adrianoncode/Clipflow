@@ -80,3 +80,8 @@ export const createUrlSchema = z.object({
   workspace_id: z.string().uuid(),
   url: z.string().trim().url('Enter a valid URL (including https://).').max(500),
 })
+
+export const createRssSchema = z.object({
+  workspace_id: z.string().uuid(),
+  url: z.string().trim().url('Enter a valid RSS feed URL (including https://).').max(500),
+})

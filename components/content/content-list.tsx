@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FileText, Globe, Video, Youtube } from 'lucide-react'
+import { FileText, Globe, Rss, Video, Youtube } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -55,7 +55,7 @@ export function ContentList({ items, workspaceId }: ContentListProps) {
   return (
     <ul className="divide-y rounded-md border">
       {items.map((item) => {
-        const Icon = item.kind === 'video' ? Video : item.kind === 'youtube' ? Youtube : item.kind === 'url' ? Globe : FileText
+        const Icon = item.kind === 'video' ? Video : item.kind === 'youtube' ? Youtube : item.kind === 'url' ? Globe : item.kind === 'rss' ? Rss : FileText
         const title = item.title ?? 'Untitled'
         return (
           <li key={item.id}>

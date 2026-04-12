@@ -62,6 +62,7 @@ export async function generateOutputsAction(
   const parsed = generateOutputsSchema.safeParse({
     workspace_id: formData.get('workspace_id'),
     content_id: formData.get('content_id'),
+    target_language: formData.get('target_language') ?? 'en',
   })
   if (!parsed.success) {
     return {
@@ -118,6 +119,7 @@ export async function generateOutputsAction(
   // them to Promise.allSettled callbacks.
   const workspaceId = parsed.data.workspace_id
   const contentId = parsed.data.content_id
+  const targetLanguage = parsed.data.target_language ?? 'en'
   const userId = user.id
   const provider = pick.provider
   const apiKey = pick.apiKey
@@ -146,6 +148,7 @@ export async function generateOutputsAction(
         workspaceId,
         contentId,
         userId,
+        targetLanguage,
       }),
     ),
   )

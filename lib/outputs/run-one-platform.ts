@@ -3,6 +3,7 @@ import 'server-only'
 import { generate } from '@/lib/ai/generate/generate'
 import type { AiProvider } from '@/lib/ai/providers/types'
 import { getPromptBuilder } from '@/lib/ai/prompts/get-prompt'
+import { getLanguageInstruction } from '@/lib/ai/prompts/languages'
 import { insertOutputWithDraftState } from '@/lib/outputs/insert-output'
 import { renderOutputMarkdown } from '@/lib/outputs/render-markdown'
 import type { ContentKind, OutputPlatform } from '@/lib/supabase/types'
@@ -18,6 +19,8 @@ export interface RunOnePlatformInput {
   workspaceId: string
   contentId: string
   userId: string
+  /** BCP-47 language code, e.g. 'en', 'de', 'es'. Defaults to 'en' (no translation). */
+  targetLanguage?: string
 }
 
 export type RunOnePlatformResult =
@@ -40,7 +43,11 @@ export async function runOnePlatform(
   const build = getPromptBuilder(platform)
   const prompt = build({ transcript, sourceKind, sourceTitle })
 
-  const gen = await generate({ provider, apiKey, model, system: prompt.system, user: prompt.user })
+  // Append language instruction to system prompt when a non-English language is requested.
+  const langInstruction = getLanguageInstruction(input.targetLanguage ?? 'en')
+  const system = langInstruction ? prompt.system + langInstruction : prompt.system
+
+  const gen = await generate({ provider, apiKey, model, system, user: prompt.user })
   if (!gen.ok) {
     return { platform, ok: false, error: gen.message }
   }

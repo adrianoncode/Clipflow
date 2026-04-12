@@ -10,6 +10,7 @@ import { getUser } from '@/lib/auth/get-user'
 import { checkLimit } from '@/lib/billing/check-limit'
 import { createContentItem } from '@/lib/content/create-content-item'
 import {
+  createRssSchema,
   createTextSchema,
   createUrlSchema,
   createVideoSchema,
@@ -18,6 +19,7 @@ import {
   retryTranscriptionSchema,
   startTranscriptionSchema,
 } from '@/lib/content/schemas'
+import { fetchRssFeed } from '@/lib/content/fetch-rss-feed'
 import { fetchYoutubeTranscript } from '@/lib/content/fetch-youtube-transcript'
 import { fetchUrlText } from '@/lib/content/fetch-url-text'
 import { mimeForExtension, videoStoragePath } from '@/lib/content/storage-paths'
@@ -425,6 +427,55 @@ export async function createUrlContentAction(
     workspaceId: parsed.data.workspace_id,
     kind: 'url',
     title: fetched.title,
+    status: 'ready',
+    transcript: fetched.text,
+    sourceUrl: parsed.data.url,
+    createdBy: user.id,
+  })
+
+  if (!result.ok) {
+    return { error: result.error }
+  }
+
+  revalidatePath(`/workspace/${parsed.data.workspace_id}`)
+  redirect(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
+}
+
+// ---------------------------------------------------------------------------
+// Podcast RSS Feed — fetch latest episode description + optional audio URL
+// ---------------------------------------------------------------------------
+
+export type RssFormState = { error?: string }
+
+export async function createRssContentAction(
+  _prev: RssFormState,
+  formData: FormData,
+): Promise<RssFormState> {
+  const parsed = createRssSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    url: formData.get('url'),
+  })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const limit = await checkLimit(parsed.data.workspace_id, 'content_items')
+  if (!limit.ok) {
+    return { error: limit.message ?? 'Monthly content limit reached. Upgrade your plan.' }
+  }
+
+  const fetched = await fetchRssFeed(parsed.data.url)
+  if (!fetched.ok) {
+    return { error: fetched.error }
+  }
+
+  const result = await createContentItem({
+    workspaceId: parsed.data.workspace_id,
+    kind: 'rss',
+    title: `${fetched.title} — ${fetched.episodeTitle}`,
     status: 'ready',
     transcript: fetched.text,
     sourceUrl: parsed.data.url,

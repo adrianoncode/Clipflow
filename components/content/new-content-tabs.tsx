@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 
+import { RssInputForm } from '@/components/content/rss-input-form'
 import { TextInputForm } from '@/components/content/text-input-form'
 import { UrlInputForm } from '@/components/content/url-input-form'
 import { VideoUploadForm } from '@/components/content/video-upload-form'
 import { YoutubeInputForm } from '@/components/content/youtube-input-form'
 import { cn } from '@/lib/utils'
 
-type TabKey = 'video' | 'youtube' | 'url' | 'text'
+type TabKey = 'video' | 'youtube' | 'url' | 'rss' | 'text'
 
 interface NewContentTabsProps {
   workspaceId: string
@@ -19,6 +20,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'video', label: 'Video upload' },
   { key: 'youtube', label: 'YouTube URL' },
   { key: 'url', label: 'Website URL' },
+  { key: 'rss', label: 'Podcast RSS' },
   { key: 'text', label: 'Text / script' },
 ]
 
@@ -68,6 +70,10 @@ export function NewContentTabs({ workspaceId, hasOpenAiKey }: NewContentTabsProp
 
       <div role="tabpanel" id="tabpanel-url" aria-labelledby="tab-url" hidden={active !== 'url'}>
         {active === 'url' ? <UrlInputForm workspaceId={workspaceId} /> : null}
+      </div>
+
+      <div role="tabpanel" id="tabpanel-rss" aria-labelledby="tab-rss" hidden={active !== 'rss'}>
+        {active === 'rss' ? <RssInputForm workspaceId={workspaceId} /> : null}
       </div>
 
       <div role="tabpanel" id="tabpanel-text" aria-labelledby="tab-text" hidden={active !== 'text'}>
