@@ -10,11 +10,15 @@ import { getUser } from '@/lib/auth/get-user'
 import { createContentItem } from '@/lib/content/create-content-item'
 import {
   createTextSchema,
+  createUrlSchema,
   createVideoSchema,
+  createYoutubeSchema,
   MAX_VIDEO_BYTES,
   retryTranscriptionSchema,
   startTranscriptionSchema,
 } from '@/lib/content/schemas'
+import { fetchYoutubeTranscript } from '@/lib/content/fetch-youtube-transcript'
+import { fetchUrlText } from '@/lib/content/fetch-url-text'
 import { mimeForExtension, videoStoragePath } from '@/lib/content/storage-paths'
 import { updateContentItem } from '@/lib/content/update-content-item'
 import { createClient } from '@/lib/supabase/server'
@@ -323,5 +327,93 @@ export async function createTextContentAction(
 
   revalidatePath(`/workspace/${parsed.data.workspace_id}`)
   revalidatePath(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
+  redirect(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
+}
+
+// ---------------------------------------------------------------------------
+// YouTube URL — fetch captions + store as ready content item
+// ---------------------------------------------------------------------------
+
+export type YoutubeFormState = { error?: string }
+
+export async function createYoutubeContentAction(
+  _prev: YoutubeFormState,
+  formData: FormData,
+): Promise<YoutubeFormState> {
+  const parsed = createYoutubeSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    url: formData.get('url'),
+  })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const fetched = await fetchYoutubeTranscript(parsed.data.url)
+  if (!fetched.ok) {
+    return { error: fetched.error }
+  }
+
+  const result = await createContentItem({
+    workspaceId: parsed.data.workspace_id,
+    kind: 'youtube',
+    title: fetched.title,
+    status: 'ready',
+    transcript: fetched.transcript,
+    sourceUrl: parsed.data.url,
+    createdBy: user.id,
+  })
+
+  if (!result.ok) {
+    return { error: result.error }
+  }
+
+  revalidatePath(`/workspace/${parsed.data.workspace_id}`)
+  redirect(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
+}
+
+// ---------------------------------------------------------------------------
+// Website/Blog URL — scrape text + store as ready content item
+// ---------------------------------------------------------------------------
+
+export type UrlFormState = { error?: string }
+
+export async function createUrlContentAction(
+  _prev: UrlFormState,
+  formData: FormData,
+): Promise<UrlFormState> {
+  const parsed = createUrlSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    url: formData.get('url'),
+  })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const fetched = await fetchUrlText(parsed.data.url)
+  if (!fetched.ok) {
+    return { error: fetched.error }
+  }
+
+  const result = await createContentItem({
+    workspaceId: parsed.data.workspace_id,
+    kind: 'url',
+    title: fetched.title,
+    status: 'ready',
+    transcript: fetched.text,
+    sourceUrl: parsed.data.url,
+    createdBy: user.id,
+  })
+
+  if (!result.ok) {
+    return { error: result.error }
+  }
+
+  revalidatePath(`/workspace/${parsed.data.workspace_id}`)
   redirect(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
 }

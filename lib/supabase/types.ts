@@ -19,7 +19,7 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 
 export type WorkspaceType = 'personal' | 'team' | 'client'
 export type WorkspaceRole = 'owner' | 'editor' | 'viewer' | 'client'
-export type ContentKind = 'video' | 'text'
+export type ContentKind = 'video' | 'text' | 'youtube' | 'url'
 export type ContentStatus = 'uploading' | 'processing' | 'ready' | 'failed'
 export type OutputPlatform = 'tiktok' | 'instagram_reels' | 'youtube_shorts' | 'linkedin'
 export type OutputState = 'draft' | 'review' | 'approved' | 'exported'

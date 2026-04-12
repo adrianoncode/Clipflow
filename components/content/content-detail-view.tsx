@@ -64,7 +64,10 @@ export function ContentDetailView({
           </Link>
           <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
           <p className="text-xs text-muted-foreground">
-            {item.kind === 'video' ? 'Video / audio' : 'Text'} · added {formatDate(item.created_at)}
+            {item.kind === 'video' ? 'Video / audio'
+              : item.kind === 'youtube' ? 'YouTube'
+              : item.kind === 'url' ? 'Website'
+              : 'Text'} · added {formatDate(item.created_at)}
           </p>
         </div>
         <ContentStatusBadge status={item.status} />

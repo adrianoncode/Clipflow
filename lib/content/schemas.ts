@@ -70,3 +70,13 @@ export const createTextSchema = z.object({
     .transform((v) => (v && v.length > 0 ? v : null)),
   body: z.string().trim().min(10, 'Please enter at least 10 characters.').max(50_000),
 })
+
+export const createYoutubeSchema = z.object({
+  workspace_id: z.string().uuid(),
+  url: z.string().trim().min(1, 'Enter a YouTube URL.').max(500),
+})
+
+export const createUrlSchema = z.object({
+  workspace_id: z.string().uuid(),
+  url: z.string().trim().url('Enter a valid URL (including https://).').max(500),
+})
