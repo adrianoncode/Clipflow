@@ -147,12 +147,18 @@ export function ContentDetailView({
             workspaceId={workspaceId}
             contentId={item.id}
           />
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button asChild>
               <Link href={`/workspace/${workspaceId}/content/${item.id}/outputs`}>
                 {hasExistingOutputs ? 'View outputs' : 'Generate outputs'}
               </Link>
             </Button>
+            <Link
+              href={`/workspace/${workspaceId}/content/${item.id}/broll`}
+              className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent"
+            >
+              🎬 Find B-Roll
+            </Link>
             {hasExistingOutputs ? (
               <span className="text-xs text-muted-foreground">
                 Drafts already generated — click to review or regenerate.
