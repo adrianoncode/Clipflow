@@ -175,6 +175,124 @@ export async function renameContentAction(
   return { ok: true }
 }
 
+// ── Auto-tag content item ─────────────────────────────────────────────────────
+
+const autoTagSchema = z.object({
+  workspace_id: z.string().uuid(),
+  content_id: z.string().uuid(),
+})
+
+export type AutoTagState =
+  | { ok?: undefined }
+  | { ok: true; tags: string[] }
+  | { ok: false; code: 'no_key' | 'unknown'; error: string }
+
+export async function autoTagContentAction(
+  _prev: AutoTagState,
+  formData: FormData,
+): Promise<AutoTagState> {
+  const parsed = autoTagSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    content_id: formData.get('content_id'),
+  })
+  if (!parsed.success) {
+    return { ok: false, code: 'unknown', error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const item = await getContentItem(parsed.data.content_id, parsed.data.workspace_id)
+  if (!item || !item.transcript) {
+    return { ok: false, code: 'unknown', error: 'Content has no transcript to tag.' }
+  }
+
+  const pick = await pickGenerationProvider(parsed.data.workspace_id)
+  if (!pick.ok) {
+    return {
+      ok: false,
+      code: pick.code === 'no_key' ? 'no_key' : 'unknown',
+      error: pick.message,
+    }
+  }
+
+  const transcriptSnippet = item.transcript.slice(0, 3000)
+  const systemPrompt =
+    'You are a content tagging assistant. Return ONLY a valid JSON array of strings. No explanation, no markdown, just the JSON array.'
+  const userPrompt = `Extract 3-7 topic tags from this transcript. Return a JSON array of short lowercase tags (1-3 words each). Example: ["productivity", "morning routine", "mindset"]. Transcript: ${transcriptSnippet}`
+
+  const gen = await generate({
+    provider: pick.provider,
+    apiKey: pick.apiKey,
+    model: DEFAULT_MODELS[pick.provider],
+    system: systemPrompt,
+    user: userPrompt,
+  })
+
+  if (!gen.ok) {
+    return { ok: false, code: 'unknown', error: gen.message }
+  }
+
+  // The generate function returns structured JSON via PromptOutput, but here
+  // we need a raw array. Parse from the hook field as a fallback.
+  let tags: string[] = []
+  try {
+    // Try to extract JSON array from the response
+    const raw = gen.json as unknown
+    if (Array.isArray(raw)) {
+      tags = (raw as unknown[]).filter((t): t is string => typeof t === 'string')
+    } else if (typeof raw === 'object' && raw !== null) {
+      // The model may have nested it — try common keys
+      const obj = raw as Record<string, unknown>
+      const candidate =
+        obj['tags'] ?? obj['result'] ?? obj['hook'] ?? Object.values(obj)[0]
+      if (Array.isArray(candidate)) {
+        tags = (candidate as unknown[]).filter((t): t is string => typeof t === 'string')
+      } else if (typeof candidate === 'string') {
+        // Try to parse JSON embedded in a string field
+        const match = candidate.match(/\[[\s\S]*\]/)
+        if (match) {
+          const parsed2 = JSON.parse(match[0])
+          if (Array.isArray(parsed2)) {
+            tags = (parsed2 as unknown[]).filter((t): t is string => typeof t === 'string')
+          }
+        }
+      }
+    }
+  } catch {
+    // ignore parse errors
+  }
+
+  if (tags.length === 0) {
+    return { ok: false, code: 'unknown', error: 'No tags could be extracted. Try again.' }
+  }
+
+  // Normalize tags
+  tags = tags.map((t) => t.toLowerCase().trim()).filter(Boolean).slice(0, 7)
+
+  // Update metadata.tags in DB
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = createClient()
+
+  const existingMetadata =
+    item.metadata && typeof item.metadata === 'object' && !Array.isArray(item.metadata)
+      ? (item.metadata as Record<string, unknown>)
+      : {}
+
+  const { error } = await supabase
+    .from('content_items')
+    .update({ metadata: { ...existingMetadata, tags } })
+    .eq('id', parsed.data.content_id)
+    .eq('workspace_id', parsed.data.workspace_id)
+
+  if (error) {
+    return { ok: false, code: 'unknown', error: error.message }
+  }
+
+  revalidatePath(`/workspace/${parsed.data.workspace_id}/content/${parsed.data.content_id}`)
+  return { ok: true, tags }
+}
+
 // ── Delete content item ───────────────────────────────────────────────────────
 
 export type DeleteContentState =

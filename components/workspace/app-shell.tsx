@@ -12,13 +12,14 @@ interface AppShellProps {
   children: React.ReactNode
 }
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/settings', label: 'Settings' },
-  { href: '/billing', label: 'Billing' },
-]
-
 export function AppShell({ user, workspaces, currentWorkspaceId, children }: AppShellProps) {
+  const navItems = [
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline' },
+    { href: '/settings', label: 'Settings' },
+    { href: '/billing', label: 'Billing' },
+  ]
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between border-b bg-background px-4 py-3 sm:px-6">

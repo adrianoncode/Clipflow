@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { AiCoachPanel } from '@/components/outputs/ai-coach-panel'
 import { ExportAllButton } from '@/components/outputs/export-all-button'
 import { GenerateOutputsForm } from '@/components/outputs/generate-outputs-form'
 import { OutputsGrid } from '@/components/outputs/outputs-grid'
@@ -102,6 +103,12 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
       ) : (
         <>
           <OutputsGrid outputs={outputs} contentId={params.contentId} />
+          <AiCoachPanel
+            workspaceId={params.id}
+            outputBodies={outputs
+              .map((o) => `[${o.platform}]\n${o.body ?? ''}`)
+              .join('\n\n---\n\n')}
+          />
           <ReviewLinkPanel
             workspaceId={params.id}
             contentId={params.contentId}

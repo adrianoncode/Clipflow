@@ -14,6 +14,7 @@ import { FollowUpTopicsDialog } from '@/components/content/follow-up-topics-dial
 import { RetryTranscriptionButton } from '@/components/content/retry-transcription-button'
 import { TranscriptView } from '@/components/content/transcript-view'
 import { AssignToProjectSelector } from '@/components/projects/assign-to-project-selector'
+import { AutoTagButton } from '@/components/content/auto-tag-button'
 import { DeleteContentButton } from '@/components/content/delete-content-button'
 import { RenameContentForm } from '@/components/content/rename-content-form'
 import type { ContentItemRow } from '@/lib/content/get-content-item'
@@ -149,6 +150,19 @@ export function ContentDetailView({
             )}
           </div>
           <FollowUpTopicsDialog workspaceId={workspaceId} contentId={item.id} />
+          <AutoTagButton
+            workspaceId={workspaceId}
+            contentId={item.id}
+            currentTags={
+              item.metadata &&
+              typeof item.metadata === 'object' &&
+              !Array.isArray(item.metadata) &&
+              'tags' in item.metadata &&
+              Array.isArray((item.metadata as Record<string, unknown>).tags)
+                ? ((item.metadata as Record<string, unknown>).tags as string[])
+                : []
+            }
+          />
         </div>
       ) : null}
 
