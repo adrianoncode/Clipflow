@@ -26,6 +26,13 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
             Clipflow
           </Link>
           <WorkspaceSwitcher workspaces={workspaces} currentWorkspaceId={currentWorkspaceId} />
+          <Link
+            href="/workspace/new"
+            title="New workspace"
+            className="flex h-8 w-8 items-center justify-center rounded-md border text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            <span className="text-base leading-none">+</span>
+          </Link>
         </div>
         <div className="flex items-center gap-3">
           <span className="hidden text-xs text-muted-foreground sm:inline">{user.email}</span>
