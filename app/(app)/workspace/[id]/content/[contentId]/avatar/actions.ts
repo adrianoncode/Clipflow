@@ -54,7 +54,7 @@ export async function generateAvatarAction(
 
   // Store job in metadata
   const { createClient } = await import('@/lib/supabase/server')
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const existingMetadata =
     item.metadata && typeof item.metadata === 'object' && !Array.isArray(item.metadata)

@@ -7,51 +7,89 @@ export interface AvatarVideoResult {
   videoUrl?: string
 }
 
-// HeyGen API stub
-// Docs: https://docs.heygen.com/reference/create-an-avatar-video-v2
+// D-ID API — Talking Avatar Video Generation
+// Docs: https://docs.d-id.com/reference/createtalk
 export async function generateAvatarVideo(params: {
   script: string
-  avatarId?: string // HeyGen avatar ID
-  voiceId?: string  // HeyGen voice ID
+  presenterImageUrl?: string // URL of the avatar image (defaults to D-ID stock presenter)
+  voiceId?: string           // D-ID voice ID
 }): Promise<AvatarVideoResult | { ok: false; error: string }> {
-  const apiKey = process.env.HEYGEN_API_KEY
+  const apiKey = process.env.DID_API_KEY
   if (!apiKey) {
-    return { ok: false, error: 'HeyGen API key not configured. Add HEYGEN_API_KEY to environment variables. Get your key at heygen.com' }
+    return {
+      ok: false,
+      error: 'D-ID API key not configured. Add DID_API_KEY to environment variables. Get your key at studio.d-id.com',
+    }
   }
 
   try {
-    const res = await fetch('https://api.heygen.com/v2/video/generate', {
+    const res = await fetch('https://api.d-id.com/talks', {
       method: 'POST',
       headers: {
-        'X-Api-Key': apiKey,
+        Authorization: `Basic ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        video_inputs: [{
-          character: {
-            type: 'avatar',
-            avatar_id: params.avatarId ?? 'Anna_public_3_20240108',
+        source_url: params.presenterImageUrl ?? 'https://create-images-results.d-id.com/DefaultPresenters/Noelle_f/image.jpeg',
+        script: {
+          type: 'text',
+          input: params.script.slice(0, 1500),
+          provider: {
+            type: 'microsoft',
+            voice_id: params.voiceId ?? 'en-US-JennyNeural',
           },
-          voice: {
-            type: 'text',
-            input_text: params.script.slice(0, 1500),
-            voice_id: params.voiceId ?? '1bd001e7e50f421d891986aad5158bc8',
-          },
-        }],
-        dimension: { width: 1080, height: 1920 }, // 9:16 vertical
+        },
+        config: {
+          fluent: true,
+          pad_audio: 0,
+          result_format: 'mp4',
+        },
       }),
     })
 
     if (!res.ok) {
       const err = await res.text()
-      return { ok: false, error: `HeyGen error: ${res.status} — ${err}` }
+      return { ok: false, error: `D-ID error: ${res.status} — ${err}` }
     }
 
     const data = await res.json()
     return {
       ok: true,
-      jobId: data.data?.video_id ?? '',
-      status: 'pending',
+      jobId: data.id ?? '',
+      status: data.status === 'done' ? 'completed' : 'pending',
+      videoUrl: data.result_url ?? undefined,
+    }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Unknown error' }
+  }
+}
+
+// Poll job status
+export async function getAvatarJobStatus(
+  jobId: string
+): Promise<AvatarVideoResult | { ok: false; error: string }> {
+  const apiKey = process.env.DID_API_KEY
+  if (!apiKey) return { ok: false, error: 'D-ID API key not configured' }
+
+  try {
+    const res = await fetch(`https://api.d-id.com/talks/${jobId}`, {
+      headers: { Authorization: `Basic ${apiKey}` },
+      cache: 'no-store',
+    })
+    if (!res.ok) return { ok: false, error: `D-ID error: ${res.status}` }
+    const data = await res.json()
+
+    const status =
+      data.status === 'done' ? 'completed'
+      : data.status === 'error' ? 'failed'
+      : data.status === 'started' ? 'processing'
+      : 'pending'
+
+    return {
+      ok: true,
+      jobId: data.id,
+      status,
+      videoUrl: data.result_url ?? undefined,
     }
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Unknown error' }

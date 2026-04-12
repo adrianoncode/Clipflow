@@ -26,7 +26,7 @@ export default async function AvatarPage({ params }: PageProps) {
         workspaceId={params.id}
         contentId={params.contentId}
         transcript={item.transcript}
-        hasHeyGenKey={!!process.env.HEYGEN_API_KEY}
+        hasHeyGenKey={!!process.env.DID_API_KEY}
         existingJob={existingJob}
       />
     </div>
