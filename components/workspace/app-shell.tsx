@@ -19,8 +19,8 @@ const navItems = [
 export function AppShell({ user, workspaces, currentWorkspaceId, children }: AppShellProps) {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between border-b bg-background px-6 py-3">
-        <div className="flex items-center gap-4">
+      <header className="flex items-center justify-between border-b bg-background px-4 py-3 sm:px-6">
+        <div className="flex items-center gap-3">
           <Link href="/dashboard" className="text-lg font-semibold tracking-tight">
             Clipflow
           </Link>
@@ -45,8 +45,21 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
             ))}
           </nav>
         </aside>
-        <main className="flex-1">{children}</main>
+        {/* Extra bottom padding on mobile so content clears the bottom nav */}
+        <main className="flex-1 pb-16 sm:pb-0">{children}</main>
       </div>
+      {/* Mobile bottom nav — only visible on small screens */}
+      <nav className="fixed bottom-0 left-0 right-0 flex border-t bg-background sm:hidden">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="flex flex-1 items-center justify-center py-3 text-xs font-medium text-muted-foreground hover:text-foreground"
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
     </div>
   )
 }

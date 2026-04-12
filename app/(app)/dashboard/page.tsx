@@ -31,7 +31,7 @@ export default async function DashboardPage() {
     !!currentWorkspace && currentWorkspace.role === 'owner' && aiKeys.length === 0
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 p-8">
+    <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Welcome, {displayName}</h1>
         <p className="text-muted-foreground">
@@ -69,10 +69,22 @@ export default async function DashboardPage() {
           <CardHeader>
             <CardTitle>Output studio</CardTitle>
             <CardDescription>
-              Review and approve platform-specific drafts in one place. Ships in Milestone 5.
+              Edit, review, and approve platform-specific drafts. Move content from Draft to
+              Approved before exporting.
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">Coming soon.</CardContent>
+          <CardContent>
+            {currentWorkspace ? (
+              <Link
+                href={`/workspace/${currentWorkspace.id}`}
+                className="inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium shadow-sm transition-colors hover:bg-accent"
+              >
+                View workspace
+              </Link>
+            ) : (
+              <span className="text-sm text-muted-foreground">No workspace selected.</span>
+            )}
+          </CardContent>
         </Card>
       </div>
     </div>

@@ -50,7 +50,7 @@ export default async function NewContentPage({ params }: NewContentPageProps) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl p-8">
+    <div className="mx-auto w-full max-w-2xl p-4 sm:p-8">
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">New content</CardTitle>

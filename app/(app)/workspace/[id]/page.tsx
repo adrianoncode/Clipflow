@@ -22,7 +22,7 @@ export default async function WorkspaceHomePage({ params }: WorkspaceHomePagePro
   const atLimit = items.length === 50
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 p-8">
+    <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Content</h1>

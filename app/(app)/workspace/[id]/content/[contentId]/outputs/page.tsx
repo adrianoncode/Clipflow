@@ -51,7 +51,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
   const title = item.title ?? 'Untitled'
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 p-8">
+    <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <Link

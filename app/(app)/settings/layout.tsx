@@ -7,8 +7,8 @@ const sections = [
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-full gap-8 p-8">
-      <aside className="w-48 shrink-0">
+    <div className="flex min-h-full flex-col gap-6 p-4 sm:flex-row sm:gap-8 sm:p-8">
+      <aside className="w-full shrink-0 sm:w-48">
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Settings
         </h2>
