@@ -3,6 +3,7 @@ import Link from 'next/link'
 const sections = [
   { href: '/settings/workspace', label: 'Workspace' },
   { href: '/settings/ai-keys', label: 'AI keys' },
+  { href: '/settings/brand-voice', label: 'Brand Voice' },
 ]
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

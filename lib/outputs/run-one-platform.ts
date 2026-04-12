@@ -4,6 +4,7 @@ import { generate } from '@/lib/ai/generate/generate'
 import type { AiProvider } from '@/lib/ai/providers/types'
 import { getPromptBuilder } from '@/lib/ai/prompts/get-prompt'
 import { getLanguageInstruction } from '@/lib/ai/prompts/languages'
+import { getActiveBrandVoice, buildBrandVoiceInstruction } from '@/lib/brand-voice/get-active-brand-voice'
 import { insertOutputWithDraftState } from '@/lib/outputs/insert-output'
 import { renderOutputMarkdown } from '@/lib/outputs/render-markdown'
 import type { ContentKind, OutputPlatform } from '@/lib/supabase/types'
@@ -45,7 +46,12 @@ export async function runOnePlatform(
 
   // Append language instruction to system prompt when a non-English language is requested.
   const langInstruction = getLanguageInstruction(input.targetLanguage ?? 'en')
-  const system = langInstruction ? prompt.system + langInstruction : prompt.system
+
+  // Inject brand voice guidelines if the workspace has an active brand voice configured.
+  const brandVoice = await getActiveBrandVoice(workspaceId)
+  const brandVoiceInstruction = buildBrandVoiceInstruction(brandVoice)
+
+  const system = prompt.system + (langInstruction ?? '') + brandVoiceInstruction
 
   const gen = await generate({ provider, apiKey, model, system, user: prompt.user })
   if (!gen.ok) {

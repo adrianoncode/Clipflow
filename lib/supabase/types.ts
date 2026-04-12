@@ -197,17 +197,21 @@ export type Database = {
           id: string
           workspace_id: string
           name: string
-          description: string | null
-          guidelines: Json
+          tone: string | null
+          avoid: string | null
+          example_hook: string | null
+          is_active: boolean
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           workspace_id: string
-          name: string
-          description?: string | null
-          guidelines?: Json
+          name?: string
+          tone?: string | null
+          avoid?: string | null
+          example_hook?: string | null
+          is_active?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -215,8 +219,10 @@ export type Database = {
           id?: string
           workspace_id?: string
           name?: string
-          description?: string | null
-          guidelines?: Json
+          tone?: string | null
+          avoid?: string | null
+          example_hook?: string | null
+          is_active?: boolean
           created_at?: string
           updated_at?: string
         }
