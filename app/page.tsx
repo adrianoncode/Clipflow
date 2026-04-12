@@ -172,6 +172,93 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Pricing */}
+        <section className="border-t bg-muted/30 py-16">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6">
+            <h2 className="mb-2 text-center text-2xl font-semibold tracking-tight">Simple pricing</h2>
+            <p className="mb-10 text-center text-sm text-muted-foreground">
+              Bring your own AI key — you pay your AI provider directly, zero markup from us.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                {
+                  name: 'Free',
+                  price: '$0',
+                  period: 'forever',
+                  description: 'Try it out.',
+                  features: ['3 content items/mo', '10 outputs/mo', '1 workspace'],
+                  cta: 'Get started',
+                  highlight: false,
+                },
+                {
+                  name: 'Solo',
+                  price: '$19',
+                  period: '/mo',
+                  description: 'For individual creators.',
+                  features: ['20 content items/mo', '100 outputs/mo', '1 workspace', 'Brand voice', 'Client review links'],
+                  cta: 'Start free trial',
+                  highlight: true,
+                },
+                {
+                  name: 'Team',
+                  price: '$49',
+                  period: '/mo',
+                  description: 'For content teams.',
+                  features: ['100 content items/mo', '500 outputs/mo', '5 workspaces', 'Team members', 'Everything in Solo'],
+                  cta: 'Start free trial',
+                  highlight: false,
+                },
+                {
+                  name: 'Agency',
+                  price: '$99',
+                  period: '/mo',
+                  description: 'Unlimited everything.',
+                  features: ['Unlimited content', 'Unlimited outputs', 'Unlimited workspaces', 'Priority support'],
+                  cta: 'Start free trial',
+                  highlight: false,
+                },
+              ].map((plan) => (
+                <div
+                  key={plan.name}
+                  className={`rounded-lg border p-5 space-y-4 ${plan.highlight ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'bg-card'}`}
+                >
+                  {plan.highlight && (
+                    <span className="inline-block rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">
+                      Most popular
+                    </span>
+                  )}
+                  <div>
+                    <p className="font-semibold">{plan.name}</p>
+                    <p className="text-sm text-muted-foreground">{plan.description}</p>
+                  </div>
+                  <div className="flex items-baseline gap-0.5">
+                    <span className="text-3xl font-bold">{plan.price}</span>
+                    <span className="text-sm text-muted-foreground">{plan.period}</span>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span className="text-emerald-500">✓</span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href="/signup"
+                    className={`block w-full rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
+                      plan.highlight
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                        : 'border bg-background hover:bg-accent'
+                    }`}
+                  >
+                    {plan.cta}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="border-t bg-muted/30 py-20">
           <div className="mx-auto max-w-xl px-4 text-center sm:px-6">
