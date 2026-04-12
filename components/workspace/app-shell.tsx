@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { SignoutButton } from '@/components/auth/signout-button'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { WorkspaceSwitcher } from '@/components/workspace/workspace-switcher'
 import type { WorkspaceSummary } from '@/lib/auth/get-workspaces'
 
@@ -35,6 +36,7 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
           </Link>
         </div>
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <span className="hidden text-xs text-muted-foreground sm:inline">{user.email}</span>
           <SignoutButton />
         </div>
