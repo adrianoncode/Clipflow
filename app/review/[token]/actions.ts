@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendReviewNotification } from '@/lib/email/send-review-notification'
 
 const submitCommentSchema = z.object({
   review_link_id: z.string().uuid(),
@@ -37,7 +38,7 @@ export async function submitReviewCommentAction(
   // Validate the review link is still active (double-check server-side).
   const { data: link } = await admin
     .from('review_links')
-    .select('id, is_active, expires_at')
+    .select('id, is_active, expires_at, workspace_id, content_id, label, created_by')
     .eq('id', parsed.data.review_link_id)
     .maybeSingle()
 
@@ -55,6 +56,49 @@ export async function submitReviewCommentAction(
   })
 
   if (error) return { ok: false, error: error.message }
+
+  // --- Fire email notification (non-blocking, errors are logged not thrown) ---
+  void (async () => {
+    try {
+      // Resolve workspace owner email via admin auth API
+      const { data: ownerData } = await admin.auth.admin.getUserById(link.created_by)
+      const ownerEmail = ownerData?.user?.email
+      if (!ownerEmail) return
+
+      // Resolve content title
+      const { data: content } = await admin
+        .from('content_items')
+        .select('title')
+        .eq('id', link.content_id)
+        .maybeSingle()
+
+      // Resolve platform from output_id if present
+      let platform: string | null = null
+      if (parsed.data.output_id) {
+        const { data: output } = await admin
+          .from('outputs')
+          .select('platform')
+          .eq('id', parsed.data.output_id)
+          .maybeSingle()
+        platform = output?.platform ?? null
+      }
+
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? ''
+      const outputsUrl = `${siteUrl}/workspace/${link.workspace_id}/content/${link.content_id}/outputs`
+
+      await sendReviewNotification({
+        toEmail: ownerEmail,
+        reviewerName: parsed.data.reviewer_name,
+        reviewerEmail: parsed.data.reviewer_email ?? null,
+        commentBody: parsed.data.body,
+        contentTitle: content?.title ?? 'Untitled',
+        platform,
+        outputsUrl,
+      })
+    } catch (err) {
+      console.error('[review] Email notification failed:', err)
+    }
+  })()
 
   return { ok: true }
 }
