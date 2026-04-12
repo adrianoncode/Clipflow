@@ -10,6 +10,7 @@ import type { ContentItemListRow } from '@/lib/content/get-content-items'
 interface ContentListWithSearchProps {
   items: ContentItemListRow[]
   workspaceId: string
+  duplicateIds?: Set<string>
 }
 
 function formatRelative(iso: string): string {
@@ -30,7 +31,7 @@ function formatRelative(iso: string): string {
 
 const STATUS_OPTIONS = ['all', 'ready', 'processing', 'uploading', 'failed'] as const
 
-export function ContentListWithSearch({ items, workspaceId }: ContentListWithSearchProps) {
+export function ContentListWithSearch({ items, workspaceId, duplicateIds }: ContentListWithSearchProps) {
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | string>('all')
 
@@ -97,7 +98,14 @@ export function ContentListWithSearch({ items, workspaceId }: ContentListWithSea
                 >
                   <Icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">{item.title ?? 'Untitled'}</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="truncate text-sm font-medium">{item.title ?? 'Untitled'}</span>
+                      {duplicateIds?.has(item.id) && (
+                        <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                          Duplicate
+                        </span>
+                      )}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {formatRelative(item.created_at)}
                     </div>

@@ -27,10 +27,11 @@ const PLATFORM_LABELS: Record<OutputPlatform, string> = {
 interface OutputsGridProps {
   outputs: OutputRow[]
   contentId: string
+  workspaceId?: string
   failed?: Array<{ platform: OutputPlatform; error: string }>
 }
 
-export function OutputsGrid({ outputs, contentId, failed = [] }: OutputsGridProps) {
+export function OutputsGrid({ outputs, contentId, workspaceId, failed = [] }: OutputsGridProps) {
   const byPlatform = new Map<OutputPlatform, OutputRow>()
   for (const output of outputs) {
     byPlatform.set(output.platform, output)
@@ -46,7 +47,7 @@ export function OutputsGrid({ outputs, contentId, failed = [] }: OutputsGridProp
         const output = byPlatform.get(platform)
         const failure = failedByPlatform.get(platform)
         if (output) {
-          return <OutputCard key={platform} output={output} contentId={contentId} />
+          return <OutputCard key={platform} output={output} contentId={contentId} workspaceId={workspaceId} />
         }
         if (failure) {
           return (

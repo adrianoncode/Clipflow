@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/card'
 import { OutputStateBadge } from '@/components/outputs/output-state-badge'
 import { OutputActions } from '@/components/outputs/output-actions'
+import { PerformanceTracker } from '@/components/outputs/performance-tracker'
 import { StateTransitionPills } from '@/components/outputs/state-transition-pills'
 import type { OutputRow } from '@/lib/content/get-outputs'
 import type { OutputPlatform } from '@/lib/supabase/types'
@@ -29,9 +30,10 @@ const PLATFORM_DESCRIPTIONS: Record<OutputPlatform, string> = {
 interface OutputCardProps {
   output: OutputRow
   contentId: string
+  workspaceId?: string
 }
 
-export function OutputCard({ output, contentId }: OutputCardProps) {
+export function OutputCard({ output, contentId, workspaceId }: OutputCardProps) {
   return (
     <Card className="flex h-full flex-col">
       <CardHeader className="space-y-2">
@@ -57,6 +59,19 @@ export function OutputCard({ output, contentId }: OutputCardProps) {
           workspaceId={output.workspace_id}
           currentState={output.latest_state}
         />
+        {(workspaceId ?? output.workspace_id) && (
+          <PerformanceTracker
+            outputId={output.id}
+            workspaceId={workspaceId ?? output.workspace_id}
+            initialPerformance={
+              ((output.metadata as Record<string, unknown> | null)?.performance as {
+                rating: number
+                note: string
+                recorded_at: string
+              } | null) ?? null
+            }
+          />
+        )}
       </CardFooter>
     </Card>
   )

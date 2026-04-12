@@ -15,6 +15,8 @@ import { RetryTranscriptionButton } from '@/components/content/retry-transcripti
 import { TranscriptView } from '@/components/content/transcript-view'
 import { AssignToProjectSelector } from '@/components/projects/assign-to-project-selector'
 import { AutoTagButton } from '@/components/content/auto-tag-button'
+import { SentimentAnalysisButton } from '@/components/content/sentiment-analysis-button'
+import type { SentimentResult } from '@/app/(app)/workspace/[id]/content/[contentId]/actions'
 import { DeleteContentButton } from '@/components/content/delete-content-button'
 import { RenameContentForm } from '@/components/content/rename-content-form'
 import type { ContentItemRow } from '@/lib/content/get-content-item'
@@ -161,6 +163,18 @@ export function ContentDetailView({
               Array.isArray((item.metadata as Record<string, unknown>).tags)
                 ? ((item.metadata as Record<string, unknown>).tags as string[])
                 : []
+            }
+          />
+          <SentimentAnalysisButton
+            workspaceId={workspaceId}
+            contentId={item.id}
+            initialSentiment={
+              (item.metadata &&
+              typeof item.metadata === 'object' &&
+              !Array.isArray(item.metadata) &&
+              'sentiment' in item.metadata
+                ? (item.metadata as Record<string, unknown>).sentiment
+                : null) as SentimentResult | null
             }
           />
         </div>

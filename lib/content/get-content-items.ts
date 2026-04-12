@@ -8,6 +8,7 @@ export interface ContentItemListRow {
   kind: ContentKind
   status: ContentStatus
   title: string | null
+  source_url: string | null
   created_at: string
 }
 
@@ -31,7 +32,7 @@ export const getContentItems = cache(
     const limit = options.limit ?? 50
     const { data, error } = await supabase
       .from('content_items')
-      .select('id, kind, status, title, created_at')
+      .select('id, kind, status, title, source_url, created_at')
       .eq('workspace_id', workspaceId)
       .order('created_at', { ascending: false })
       .limit(limit)

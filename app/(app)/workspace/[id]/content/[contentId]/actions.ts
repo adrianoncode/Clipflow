@@ -293,6 +293,134 @@ export async function autoTagContentAction(
   return { ok: true, tags }
 }
 
+// ── Sentiment analysis ────────────────────────────────────────────────────────
+
+const sentimentSchema = z.object({
+  workspace_id: z.string().uuid(),
+  content_id: z.string().uuid(),
+})
+
+export interface SentimentResult {
+  overall: 'positive' | 'negative' | 'neutral' | 'mixed'
+  energy: 'high' | 'medium' | 'low'
+  emotions: string[]
+  score: number
+  summary: string
+}
+
+export type AnalyzeSentimentState =
+  | { ok?: undefined }
+  | { ok: true; sentiment: SentimentResult }
+  | { ok: false; code: 'no_key' | 'unknown'; error: string }
+
+export async function analyzeSentimentAction(
+  _prev: AnalyzeSentimentState,
+  formData: FormData,
+): Promise<AnalyzeSentimentState> {
+  const parsed = sentimentSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    content_id: formData.get('content_id'),
+  })
+  if (!parsed.success) {
+    return { ok: false, code: 'unknown', error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const item = await getContentItem(parsed.data.content_id, parsed.data.workspace_id)
+  if (!item || !item.transcript) {
+    return { ok: false, code: 'unknown', error: 'Content has no transcript to analyze.' }
+  }
+
+  const pick = await pickGenerationProvider(parsed.data.workspace_id)
+  if (!pick.ok) {
+    return {
+      ok: false,
+      code: pick.code === 'no_key' ? 'no_key' : 'unknown',
+      error: pick.message,
+    }
+  }
+
+  const systemPrompt =
+    'You are a sentiment and emotion analyzer. Analyze the provided transcript and return a JSON object with exactly these fields: { "overall": "positive" | "negative" | "neutral" | "mixed", "energy": "high" | "medium" | "low", "emotions": [up to 3 strings from: "inspiring", "educational", "entertaining", "motivational", "humorous", "serious", "empathetic", "urgent", "calm"], "score": number between -1.0 and 1.0, "summary": string of max 80 chars describing the emotional tone }. Return only valid JSON.'
+  const userPrompt = item.transcript.slice(0, 4000)
+
+  const gen = await generate({
+    provider: pick.provider,
+    apiKey: pick.apiKey,
+    model: DEFAULT_MODELS[pick.provider],
+    system: systemPrompt,
+    user: userPrompt,
+  })
+
+  if (!gen.ok) {
+    return { ok: false, code: 'unknown', error: gen.message }
+  }
+
+  let parsedResult: SentimentResult | null = null
+  try {
+    const raw = gen.json as unknown
+    if (
+      typeof raw === 'object' &&
+      raw !== null &&
+      'overall' in raw &&
+      'energy' in raw &&
+      'emotions' in raw &&
+      'score' in raw &&
+      'summary' in raw
+    ) {
+      parsedResult = raw as SentimentResult
+    } else if (typeof raw === 'string') {
+      parsedResult = JSON.parse(raw) as SentimentResult
+    } else {
+      // Try nested — model may wrap it
+      const obj = raw as Record<string, unknown>
+      const candidate = Object.values(obj)[0]
+      if (typeof candidate === 'string') {
+        parsedResult = JSON.parse(candidate) as SentimentResult
+      } else if (typeof candidate === 'object' && candidate !== null) {
+        parsedResult = candidate as SentimentResult
+      }
+    }
+  } catch {
+    return { ok: false, code: 'unknown', error: 'Could not parse sentiment response.' }
+  }
+
+  if (
+    !parsedResult ||
+    !parsedResult.overall ||
+    !parsedResult.energy ||
+    !Array.isArray(parsedResult.emotions) ||
+    typeof parsedResult.score !== 'number' ||
+    !parsedResult.summary
+  ) {
+    return { ok: false, code: 'unknown', error: 'Sentiment response is missing expected fields.' }
+  }
+
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = createClient()
+
+  const existingMetadata =
+    item.metadata && typeof item.metadata === 'object' && !Array.isArray(item.metadata)
+      ? (item.metadata as Record<string, unknown>)
+      : {}
+
+  const { error } = await supabase
+    .from('content_items')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ metadata: { ...existingMetadata, sentiment: parsedResult } as any })
+    .eq('id', parsed.data.content_id)
+    .eq('workspace_id', parsed.data.workspace_id)
+
+  if (error) {
+    return { ok: false, code: 'unknown', error: error.message }
+  }
+
+  revalidatePath(`/workspace/${parsed.data.workspace_id}/content/${parsed.data.content_id}`)
+  return { ok: true, sentiment: parsedResult }
+}
+
 // ── Delete content item ───────────────────────────────────────────────────────
 
 export type DeleteContentState =

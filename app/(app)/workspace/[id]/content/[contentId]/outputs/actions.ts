@@ -340,6 +340,196 @@ export async function regenerateOutputAction(
 }
 
 // ---------------------------------------------------------------------------
+// SEO suggestions
+// ---------------------------------------------------------------------------
+
+export interface SeoResult {
+  primary_keyword: string
+  secondary_keywords: string[]
+  seo_title: string
+  meta_description: string
+  hashtag_strategy: string
+}
+
+export type GetSeoSuggestionsState =
+  | { ok?: undefined }
+  | { ok: true; seo: SeoResult }
+  | { ok: false; error: string }
+
+export async function getSeoSuggestionsAction(
+  _prev: GetSeoSuggestionsState,
+  formData: FormData,
+): Promise<GetSeoSuggestionsState> {
+  const workspaceId = formData.get('workspace_id')?.toString() ?? ''
+  const contentId = formData.get('content_id')?.toString() ?? ''
+
+  if (!workspaceId || !contentId) return { ok: false, error: 'Invalid input.' }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const item = await getContentItem(contentId, workspaceId)
+  if (!item?.transcript) return { ok: false, error: 'Content has no transcript.' }
+
+  const supabase = createClient()
+  const { data: outputs } = await supabase
+    .from('outputs')
+    .select('id, metadata, body')
+    .eq('content_id', contentId)
+    .eq('workspace_id', workspaceId)
+
+  const outputsSummary = (outputs ?? [])
+    .map((o) => (o.body as string | null)?.slice(0, 200) ?? '')
+    .filter(Boolean)
+    .join('\n---\n')
+
+  const pick = await pickGenerationProvider(workspaceId)
+  if (!pick.ok) return { ok: false, error: pick.message }
+
+  const systemPrompt =
+    'You are an SEO expert for social media content. Analyze the provided content and return a JSON object with: { "primary_keyword": string, "secondary_keywords": string[] (3-5 items), "seo_title": string (max 60 chars, SEO-optimized), "meta_description": string (max 155 chars), "hashtag_strategy": string (brief advice on hashtag usage) }. Return only valid JSON.'
+  const userPrompt =
+    item.transcript.slice(0, 3000) +
+    '\n\nGenerated outputs summary: ' +
+    outputsSummary
+
+  const gen = await generate({
+    provider: pick.provider,
+    apiKey: pick.apiKey,
+    model: DEFAULT_MODELS[pick.provider],
+    system: systemPrompt,
+    user: userPrompt,
+  })
+
+  if (!gen.ok) return { ok: false, error: gen.message }
+
+  let seoResult: SeoResult | null = null
+  try {
+    const raw = gen.json as unknown
+    if (
+      typeof raw === 'object' &&
+      raw !== null &&
+      'primary_keyword' in raw
+    ) {
+      seoResult = raw as SeoResult
+    } else if (typeof raw === 'string') {
+      seoResult = JSON.parse(raw) as SeoResult
+    } else {
+      const obj = raw as Record<string, unknown>
+      const candidate = Object.values(obj)[0]
+      if (typeof candidate === 'object' && candidate !== null) {
+        seoResult = candidate as SeoResult
+      } else if (typeof candidate === 'string') {
+        seoResult = JSON.parse(candidate) as SeoResult
+      }
+    }
+  } catch {
+    return { ok: false, error: 'Could not parse SEO response.' }
+  }
+
+  if (!seoResult?.primary_keyword) {
+    return { ok: false, error: 'SEO response is missing expected fields.' }
+  }
+
+  // Update all outputs for this content with the SEO result
+  const { data: allOutputs } = await supabase
+    .from('outputs')
+    .select('id, metadata')
+    .eq('content_id', contentId)
+    .eq('workspace_id', workspaceId)
+
+  await Promise.all(
+    (allOutputs ?? []).map((o) =>
+      supabase
+        .from('outputs')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .update({ metadata: { ...((o.metadata as object) ?? {}), seo: seoResult } as any })
+        .eq('id', o.id),
+    ),
+  )
+
+  revalidatePath(`/workspace/${workspaceId}/content/${contentId}/outputs`)
+  return { ok: true, seo: seoResult }
+}
+
+// ---------------------------------------------------------------------------
+// Performance tracking
+// ---------------------------------------------------------------------------
+
+import { z as zod } from 'zod'
+
+const performanceSchema = zod.object({
+  workspace_id: zod.string().uuid(),
+  output_id: zod.string().uuid(),
+  rating: zod.coerce.number().int().min(1).max(5),
+  note: zod.string().max(200).optional().default(''),
+})
+
+export interface PerformanceData {
+  rating: number
+  note: string
+  recorded_at: string
+}
+
+export type SaveOutputPerformanceState =
+  | { ok?: undefined }
+  | { ok: true }
+  | { ok: false; error: string }
+
+export async function saveOutputPerformanceAction(
+  _prev: SaveOutputPerformanceState,
+  formData: FormData,
+): Promise<SaveOutputPerformanceState> {
+  const parsed = performanceSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    output_id: formData.get('output_id'),
+    rating: formData.get('rating'),
+    note: formData.get('note') ?? '',
+  })
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const supabase = createClient()
+  const { data: output, error: fetchError } = await supabase
+    .from('outputs')
+    .select('id, metadata')
+    .eq('id', parsed.data.output_id)
+    .eq('workspace_id', parsed.data.workspace_id)
+    .maybeSingle()
+
+  if (fetchError || !output) {
+    return { ok: false, error: 'Output not found.' }
+  }
+
+  const existingMetadata =
+    output.metadata && typeof output.metadata === 'object' && !Array.isArray(output.metadata)
+      ? (output.metadata as Record<string, unknown>)
+      : {}
+
+  const performance: PerformanceData = {
+    rating: parsed.data.rating,
+    note: parsed.data.note,
+    recorded_at: new Date().toISOString(),
+  }
+
+  const { error } = await supabase
+    .from('outputs')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .update({ metadata: { ...existingMetadata, performance } as any })
+    .eq('id', parsed.data.output_id)
+    .eq('workspace_id', parsed.data.workspace_id)
+
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath(`/workspace/${parsed.data.workspace_id}/content`)
+  return { ok: true }
+}
+
+// ---------------------------------------------------------------------------
 // Star / unstar output
 // ---------------------------------------------------------------------------
 

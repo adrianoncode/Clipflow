@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ContentListWithSearch } from '@/components/content/content-list-with-search'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getContentItems } from '@/lib/content/get-content-items'
+import { findDuplicateIds } from '@/lib/content/find-duplicates'
 
 interface WorkspaceHomePageProps {
   params: { id: string }
@@ -20,6 +21,7 @@ export default async function WorkspaceHomePage({ params }: WorkspaceHomePagePro
   const items = await getContentItems(params.id, { limit: 50 })
   const canCreate = workspace.role === 'owner' || workspace.role === 'editor'
   const atLimit = items.length === 50
+  const duplicateIds = findDuplicateIds(items)
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
@@ -39,7 +41,7 @@ export default async function WorkspaceHomePage({ params }: WorkspaceHomePagePro
       {atLimit ? (
         <p className="text-xs text-muted-foreground">Showing the 50 most recent items.</p>
       ) : null}
-      <ContentListWithSearch items={items} workspaceId={params.id} />
+      <ContentListWithSearch items={items} workspaceId={params.id} duplicateIds={duplicateIds} />
     </div>
   )
 }
