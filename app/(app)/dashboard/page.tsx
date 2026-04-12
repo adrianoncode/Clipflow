@@ -4,8 +4,10 @@ import { FileText, Globe, Rss, Video, Youtube } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AddAiKeyBanner } from '@/components/dashboard/add-ai-key-banner'
+import { GettingStartedChecklist } from '@/components/dashboard/getting-started-checklist'
 import { ContentStatusBadge } from '@/components/content/content-status-badge'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
+import { getActiveBrandVoice } from '@/lib/brand-voice/get-active-brand-voice'
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getWorkspaceUsage } from '@/lib/billing/get-usage'
@@ -83,14 +85,15 @@ export default async function DashboardPage() {
   const currentWorkspace =
     workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal ?? workspaces[0]
 
-  const [aiKeys, stats, usage, plan] = currentWorkspace
+  const [aiKeys, stats, usage, plan, brandVoice] = currentWorkspace
     ? await Promise.all([
         getAiKeys(currentWorkspace.id),
         getWorkspaceStats(currentWorkspace.id),
         getWorkspaceUsage(currentWorkspace.id),
         getWorkspacePlan(currentWorkspace.id),
+        getActiveBrandVoice(currentWorkspace.id),
       ])
-    : [[], null, null, 'free' as const]
+    : [[], null, null, 'free' as const, null]
 
   const showAiKeyNudge =
     !!currentWorkspace && currentWorkspace.role === 'owner' && aiKeys.length === 0
@@ -123,6 +126,16 @@ export default async function DashboardPage() {
 
       {showAiKeyNudge && currentWorkspace ? (
         <AddAiKeyBanner workspaceName={currentWorkspace.name} />
+      ) : null}
+
+      {currentWorkspace && stats ? (
+        <GettingStartedChecklist
+          workspaceId={currentWorkspace.id}
+          hasAiKey={aiKeys.length > 0}
+          hasContent={stats.totalContent > 0}
+          hasOutputs={stats.totalOutputs > 0}
+          hasBrandVoice={!!brandVoice}
+        />
       ) : null}
 
       {/* Stats row */}
