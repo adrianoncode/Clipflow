@@ -159,6 +159,14 @@ export function ContentDetailView({
             >
               🎬 Find B-Roll
             </Link>
+            {item.kind === 'video' ? (
+              <Link
+                href={`/workspace/${workspaceId}/content/${item.id}/reframe`}
+                className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent"
+              >
+                ↕ Auto-Reframe
+              </Link>
+            ) : null}
             {hasExistingOutputs ? (
               <span className="text-xs text-muted-foreground">
                 Drafts already generated — click to review or regenerate.
