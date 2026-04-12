@@ -92,6 +92,47 @@ export async function suggestFollowUpTopicsAction(
   return { ok: true, topics: validated }
 }
 
+// ── Edit transcript ───────────────────────────────────────────────────────────
+
+const editTranscriptSchema = z.object({
+  workspace_id: z.string().uuid(),
+  content_id: z.string().uuid(),
+  transcript: z.string().trim().min(1, 'Transcript cannot be empty.').max(100_000),
+})
+
+export type EditTranscriptState =
+  | { ok?: undefined }
+  | { ok: true }
+  | { ok: false; error: string }
+
+export async function editTranscriptAction(
+  _prev: EditTranscriptState,
+  formData: FormData,
+): Promise<EditTranscriptState> {
+  const parsed = editTranscriptSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    content_id: formData.get('content_id'),
+    transcript: formData.get('transcript'),
+  })
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = createClient()
+  const { error } = await supabase
+    .from('content_items')
+    .update({ transcript: parsed.data.transcript })
+    .eq('id', parsed.data.content_id)
+    .eq('workspace_id', parsed.data.workspace_id)
+
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath(`/workspace/${parsed.data.workspace_id}/content/${parsed.data.content_id}`)
+  return { ok: true }
+}
+
 // ── Rename content item ───────────────────────────────────────────────────────
 
 const renameSchema = z.object({

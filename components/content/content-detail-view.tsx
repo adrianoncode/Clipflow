@@ -127,7 +127,11 @@ export function ContentDetailView({
 
       {item.status === 'ready' && item.transcript ? (
         <div className="space-y-4">
-          <TranscriptView text={item.transcript} />
+          <TranscriptView
+            text={item.transcript}
+            workspaceId={workspaceId}
+            contentId={item.id}
+          />
           <div className="flex items-center gap-2">
             <Button asChild>
               <Link href={`/workspace/${workspaceId}/content/${item.id}/outputs`}>
