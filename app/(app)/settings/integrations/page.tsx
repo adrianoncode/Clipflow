@@ -20,7 +20,9 @@ import {
 } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
+import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent } from '@/components/ui/card'
+import { ConnectDialog } from '@/components/integrations/connect-dialog'
 
 export const metadata = { title: 'Integrations' }
 export const dynamic = 'force-dynamic'
@@ -100,6 +102,24 @@ export default async function IntegrationsPage() {
   const user = await getUser()
   if (!user) redirect('/login')
 
+  const workspaceId = cookies().get(WORKSPACE_COOKIE)?.value ?? ''
+
+  // Read connected integrations from workspace branding
+  let connectedIds: Set<string> = new Set()
+  if (workspaceId) {
+    try {
+      const supabase = createClient()
+      const { data: ws } = await supabase
+        .from('workspaces')
+        .select('branding')
+        .eq('id', workspaceId)
+        .single()
+      const branding = (ws?.branding ?? {}) as Record<string, unknown>
+      const integrations = (branding.integrations ?? {}) as Record<string, unknown>
+      connectedIds = new Set(Object.keys(integrations))
+    } catch { /* ignore */ }
+  }
+
   const categories = [...new Set(INTEGRATIONS.map((i) => i.category))]
 
   return (
@@ -127,27 +147,44 @@ export default async function IntegrationsPage() {
           <div key={category}>
             <h2 className="mb-3 text-sm font-semibold text-muted-foreground">{category}</h2>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {items.map((integration) => (
-                <Card
-                  key={integration.id}
-                  className={`border-border/50 transition-all ${
-                    integration.status === 'coming_soon' ? 'opacity-60' : 'hover:border-border hover:bg-accent/30'
-                  }`}
-                >
-                  <CardContent className="flex items-start gap-3 p-4">
-                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${integration.bg}`}>
-                      <integration.icon className={`h-4 w-4 ${integration.color}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-semibold truncate">{integration.name}</p>
-                        <StatusBadge status={integration.status} />
+              {items.map((integration) => {
+                const isConnected = connectedIds.has(integration.id)
+                const effectiveStatus = isConnected ? 'connected' as const : integration.status
+                return (
+                  <Card
+                    key={integration.id}
+                    className={`border-border/50 transition-all ${
+                      isConnected ? 'border-emerald-500/30' : effectiveStatus === 'coming_soon' ? 'opacity-60' : 'hover:border-border hover:bg-accent/30'
+                    }`}
+                  >
+                    <CardContent className="flex flex-col p-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${integration.bg}`}>
+                          <integration.icon className={`h-4 w-4 ${integration.color}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-semibold truncate">{integration.name}</p>
+                            <StatusBadge status={effectiveStatus} />
+                          </div>
+                          <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{integration.description}</p>
+                        </div>
                       </div>
-                      <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{integration.description}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      {/* Connect / Manage button */}
+                      {effectiveStatus !== 'coming_soon' && workspaceId && (
+                        <div className="mt-3 flex justify-end">
+                          <ConnectDialog
+                            integrationId={integration.id}
+                            integrationName={integration.name}
+                            workspaceId={workspaceId}
+                            isConnected={isConnected}
+                          />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           </div>
         )
