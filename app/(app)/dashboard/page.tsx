@@ -157,30 +157,40 @@ export default async function DashboardPage() {
     : 1
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-8 p-4 sm:p-8">
+    <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {greeting}, {displayName}
+          <h1 className="text-2xl font-bold tracking-tight">
+            {greeting}, {displayName.split(' ')[0] ?? displayName}
           </h1>
           <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-            {currentWorkspace ? `${currentWorkspace.name}` : ''}
-            <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-0.5 text-[11px] font-medium">
-              <Zap className="h-2.5 w-2.5 text-primary" />
+            {currentWorkspace ? currentWorkspace.name : ''}
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
+              <Zap className="h-2.5 w-2.5" />
               {planDef.name}
             </span>
           </p>
         </div>
-        {currentWorkspace && (
-          <Link
-            href={`/workspace/${currentWorkspace.id}/content/new`}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30"
-          >
-            <span className="text-base leading-none">+</span>
-            New content
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          {currentWorkspace && (
+            <>
+              <Link
+                href={`/workspace/${currentWorkspace.id}/tools`}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                AI Tools
+              </Link>
+              <Link
+                href={`/workspace/${currentWorkspace.id}/content/new`}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30"
+              >
+                <span className="text-base leading-none">+</span>
+                New content
+              </Link>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Banners */}
@@ -255,6 +265,30 @@ export default async function DashboardPage() {
               </Card>
             )
           })}
+        </div>
+      )}
+
+      {/* Quick actions */}
+      {currentWorkspace && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {[
+            { href: `/workspace/${currentWorkspace.id}/content/new`, label: 'New content', icon: '📝', desc: 'Upload or paste' },
+            { href: `/workspace/${currentWorkspace.id}/ghostwriter`, label: 'Ghostwriter', icon: '✍️', desc: 'AI writes scripts' },
+            { href: `/workspace/${currentWorkspace.id}/trends`, label: 'Trend Radar', icon: '📈', desc: 'Find trending topics' },
+            { href: `/workspace/${currentWorkspace.id}/tools`, label: 'AI Tools', icon: '🔮', desc: '25+ tools' },
+          ].map((action) => (
+            <Link
+              key={action.href}
+              href={action.href}
+              className="flex items-center gap-3 rounded-lg border border-border/50 bg-card/50 p-3 transition-all hover:border-border hover:bg-accent/50"
+            >
+              <span className="text-lg">{action.icon}</span>
+              <div>
+                <p className="text-xs font-semibold">{action.label}</p>
+                <p className="text-[10px] text-muted-foreground">{action.desc}</p>
+              </div>
+            </Link>
+          ))}
         </div>
       )}
 
