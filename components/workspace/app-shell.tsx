@@ -16,6 +16,7 @@ import {
   Settings as SettingsIcon,
   CreditCard,
   Share2,
+  Wand2,
 } from 'lucide-react'
 
 import { SignoutButton } from '@/components/auth/signout-button'
@@ -60,6 +61,7 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
     {
       label: 'AI Tools',
       items: [
+        { href: `/workspace/${currentWorkspaceId}/tools`, label: 'All Tools', icon: Wand2 },
         { href: `/workspace/${currentWorkspaceId}/ghostwriter`, label: 'Ghostwriter', icon: PenTool },
         { href: `/workspace/${currentWorkspaceId}/trends`, label: 'Trends', icon: TrendingUp },
         { href: `/workspace/${currentWorkspaceId}/competitors`, label: 'Competitors', icon: Eye },
