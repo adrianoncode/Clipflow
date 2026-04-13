@@ -50,6 +50,8 @@ export function CreatorSearchClient({ workspaceId }: CreatorSearchClientProps) {
             { id: 'youtube', label: 'YouTube', color: 'text-red-400' },
             { id: 'tiktok', label: 'TikTok', color: 'text-pink-400' },
             { id: 'instagram', label: 'Instagram', color: 'text-purple-400' },
+            { id: 'twitter', label: 'Twitter/X', color: 'text-neutral-300' },
+            { id: 'linkedin', label: 'LinkedIn', color: 'text-blue-400' },
           ].map((p) => (
             <button
               key={p.id}
@@ -75,7 +77,9 @@ export function CreatorSearchClient({ workspaceId }: CreatorSearchClientProps) {
             placeholder={
               platform === 'youtube'
                 ? 'Search by niche, e.g. "fitness", "SaaS marketing"'
-                : `Enter ${platform === 'tiktok' ? 'TikTok' : 'Instagram'} username, e.g. @username`
+                : platform === 'linkedin'
+                  ? 'Enter LinkedIn profile URL'
+                  : `Enter @username, e.g. @${platform === 'tiktok' ? 'charlidamelio' : platform === 'twitter' ? 'elonmusk' : 'cristiano'}`
             }
             className="flex-1 rounded-lg border border-border bg-background px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />

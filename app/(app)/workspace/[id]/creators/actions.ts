@@ -4,17 +4,17 @@ import { redirect } from 'next/navigation'
 
 import { getUser } from '@/lib/auth/get-user'
 import { searchYouTubeCreators } from '@/lib/creators/search-youtube'
+import { lookupCreator, searchTikTok, type Platform } from '@/lib/creators/scrapecreators'
 import { scrapeTikTokProfile } from '@/lib/creators/scrape-tiktok'
 import { scrapeInstagramProfile } from '@/lib/creators/scrape-instagram'
 
 type SearchResult =
   | { ok?: undefined }
-  | { ok: true; results: unknown }
+  | { ok: true; results: { platform: string; creators: Array<Record<string, unknown>> } }
   | { ok: false; error: string }
 
-/**
- * Search creators across platforms.
- */
+const HAS_SCRAPECREATORS = !!process.env.SCRAPECREATORS_API_KEY
+
 export async function searchCreatorsAction(
   _prev: SearchResult,
   formData: FormData,
@@ -27,26 +27,47 @@ export async function searchCreatorsAction(
 
   if (!query) return { ok: false, error: 'Enter a search term or username.' }
 
-  switch (platform) {
-    case 'youtube': {
-      const res = await searchYouTubeCreators({ query, maxResults: 15 })
-      if (!res.ok) return { ok: false, error: res.error }
-      return { ok: true, results: { platform: 'youtube', creators: res.creators } }
-    }
-
-    case 'tiktok': {
-      const res = await scrapeTikTokProfile(query)
-      if (!res.ok) return { ok: false, error: res.error }
-      return { ok: true, results: { platform: 'tiktok', creators: [res.profile] } }
-    }
-
-    case 'instagram': {
-      const res = await scrapeInstagramProfile(query)
-      if (!res.ok) return { ok: false, error: res.error }
-      return { ok: true, results: { platform: 'instagram', creators: [res.profile] } }
-    }
-
-    default:
-      return { ok: false, error: 'Unsupported platform.' }
+  // YouTube: always official API
+  if (platform === 'youtube') {
+    const res = await searchYouTubeCreators({ query, maxResults: 15 })
+    if (!res.ok) return { ok: false, error: res.error }
+    return { ok: true, results: { platform, creators: res.creators as unknown as Array<Record<string, unknown>> } }
   }
+
+  // ScrapeCreators API available → use it
+  if (HAS_SCRAPECREATORS) {
+    // TikTok keyword search
+    if (platform === 'tiktok' && !query.startsWith('@')) {
+      const res = await searchTikTok(query)
+      if (res.ok) {
+        const users = ((res.data as unknown as Record<string, unknown>).users ?? []) as Array<Record<string, unknown>>
+        return { ok: true, results: { platform, creators: users } }
+      }
+    }
+
+    // Single profile lookup
+    const res = await lookupCreator(platform as Platform, query)
+    if (res.ok) {
+      return { ok: true, results: { platform, creators: [res.creator as unknown as Record<string, unknown>] } }
+    }
+  }
+
+  // Fallback: our own scrapers
+  if (platform === 'tiktok') {
+    const res = await scrapeTikTokProfile(query)
+    if (!res.ok) return { ok: false, error: res.error }
+    return { ok: true, results: { platform, creators: [res.profile as unknown as Record<string, unknown>] } }
+  }
+
+  if (platform === 'instagram') {
+    const res = await scrapeInstagramProfile(query)
+    if (!res.ok) return { ok: false, error: res.error }
+    return { ok: true, results: { platform, creators: [res.profile as unknown as Record<string, unknown>] } }
+  }
+
+  if (platform === 'twitter' || platform === 'linkedin') {
+    return { ok: false, error: `${platform} search requires ScrapeCreators API key. Add SCRAPECREATORS_API_KEY to env.` }
+  }
+
+  return { ok: false, error: 'Unsupported platform.' }
 }
