@@ -17,6 +17,9 @@ import {
   CreditCard,
   Share2,
   Wand2,
+  Plug,
+  FileText,
+  Sparkles,
 } from 'lucide-react'
 
 import { SignoutButton } from '@/components/auth/signout-button'
@@ -57,7 +60,6 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
         { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: Columns3 },
         { href: `/workspace/${currentWorkspaceId}/calendar`, label: 'Calendar', icon: CalendarDays },
         { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Scheduler', icon: Clock },
-        { href: `/workspace/${currentWorkspaceId}/schedule/connect`, label: 'Channels', icon: Share2 },
       ],
     },
     {
@@ -70,11 +72,19 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
       ],
     },
     {
+      label: 'Publish',
+      items: [
+        { href: `/workspace/${currentWorkspaceId}/schedule/connect`, label: 'Channels', icon: Share2 },
+        { href: '/settings/integrations', label: 'Integrations', icon: Plug },
+      ],
+    },
+    {
       label: 'Workspace',
       items: [
         { href: `/workspace/${currentWorkspaceId}/batch`, label: 'Batch', icon: Layers },
         { href: '/analytics', label: 'Analytics', icon: BarChart3 },
         { href: '/clients', label: 'Clients', icon: Users },
+        { href: '/changelog', label: 'Changelog', icon: Sparkles },
       ],
     },
   ]
@@ -86,10 +96,10 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
 
   // Flatten all items for mobile nav — pick the 5 most important
   const mobileItems: NavItem[] = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
+    { href: `/workspace/${currentWorkspaceId}/tools`, label: 'Tools', icon: Wand2 },
     { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: Columns3 },
-    { href: `/workspace/${currentWorkspaceId}/ghostwriter`, label: 'Writer', icon: PenTool },
-    { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+    { href: '/settings/integrations', label: 'Connect', icon: Plug },
     { href: '/settings', label: 'Settings', icon: SettingsIcon },
   ]
 
