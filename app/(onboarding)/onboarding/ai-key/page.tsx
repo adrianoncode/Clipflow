@@ -44,7 +44,7 @@ export default function OnboardingAiKeyPage() {
             href="/onboarding/complete"
             className="text-sm text-muted-foreground underline-offset-4 hover:underline"
           >
-            Skip for now — I'll add a key later
+            Skip for now — I&apos;ll add a key later
           </Link>
         </div>
       </CardContent>

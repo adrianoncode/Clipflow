@@ -18,16 +18,21 @@ export interface AiPersona {
  * Returns null if no active persona is set.
  */
 export const getActivePersona = cache(async (workspaceId: string): Promise<AiPersona | null> => {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('ai_personas')
-    .select('id, name, backstory, expertise_areas, writing_quirks, example_responses, is_active')
-    .eq('workspace_id', workspaceId)
-    .eq('is_active', true)
-    .limit(1)
-    .single()
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('ai_personas')
+      .select('id, name, backstory, expertise_areas, writing_quirks, example_responses, is_active')
+      .eq('workspace_id', workspaceId)
+      .eq('is_active', true)
+      .limit(1)
+      .single()
 
-  return data ?? null
+    if (error) return null // Table may not exist yet if migrations haven't run
+    return data ?? null
+  } catch {
+    return null // Graceful fallback
+  }
 })
 
 /**

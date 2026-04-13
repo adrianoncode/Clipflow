@@ -3,8 +3,6 @@
 import Link from 'next/link'
 import { useState } from 'react'
 
-import type { ScheduledPostRow } from '@/lib/scheduler/get-scheduled-posts'
-
 interface CalendarClientProps {
   workspaceId: string
   scheduledPosts: Array<{

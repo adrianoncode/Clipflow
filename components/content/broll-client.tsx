@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 import Link from 'next/link'
 

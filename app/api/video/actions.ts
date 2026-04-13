@@ -1,12 +1,11 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
 import { burnCaptions, type CaptionStyle } from '@/lib/video/burn-captions'
 import { assembleBRollVideo } from '@/lib/video/assemble-broll'
-import { renderBrandedVideo, type BrandTemplate } from '@/lib/video/brand-template'
+import { renderBrandedVideo } from '@/lib/video/brand-template'
 import { clipVideo, batchClipVideo } from '@/lib/video/clip-video'
 
 type VideoActionResult =

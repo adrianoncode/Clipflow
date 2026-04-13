@@ -15,7 +15,7 @@ interface RealtimeStatusWatcherProps {
  * When status changes to 'ready' or 'failed', refreshes the page — replacing
  * the meta-refresh polling approach used in M3.
  */
-export function RealtimeStatusWatcher({ contentId, workspaceId }: RealtimeStatusWatcherProps) {
+export function RealtimeStatusWatcher({ contentId, workspaceId: _workspaceId }: RealtimeStatusWatcherProps) {
   const router = useRouter()
 
   useEffect(() => {

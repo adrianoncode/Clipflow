@@ -55,7 +55,7 @@ interface SectionToggleProps {
   onClick: () => void
 }
 
-function SectionToggle({ icon, label, sectionKey, active, onClick }: SectionToggleProps) {
+function SectionToggle({ icon, label, sectionKey: _sectionKey, active, onClick }: SectionToggleProps) {
   return (
     <button
       type="button"

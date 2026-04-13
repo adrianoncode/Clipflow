@@ -10,7 +10,7 @@ interface ReviewPageProps {
   params: { token: string }
 }
 
-export async function generateMetadata({ params }: ReviewPageProps) {
+export async function generateMetadata({ params: _params }: ReviewPageProps) {
   return { title: 'Review Drafts — Clipflow' }
 }
 

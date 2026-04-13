@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { ArrowRight, Check, X, ChevronDown, Zap, Play } from 'lucide-react'
+import { ArrowRight, Check, X, ChevronDown, Zap } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Clipflow — AI Video Repurposing for TikTok, Reels, Shorts & LinkedIn',

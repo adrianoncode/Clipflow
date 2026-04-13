@@ -6,7 +6,6 @@ import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import type { WorkspaceRole } from '@/lib/supabase/types'
 
 // ── Create invite link ────────────────────────────────────────────────────────

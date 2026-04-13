@@ -6,7 +6,7 @@ import { useFormStatus } from 'react-dom'
 import { Star, ChevronDown, ChevronUp } from 'lucide-react'
 
 import { saveOutputPerformanceAction } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
-import type { SaveOutputPerformanceState, PerformanceData } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
+import type { PerformanceData } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
 import { Button } from '@/components/ui/button'
 
 interface PerformanceTrackerProps {

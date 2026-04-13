@@ -1,6 +1,6 @@
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import { useFormState } from 'react-dom'
 
 import { FormMessage } from '@/components/ui/form-message'
 import {
@@ -14,11 +14,6 @@ interface AssignToProjectSelectorProps {
   contentId: string
   currentProjectId: string | null
   projects: Pick<ProjectRow, 'id' | 'name'>[]
-}
-
-function SubmitOnChange() {
-  // This is a helper — real submit is triggered by onChange on the select
-  return null
 }
 
 const initial: AssignContentState = {}

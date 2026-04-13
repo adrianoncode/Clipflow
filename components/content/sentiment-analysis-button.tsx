@@ -5,7 +5,7 @@ import { useFormStatus } from 'react-dom'
 import { BarChart2 } from 'lucide-react'
 
 import { analyzeSentimentAction } from '@/app/(app)/workspace/[id]/content/[contentId]/actions'
-import type { AnalyzeSentimentState, SentimentResult } from '@/app/(app)/workspace/[id]/content/[contentId]/actions'
+import type { SentimentResult } from '@/app/(app)/workspace/[id]/content/[contentId]/actions'
 import { Button } from '@/components/ui/button'
 import { SentimentBadge } from '@/components/content/sentiment-badge'
 

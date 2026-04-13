@@ -5,7 +5,7 @@ import { useFormStatus } from 'react-dom'
 import { Search } from 'lucide-react'
 
 import { getSeoSuggestionsAction } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
-import type { GetSeoSuggestionsState, SeoResult } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
+import type { SeoResult } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 

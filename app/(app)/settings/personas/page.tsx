@@ -8,7 +8,6 @@ import { getUser } from '@/lib/auth/get-user'
 import { getPersonas } from '@/lib/personas/get-active-persona'
 import { PersonaForm } from '@/components/settings/persona-form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { PersonaActions } from '@/components/settings/persona-actions'
 
 const WORKSPACE_COOKIE = 'clipflow.current_workspace'

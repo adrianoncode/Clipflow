@@ -15,16 +15,21 @@ export interface VoiceClone {
  * Gets the default voice clone for a workspace.
  */
 export async function getDefaultVoice(workspaceId: string): Promise<VoiceClone | null> {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('voice_clones')
-    .select('*')
-    .eq('workspace_id', workspaceId)
-    .eq('is_default', true)
-    .limit(1)
-    .single()
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('voice_clones')
+      .select('*')
+      .eq('workspace_id', workspaceId)
+      .eq('is_default', true)
+      .limit(1)
+      .single()
 
-  return (data as VoiceClone | null) ?? null
+    if (error) return null
+    return (data as VoiceClone | null) ?? null
+  } catch {
+    return null
+  }
 }
 
 /**

@@ -1,15 +1,12 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
-import { z } from 'zod'
 
 import { DEFAULT_MODELS } from '@/lib/ai/generate/models'
 import { generateRaw } from '@/lib/ai/generate/generate-raw'
 import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { getUser } from '@/lib/auth/get-user'
 import { getContentItem } from '@/lib/content/get-content-item'
-import { getContentItems } from '@/lib/content/get-content-items'
 import { createClient } from '@/lib/supabase/server'
 
 import { buildContentDnaPrompt } from '@/lib/ai/prompts/content-dna'

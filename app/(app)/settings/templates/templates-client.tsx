@@ -33,7 +33,7 @@ function SubmitBtn() {
 
 export function TemplatesClient({ workspaceId, templates }: TemplatesClientProps) {
   const [showForm, setShowForm] = useState(false)
-  const [localTemplates, setLocalTemplates] = useState<OutputTemplate[]>(templates)
+  const [localTemplates, _setLocalTemplates] = useState<OutputTemplate[]>(templates)
 
   const [state, formAction] = useFormState<SaveTemplateState, FormData>(
     saveTemplateAction,

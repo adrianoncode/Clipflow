@@ -53,7 +53,7 @@ export function ReframeClient({
 
   const initialState: StartReframeState = {}
   const [actionState, formAction] = useFormState(startReframeAction, initialState)
-  const [isPending, setIsPending] = useState(false)
+  const [isPending, _setIsPending] = useState(false)
 
   // When action succeeds, capture the jobId
   useEffect(() => {

@@ -5,7 +5,6 @@ import { useFormStatus } from 'react-dom'
 import { Tag } from 'lucide-react'
 
 import { autoTagContentAction } from '@/app/(app)/workspace/[id]/content/[contentId]/actions'
-import type { AutoTagState } from '@/app/(app)/workspace/[id]/content/[contentId]/actions'
 import { Button } from '@/components/ui/button'
 
 interface AutoTagButtonProps {

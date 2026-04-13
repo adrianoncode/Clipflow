@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import {
   Dna,
@@ -17,8 +16,6 @@ import { getUser } from '@/lib/auth/get-user'
 
 export const metadata = { title: 'AI Tools' }
 export const dynamic = 'force-dynamic'
-
-const WORKSPACE_COOKIE = 'clipflow.current_workspace'
 
 const TOOLS = [
   {
