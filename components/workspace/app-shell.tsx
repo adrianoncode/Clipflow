@@ -24,6 +24,8 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { WorkspaceSwitcher } from '@/components/workspace/workspace-switcher'
 import { GlobalSearch } from '@/components/workspace/global-search'
 import { NotificationBell } from '@/components/workspace/notification-bell'
+import { KeyboardShortcuts } from '@/components/keyboard-shortcuts'
+import { FeedbackWidget } from '@/components/feedback-widget'
 import type { WorkspaceSummary } from '@/lib/auth/get-workspaces'
 
 interface AppShellProps {
@@ -97,6 +99,8 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
 
   return (
     <div className="flex min-h-screen flex-col">
+      <KeyboardShortcuts workspaceId={currentWorkspaceId} />
+      <FeedbackWidget />
       {/* Header */}
       <header className="flex items-center justify-between border-b border-border/50 bg-background px-4 py-2 sm:px-6">
         <div className="flex items-center gap-3">
