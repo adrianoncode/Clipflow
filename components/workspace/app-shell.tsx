@@ -139,10 +139,10 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm transition-colors ${
+                        className={`flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                           active
-                            ? 'border-l-2 border-l-primary bg-white/10 font-medium text-foreground'
-                            : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
+                            ? 'border-l-2 border-l-primary bg-primary/10 font-medium text-foreground'
+                            : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
                         }`}
                       >
                         <item.icon className={`h-4 w-4 shrink-0 ${active ? 'text-primary' : ''}`} />
@@ -166,8 +166,8 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
                     href={item.href}
                     className={`flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm transition-colors ${
                       active
-                        ? 'border-l-2 border-l-primary bg-white/10 font-medium text-foreground'
-                        : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
+                        ? 'border-l-2 border-l-primary bg-primary/10 font-medium text-foreground'
+                        : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
                     }`}
                   >
                     <item.icon className={`h-4 w-4 shrink-0 ${active ? 'text-primary' : ''}`} />
@@ -191,8 +191,8 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors ${
-                active ? 'text-primary' : 'text-muted-foreground'
+              className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                active ? 'text-primary' : 'text-muted-foreground active:scale-95'
               }`}
             >
               <item.icon className="h-4 w-4" />
