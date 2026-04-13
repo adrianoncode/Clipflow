@@ -5,6 +5,8 @@ const sections = [
   { href: '/settings/workspace', label: 'Workspace' },
   { href: '/settings/ai-keys', label: 'AI keys' },
   { href: '/settings/brand-voice', label: 'Brand Voice' },
+  { href: '/settings/personas', label: 'AI Personas' },
+  { href: '/settings/integrations', label: 'Integrations' },
   { href: '/settings/templates', label: 'Templates' },
   { href: '/settings/reports', label: 'Reports' },
   { href: '/settings/extension', label: 'Extension' },
