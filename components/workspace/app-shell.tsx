@@ -18,8 +18,11 @@ import {
   Share2,
   Wand2,
   Plug,
-  FileText,
   Sparkles,
+  Mic,
+  MessageSquare,
+  Link2,
+  Key,
 } from 'lucide-react'
 
 import { SignoutButton } from '@/components/auth/signout-button'
@@ -63,12 +66,15 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
       ],
     },
     {
-      label: 'AI Tools',
+      label: 'AI',
       items: [
         { href: `/workspace/${currentWorkspaceId}/tools`, label: 'All Tools', icon: Wand2 },
         { href: `/workspace/${currentWorkspaceId}/ghostwriter`, label: 'Ghostwriter', icon: PenTool },
         { href: `/workspace/${currentWorkspaceId}/trends`, label: 'Trends', icon: TrendingUp },
         { href: `/workspace/${currentWorkspaceId}/competitors`, label: 'Competitors', icon: Eye },
+        { href: '/settings/personas', label: 'AI Personas', icon: Mic },
+        { href: '/settings/brand-voice', label: 'Brand Voice', icon: MessageSquare },
+        { href: '/settings/ai-keys', label: 'AI Keys', icon: Key },
       ],
     },
     {
@@ -84,7 +90,7 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
         { href: `/workspace/${currentWorkspaceId}/batch`, label: 'Batch', icon: Layers },
         { href: '/analytics', label: 'Analytics', icon: BarChart3 },
         { href: '/clients', label: 'Clients', icon: Users },
-        { href: '/changelog', label: 'Changelog', icon: Sparkles },
+        { href: '/changelog', label: "What's New", icon: Sparkles },
       ],
     },
   ]
