@@ -429,7 +429,13 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-          <div style={{ maxWidth:960, margin:'32px auto 0', paddingTop:20, borderTop:'1px solid rgba(255,255,255,.05)', fontSize:12, color:'rgba(255,255,255,.15)' }}>© {new Date().getFullYear()} Clipflow. All rights reserved.</div>
+          <div style={{ maxWidth:960, margin:'32px auto 0', paddingTop:20, borderTop:'1px solid rgba(255,255,255,.05)', fontSize:12, color:'rgba(255,255,255,.15)', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:12 }}>
+            <span>© {new Date().getFullYear()} Clipflow. All rights reserved.</span>
+            <div style={{ display:'flex', gap:16 }}>
+              <Link href="/privacy" style={{ color:'inherit', textDecoration:'none' }}>Privacy</Link>
+              <Link href="/terms" style={{ color:'inherit', textDecoration:'none' }}>Terms</Link>
+            </div>
+          </div>
         </footer>
       </div>
 

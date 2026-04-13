@@ -6,6 +6,7 @@ import { generateRaw } from '@/lib/ai/generate/generate-raw'
 import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { getUser } from '@/lib/auth/get-user'
 import { buildScriptCoachPrompt } from '@/lib/ai/prompts/script-coach'
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 const schema = z.object({
   workspaceId: z.string().uuid(),
@@ -23,6 +24,12 @@ export async function POST(request: Request) {
   const user = await getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Rate limit: 10 coach requests per minute per user
+  const rl = checkRateLimit(`coach:${user.id}`, RATE_LIMITS.scriptCoach.limit, RATE_LIMITS.scriptCoach.windowMs)
+  if (!rl.ok) {
+    return NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 })
   }
 
   const body = await request.json()
