@@ -85,11 +85,16 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
       ],
     },
     {
+      label: 'Research',
+      items: [
+        { href: `/workspace/${currentWorkspaceId}/creators`, label: 'Creator Search', icon: Users },
+      ],
+    },
+    {
       label: 'Workspace',
       items: [
         { href: `/workspace/${currentWorkspaceId}/batch`, label: 'Batch', icon: Layers },
         { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-        { href: '/clients', label: 'Clients', icon: Users },
         { href: '/changelog', label: "What's New", icon: Sparkles },
       ],
     },
