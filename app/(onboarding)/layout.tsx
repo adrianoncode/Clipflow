@@ -11,27 +11,10 @@ export default async function OnboardingGroupLayout({
   if (!user) redirect('/login')
 
   return (
-    <div className="relative flex min-h-screen flex-col" style={{ background: '#050506' }}>
-      {/* Background glow */}
-      <div
-        className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2"
-        style={{
-          width: 600,
-          height: 400,
-          background: 'radial-gradient(ellipse, rgba(124,58,237,0.12) 0%, transparent 70%)',
-        }}
-      />
-
+    <div className="relative flex min-h-screen flex-col bg-[#f8f6ff]">
       {/* Header */}
       <header className="relative flex items-center justify-center px-6 py-8">
-        <span
-          className="text-lg font-bold tracking-tight"
-          style={{
-            background: 'linear-gradient(135deg, #a78bfa, #f472b6)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
-        >
+        <span className="text-lg font-extrabold tracking-tight text-primary">
           Clipflow
         </span>
       </header>
@@ -41,8 +24,7 @@ export default async function OnboardingGroupLayout({
         <div className="w-full max-w-lg">{children}</div>
       </main>
 
-      {/* Footer */}
-      <footer className="relative py-6 text-center text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
+      <footer className="relative py-4 text-center text-xs text-muted-foreground/50">
         Takes less than 2 minutes to set up
       </footer>
     </div>

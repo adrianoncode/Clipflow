@@ -123,9 +123,9 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
       <KeyboardShortcuts workspaceId={currentWorkspaceId} />
       <FeedbackWidget />
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-border/50 bg-background px-4 py-2 sm:px-6">
+      <header className="flex items-center justify-between border-b bg-white px-4 py-2.5 sm:px-6">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="text-lg font-bold tracking-tight gradient-text">
+          <Link href="/dashboard" className="text-lg font-extrabold tracking-tight text-primary">
             Clipflow
           </Link>
           <WorkspaceSwitcher workspaces={workspaces} currentWorkspaceId={currentWorkspaceId} />
@@ -150,7 +150,7 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
 
       <div className="flex flex-1">
         {/* Sidebar */}
-        <aside className="hidden w-52 shrink-0 flex-col border-r border-border/50 bg-background sm:flex">
+        <aside className="hidden w-52 shrink-0 flex-col border-r bg-[#fafafa] sm:flex">
           <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 py-4">
             {navGroups.map((group) => (
               <div key={group.label}>
@@ -181,7 +181,7 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
           </nav>
 
           {/* Bottom section */}
-          <div className="border-t border-border/50 px-3 py-3">
+          <div className="border-t px-3 py-3">
             <div className="flex flex-col gap-0.5">
               {bottomItems.map((item) => {
                 const active = isActive(item.href)
@@ -209,7 +209,7 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-border/50 bg-background/95 backdrop-blur-lg sm:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 flex border-t bg-white/95 backdrop-blur-lg sm:hidden">
         {mobileItems.map((item) => {
           const active = isActive(item.href)
           return (
