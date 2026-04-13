@@ -4,10 +4,12 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 import { generate } from '@/lib/ai/generate/generate'
+import { generateRaw } from '@/lib/ai/generate/generate-raw'
 import { DEFAULT_MODELS } from '@/lib/ai/generate/models'
 import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { getUser } from '@/lib/auth/get-user'
 import { fetchGoogleTrends } from '@/lib/trends/fetch-google-trends'
+import { createClient } from '@/lib/supabase/server'
 
 const analyzeTrendsSchema = z.object({
   workspaceId: z.string().min(1),
@@ -155,5 +157,100 @@ Match these trends to the niche and suggest content angles.`
     trendSummary: aiResult.trendSummary ?? '',
     geo,
     fetchedAt: new Date().toISOString(),
+  }
+}
+
+/* ─── Trend → Full Script → Content Item → Redirect to Outputs ─── */
+
+const trendToContentSchema = z.object({
+  workspaceId: z.string().min(1),
+  trendTitle: z.string().min(1),
+  contentAngle: z.string().min(1),
+})
+
+export type TrendToContentState =
+  | { ok?: undefined }
+  | { ok: true; contentId: string; redirectUrl: string }
+  | { ok: false; error: string }
+
+/**
+ * Takes a trend + content angle, generates a full video script via AI,
+ * creates a content item with the script as transcript, and returns
+ * a redirect URL to the outputs page.
+ */
+export async function createContentFromTrendAction(
+  _prev: TrendToContentState,
+  formData: FormData,
+): Promise<TrendToContentState> {
+  const parsed = trendToContentSchema.safeParse({
+    workspaceId: formData.get('workspaceId'),
+    trendTitle: formData.get('trendTitle'),
+    contentAngle: formData.get('contentAngle'),
+  })
+
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  const { workspaceId, trendTitle, contentAngle } = parsed.data
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const pick = await pickGenerationProvider(workspaceId)
+  if (!pick.ok) return { ok: false, error: pick.message }
+
+  // Step 1: Generate a full video script from the trend
+  const gen = await generateRaw({
+    provider: pick.provider,
+    apiKey: pick.apiKey,
+    model: DEFAULT_MODELS[pick.provider],
+    system: `You are an expert short-form video scriptwriter. Given a trending topic and a content angle, write a complete video script.
+
+Respond with a JSON object:
+{
+  "title": "<string — catchy title for this content>",
+  "script": "<string — complete video script, 150-300 words, with a strong hook in the first line, a clear narrative, and a CTA at the end>"
+}
+
+The script should be:
+- Written for TikTok/Reels/Shorts (15-60 seconds when spoken)
+- Start with a scroll-stopping hook
+- Have a clear beginning, middle, and end
+- End with a call to action
+- Be engaging and conversational`,
+    user: `Trending topic: ${trendTitle}\nContent angle: ${contentAngle}\n\nWrite a complete short-form video script.`,
+  })
+
+  if (!gen.ok) return { ok: false, error: gen.message }
+
+  const result = gen.json as { title?: string; script?: string }
+  const title = result?.title ?? `Trend: ${trendTitle}`
+  const script = result?.script ?? contentAngle
+
+  // Step 2: Create content item
+  const supabase = await createClient()
+  const { data: contentItem, error: insertError } = await supabase
+    .from('content_items')
+    .insert({
+      workspace_id: workspaceId,
+      kind: 'text' as const,
+      status: 'ready' as const,
+      title,
+      transcript: script,
+      metadata: { source: 'trend', trendTitle, contentAngle },
+      created_by: user.id,
+    })
+    .select('id')
+    .single()
+
+  if (insertError || !contentItem) {
+    return { ok: false, error: insertError?.message ?? 'Failed to create content item.' }
+  }
+
+  return {
+    ok: true,
+    contentId: contentItem.id,
+    redirectUrl: `/workspace/${workspaceId}/content/${contentItem.id}/outputs`,
   }
 }

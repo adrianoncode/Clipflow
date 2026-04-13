@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 
-import { analyzeTrendsAction } from '@/app/(app)/workspace/[id]/trends/actions'
+import { analyzeTrendsAction, createContentFromTrendAction, type TrendToContentState } from '@/app/(app)/workspace/[id]/trends/actions'
 
 interface TrendRadarClientProps {
   workspaceId: string
@@ -168,12 +170,11 @@ function TrendResults({
                   {i + 1}
                 </span>
                 <span className="flex-1 text-sm">{idea}</span>
-                <Link
-                  href={`/workspace/${workspaceId}/ghostwriter`}
-                  className="shrink-0 text-xs text-muted-foreground hover:text-primary"
-                >
-                  Use in Ghostwriter →
-                </Link>
+                <TrendToContentButton
+                  workspaceId={workspaceId}
+                  trendTitle={idea.split(' — ')[0] ?? idea.slice(0, 60)}
+                  contentAngle={idea}
+                />
               </li>
             ))}
           </ol>
@@ -190,7 +191,7 @@ function TrendResults({
           </h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {relevantTrends.map((item) => (
-              <TrendCard key={item.trend.title} item={item} />
+              <TrendCard key={item.trend.title} item={item} workspaceId={workspaceId} />
             ))}
           </div>
         </div>
@@ -216,6 +217,7 @@ function TrendResults({
 function TrendCard({
   item,
   dimmed = false,
+  workspaceId,
 }: {
   item: {
     trend: {
@@ -229,6 +231,7 @@ function TrendCard({
     isRelevant: boolean
   }
   dimmed?: boolean
+  workspaceId?: string
 }) {
   const score = item.relevanceScore
   const borderColor = dimmed
@@ -262,6 +265,15 @@ function TrendCard({
         <p className="text-xs text-muted-foreground">{item.trend.description}</p>
       )}
 
+      {/* Create content from this trend */}
+      {!dimmed && workspaceId && item.contentAngle && (
+        <TrendToContentButton
+          workspaceId={workspaceId}
+          trendTitle={item.trend.title}
+          contentAngle={item.contentAngle}
+        />
+      )}
+
       <div className="flex items-center justify-between">
         <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
           Google Trends
@@ -277,6 +289,57 @@ function TrendCard({
           </a>
         )}
       </div>
+    </div>
+  )
+}
+
+/* ─── Trend → Full Content Button ─────────────────────────── */
+
+function TrendToContentButton({
+  workspaceId,
+  trendTitle,
+  contentAngle,
+}: {
+  workspaceId: string
+  trendTitle: string
+  contentAngle: string
+}) {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleClick() {
+    setLoading(true)
+    setError(null)
+
+    const formData = new FormData()
+    formData.set('workspaceId', workspaceId)
+    formData.set('trendTitle', trendTitle)
+    formData.set('contentAngle', contentAngle)
+
+    const result: TrendToContentState = await createContentFromTrendAction({}, formData)
+
+    if (result.ok === true) {
+      router.push(result.redirectUrl)
+    } else if (result.ok === false) {
+      setError(result.error)
+      setLoading(false)
+    } else {
+      setError('Unexpected error')
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      {error && <span className="text-xs text-destructive">{error}</span>}
+      <button
+        onClick={handleClick}
+        disabled={loading}
+        className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+      >
+        {loading ? 'Creating...' : '⚡ Create content'}
+      </button>
     </div>
   )
 }
