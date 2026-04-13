@@ -60,30 +60,30 @@ const INTEGRATIONS: Integration[] = [
   { id: 'd-id', name: 'D-ID', description: 'AI avatar video generation', icon: Video, category: 'Video & Media', status: 'available', color: 'text-amber-400', bg: 'bg-amber-400/10', configKey: 'DID_API_KEY' },
 
   // Import Sources
-  { id: 'google-drive', name: 'Google Drive', description: 'Import videos and documents from Drive', icon: Cloud, category: 'Import', status: 'coming_soon', color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
+  { id: 'google-drive', name: 'Google Drive', description: 'Import videos and documents from Drive', icon: Cloud, category: 'Import', status: 'available', color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
   { id: 'dropbox', name: 'Dropbox', description: 'Import files from Dropbox', icon: Cloud, category: 'Import', status: 'coming_soon', color: 'text-blue-400', bg: 'bg-blue-400/10' },
-  { id: 'notion', name: 'Notion', description: 'Sync content ideas and calendars', icon: FileText, category: 'Import', status: 'coming_soon', color: 'text-neutral-300', bg: 'bg-neutral-300/10' },
+  { id: 'notion', name: 'Notion', description: 'Sync content ideas and calendars', icon: FileText, category: 'Import', status: 'available', color: 'text-neutral-300', bg: 'bg-neutral-300/10' },
   { id: 'zoom', name: 'Zoom', description: 'Import meeting recordings', icon: Video, category: 'Import', status: 'coming_soon', color: 'text-blue-400', bg: 'bg-blue-400/10' },
-  { id: 'spotify', name: 'Spotify Podcasts', description: 'Import podcast episodes via RSS', icon: Podcast, category: 'Import', status: 'coming_soon', color: 'text-green-400', bg: 'bg-green-400/10' },
+  { id: 'spotify', name: 'Spotify Podcasts', description: 'Import podcast episodes via RSS', icon: Podcast, category: 'Import', status: 'available', color: 'text-green-400', bg: 'bg-green-400/10' },
 
   // Export & Publish
-  { id: 'wordpress', name: 'WordPress', description: 'Publish blog posts directly', icon: Globe, category: 'Export', status: 'coming_soon', color: 'text-blue-400', bg: 'bg-blue-400/10' },
-  { id: 'beehiiv', name: 'Beehiiv', description: 'Publish newsletters directly', icon: Mail, category: 'Export', status: 'coming_soon', color: 'text-orange-400', bg: 'bg-orange-400/10' },
+  { id: 'wordpress', name: 'WordPress', description: 'Publish blog posts directly', icon: Globe, category: 'Export', status: 'available', color: 'text-blue-400', bg: 'bg-blue-400/10' },
+  { id: 'beehiiv', name: 'Beehiiv', description: 'Publish newsletters directly', icon: Mail, category: 'Export', status: 'available', color: 'text-orange-400', bg: 'bg-orange-400/10' },
   { id: 'substack', name: 'Substack', description: 'Push newsletters to Substack', icon: Mail, category: 'Export', status: 'coming_soon', color: 'text-orange-400', bg: 'bg-orange-400/10' },
-  { id: 'medium', name: 'Medium', description: 'Publish articles to Medium', icon: FileText, category: 'Export', status: 'coming_soon', color: 'text-neutral-300', bg: 'bg-neutral-300/10' },
+  { id: 'medium', name: 'Medium', description: 'Publish articles to Medium', icon: FileText, category: 'Export', status: 'available', color: 'text-neutral-300', bg: 'bg-neutral-300/10' },
   { id: 'canva', name: 'Canva', description: 'Edit thumbnails and carousels in Canva', icon: Palette, category: 'Export', status: 'coming_soon', color: 'text-cyan-400', bg: 'bg-cyan-400/10' },
 
   // Notifications & Automation
-  { id: 'slack', name: 'Slack', description: 'Get notified when outputs are ready', icon: MessageSquare, category: 'Notifications', status: 'coming_soon', color: 'text-purple-400', bg: 'bg-purple-400/10' },
-  { id: 'discord', name: 'Discord', description: 'Post updates to your Discord server', icon: MessageSquare, category: 'Notifications', status: 'coming_soon', color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
+  { id: 'slack', name: 'Slack', description: 'Get notified when outputs are ready', icon: MessageSquare, category: 'Notifications', status: 'available', color: 'text-purple-400', bg: 'bg-purple-400/10' },
+  { id: 'discord', name: 'Discord', description: 'Post updates to your Discord server', icon: MessageSquare, category: 'Notifications', status: 'available', color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
   { id: 'resend', name: 'Email (Resend)', description: 'Email notifications and review alerts', icon: Mail, category: 'Notifications', status: 'available', color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
   { id: 'zapier', name: 'Zapier', description: 'Connect 5000+ apps via webhooks', icon: Zap, category: 'Automation', status: 'available', color: 'text-orange-400', bg: 'bg-orange-400/10' },
   { id: 'make', name: 'Make (Integromat)', description: 'Advanced workflow automation', icon: Webhook, category: 'Automation', status: 'available', color: 'text-violet-400', bg: 'bg-violet-400/10' },
   { id: 'n8n', name: 'n8n', description: 'Self-hosted workflow automation', icon: Webhook, category: 'Automation', status: 'available', color: 'text-red-400', bg: 'bg-red-400/10' },
 
   // Data & Analytics
-  { id: 'google-sheets', name: 'Google Sheets', description: 'Export analytics and content data', icon: Table2, category: 'Data', status: 'coming_soon', color: 'text-green-400', bg: 'bg-green-400/10' },
-  { id: 'airtable', name: 'Airtable', description: 'Sync content calendar to Airtable', icon: Table2, category: 'Data', status: 'coming_soon', color: 'text-blue-400', bg: 'bg-blue-400/10' },
+  { id: 'google-sheets', name: 'Google Sheets', description: 'Export analytics and content data', icon: Table2, category: 'Data', status: 'available', color: 'text-green-400', bg: 'bg-green-400/10' },
+  { id: 'airtable', name: 'Airtable', description: 'Sync content calendar to Airtable', icon: Table2, category: 'Data', status: 'available', color: 'text-blue-400', bg: 'bg-blue-400/10' },
 ]
 
 function StatusBadge({ status }: { status: IntegrationStatus }) {
