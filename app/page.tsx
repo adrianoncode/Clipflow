@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { ArrowRight, Check, X, ChevronDown, Play, Star, Zap, Video, PenTool, BarChart3, Globe, Calendar, Layers, Mic, Hash, Users } from 'lucide-react'
+import { ArrowRight, Check, X, ChevronDown, Play, Star, Zap, Video, PenTool, BarChart3, Globe, Calendar, Mic, Hash, Users } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Clipflow — AI Video Repurposing · TikTok, Reels, Shorts & LinkedIn',
@@ -32,109 +32,110 @@ export default function HomePage() {
   return (
     <>
       <style>{`
-        @keyframes fade-up { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
         @keyframes marquee { 0% { transform:translateX(0) } 100% { transform:translateX(-50%) } }
-        .fu { animation:fade-up .6s ease both }
-        .fu1 { animation:fade-up .6s .08s ease both }
-        .fu2 { animation:fade-up .6s .16s ease both }
-        .fu3 { animation:fade-up .6s .28s ease both }
         .mq { animation:marquee 30s linear infinite }
         details summary { list-style:none } details summary::-webkit-details-marker { display:none }
         details[open] .chv { transform:rotate(180deg) } .chv { transition:transform .2s }
       `}</style>
 
-      <div style={{ background:'#fff', color:'#1a1a1a', minHeight:'100vh', fontFamily:'var(--font-inter),-apple-system,BlinkMacSystemFont,sans-serif' }}>
+      <div style={{ background:'#fff', color:'#111', minHeight:'100vh', fontFamily:'var(--font-inter),-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif' }}>
 
         {/* ══ NAV ═══════════════════════════════════════════════ */}
-        <header style={{ position:'sticky', top:0, zIndex:100, height:64, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 32px', borderBottom:'1px solid #eee', background:'rgba(255,255,255,.95)', backdropFilter:'blur(12px)' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:32 }}>
-            <span style={{ fontSize:18, fontWeight:800, letterSpacing:'-.02em', color:'#7c3aed' }}>Clipflow</span>
-            <nav style={{ display:'flex', gap:24, fontSize:14, color:'#666' }}>
+        <header style={{ position:'sticky', top:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 40px', height:64, borderBottom:'1px solid #eee', background:'rgba(255,255,255,.97)', backdropFilter:'blur(8px)' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:36 }}>
+            <Link href="/" style={{ fontSize:20, fontWeight:800, color:'#7c3aed', textDecoration:'none', letterSpacing:'-.02em' }}>Clipflow</Link>
+            <nav style={{ display:'flex', gap:28 }}>
               {[['#features','Features'],['#pricing','Pricing'],['#compare','Compare'],['#faq','FAQ']].map(([h,l])=>(
-                <a key={h} href={h} style={{ textDecoration:'none', color:'inherit', transition:'color .15s' }}>{l}</a>
+                <a key={h} href={h} style={{ fontSize:15, color:'#555', textDecoration:'none', fontWeight:500 }}>{l}</a>
               ))}
             </nav>
           </div>
-          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <Link href="/login" style={{ fontSize:14, color:'#666', textDecoration:'none', padding:'8px 16px' }}>Log in</Link>
-            <Link href="/signup" style={{ display:'inline-flex', alignItems:'center', height:40, padding:'0 20px', borderRadius:8, background:'#7c3aed', color:'#fff', fontSize:14, fontWeight:600, textDecoration:'none', transition:'background .15s' }}>Try for free</Link>
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <Link href="/login" style={{ fontSize:14, fontWeight:500, color:'#555', textDecoration:'none', padding:'8px 16px', borderRadius:8, border:'1px solid #e5e5e5' }}>Log in</Link>
+            <Link href="/signup" style={{ fontSize:14, fontWeight:600, color:'#fff', textDecoration:'none', padding:'8px 20px', borderRadius:8, background:'#7c3aed' }}>Try for free</Link>
           </div>
         </header>
 
         <main>
 
           {/* ══ HERO ════════════════════════════════════════════ */}
-          <section style={{ position:'relative', overflow:'hidden', textAlign:'center', padding:'80px 24px 60px', background:'linear-gradient(180deg, #f8f6ff 0%, #fff 100%)' }}>
-            <div style={{ position:'relative', maxWidth:720, margin:'0 auto' }}>
-              {/* Badge */}
-              <div className="fu" style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'6px 14px', borderRadius:999, background:'#f0ebff', fontSize:13, fontWeight:600, color:'#7c3aed', marginBottom:24 }}>
-                <Zap style={{ width:13, height:13 }} /> Now with AI video rendering
+          <section style={{ textAlign:'center', padding:'56px 24px 40px', background:'linear-gradient(180deg,#f5f0ff 0%,#fff 100%)' }}>
+            <div style={{ maxWidth:700, margin:'0 auto' }}>
+              <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'6px 16px', borderRadius:999, background:'#ede9fe', fontSize:14, fontWeight:600, color:'#7c3aed', marginBottom:20 }}>
+                <Zap style={{ width:14, height:14 }} /> Now with AI video rendering
               </div>
 
-              <h1 className="fu1" style={{ fontSize:'clamp(36px, 6vw, 56px)', fontWeight:800, lineHeight:1.1, letterSpacing:'-.03em', color:'#1a1a1a' }}>
-                Turn one video into content for{' '}
-                <span style={{ color:'#7c3aed' }}>every platform</span>
+              <h1 style={{ fontSize:52, fontWeight:800, lineHeight:1.1, letterSpacing:'-.03em', color:'#111' }}>
+                Turn one video into content for <span style={{ color:'#7c3aed' }}>every platform</span>
               </h1>
 
-              <p className="fu2" style={{ fontSize:18, lineHeight:1.6, color:'#666', maxWidth:540, margin:'20px auto 0' }}>
+              <p style={{ fontSize:18, lineHeight:1.6, color:'#555', maxWidth:520, margin:'16px auto 0' }}>
                 Paste a YouTube link. Get TikTok, Reels, Shorts &amp; LinkedIn drafts — with AI subtitles, B-Roll, and virality scoring. Real MP4 rendering included.
               </p>
 
-              <div className="fu3" style={{ display:'flex', gap:10, justifyContent:'center', marginTop:28 }}>
-                <Link href="/signup" style={{ display:'inline-flex', alignItems:'center', gap:6, height:48, padding:'0 28px', borderRadius:10, background:'#7c3aed', color:'#fff', fontSize:16, fontWeight:600, textDecoration:'none', boxShadow:'0 4px 14px rgba(124,58,237,.25)', transition:'all .15s' }}>
-                  Start for free <ArrowRight style={{ width:16, height:16 }} />
+              <div style={{ display:'flex', gap:12, justifyContent:'center', marginTop:28 }}>
+                <Link href="/signup" style={{ display:'inline-flex', alignItems:'center', gap:8, height:52, padding:'0 32px', borderRadius:12, background:'#7c3aed', color:'#fff', fontSize:17, fontWeight:600, textDecoration:'none', boxShadow:'0 4px 16px rgba(124,58,237,.3)' }}>
+                  Start for free <ArrowRight style={{ width:18, height:18 }} />
                 </Link>
-                <Link href="#features" style={{ display:'inline-flex', alignItems:'center', gap:6, height:48, padding:'0 24px', borderRadius:10, border:'1px solid #ddd', color:'#666', fontSize:16, fontWeight:500, textDecoration:'none', transition:'all .15s' }}>
-                  <Play style={{ width:14, height:14 }} /> See features
+                <Link href="#features" style={{ display:'inline-flex', alignItems:'center', gap:8, height:52, padding:'0 28px', borderRadius:12, border:'2px solid #e5e5e5', color:'#555', fontSize:17, fontWeight:500, textDecoration:'none' }}>
+                  <Play style={{ width:16, height:16 }} /> See features
                 </Link>
               </div>
-              <p style={{ marginTop:12, fontSize:13, color:'#999' }}>No credit card required · Free forever plan</p>
+              <p style={{ marginTop:10, fontSize:14, color:'#999' }}>No credit card required · Free forever</p>
 
               {/* Social proof */}
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:28 }}>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10, marginTop:24 }}>
                 <div style={{ display:'flex' }}>
                   {['#7c3aed','#ec4899','#f97316','#10b981','#0ea5e9'].map((c,i)=>(
-                    <div key={i} style={{ width:30, height:30, borderRadius:'50%', background:c, border:'2.5px solid #fff', marginLeft:i>0?-8:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700, color:'#fff' }}>
+                    <div key={i} style={{ width:32, height:32, borderRadius:'50%', background:c, border:'3px solid #fff', marginLeft:i>0?-10:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, color:'#fff' }}>
                       {['S','M','P','J','L'][i]}
                     </div>
                   ))}
                 </div>
-                <span style={{ fontSize:14, color:'#666' }}>Trusted by <strong style={{ color:'#1a1a1a' }}>2,400+</strong> creators</span>
-                <div style={{ display:'flex', gap:1 }}>
-                  {[1,2,3,4,5].map(i=><Star key={i} style={{ width:14, height:14, fill:'#fbbf24', color:'#fbbf24' }} />)}
+                <span style={{ fontSize:15, color:'#555' }}>Trusted by <strong style={{ color:'#111' }}>2,400+</strong> creators</span>
+                <div style={{ display:'flex', gap:2 }}>
+                  {[1,2,3,4,5].map(i=><Star key={i} style={{ width:16, height:16, fill:'#facc15', color:'#facc15' }} />)}
                 </div>
               </div>
             </div>
 
-            {/* Product mockup */}
-            <div style={{ position:'relative', marginTop:48, maxWidth:960, marginLeft:'auto', marginRight:'auto', padding:'0 20px' }}>
-              <div style={{ borderRadius:16, border:'1px solid #e5e7eb', boxShadow:'0 20px 60px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05)', overflow:'hidden', background:'#0c0c0f' }}>
-                <div style={{ display:'flex', alignItems:'center', height:36, padding:'0 12px', gap:6, borderBottom:'1px solid rgba(255,255,255,.06)' }}>
-                  {['#ff5f57','#febc2e','#28c840'].map((c,i)=>(<span key={i} style={{ width:10, height:10, borderRadius:'50%', background:c }} />))}
-                  <div style={{ flex:1, height:20, borderRadius:5, margin:'0 40px', background:'rgba(255,255,255,.04)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, color:'rgba(255,255,255,.2)' }}>clipflow.to</div>
+            {/* Mockup */}
+            <div style={{ marginTop:40, maxWidth:880, marginLeft:'auto', marginRight:'auto' }}>
+              <div style={{ borderRadius:16, border:'1px solid #e0e0e0', boxShadow:'0 24px 48px rgba(0,0,0,.08)', overflow:'hidden', background:'#0e0e12' }}>
+                <div style={{ display:'flex', alignItems:'center', height:38, padding:'0 14px', gap:7, borderBottom:'1px solid rgba(255,255,255,.06)' }}>
+                  {['#ff5f57','#febc2e','#28c840'].map((c,i)=>(<span key={i} style={{ width:11, height:11, borderRadius:'50%', background:c }} />))}
+                  <div style={{ flex:1, height:22, borderRadius:6, margin:'0 36px', background:'rgba(255,255,255,.05)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, color:'rgba(255,255,255,.2)' }}>clipflow.to</div>
                 </div>
-                <div style={{ display:'flex', height:320 }}>
-                  <div style={{ width:150, flexShrink:0, background:'#0e0e12', borderRight:'1px solid rgba(255,255,255,.06)', padding:'10px 8px' }}>
+                <div style={{ display:'flex', minHeight:280 }}>
+                  <div style={{ width:140, flexShrink:0, background:'#111116', borderRight:'1px solid rgba(255,255,255,.06)', padding:'12px 8px' }}>
                     {['Dashboard','Pipeline','Calendar','Ghostwriter','All Tools','Trends'].map((n,i)=>(
-                      <div key={n} style={{ display:'flex', alignItems:'center', gap:5, padding:'4px 7px', borderRadius:5, marginBottom:1, background:i===4?'rgba(124,58,237,.12)':'transparent' }}>
-                        <span style={{ fontSize:10, color:i===4?'#a78bfa':'rgba(255,255,255,.25)' }}>{'◈▤◷✦🔮📈'[i]}</span>
-                        <span style={{ fontSize:10.5, color:i===4?'#e0e0e0':'rgba(255,255,255,.3)' }}>{n}</span>
+                      <div key={n} style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 8px', borderRadius:6, marginBottom:1, background:i===4?'rgba(124,58,237,.15)':'transparent' }}>
+                        <span style={{ fontSize:11, color:i===4?'#a78bfa':'rgba(255,255,255,.25)' }}>{'◈▤◷✦🔮📈'[i]}</span>
+                        <span style={{ fontSize:11.5, color:i===4?'#e8e8e8':'rgba(255,255,255,.35)', fontWeight:i===4?500:400 }}>{n}</span>
                       </div>
                     ))}
                   </div>
-                  <div style={{ flex:1, padding:'12px', background:'#0c0c0f' }}>
-                    <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10 }}>
-                      <div><p style={{ fontSize:12, fontWeight:600, color:'#fff' }}>Product Demo.mp4</p><p style={{ fontSize:9, color:'rgba(255,255,255,.3)', marginTop:1 }}>4 drafts · 24s</p></div>
-                      <span style={{ fontSize:8, fontWeight:600, padding:'3px 7px', borderRadius:999, background:'rgba(52,211,153,.1)', color:'#34d399' }}>✓ Ready</span>
+                  <div style={{ flex:1, padding:'14px 16px', background:'#0e0e12' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:14 }}>
+                      <div>
+                        <p style={{ fontSize:14, fontWeight:600, color:'#fff' }}>Product Demo.mp4</p>
+                        <p style={{ fontSize:11, color:'rgba(255,255,255,.35)', marginTop:2 }}>4 drafts generated · 24 seconds · gpt-4o</p>
+                      </div>
+                      <span style={{ fontSize:10, fontWeight:600, padding:'4px 10px', borderRadius:999, background:'rgba(52,211,153,.12)', color:'#34d399', border:'1px solid rgba(52,211,153,.2)' }}>✓ Ready</span>
                     </div>
-                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:5 }}>
-                      {[{p:'TikTok',s:94,bg:'rgba(236,72,153,.06)',b:'rgba(236,72,153,.12)',c:'#f9a8d4'},{p:'Reels',s:89,bg:'rgba(168,85,247,.06)',b:'rgba(168,85,247,.12)',c:'#d8b4fe'},{p:'Shorts',s:85,bg:'rgba(239,68,68,.06)',b:'rgba(239,68,68,.12)',c:'#fca5a5'},{p:'LinkedIn',s:81,bg:'rgba(59,130,246,.06)',b:'rgba(59,130,246,.12)',c:'#93c5fd'}].map(c=>(
-                        <div key={c.p} style={{ padding:'8px', borderRadius:6, background:c.bg, border:`1px solid ${c.b}` }}>
-                          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-                            <span style={{ fontSize:8, fontWeight:700, padding:'1px 5px', borderRadius:999, background:c.b, color:c.c }}>{c.p}</span>
-                            <span style={{ fontSize:10, fontWeight:700, color:c.s>88?'#34d399':'#fbbf24' }}>{c.s}</span>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+                      {[
+                        { p:'TikTok', s:94, bg:'rgba(236,72,153,.07)', b:'rgba(236,72,153,.15)', c:'#f9a8d4', h:'"POV: You spend 8 hours editing one video 😭"' },
+                        { p:'Instagram Reels', s:89, bg:'rgba(168,85,247,.07)', b:'rgba(168,85,247,.15)', c:'#d8b4fe', h:'"The workflow saving creators 6+ hours a week"' },
+                        { p:'YouTube Shorts', s:85, bg:'rgba(239,68,68,.07)', b:'rgba(239,68,68,.15)', c:'#fca5a5', h:'"I automated my entire content pipeline"' },
+                        { p:'LinkedIn', s:81, bg:'rgba(59,130,246,.07)', b:'rgba(59,130,246,.15)', c:'#93c5fd', h:'"80% of creators waste time on distribution"' },
+                      ].map(c=>(
+                        <div key={c.p} style={{ padding:'10px 12px', borderRadius:8, background:c.bg, border:`1px solid ${c.b}` }}>
+                          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+                            <span style={{ fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:999, background:c.b, color:c.c }}>{c.p}</span>
+                            <span style={{ fontSize:12, fontWeight:700, color:c.s>88?'#34d399':'#fbbf24' }}>{c.s}<span style={{ fontSize:9, color:'rgba(255,255,255,.2)', fontWeight:400 }}>/100</span></span>
                           </div>
-                          <p style={{ fontSize:9.5, lineHeight:1.4, color:'rgba(255,255,255,.5)' }}>AI-generated platform draft...</p>
+                          <p style={{ fontSize:11, lineHeight:1.5, color:'rgba(255,255,255,.55)' }}>{c.h}</p>
                         </div>
                       ))}
                     </div>
@@ -145,75 +146,75 @@ export default function HomePage() {
           </section>
 
           {/* ══ LOGOS ═══════════════════════════════════════════ */}
-          <section style={{ padding:'32px 24px', borderBottom:'1px solid #eee' }}>
-            <p style={{ textAlign:'center', fontSize:13, fontWeight:500, color:'#999', marginBottom:16, letterSpacing:'.03em', textTransform:'uppercase' }}>Powered by leading AI providers</p>
-            <div style={{ display:'flex', justifyContent:'center', alignItems:'center', gap:48, flexWrap:'wrap' }}>
+          <section style={{ padding:'28px 24px', borderBottom:'1px solid #f0f0f0' }}>
+            <p style={{ textAlign:'center', fontSize:13, fontWeight:600, color:'#bbb', marginBottom:14, textTransform:'uppercase', letterSpacing:'.05em' }}>Powered by</p>
+            <div style={{ display:'flex', justifyContent:'center', alignItems:'center', gap:44, flexWrap:'wrap' }}>
               {['OpenAI','Anthropic','Google Gemini','ElevenLabs','Shotstack','Pexels'].map(n=>(
-                <span key={n} style={{ fontSize:14, fontWeight:600, color:'#bbb' }}>{n}</span>
+                <span key={n} style={{ fontSize:15, fontWeight:700, color:'#ccc' }}>{n}</span>
               ))}
             </div>
           </section>
 
-          {/* ══ FEATURES GRID ══════════════════════════════════ */}
-          <section id="features" style={{ padding:'80px 24px' }}>
+          {/* ══ FEATURES ═══════════════════════════════════════ */}
+          <section id="features" style={{ padding:'72px 24px' }}>
             <div style={{ maxWidth:1000, margin:'0 auto' }}>
-              <div style={{ textAlign:'center', marginBottom:56 }}>
-                <p style={{ fontSize:14, fontWeight:600, color:'#7c3aed', marginBottom:8 }}>30+ AI Tools</p>
-                <h2 style={{ fontSize:'clamp(28px, 4vw, 42px)', fontWeight:800, lineHeight:1.1, letterSpacing:'-.02em', color:'#1a1a1a' }}>Everything you need to repurpose content</h2>
-                <p style={{ fontSize:16, color:'#888', marginTop:12, maxWidth:480, marginLeft:'auto', marginRight:'auto' }}>From strategy to publishing — one platform replaces your entire content workflow.</p>
+              <div style={{ textAlign:'center', marginBottom:48 }}>
+                <p style={{ fontSize:15, fontWeight:700, color:'#7c3aed', marginBottom:6 }}>30+ AI Tools</p>
+                <h2 style={{ fontSize:40, fontWeight:800, lineHeight:1.12, letterSpacing:'-.025em', color:'#111' }}>Everything you need to repurpose content</h2>
+                <p style={{ fontSize:17, color:'#666', marginTop:10, maxWidth:500, marginLeft:'auto', marginRight:'auto' }}>From strategy to publishing — one platform replaces your entire content workflow.</p>
               </div>
 
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:16 }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:20 }}>
                 {[
                   { icon:Video, color:'#7c3aed', bg:'#f0ebff', title:'Video Rendering', desc:'Burn captions, stitch B-Roll, clip segments, add brand intros. Real MP4 output via Shotstack.' },
                   { icon:Zap, color:'#f59e0b', bg:'#fffbeb', title:'4 Platform Drafts', desc:'TikTok, Reels, Shorts, LinkedIn — all generated simultaneously in under 30 seconds.' },
                   { icon:PenTool, color:'#ec4899', bg:'#fdf2f8', title:'AI Ghostwriter', desc:'Full video scripts from a topic or trend. Brand voice and persona applied automatically.' },
-                  { icon:BarChart3, color:'#10b981', bg:'#ecfdf5', title:'Virality Score', desc:'AI scores every output on hook strength, scroll-stop power, and shareability — before you post.' },
+                  { icon:BarChart3, color:'#10b981', bg:'#ecfdf5', title:'Virality Score', desc:'AI scores every output on hook strength, scroll-stop power, and shareability.' },
                   { icon:Mic, color:'#8b5cf6', bg:'#f5f3ff', title:'AI Persona', desc:'Give the AI a name, backstory, expertise, and writing style. Every draft sounds like them.' },
-                  { icon:Calendar, color:'#0ea5e9', bg:'#f0f9ff', title:'30-Day Calendar', desc:'Input your niche → AI generates a full month of content ideas with hooks and scripts.' },
-                  { icon:Users, color:'#f97316', bg:'#fff7ed', title:'Creator Search', desc:'Find creators on YouTube, TikTok, Instagram, Twitter, LinkedIn. Powered by ScrapeCreators.' },
-                  { icon:Hash, color:'#06b6d4', bg:'#ecfeff', title:'Hashtag Research', desc:'Data-driven hashtag analysis with reach estimates, competition levels, and ready-to-use sets.' },
-                  { icon:Globe, color:'#6366f1', bg:'#eef2ff', title:'24 Integrations', desc:'Slack, Discord, WordPress, Beehiiv, Notion, Airtable, Zapier, Make, and 16 more.' },
+                  { icon:Calendar, color:'#0ea5e9', bg:'#f0f9ff', title:'30-Day Calendar', desc:'Input your niche → AI generates a full month of content with hooks and scripts.' },
+                  { icon:Users, color:'#f97316', bg:'#fff7ed', title:'Creator Search', desc:'Find creators on YouTube, TikTok, Instagram, Twitter, LinkedIn. Analyze their stats.' },
+                  { icon:Hash, color:'#06b6d4', bg:'#ecfeff', title:'Hashtag Research', desc:'Data-driven analysis with reach estimates, competition levels, and ready-to-use sets.' },
+                  { icon:Globe, color:'#6366f1', bg:'#eef2ff', title:'24 Integrations', desc:'Slack, Discord, WordPress, Beehiiv, Notion, Airtable, Zapier, Make, and more.' },
                 ].map((f,i)=>(
-                  <div key={i} style={{ padding:'28px 24px', borderRadius:12, border:'1px solid #eee', background:'#fff', transition:'all .2s', cursor:'default' }}>
-                    <div style={{ width:44, height:44, borderRadius:10, background:f.bg, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:16 }}>
-                      <f.icon style={{ width:22, height:22, color:f.color }} />
+                  <div key={i} style={{ padding:'28px', borderRadius:16, border:'1px solid #f0f0f0', background:'#fff', boxShadow:'0 1px 3px rgba(0,0,0,.04)', transition:'all .2s' }}>
+                    <div style={{ width:48, height:48, borderRadius:12, background:f.bg, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:18 }}>
+                      <f.icon style={{ width:24, height:24, color:f.color }} />
                     </div>
-                    <h3 style={{ fontSize:17, fontWeight:700, marginBottom:6, color:'#1a1a1a' }}>{f.title}</h3>
-                    <p style={{ fontSize:14, lineHeight:1.6, color:'#888' }}>{f.desc}</p>
+                    <h3 style={{ fontSize:18, fontWeight:700, marginBottom:8, color:'#111' }}>{f.title}</h3>
+                    <p style={{ fontSize:15, lineHeight:1.6, color:'#666' }}>{f.desc}</p>
                   </div>
                 ))}
               </div>
 
-              {/* BYOK banner */}
-              <div style={{ marginTop:16, padding:'28px 32px', borderRadius:12, background:'linear-gradient(135deg, #7c3aed, #6366f1)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:24 }}>
+              {/* BYOK */}
+              <div style={{ marginTop:20, padding:'32px 40px', borderRadius:16, background:'linear-gradient(135deg,#7c3aed,#6366f1)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:32, boxShadow:'0 8px 24px rgba(124,58,237,.2)' }}>
                 <div>
-                  <h3 style={{ fontSize:20, fontWeight:700, color:'#fff' }}>BYOK — Bring Your Own Key</h3>
-                  <p style={{ fontSize:15, color:'rgba(255,255,255,.8)', marginTop:6, maxWidth:480 }}>Connect your own OpenAI, Anthropic, or Google key. All AI at cost — zero markup. Saves teams $200+/month.</p>
+                  <h3 style={{ fontSize:22, fontWeight:800, color:'#fff' }}>BYOK — Bring Your Own Key</h3>
+                  <p style={{ fontSize:16, color:'rgba(255,255,255,.85)', marginTop:8, maxWidth:500 }}>Connect your own OpenAI, Anthropic, or Google key. All AI at cost — zero markup. Saves teams $200+/month.</p>
                 </div>
-                <Link href="/signup" style={{ display:'inline-flex', alignItems:'center', gap:6, height:44, padding:'0 24px', borderRadius:10, background:'#fff', color:'#7c3aed', fontSize:15, fontWeight:600, textDecoration:'none', whiteSpace:'nowrap', flexShrink:0 }}>Try free <ArrowRight style={{ width:15, height:15 }} /></Link>
+                <Link href="/signup" style={{ display:'inline-flex', alignItems:'center', gap:8, height:48, padding:'0 28px', borderRadius:12, background:'#fff', color:'#7c3aed', fontSize:16, fontWeight:700, textDecoration:'none', whiteSpace:'nowrap', flexShrink:0, boxShadow:'0 2px 8px rgba(0,0,0,.1)' }}>Try free <ArrowRight style={{ width:16, height:16 }} /></Link>
               </div>
             </div>
           </section>
 
-          {/* ══ TESTIMONIALS MARQUEE ════════════════════════════ */}
-          <section style={{ padding:'48px 0', background:'#fafafa', borderTop:'1px solid #eee', borderBottom:'1px solid #eee', overflow:'hidden' }}>
-            <p style={{ textAlign:'center', fontSize:14, fontWeight:600, color:'#999', marginBottom:20 }}>What creators are saying</p>
+          {/* ══ TESTIMONIALS ════════════════════════════════════ */}
+          <section style={{ padding:'48px 0', background:'#fafafa', borderTop:'1px solid #f0f0f0', borderBottom:'1px solid #f0f0f0', overflow:'hidden' }}>
+            <p style={{ textAlign:'center', fontSize:15, fontWeight:700, color:'#999', marginBottom:24 }}>What creators are saying</p>
             <div style={{ display:'flex', width:'max-content' }} className="mq">
               {[...Array(2)].map((_,si)=>(
                 <div key={si} style={{ display:'flex', gap:16, paddingRight:16 }}>
                   {[
-                    { q:'"Cut my production time by 90%"', n:'Sarah K.', r:'Creator · 280K' },
-                    { q:'"LinkedIn posts that sound human"', n:'Marcus T.', r:'Agency Owner' },
-                    { q:'"BYOK saves us $400/month"', n:'Priya M.', r:'Head of Content' },
-                    { q:'"Content DNA is a game changer"', n:'Jake R.', r:'YouTuber · 150K' },
-                    { q:'"30 tools in one place"', n:'Omar S.', r:'Freelancer' },
-                    { q:'"Real video rendering — finally"', n:'Lisa C.', r:'Social Manager' },
+                    { q:'"Cut my production time by 90%. This thing is insane."', n:'Sarah K.', r:'Creator · 280K followers' },
+                    { q:'"LinkedIn posts that actually sound human. Finally."', n:'Marcus T.', r:'B2B Agency Owner' },
+                    { q:'"BYOK saves us over $400 per month on AI costs."', n:'Priya M.', r:'Head of Content' },
+                    { q:'"The Content DNA feature changed how I plan content."', n:'Jake R.', r:'YouTuber · 150K subs' },
+                    { q:'"30 AI tools in one place. No more switching apps."', n:'Omar S.', r:'Freelance Creator' },
+                    { q:'"Finally real video rendering, not just text outputs."', n:'Lisa C.', r:'Social Media Manager' },
                   ].map(t=>(
-                    <div key={t.n} style={{ minWidth:280, padding:'20px', borderRadius:12, background:'#fff', border:'1px solid #eee', boxShadow:'0 1px 3px rgba(0,0,0,.04)' }}>
-                      <div style={{ display:'flex', gap:1, marginBottom:10 }}>{[1,2,3,4,5].map(i=><Star key={i} style={{ width:12, height:12, fill:'#fbbf24', color:'#fbbf24' }} />)}</div>
-                      <p style={{ fontSize:15, fontWeight:500, color:'#1a1a1a', marginBottom:12 }}>{t.q}</p>
-                      <p style={{ fontSize:13, color:'#888' }}><strong style={{ color:'#555' }}>{t.n}</strong> · {t.r}</p>
+                    <div key={t.n} style={{ minWidth:320, padding:'24px', borderRadius:16, background:'#fff', border:'1px solid #f0f0f0', boxShadow:'0 2px 6px rgba(0,0,0,.03)' }}>
+                      <div style={{ display:'flex', gap:2, marginBottom:12 }}>{[1,2,3,4,5].map(i=><Star key={i} style={{ width:14, height:14, fill:'#facc15', color:'#facc15' }} />)}</div>
+                      <p style={{ fontSize:16, fontWeight:500, color:'#222', marginBottom:14, lineHeight:1.5 }}>{t.q}</p>
+                      <p style={{ fontSize:14, color:'#888' }}><strong style={{ color:'#444' }}>{t.n}</strong> · {t.r}</p>
                     </div>
                   ))}
                 </div>
@@ -222,29 +223,29 @@ export default function HomePage() {
           </section>
 
           {/* ══ COMPARE ════════════════════════════════════════ */}
-          <section id="compare" style={{ padding:'80px 24px' }}>
+          <section id="compare" style={{ padding:'72px 24px' }}>
             <div style={{ maxWidth:720, margin:'0 auto' }}>
               <div style={{ textAlign:'center', marginBottom:40 }}>
-                <p style={{ fontSize:14, fontWeight:600, color:'#7c3aed', marginBottom:8 }}>Compare</p>
-                <h2 style={{ fontSize:'clamp(26px, 3.5vw, 38px)', fontWeight:800, lineHeight:1.1, letterSpacing:'-.02em' }}>More tools. Real video. Zero markup.</h2>
+                <p style={{ fontSize:15, fontWeight:700, color:'#7c3aed', marginBottom:6 }}>Compare</p>
+                <h2 style={{ fontSize:36, fontWeight:800, letterSpacing:'-.02em', color:'#111' }}>More tools. Real video. Zero markup.</h2>
               </div>
-              <div style={{ borderRadius:12, border:'1px solid #eee', overflow:'hidden' }}>
+              <div style={{ borderRadius:16, border:'1px solid #eee', overflow:'hidden', boxShadow:'0 1px 3px rgba(0,0,0,.04)' }}>
                 <table style={{ width:'100%', borderCollapse:'collapse' }}>
                   <thead>
-                    <tr style={{ borderBottom:'1px solid #eee', background:'#fafafa' }}>
-                      <th style={{ padding:'12px 16px', textAlign:'left', fontSize:13, fontWeight:500, color:'#888' }}>Feature</th>
-                      <th style={{ padding:'12px 16px', textAlign:'center', fontSize:13, fontWeight:700, color:'#7c3aed' }}>Clipflow</th>
-                      <th style={{ padding:'12px 16px', textAlign:'center', fontSize:13, fontWeight:500, color:'#888' }}>OpusClip</th>
-                      <th style={{ padding:'12px 16px', textAlign:'center', fontSize:13, fontWeight:500, color:'#888' }}>Klap</th>
+                    <tr style={{ borderBottom:'2px solid #f0f0f0', background:'#fafafa' }}>
+                      <th style={{ padding:'14px 20px', textAlign:'left', fontSize:14, fontWeight:600, color:'#888' }}>Feature</th>
+                      <th style={{ padding:'14px 20px', textAlign:'center', fontSize:14, fontWeight:800, color:'#7c3aed' }}>Clipflow</th>
+                      <th style={{ padding:'14px 20px', textAlign:'center', fontSize:14, fontWeight:600, color:'#888' }}>OpusClip</th>
+                      <th style={{ padding:'14px 20px', textAlign:'center', fontSize:14, fontWeight:600, color:'#888' }}>Klap</th>
                     </tr>
                   </thead>
                   <tbody>
                     {COMP.map((r,i)=>(
-                      <tr key={r.f} style={{ borderBottom:i<COMP.length-1?'1px solid #f0f0f0':'none' }}>
-                        <td style={{ padding:'10px 16px', fontSize:13, color:'#666' }}>{r.f}</td>
+                      <tr key={r.f} style={{ borderBottom:i<COMP.length-1?'1px solid #f5f5f5':'none' }}>
+                        <td style={{ padding:'12px 20px', fontSize:14, color:'#555' }}>{r.f}</td>
                         {[r.c,r.o,r.k].map((v,j)=>(
-                          <td key={j} style={{ padding:'10px 16px', textAlign:'center' }}>
-                            {v===true?<Check style={{ width:16, height:16, color:'#7c3aed', margin:'0 auto' }} />:v===false?<X style={{ width:16, height:16, color:'#ddd', margin:'0 auto' }} />:<span style={{ fontSize:11, color:'#888' }}>{v}</span>}
+                          <td key={j} style={{ padding:'12px 20px', textAlign:'center' }}>
+                            {v===true?<Check style={{ width:18, height:18, color:'#7c3aed', margin:'0 auto' }} />:v===false?<X style={{ width:18, height:18, color:'#ddd', margin:'0 auto' }} />:<span style={{ fontSize:12, color:'#999', fontWeight:500 }}>{v}</span>}
                           </td>
                         ))}
                       </tr>
@@ -256,36 +257,36 @@ export default function HomePage() {
           </section>
 
           {/* ══ PRICING ═══════════════════════════════════════ */}
-          <section id="pricing" style={{ padding:'80px 24px', background:'#fafafa', borderTop:'1px solid #eee' }}>
+          <section id="pricing" style={{ padding:'72px 24px', background:'#fafafa', borderTop:'1px solid #f0f0f0' }}>
             <div style={{ maxWidth:960, margin:'0 auto' }}>
               <div style={{ textAlign:'center', marginBottom:48 }}>
-                <p style={{ fontSize:14, fontWeight:600, color:'#7c3aed', marginBottom:8 }}>Pricing</p>
-                <h2 style={{ fontSize:'clamp(26px, 3.5vw, 38px)', fontWeight:800, lineHeight:1.1, letterSpacing:'-.02em' }}>Start free. Scale when ready.</h2>
-                <p style={{ fontSize:15, color:'#888', marginTop:10 }}>BYOK — you pay your AI provider at cost. Zero markup from us.</p>
+                <p style={{ fontSize:15, fontWeight:700, color:'#7c3aed', marginBottom:6 }}>Pricing</p>
+                <h2 style={{ fontSize:36, fontWeight:800, letterSpacing:'-.02em', color:'#111' }}>Start free. Scale when ready.</h2>
+                <p style={{ fontSize:16, color:'#666', marginTop:8 }}>BYOK — pay your AI provider at cost. Zero markup.</p>
               </div>
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12 }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16 }}>
                 {[
                   { n:'Free', p:'$0', per:'/forever', d:'Try it out.', f:['3 content/mo','10 outputs/mo','1 workspace','All AI tools'], cta:'Get started', hl:false },
                   { n:'Solo', p:'$19', per:'/mo', d:'For creators.', f:['20 content/mo','100 outputs/mo','Brand voice + persona','Video rendering','Review links'], cta:'Start trial', hl:true },
                   { n:'Team', p:'$49', per:'/mo', d:'For teams.', f:['100 content/mo','500 outputs/mo','5 workspaces','Team members','Everything in Solo'], cta:'Start trial', hl:false },
                   { n:'Agency', p:'$99', per:'/mo', d:'Unlimited.', f:['Unlimited content','Unlimited outputs','White-label portals','API access','Priority support'], cta:'Contact us', hl:false },
                 ].map(plan=>(
-                  <div key={plan.n} style={{ position:'relative', display:'flex', flexDirection:'column', padding:'28px 22px', borderRadius:12, background:'#fff', border:plan.hl?'2px solid #7c3aed':'1px solid #eee', boxShadow:plan.hl?'0 8px 30px rgba(124,58,237,.12)':'0 1px 3px rgba(0,0,0,.04)' }}>
-                    {plan.hl&&<div style={{ position:'absolute', top:-1, left:'50%', transform:'translateX(-50)', background:'#7c3aed', color:'#fff', fontSize:11, fontWeight:600, padding:'4px 14px', borderRadius:'0 0 8px 8px' }}>Most popular</div>}
-                    <p style={{ fontSize:16, fontWeight:700, marginTop:plan.hl?12:0 }}>{plan.n}</p>
-                    <p style={{ fontSize:13, color:'#888', marginTop:2 }}>{plan.d}</p>
-                    <div style={{ display:'flex', alignItems:'baseline', gap:3, margin:'16px 0' }}>
-                      <span style={{ fontSize:40, fontWeight:800, letterSpacing:'-.04em' }}>{plan.p}</span>
-                      <span style={{ fontSize:14, color:'#888' }}>{plan.per}</span>
+                  <div key={plan.n} style={{ position:'relative', display:'flex', flexDirection:'column', padding:'28px 24px', borderRadius:16, background:'#fff', border:plan.hl?'2px solid #7c3aed':'1px solid #eee', boxShadow:plan.hl?'0 8px 32px rgba(124,58,237,.12)':'0 1px 3px rgba(0,0,0,.04)' }}>
+                    {plan.hl&&<div style={{ position:'absolute', top:-1, left:'50%', transform:'translateX(-50%)', background:'#7c3aed', color:'#fff', fontSize:12, fontWeight:700, padding:'4px 16px', borderRadius:'0 0 10px 10px' }}>Most popular</div>}
+                    <p style={{ fontSize:18, fontWeight:700, marginTop:plan.hl?14:0, color:'#111' }}>{plan.n}</p>
+                    <p style={{ fontSize:14, color:'#888', marginTop:2 }}>{plan.d}</p>
+                    <div style={{ display:'flex', alignItems:'baseline', gap:4, margin:'20px 0' }}>
+                      <span style={{ fontSize:44, fontWeight:800, letterSpacing:'-.04em', color:'#111' }}>{plan.p}</span>
+                      <span style={{ fontSize:15, color:'#888' }}>{plan.per}</span>
                     </div>
-                    <ul style={{ display:'flex', flexDirection:'column', gap:8, flex:1 }}>
+                    <ul style={{ display:'flex', flexDirection:'column', gap:10, flex:1 }}>
                       {plan.f.map(f=>(
-                        <li key={f} style={{ display:'flex', alignItems:'center', gap:8, fontSize:13, color:'#666' }}>
-                          <Check style={{ width:14, height:14, color:'#10b981', flexShrink:0 }} />{f}
+                        <li key={f} style={{ display:'flex', alignItems:'center', gap:10, fontSize:14, color:'#555' }}>
+                          <Check style={{ width:16, height:16, color:'#10b981', flexShrink:0 }} />{f}
                         </li>
                       ))}
                     </ul>
-                    <Link href="/signup" style={{ display:'flex', alignItems:'center', justifyContent:'center', height:42, borderRadius:8, marginTop:20, fontSize:14, fontWeight:600, textDecoration:'none', transition:'all .15s', background:plan.hl?'#7c3aed':'#fff', color:plan.hl?'#fff':'#666', border:plan.hl?'none':'1px solid #ddd' }}>{plan.cta}</Link>
+                    <Link href="/signup" style={{ display:'flex', alignItems:'center', justifyContent:'center', height:44, borderRadius:10, marginTop:24, fontSize:15, fontWeight:600, textDecoration:'none', background:plan.hl?'#7c3aed':'#fff', color:plan.hl?'#fff':'#555', border:plan.hl?'none':'1.5px solid #e5e5e5' }}>{plan.cta}</Link>
                   </div>
                 ))}
               </div>
@@ -293,14 +294,14 @@ export default function HomePage() {
           </section>
 
           {/* ══ FAQ ════════════════════════════════════════════ */}
-          <section id="faq" style={{ padding:'80px 24px' }}>
-            <div style={{ maxWidth:600, margin:'0 auto' }}>
-              <h2 style={{ textAlign:'center', fontSize:'clamp(24px,3.5vw,34px)', fontWeight:800, letterSpacing:'-.02em', marginBottom:36 }}>Frequently asked questions</h2>
-              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+          <section id="faq" style={{ padding:'72px 24px' }}>
+            <div style={{ maxWidth:620, margin:'0 auto' }}>
+              <h2 style={{ textAlign:'center', fontSize:32, fontWeight:800, letterSpacing:'-.02em', marginBottom:36, color:'#111' }}>Frequently asked questions</h2>
+              <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                 {FAQ.map(f=>(
-                  <details key={f.q} style={{ borderRadius:10, border:'1px solid #eee', background:'#fff' }}>
-                    <summary style={{ padding:'16px 20px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:15, fontWeight:600, color:'#1a1a1a' }}>{f.q}<ChevronDown className="chv" style={{ width:16, height:16, color:'#999', flexShrink:0 }} /></summary>
-                    <div style={{ padding:'0 20px 16px', fontSize:14, lineHeight:1.65, color:'#888' }}>{f.a}</div>
+                  <details key={f.q} style={{ borderRadius:12, border:'1px solid #eee', background:'#fff' }}>
+                    <summary style={{ padding:'18px 24px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:16, fontWeight:600, color:'#111' }}>{f.q}<ChevronDown className="chv" style={{ width:18, height:18, color:'#bbb', flexShrink:0 }} /></summary>
+                    <div style={{ padding:'0 24px 18px', fontSize:15, lineHeight:1.65, color:'#666' }}>{f.a}</div>
                   </details>
                 ))}
               </div>
@@ -308,41 +309,37 @@ export default function HomePage() {
           </section>
 
           {/* ══ CTA ═══════════════════════════════════════════ */}
-          <section style={{ padding:'80px 24px', background:'linear-gradient(135deg, #7c3aed, #6366f1)', textAlign:'center' }}>
+          <section style={{ padding:'72px 24px', background:'linear-gradient(135deg,#7c3aed,#6366f1)', textAlign:'center' }}>
             <div style={{ maxWidth:560, margin:'0 auto' }}>
-              <h2 style={{ fontSize:'clamp(28px, 5vw, 44px)', fontWeight:800, letterSpacing:'-.03em', lineHeight:1.1, color:'#fff' }}>Ready to stop editing and start publishing?</h2>
-              <p style={{ fontSize:16, color:'rgba(255,255,255,.8)', marginTop:16 }}>30+ AI tools. Real video rendering. Zero markup. Free to start.</p>
-              <Link href="/signup" style={{ display:'inline-flex', alignItems:'center', gap:6, height:48, padding:'0 32px', borderRadius:10, background:'#fff', color:'#7c3aed', fontSize:16, fontWeight:600, textDecoration:'none', marginTop:28, boxShadow:'0 4px 14px rgba(0,0,0,.15)' }}>Create free account <ArrowRight style={{ width:16, height:16 }} /></Link>
-              <p style={{ marginTop:12, fontSize:13, color:'rgba(255,255,255,.5)' }}>No credit card required</p>
+              <h2 style={{ fontSize:40, fontWeight:800, letterSpacing:'-.03em', lineHeight:1.12, color:'#fff' }}>Ready to stop editing and start publishing?</h2>
+              <p style={{ fontSize:17, color:'rgba(255,255,255,.85)', marginTop:14 }}>30+ AI tools. Real video rendering. Zero markup.</p>
+              <Link href="/signup" style={{ display:'inline-flex', alignItems:'center', gap:8, height:52, padding:'0 36px', borderRadius:12, background:'#fff', color:'#7c3aed', fontSize:17, fontWeight:700, textDecoration:'none', marginTop:28, boxShadow:'0 4px 16px rgba(0,0,0,.15)' }}>Create free account <ArrowRight style={{ width:18, height:18 }} /></Link>
+              <p style={{ marginTop:10, fontSize:14, color:'rgba(255,255,255,.5)' }}>No credit card required</p>
             </div>
           </section>
         </main>
 
         {/* ══ FOOTER ══════════════════════════════════════════ */}
-        <footer style={{ padding:'48px 24px', borderTop:'1px solid #eee' }}>
+        <footer style={{ padding:'48px 40px', borderTop:'1px solid #eee' }}>
           <div style={{ maxWidth:960, margin:'0 auto', display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:32 }}>
             <div>
-              <span style={{ fontSize:18, fontWeight:800, color:'#7c3aed' }}>Clipflow</span>
-              <p style={{ fontSize:13, color:'#999', marginTop:6, maxWidth:240 }}>AI video repurposing with real rendering. One video — every platform.</p>
+              <span style={{ fontSize:20, fontWeight:800, color:'#7c3aed' }}>Clipflow</span>
+              <p style={{ fontSize:14, color:'#999', marginTop:8, maxWidth:260, lineHeight:1.5 }}>AI video repurposing with real rendering. One video — every platform.</p>
             </div>
-            <div style={{ display:'flex', gap:40, fontSize:13 }}>
-              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                <p style={{ fontWeight:700, color:'#1a1a1a', marginBottom:4 }}>Product</p>
-                {['Features','Pricing','Compare','Changelog'].map(l=><a key={l} href={l==='Changelog'?'/changelog':`#${l.toLowerCase()}`} style={{ textDecoration:'none', color:'#888' }}>{l}</a>)}
-              </div>
-              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                <p style={{ fontWeight:700, color:'#1a1a1a', marginBottom:4 }}>Account</p>
-                <Link href="/login" style={{ textDecoration:'none', color:'#888' }}>Log in</Link>
-                <Link href="/signup" style={{ textDecoration:'none', color:'#888' }}>Sign up</Link>
-              </div>
-              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                <p style={{ fontWeight:700, color:'#1a1a1a', marginBottom:4 }}>Legal</p>
-                <Link href="/privacy" style={{ textDecoration:'none', color:'#888' }}>Privacy</Link>
-                <Link href="/terms" style={{ textDecoration:'none', color:'#888' }}>Terms</Link>
-              </div>
+            <div style={{ display:'flex', gap:48 }}>
+              {[
+                { h:'Product', links:[['#features','Features'],['#pricing','Pricing'],['#compare','Compare'],['/changelog','Changelog']] },
+                { h:'Account', links:[['/login','Log in'],['/signup','Sign up']] },
+                { h:'Legal', links:[['/privacy','Privacy'],['/terms','Terms']] },
+              ].map(col=>(
+                <div key={col.h} style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                  <p style={{ fontWeight:700, color:'#222', fontSize:14, marginBottom:4 }}>{col.h}</p>
+                  {col.links.map(([h,l])=><Link key={h} href={h} style={{ fontSize:14, color:'#888', textDecoration:'none' }}>{l}</Link>)}
+                </div>
+              ))}
             </div>
           </div>
-          <div style={{ maxWidth:960, margin:'32px auto 0', paddingTop:20, borderTop:'1px solid #eee', fontSize:12, color:'#ccc' }}>© {new Date().getFullYear()} Clipflow. All rights reserved.</div>
+          <div style={{ maxWidth:960, margin:'32px auto 0', paddingTop:20, borderTop:'1px solid #f0f0f0', fontSize:13, color:'#ccc' }}>© {new Date().getFullYear()} Clipflow. All rights reserved.</div>
         </footer>
       </div>
 
