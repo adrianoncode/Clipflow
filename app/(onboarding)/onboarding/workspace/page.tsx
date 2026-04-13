@@ -1,22 +1,15 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { Folder } from 'lucide-react'
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { OnboardingStepper } from '@/components/onboarding/stepper'
 import { WorkspaceSoloForm } from '@/components/onboarding/workspace-solo-form'
 import { WorkspaceTeamForm } from '@/components/onboarding/workspace-team-form'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { ONBOARDING_ROLE_COOKIE } from '@/app/(onboarding)/onboarding/cookies'
 
-export const metadata = {
-  title: 'Workspace setup',
-}
+export const metadata = { title: 'Workspace setup' }
 
 type OnboardingRole = 'solo' | 'team' | 'agency'
 
@@ -27,59 +20,43 @@ function parseRoleCookie(value: string | undefined): OnboardingRole | null {
 
 export default async function OnboardingWorkspacePage() {
   const role = parseRoleCookie(cookies().get(ONBOARDING_ROLE_COOKIE)?.value)
-  if (!role) {
-    redirect('/onboarding/role')
-  }
+  if (!role) redirect('/onboarding/role')
 
   const workspaces = await getWorkspaces()
   const personal = workspaces.find((w) => w.type === 'personal')
 
-  if (role === 'solo') {
-    if (!personal) {
-      // The signup trigger guarantees a personal workspace exists — if we
-      // don't see it, something's off. Send the user back to Step 1 rather
-      // than rendering a broken form.
-      redirect('/onboarding/role')
-    }
+  const title = role === 'solo'
+    ? 'Name your workspace'
+    : role === 'agency'
+      ? 'Name your agency'
+      : 'Name your team'
 
-    return (
-      <Card>
-        <CardHeader className="space-y-4">
-          <OnboardingStepper activeStep={2} />
-          <div className="space-y-1">
-            <CardTitle className="text-2xl">Name your workspace</CardTitle>
-            <CardDescription>
-              This is where your content lives. You can rename it any time.
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <WorkspaceSoloForm
-            personalWorkspaceId={personal.id}
-            currentName={personal.name}
-          />
-        </CardContent>
-      </Card>
-    )
-  }
+  const subtitle = role === 'solo'
+    ? 'This is your creative home base. All your content lives here.'
+    : role === 'agency'
+      ? 'Your agency workspace. Add client workspaces later.'
+      : 'A shared workspace for your team. Invite members later.'
+
+  if (role === 'solo' && !personal) redirect('/onboarding/role')
 
   return (
-    <Card>
-      <CardHeader className="space-y-4">
+    <Card className="w-full max-w-lg border-border/50 shadow-2xl">
+      <CardHeader className="space-y-6 pb-2 text-center">
         <OnboardingStepper activeStep={2} />
-        <div className="space-y-1">
-          <CardTitle className="text-2xl">
-            {role === 'agency' ? 'Name your agency' : 'Name your team'}
-          </CardTitle>
-          <CardDescription>
-            {role === 'agency'
-              ? 'Set up your main agency workspace. Client-specific workspaces come next.'
-              : 'Create a shared workspace for your team. You can invite teammates later.'}
-          </CardDescription>
+        <div className="space-y-2">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10">
+            <Folder className="h-6 w-6 text-blue-400" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
         </div>
       </CardHeader>
       <CardContent>
-        <WorkspaceTeamForm roleType={role} />
+        {role === 'solo' && personal ? (
+          <WorkspaceSoloForm personalWorkspaceId={personal.id} currentName={personal.name} />
+        ) : (
+          <WorkspaceTeamForm roleType={role} />
+        )}
       </CardContent>
     </Card>
   )

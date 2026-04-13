@@ -2,33 +2,49 @@ import { redirect } from 'next/navigation'
 
 import { getUser } from '@/lib/auth/get-user'
 
-/**
- * Route-group layout for the onboarding wizard. Deliberately distinct from
- * (app)/layout.tsx: no AppShell, no workspace switcher, no onboarded-at
- * gate. All it does is enforce authentication.
- *
- * Returning users who already completed onboarding can still hit
- * /onboarding/* routes — they just re-run the wizard. The complete step is
- * idempotent.
- */
 export default async function OnboardingGroupLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   const user = await getUser()
-  if (!user) {
-    redirect('/login')
-  }
+  if (!user) redirect('/login')
 
   return (
-    <div className="flex min-h-screen flex-col bg-muted/30">
-      <header className="flex items-center justify-center px-6 py-6">
-        <span className="text-lg font-semibold tracking-tight">Clipflow</span>
+    <div className="relative flex min-h-screen flex-col" style={{ background: '#050506' }}>
+      {/* Background glow */}
+      <div
+        className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2"
+        style={{
+          width: 600,
+          height: 400,
+          background: 'radial-gradient(ellipse, rgba(124,58,237,0.12) 0%, transparent 70%)',
+        }}
+      />
+
+      {/* Header */}
+      <header className="relative flex items-center justify-center px-6 py-8">
+        <span
+          className="text-lg font-bold tracking-tight"
+          style={{
+            background: 'linear-gradient(135deg, #a78bfa, #f472b6)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
+          Clipflow
+        </span>
       </header>
-      <main className="flex flex-1 items-start justify-center px-6 pb-12">
-        <div className="w-full max-w-xl">{children}</div>
+
+      {/* Content */}
+      <main className="relative flex flex-1 items-start justify-center px-6 pb-16">
+        <div className="w-full max-w-lg">{children}</div>
       </main>
+
+      {/* Footer */}
+      <footer className="relative py-6 text-center text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
+        Takes less than 2 minutes to set up
+      </footer>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useFormState, useFormStatus } from 'react-dom'
+import { User, Users, Building2 } from 'lucide-react'
 
 import { FormMessage } from '@/components/ui/form-message'
 import { cn } from '@/lib/utils'
@@ -11,34 +12,40 @@ import {
 
 const initialState: RoleState = {}
 
-interface RoleOption {
-  role: 'solo' | 'team' | 'agency'
-  title: string
-  description: string
-}
-
-const OPTIONS: RoleOption[] = [
+const OPTIONS = [
   {
-    role: 'solo',
-    title: 'Solo creator',
-    description:
-      'I publish my own content. I just need my personal workspace set up.',
+    role: 'solo' as const,
+    icon: User,
+    color: 'group-hover:border-violet-500/50 group-hover:bg-violet-500/5',
+    activeColor: 'border-violet-500 bg-violet-500/10',
+    iconColor: 'text-violet-400',
+    title: 'Solo Creator',
+    description: 'I create and publish my own content',
+    features: ['Personal workspace', 'All AI tools', 'Brand voice'],
   },
   {
-    role: 'team',
-    title: 'Content team',
-    description:
-      'We publish together as a brand. I want a shared team workspace.',
+    role: 'team' as const,
+    icon: Users,
+    color: 'group-hover:border-blue-500/50 group-hover:bg-blue-500/5',
+    activeColor: 'border-blue-500 bg-blue-500/10',
+    iconColor: 'text-blue-400',
+    title: 'Content Team',
+    description: 'We publish together as a brand',
+    features: ['Shared workspace', 'Team members', 'Review links'],
   },
   {
-    role: 'agency',
+    role: 'agency' as const,
+    icon: Building2,
+    color: 'group-hover:border-emerald-500/50 group-hover:bg-emerald-500/5',
+    activeColor: 'border-emerald-500 bg-emerald-500/10',
+    iconColor: 'text-emerald-400',
     title: 'Agency',
-    description:
-      'I run content for multiple clients. I want a team workspace plus room to add client workspaces later.',
+    description: 'I manage content for multiple clients',
+    features: ['Multi-client dashboard', 'White-label portals', 'Unlimited workspaces'],
   },
 ]
 
-function RoleCard({ role, title, description }: RoleOption) {
+function RoleCard({ role, icon: Icon, color, iconColor, title, description, features }: typeof OPTIONS[number]) {
   const { pending } = useFormStatus()
   return (
     <button
@@ -47,14 +54,28 @@ function RoleCard({ role, title, description }: RoleOption) {
       value={role}
       disabled={pending}
       className={cn(
-        'group flex w-full flex-col gap-1 rounded-lg border border-input bg-background p-4 text-left shadow-sm transition-colors',
-        'hover:border-primary hover:bg-accent',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        'group flex w-full flex-col gap-3 rounded-xl border-2 border-border/50 bg-card p-5 text-left transition-all duration-200',
+        color,
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         'disabled:pointer-events-none disabled:opacity-50',
       )}
     >
-      <span className="text-base font-semibold">{title}</span>
-      <span className="text-sm text-muted-foreground">{description}</span>
+      <div className="flex items-center gap-3">
+        <div className={cn('flex h-10 w-10 items-center justify-center rounded-lg bg-muted', iconColor)}>
+          <Icon className="h-5 w-5" />
+        </div>
+        <div>
+          <span className="text-sm font-semibold">{title}</span>
+          <p className="text-xs text-muted-foreground">{description}</p>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {features.map((f) => (
+          <span key={f} className="rounded-full bg-muted/70 px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+            {f}
+          </span>
+        ))}
+      </div>
     </button>
   )
 }
