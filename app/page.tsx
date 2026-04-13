@@ -80,6 +80,7 @@ export default function HomePage() {
         .hero-input:focus { border-color: rgba(139,92,246,.6); box-shadow: 0 0 0 4px rgba(139,92,246,.15), 0 0 40px rgba(139,92,246,.1) }
         .hero-input::placeholder { color: rgba(255,255,255,.25) }
 
+        .hover-white:hover { color: #fff !important }
         details summary { list-style:none } details summary::-webkit-details-marker { display:none }
         details[open] .faq-chev { transform:rotate(180deg) } .faq-chev { transition:transform .2s }
       `}</style>
@@ -91,7 +92,7 @@ export default function HomePage() {
           <span style={{ fontSize:15, fontWeight:700, letterSpacing:'-.02em', background:'linear-gradient(135deg,#a78bfa,#ec4899)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>Clipflow</span>
           <nav style={{ position:'absolute', left:'50%', transform:'translateX(-50%)', display:'flex', gap:28, fontSize:13, color:'rgba(255,255,255,.4)' }}>
             {[['#features','Features'],['#video','Video'],['#compare','Compare'],['#pricing','Pricing']].map(([h,l])=>(
-              <a key={h} href={h} style={{ textDecoration:'none', color:'inherit', transition:'color .15s' }} onMouseEnter={e=>(e.currentTarget.style.color='#fff')} onMouseLeave={e=>(e.currentTarget.style.color='rgba(255,255,255,.4)')}>{l}</a>
+              <a key={h} href={h} style={{ textDecoration:'none', color:'rgba(255,255,255,.4)', transition:'color .15s' }} className="hover-white">{l}</a>
             ))}
           </nav>
           <div style={{ display:'flex', alignItems:'center', gap:16 }}>

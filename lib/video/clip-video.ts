@@ -74,7 +74,7 @@ export async function batchClipVideo(params: {
     if (r.status === 'fulfilled' && r.value.ok) {
       return { label: clip?.label ?? `Clip ${i + 1}`, renderId: r.value.renderId }
     }
-    const error = r.status === 'fulfilled' ? r.value.error : 'Render failed'
+    const error = r.status === 'fulfilled' && !r.value.ok ? r.value.error : 'Render failed'
     return { label: clip?.label ?? `Clip ${i + 1}`, error: error ?? 'Unknown error' }
   })
 }

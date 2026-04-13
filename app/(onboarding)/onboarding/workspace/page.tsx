@@ -55,7 +55,7 @@ export default async function OnboardingWorkspacePage() {
         {role === 'solo' && personal ? (
           <WorkspaceSoloForm personalWorkspaceId={personal.id} currentName={personal.name} />
         ) : (
-          <WorkspaceTeamForm roleType={role} />
+          <WorkspaceTeamForm roleType={role as 'team' | 'agency'} />
         )}
       </CardContent>
     </Card>
