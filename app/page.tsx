@@ -22,6 +22,7 @@ import { SpotlightCard } from '@/components/landing/spotlight-card'
 import { LogoMarquee } from '@/components/landing/logo-marquee'
 import { AnimatedHeroMockup } from '@/components/landing/animated-hero-mockup'
 import { TestimonialsWall } from '@/components/landing/testimonials-wall'
+import { ScrollProgress } from '@/components/landing/scroll-progress'
 import { normalizeReferralCode } from '@/lib/referrals/normalize-code'
 import { lookupReferrerUserId } from '@/lib/referrals/lookup-referrer'
 import { REFERRAL_DISCOUNT_PERCENT } from '@/lib/referrals/constants'
@@ -49,6 +50,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <div className="bg-white font-sans antialiased">
+      <ScrollProgress />
       {hasValidRef ? <ReferralRibbon /> : null}
       <Nav signupHref={signupHref} />
       <main>
@@ -145,6 +147,7 @@ function Nav({ signupHref }: { signupHref: string }) {
 function Hero({ signupHref }: { signupHref: string }) {
   return (
     <section className="relative overflow-hidden bg-[#07070a] px-4 pb-24 pt-20 sm:px-6 sm:pt-28 lg:pt-32">
+      <div aria-hidden className="noise-overlay" />
       {/* Gradient mesh background */}
       <div
         aria-hidden
@@ -220,9 +223,31 @@ function Hero({ signupHref }: { signupHref: string }) {
           Free forever · 3 content items/mo · all AI tools included
         </p>
 
-        {/* Product mockup — animated */}
+        {/* Product mockup — animated, wrapped in rotating conic glow */}
         <div className="mx-auto mt-16 max-w-5xl sm:mt-20">
-          <AnimatedHeroMockup />
+          <div className="conic-glow rounded-3xl p-px">
+            <AnimatedHeroMockup />
+          </div>
+        </div>
+
+        {/* Stats strip — quiet proof points below the product */}
+        <div className="mx-auto mt-20 grid max-w-4xl grid-cols-2 gap-y-10 sm:grid-cols-4">
+          {[
+            { n: '30+', l: 'AI tools', s: 'in one place' },
+            { n: '4', l: 'platforms', s: 'TikTok · Reels · Shorts · LinkedIn' },
+            { n: '~30s', l: 'to generate', s: '4 drafts in parallel' },
+            { n: '$0', l: 'AI markup', s: 'BYOK — you pay at cost' },
+          ].map((stat) => (
+            <div key={stat.l} className="text-center">
+              <div className="font-display text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+                {stat.n}
+              </div>
+              <div className="mt-1 text-sm font-medium text-white/90">
+                {stat.l}
+              </div>
+              <div className="text-xs text-white/40">{stat.s}</div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -531,6 +556,7 @@ function PlatformShowcase() {
 
   return (
     <section className="relative overflow-hidden bg-[#07070a] px-6 py-24 sm:py-32">
+      <div aria-hidden className="noise-overlay" />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-40"
@@ -813,6 +839,7 @@ function Compare() {
 function FinalCta({ signupHref }: { signupHref: string }) {
   return (
     <section className="relative overflow-hidden bg-[#07070a] px-6 py-32 sm:py-40">
+      <div aria-hidden className="noise-overlay" />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-60"

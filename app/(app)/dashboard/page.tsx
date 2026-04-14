@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import {
-  ArrowRight,
   BarChart3,
   CheckCircle2,
   ChevronRight,
@@ -14,7 +13,6 @@ import {
   TrendingUp,
   Video,
   Youtube,
-  Zap,
 } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -78,11 +76,14 @@ const PIPELINE_LABELS: Record<string, string> = {
   exported: 'Exported',
 }
 
+// Stat cards share a single accent so the dashboard reads calm — the
+// four cards are distinguished by their icons + numbers, not a
+// rainbow of background colors.
 const STAT_CARD_STYLES = [
-  { iconBg: 'bg-blue-500/10', iconColor: 'text-blue-500' },
-  { iconBg: 'bg-purple-500/10', iconColor: 'text-purple-500' },
-  { iconBg: 'bg-amber-500/10', iconColor: 'text-amber-500' },
-  { iconBg: 'bg-emerald-500/10', iconColor: 'text-emerald-500' },
+  { iconBg: 'bg-primary/10', iconColor: 'text-primary' },
+  { iconBg: 'bg-primary/10', iconColor: 'text-primary' },
+  { iconBg: 'bg-primary/10', iconColor: 'text-primary' },
+  { iconBg: 'bg-primary/10', iconColor: 'text-primary' },
 ] as const
 
 function UsageBar({ used, limit }: { used: number; limit: number }) {
@@ -161,39 +162,33 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+      {/* Header — greeting + single primary action. Secondary tools live
+          in the sidebar and the quick-actions row below, so we don't
+          double-up here. */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             {greeting}, {displayName.split(' ')[0] ?? displayName}
           </h1>
-          <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-            {currentWorkspace ? currentWorkspace.name : ''}
-            <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
-              <Zap className="h-2.5 w-2.5" />
-              {planDef.name}
+          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <span className="truncate">
+              {currentWorkspace ? currentWorkspace.name : ''}
             </span>
-          </p>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+              {planDef.name} plan
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          {currentWorkspace && (
-            <>
-              <Link
-                href={`/workspace/${currentWorkspace.id}/tools`}
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              >
-                AI Tools
-              </Link>
-              <Link
-                href={`/workspace/${currentWorkspace.id}/content/new`}
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30"
-              >
-                <span className="text-base leading-none">+</span>
-                New content
-              </Link>
-            </>
-          )}
-        </div>
+        {currentWorkspace ? (
+          <Link
+            href={`/workspace/${currentWorkspace.id}/content/new`}
+            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-md hover:shadow-primary/30"
+          >
+            <span className="text-base leading-none">+</span>
+            New content
+          </Link>
+        ) : null}
       </div>
 
       {/* Banners */}
@@ -255,23 +250,27 @@ export default async function DashboardPage() {
           ].map((card, i) => {
             const style = STAT_CARD_STYLES[i] ?? STAT_CARD_STYLES[0]
             return (
-              <Card key={card.label} className="relative overflow-hidden border-border/50 card-hover">
-                <CardHeader className="pb-1 pt-4">
-                  <CardTitle className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                    <span className={`flex h-6 w-6 items-center justify-center rounded-lg ${style.iconBg}`}>
-                      <card.icon className={`h-3.5 w-3.5 ${style.iconColor}`} />
+              <Card
+                key={card.label}
+                className="relative overflow-hidden border-border/60 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-sm"
+              >
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between">
+                    <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${style.iconBg}`}>
+                      <card.icon className={`h-4 w-4 ${style.iconColor}`} />
                     </span>
+                    {card.trendUp ? (
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600">
+                        <TrendingUp className="h-2.5 w-2.5" />
+                        +{card.label === 'Total content' ? stats.contentThisMonth : stats.outputsThisMonth}
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-4 text-3xl font-semibold tabular-nums tracking-tight">
+                    {card.value}
+                  </p>
+                  <p className="mt-0.5 text-xs font-medium text-muted-foreground">
                     {card.label}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pb-4">
-                  <p className="text-3xl font-bold tabular-nums">{card.value}</p>
-                  <p className={`mt-1 flex items-center gap-1 text-xs ${
-                    card.trendUp ? 'text-emerald-500' : 'text-muted-foreground'
-                  }`}>
-                    {card.trendUp && <TrendingUp className="h-3 w-3" />}
-                    {!card.trendUp && <ArrowRight className="h-3 w-3" />}
-                    {card.trend}
                   </p>
                 </CardContent>
               </Card>
@@ -280,24 +279,29 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Quick actions */}
+      {/* Quick actions — minimal row, one accent color, no emojis so
+          the dashboard reads as a tool rather than a kids' app. */}
       {currentWorkspace && (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {[
-            { href: `/workspace/${currentWorkspace.id}/content/new`, label: 'New content', icon: '📝', desc: 'Upload or paste' },
-            { href: `/workspace/${currentWorkspace.id}/ghostwriter`, label: 'Ghostwriter', icon: '✍️', desc: 'AI writes scripts' },
-            { href: `/workspace/${currentWorkspace.id}/trends`, label: 'Trend Radar', icon: '📈', desc: 'Find trending topics' },
-            { href: `/workspace/${currentWorkspace.id}/tools`, label: 'AI Tools', icon: '🔮', desc: '25+ tools' },
+            { href: `/workspace/${currentWorkspace.id}/content/new`, label: 'New content', desc: 'Upload or paste', icon: FileText },
+            { href: `/workspace/${currentWorkspace.id}/ghostwriter`, label: 'Ghostwriter', desc: 'AI writes scripts', icon: PenTool },
+            { href: `/workspace/${currentWorkspace.id}/trends`, label: 'Trend Radar', desc: 'Find trending topics', icon: TrendingUp },
+            { href: `/workspace/${currentWorkspace.id}/tools`, label: 'All tools', desc: '30+ in one place', icon: Layers },
           ].map((action) => (
             <Link
               key={action.href}
               href={action.href}
-              className="flex items-center gap-3 rounded-lg border border-border/50 bg-card/50 p-3 transition-all hover:border-border hover:bg-accent/50"
+              className="group flex items-center gap-3 rounded-xl border border-border/60 bg-card/50 p-3 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/[0.03] hover:shadow-sm"
             >
-              <span className="text-lg">{action.icon}</span>
-              <div>
-                <p className="text-xs font-semibold">{action.label}</p>
-                <p className="text-[10px] text-muted-foreground">{action.desc}</p>
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/15">
+                <action.icon className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-xs font-semibold">{action.label}</p>
+                <p className="truncate text-[10px] text-muted-foreground">
+                  {action.desc}
+                </p>
               </div>
             </Link>
           ))}
@@ -325,23 +329,27 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2">
-              {(['draft', 'review', 'approved', 'exported'] as const).map((state, i) => (
-                <div key={state} className="flex items-center gap-2">
-                  <div className="flex items-center gap-2 rounded-xl border border-border/50 bg-card px-4 py-2.5">
-                    <span className={`h-2 w-2 rounded-full ${PIPELINE_DOT_COLORS[state]}`} />
-                    <span className="text-xs font-medium text-muted-foreground">{PIPELINE_LABELS[state]}</span>
-                    <span className="text-sm font-bold tabular-nums">{stats.pipelineByState[state]}</span>
+            <div className="grid grid-cols-4 gap-px overflow-hidden rounded-xl border border-border/50 bg-border/50">
+              {(['draft', 'review', 'approved', 'exported'] as const).map((state) => (
+                <div
+                  key={state}
+                  className="flex flex-col items-center gap-1 bg-card px-3 py-3 text-center"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span className={`h-1.5 w-1.5 rounded-full ${PIPELINE_DOT_COLORS[state]}`} />
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                      {PIPELINE_LABELS[state]}
+                    </span>
                   </div>
-                  {i < 3 && (
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30" />
-                  )}
+                  <span className="text-2xl font-semibold tabular-nums">
+                    {stats.pipelineByState[state]}
+                  </span>
                 </div>
               ))}
             </div>
             {stats.totalOutputs === 0 && (
               <p className="mt-3 text-xs text-muted-foreground">
-                No outputs yet -- generate some from a content item.
+                No outputs yet — generate some from a content item.
               </p>
             )}
           </CardContent>

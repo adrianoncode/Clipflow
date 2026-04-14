@@ -133,11 +133,54 @@
     animation: fade-up 0.6s ease-out both;
   }
 
+  /* Subtle monochrome grain overlay — apply over dark gradients to add
+     the "expensive" film-grain depth you see on Stripe, Apple, Linear.
+     The noise is an inline SVG data URL so it ships with the CSS. */
+  .noise-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    background-size: 200px 200px;
+  }
+
+  /* Slowly rotating conic-gradient border — wrapper around a dark card
+     gets a luminous rotating light-ring. The card itself sits inside
+     `.conic-glow-inner` which masks everything but the ring. */
+  @keyframes conic-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  .conic-glow {
+    position: relative;
+    border-radius: inherit;
+    isolation: isolate;
+  }
+  .conic-glow::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--angle, 0deg),
+      transparent 0%,
+      rgba(168, 85, 247, 0.5) 20%,
+      rgba(236, 72, 153, 0.35) 45%,
+      transparent 70%,
+      transparent 100%
+    );
+    animation: conic-spin 8s linear infinite;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-marquee,
     .animate-soft-pulse,
     .animate-fade-up {
       animation: none !important;
     }
+    .conic-glow::before { animation: none !important; }
   }
 }
