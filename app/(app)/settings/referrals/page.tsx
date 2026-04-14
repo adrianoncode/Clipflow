@@ -52,7 +52,7 @@ export default async function ReferralsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Gift className="h-4 w-4 text-emerald-500" />
+            <Gift className="h-4 w-4 text-primary" />
             Your referral link
           </CardTitle>
           <CardDescription>
@@ -165,7 +165,7 @@ function StatCard({
       <CardContent className="flex items-center gap-4 p-5">
         <div
           className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-            accent ? 'bg-emerald-500/10 text-emerald-500' : 'bg-muted text-muted-foreground'
+            accent ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
           }`}
         >
           <Icon className="h-5 w-5" />

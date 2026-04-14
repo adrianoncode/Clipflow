@@ -260,7 +260,7 @@ export default async function DashboardPage() {
                       <card.icon className={`h-4 w-4 ${style.iconColor}`} />
                     </span>
                     {card.trendUp ? (
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600">
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
                         <TrendingUp className="h-2.5 w-2.5" />
                         +{card.label === 'Total content' ? stats.contentThisMonth : stats.outputsThisMonth}
                       </span>

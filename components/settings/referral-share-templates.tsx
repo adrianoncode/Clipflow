@@ -94,7 +94,7 @@ export function ReferralShareTemplates({ link }: ReferralShareTemplatesProps) {
               className="justify-start"
             >
               {s === 'copied' ? (
-                <Check className="mr-2 h-4 w-4 text-emerald-500" />
+                <Check className="mr-2 h-4 w-4 text-primary" />
               ) : s === 'failed' ? (
                 <AlertCircle className="mr-2 h-4 w-4 text-amber-500" />
               ) : (

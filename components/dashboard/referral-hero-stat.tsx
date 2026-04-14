@@ -43,16 +43,16 @@ export function ReferralHeroStat({
   return (
     <Link
       href={isFree ? '/billing' : '/settings/referrals'}
-      className="group flex items-center gap-4 rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent p-4 transition-all hover:border-emerald-500/40 hover:shadow-md hover:shadow-emerald-500/5"
+      className="group flex items-center gap-4 rounded-xl border border-primary/25 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 transition-all hover:border-primary/40 hover:shadow-md hover:shadow-primary/5"
     >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-600">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
         <Gift className="h-6 w-6" />
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold">{titleText}</p>
         <p className="truncate text-xs text-muted-foreground">{subtitleText}</p>
       </div>
-      <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-emerald-600" />
+      <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
     </Link>
   )
 }

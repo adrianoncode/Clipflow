@@ -35,8 +35,8 @@ export function ActiveDiscountBanner({ discount, baseMonthlyCents }: ActiveDisco
     : savingsLine
 
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 p-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-600">
+    <div className="flex items-start gap-3 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 p-4">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
         {isReferral ? <Gift className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
       </div>
       <div className="min-w-0 flex-1">

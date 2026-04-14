@@ -129,7 +129,7 @@ export function AppShell({ user, workspaces, currentWorkspaceId, referralLink, r
       {/* Header */}
       <header className="flex items-center justify-between border-b bg-white px-4 py-2.5 sm:px-6">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="text-lg font-extrabold tracking-tight text-primary">
+          <Link href="/dashboard" className="font-display text-lg font-semibold tracking-tight text-primary">
             Clipflow
           </Link>
           <WorkspaceSwitcher workspaces={workspaces} currentWorkspaceId={currentWorkspaceId} />

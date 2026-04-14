@@ -56,12 +56,12 @@ export function ReferralSidebarCard({ link, pending, confirmed, currentPlan }: R
   }
 
   return (
-    <div className="mx-2 mb-2 rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 p-3">
+    <div className="mx-2 mb-2 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 p-3">
       <Link
         href="/settings/referrals"
         className="flex items-center gap-1.5 text-xs font-semibold text-foreground hover:text-primary"
       >
-        <Gift className="h-3.5 w-3.5 text-emerald-500" />
+        <Gift className="h-3.5 w-3.5 text-primary" />
         Give 20 %, get 20 %
       </Link>
       <p className="mt-1 text-[11px] leading-tight text-muted-foreground">
@@ -71,13 +71,13 @@ export function ReferralSidebarCard({ link, pending, confirmed, currentPlan }: R
         type="button"
         onClick={copy}
         title={link}
-        className="mt-2 flex w-full items-center gap-1.5 rounded-md border bg-background px-2 py-1.5 text-left text-[11px] transition-colors hover:border-emerald-500/40 hover:bg-emerald-500/5"
+        className="mt-2 flex w-full items-center gap-1.5 rounded-md border bg-background px-2 py-1.5 text-left text-[11px] transition-colors hover:border-primary/40 hover:bg-primary/5"
       >
         <span className="min-w-0 flex-1 truncate font-mono text-muted-foreground">
           {preview}
         </span>
         {state === 'copied' ? (
-          <Check className="h-3 w-3 shrink-0 text-emerald-500" />
+          <Check className="h-3 w-3 shrink-0 text-primary" />
         ) : state === 'failed' ? (
           <AlertCircle className="h-3 w-3 shrink-0 text-amber-500" />
         ) : (
@@ -94,7 +94,7 @@ export function ReferralSidebarCard({ link, pending, confirmed, currentPlan }: R
           <Link
             href={statusLine.href}
             className={`mt-2 block text-[10px] font-medium leading-tight underline-offset-2 hover:underline ${
-              statusLine.accent ? 'text-emerald-600' : 'text-muted-foreground'
+              statusLine.accent ? 'text-primary' : 'text-muted-foreground'
             }`}
           >
             {statusLine.text}
@@ -102,7 +102,7 @@ export function ReferralSidebarCard({ link, pending, confirmed, currentPlan }: R
         ) : (
           <p
             className={`mt-2 text-[10px] font-medium leading-tight ${
-              statusLine.accent ? 'text-emerald-600' : 'text-muted-foreground'
+              statusLine.accent ? 'text-primary' : 'text-muted-foreground'
             }`}
           >
             {statusLine.text}

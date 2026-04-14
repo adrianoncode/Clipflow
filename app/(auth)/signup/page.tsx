@@ -20,8 +20,8 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
   return (
     <Card className="border-border/50 shadow-xl">
       <CardHeader className="space-y-4 text-center pb-2">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10">
-          <UserPlus className="h-6 w-6 text-emerald-400" />
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
+          <UserPlus className="h-6 w-6 text-primary" />
         </div>
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight">Create your account</h1>
@@ -32,8 +32,8 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {hasValidRef ? (
-          <div className="flex items-start gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm">
-            <Gift className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+          <div className="flex items-start gap-3 rounded-lg border border-primary/25 bg-primary/5 p-3 text-sm">
+            <Gift className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
             <div>
               <p className="font-medium text-foreground">
                 {REFERRAL_DISCOUNT_PERCENT}% off unlocked

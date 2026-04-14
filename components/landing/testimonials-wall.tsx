@@ -141,11 +141,14 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
         ? Linkedin
         : null
 
+  // Platform icon tints stay on-brand for recognisability but muted to
+  // keep the page on a single violet accent. Stars stay amber because
+  // amber-as-rating is a universal convention.
   const platformColor =
     testimonial.platform === 'twitter'
-      ? 'text-sky-500'
+      ? 'text-zinc-400'
       : testimonial.platform === 'linkedin'
-        ? 'text-blue-600'
+        ? 'text-zinc-400'
         : ''
 
   const quote = testimonial.highlight

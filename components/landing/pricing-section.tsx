@@ -131,7 +131,7 @@ export function PricingSection({ signupHref }: PricingSectionProps) {
               }`}
             >
               Annual
-              <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+              <span className="ml-2 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-700">
                 −20%
               </span>
             </button>
@@ -152,12 +152,12 @@ export function PricingSection({ signupHref }: PricingSectionProps) {
               <div
                 className={`relative flex h-full flex-col rounded-2xl p-8 transition-all ${
                   plan.highlight
-                    ? 'bg-zinc-950 text-white shadow-2xl shadow-violet-500/20 ring-1 ring-zinc-900'
+                    ? 'bg-gradient-to-br from-violet-600 to-violet-700 text-white shadow-2xl shadow-violet-600/25'
                     : 'border border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-md'
                 }`}
               >
                 {plan.highlight ? (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-violet-600 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-lg shadow-violet-600/40">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-violet-700 shadow-lg shadow-violet-900/20">
                     Most popular
                   </div>
                 ) : null}
@@ -184,10 +184,10 @@ export function PricingSection({ signupHref }: PricingSectionProps) {
                       <li key={feature} className="flex items-start gap-2.5 text-sm">
                         <Check
                           className={`mt-0.5 h-4 w-4 shrink-0 ${
-                            plan.highlight ? 'text-emerald-400' : 'text-violet-600'
+                            plan.highlight ? 'text-white' : 'text-violet-600'
                           }`}
                         />
-                        <span className={plan.highlight ? 'text-white/80' : 'text-zinc-600'}>
+                        <span className={plan.highlight ? 'text-white/90' : 'text-zinc-600'}>
                           {feature}
                         </span>
                       </li>
@@ -199,8 +199,8 @@ export function PricingSection({ signupHref }: PricingSectionProps) {
                   href={signupHref}
                   className={`mt-10 inline-flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold transition-all ${
                     plan.highlight
-                      ? 'bg-white text-zinc-950 hover:bg-zinc-100'
-                      : 'bg-zinc-950 text-white hover:bg-zinc-800'
+                      ? 'bg-white text-violet-700 hover:bg-zinc-50'
+                      : 'bg-violet-600 text-white hover:bg-violet-700'
                   }`}
                 >
                   {plan.ctaLabel}

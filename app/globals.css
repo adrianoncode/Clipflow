@@ -35,35 +35,11 @@
     --radius: 0.625rem;
   }
 
-  .dark {
-    --background: 0 0% 4%;
-    --foreground: 0 0% 98%;
-
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 263 70% 50%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 240 4% 10%;
-    --secondary-foreground: 0 0% 90%;
-
-    --muted: 240 4% 13%;
-    --muted-foreground: 240 5% 46%;
-
-    --accent: 240 4% 13%;
-    --accent-foreground: 0 0% 98%;
-
-    --destructive: 0 63% 50%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 6% 12%;
-    --input: 240 6% 12%;
-    --ring: 263 70% 50%;
-  }
+  /* The app is light-mode only. We intentionally dropped the `.dark`
+     overrides because the UI was never properly designed for dark and
+     half-tuned tokens looked broken in practice. If reintroducing dark
+     mode later, every component using violet accents + zinc grays needs
+     an audit. */
 }
 
 @layer base {
@@ -167,8 +143,8 @@
     background: conic-gradient(
       from var(--angle, 0deg),
       transparent 0%,
-      rgba(168, 85, 247, 0.5) 20%,
-      rgba(236, 72, 153, 0.35) 45%,
+      rgba(124, 58, 237, 0.55) 20%,
+      rgba(167, 139, 250, 0.4) 45%,
       transparent 70%,
       transparent 100%
     );
