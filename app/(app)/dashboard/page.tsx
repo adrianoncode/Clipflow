@@ -172,28 +172,17 @@ export default async function DashboardPage() {
             <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
               {planDef.name} plan
             </span>
-            {stats && stats.totalContent > 0 ? (
-              <>
-                <span className="text-muted-foreground/40">·</span>
-                <span className="text-[12px]">
-                  <span className="font-semibold text-foreground tabular-nums">
-                    {stats.totalContent}
-                  </span>{' '}
-                  content, <span className="font-semibold text-foreground tabular-nums">{stats.totalOutputs}</span> outputs
-                </span>
-              </>
-            ) : null}
           </div>
         </div>
         {currentWorkspace ? (
           <Link
             href={`/workspace/${currentWorkspace.id}/content/new`}
-            className="group inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/30"
+            className="group inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary pl-4 pr-3 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/30"
           >
             <span className="text-base leading-none">+</span>
             New content
-            <kbd className="ml-1.5 hidden rounded border border-white/20 bg-white/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-white/70 sm:inline-block">
-              N
+            <kbd className="ml-1 hidden rounded border border-white/20 bg-white/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-white/80 sm:inline-block">
+              ⌘N
             </kbd>
           </Link>
         ) : null}
@@ -211,7 +200,6 @@ export default async function DashboardPage() {
         currentPlan={plan ?? 'free'}
         monthlyBaseCents={planDef.monthlyPrice}
       />
-
 
       {currentWorkspace && stats ? (
         <GettingStartedChecklist

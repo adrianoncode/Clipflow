@@ -62,7 +62,7 @@ export function ReferralSidebarCard({ link, pending, confirmed, currentPlan }: R
         className="flex items-center gap-1.5 text-xs font-semibold text-foreground hover:text-primary"
       >
         <Gift className="h-3.5 w-3.5 text-primary" />
-        Give 20 %, get 20 %
+        Give 20%, get 20%
       </Link>
       <p className="mt-1 text-[11px] leading-tight text-muted-foreground">
         Share your link — both sides save.

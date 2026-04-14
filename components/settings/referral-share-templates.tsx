@@ -25,7 +25,7 @@ const TEMPLATES: Template[] = [
     icon: MessageSquare,
     source: 'dm',
     text: (link) =>
-      `Hey — nutze grad Clipflow. Macht aus einem Video automatisch Content für TikTok, Reels, Shorts & LinkedIn. Spart mir Stunden. Über meinen Link kriegst du 20 % off: ${link}`,
+      `Hey — nutze grad Clipflow. Macht aus einem Video automatisch Content für TikTok, Reels, Shorts & LinkedIn. Spart mir Stunden. Über meinen Link kriegst du 20% off: ${link}`,
   },
   {
     id: 'twitter',
@@ -41,7 +41,7 @@ const TEMPLATES: Template[] = [
     icon: Linkedin,
     source: 'linkedin',
     text: (link) =>
-      `Stopped copy-pasting between ChatGPT tabs to repurpose my video content. Clipflow does it end-to-end — one upload, outputs optimized for TikTok, Reels, Shorts and LinkedIn.\n\nIf you're producing content across platforms, this is a real productivity lift. 20 % off via my referral: ${link}`,
+      `Stopped copy-pasting between ChatGPT tabs to repurpose my video content. Clipflow does it end-to-end — one upload, outputs optimized for TikTok, Reels, Shorts and LinkedIn.\n\nIf you're producing content across platforms, this is a real productivity lift. 20% off via my referral: ${link}`,
   },
   {
     id: 'email',

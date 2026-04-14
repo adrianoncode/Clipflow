@@ -18,7 +18,6 @@ import {
   Share2,
   Wand2,
   Plug,
-  Sparkles,
   Mic,
   MessageSquare,
   Key,
@@ -99,7 +98,6 @@ export function AppShell({ user: _user, workspaces, currentWorkspaceId, referral
       items: [
         { href: `/workspace/${currentWorkspaceId}/batch`, label: 'Batch', icon: Layers },
         { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-        { href: '/changelog', label: "What's New", icon: Sparkles },
       ],
     },
   ]
