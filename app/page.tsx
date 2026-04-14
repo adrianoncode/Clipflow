@@ -1,14 +1,30 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { ArrowRight, Check, X, ChevronDown, Play, Star, Zap, Video, PenTool, BarChart3, Globe, Calendar, Mic, Hash, Users, Gift } from 'lucide-react'
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Check,
+  Gift,
+  KeyRound,
+  Layers,
+  Mic2,
+  Sparkles,
+  TrendingUp,
+  Video,
+  Wand2,
+  X,
+} from 'lucide-react'
 
+import { PricingSection } from '@/components/landing/pricing-section'
+import { FaqSection } from '@/components/landing/faq-section'
 import { normalizeReferralCode } from '@/lib/referrals/normalize-code'
 import { lookupReferrerUserId } from '@/lib/referrals/lookup-referrer'
 import { REFERRAL_DISCOUNT_PERCENT } from '@/lib/referrals/constants'
 
 export const metadata: Metadata = {
-  title: 'Clipflow — AI Video Repurposing · TikTok, Reels, Shorts & LinkedIn',
-  description: 'Turn one video into platform-native content. AI subtitles, B-Roll, virality scoring, video clipping. BYOK — zero AI markup.',
+  title: 'Clipflow — One video. Every platform. In 30 seconds.',
+  description:
+    'The AI content studio that turns one video into TikTok, Reels, Shorts and LinkedIn posts. Real MP4 rendering, auto-subtitles, B-Roll, virality scoring. BYOK — zero AI markup.',
   alternates: { canonical: 'https://clipflow.to' },
 }
 
@@ -16,29 +32,10 @@ interface HomePageProps {
   searchParams: { ref?: string; source?: string }
 }
 
-const COMP = [
-  { f:'All 4 platform drafts at once', c:true, o:false, k:false },
-  { f:'Burn captions onto video', c:true, o:true, k:true },
-  { f:'Brand voice + AI persona', c:true, o:false, k:false },
-  { f:'Virality scoring', c:true, o:true, k:false },
-  { f:'AI B-Roll assembly', c:true, o:'Beta', k:false },
-  { f:'Content DNA analyzer', c:true, o:false, k:false },
-  { f:'30-day content calendar', c:true, o:false, k:false },
-  { f:'Creator search (5 platforms)', c:true, o:false, k:false },
-  { f:'BYOK — zero AI markup', c:true, o:false, k:false },
-]
-
-const FAQ = [
-  { q:'What does BYOK mean?', a:'Bring Your Own Key. Connect your OpenAI, Anthropic, or Google key. All AI calls go through your key at cost — we never charge a markup.' },
-  { q:'How is this different from OpusClip?', a:'OpusClip focuses on video clipping. Clipflow does that PLUS 30+ AI tools: content strategy, newsletters, carousels, creator research, and full video rendering.' },
-  { q:'Can I render real videos?', a:'Yes. We render real MP4s via Shotstack — burn captions, stitch B-Roll with voiceover, add brand intros/outros. All cloud-rendered.' },
-  { q:'Is there a free plan?', a:'Yes — 3 content items and 10 outputs per month, forever. No credit card required.' },
-  { q:'Can I use it for client work?', a:'Absolutely. Team and Agency plans include multi-client dashboards, white-label review portals, and unlimited workspaces.' },
-]
-
+// ============================================================================
+// PAGE
+// ============================================================================
 export default async function HomePage({ searchParams }: HomePageProps) {
-  // Confirm the ref code resolves to a real user before showing the
-  // banner. Typo-in-URL or stale codes silently pass through — no banner.
   const refCode = normalizeReferralCode(searchParams.ref)
   const hasValidRef = refCode ? Boolean(await lookupReferrerUserId(refCode)) : false
   const signupHref = hasValidRef
@@ -46,398 +43,1001 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     : '/signup'
 
   return (
-    <>
-      <style>{`
-        @keyframes marquee { 0% { transform:translateX(0) } 100% { transform:translateX(-50%) } }
-        .mq { animation:marquee 30s linear infinite }
-        details summary { list-style:none } details summary::-webkit-details-marker { display:none }
-        details[open] .chv { transform:rotate(180deg) } .chv { transition:transform .2s }
+    <div className="bg-white font-sans antialiased">
+      {hasValidRef ? <ReferralRibbon /> : null}
+      <Nav signupHref={signupHref} />
+      <main>
+        <Hero signupHref={signupHref} />
+        <PoweredBy />
+        <Workflow />
+        <FeaturesBento />
+        <PlatformShowcase />
+        <ByokHighlight signupHref={signupHref} />
+        <PricingSection signupHref={signupHref} />
+        <ReferralCta signupHref={signupHref} />
+        <Compare />
+        <FaqSection />
+        <FinalCta signupHref={signupHref} />
+      </main>
+      <Footer />
+      <StructuredData />
+    </div>
+  )
+}
 
-        /* Mobile-first responsive overrides for the inline-styled grids.
-           Hitting 768px (tablet) and 480px (phone) collapses multi-column
-           grids into stacks, shrinks hero type, and relaxes padding so the
-           page is actually usable below the original desktop-only design. */
-        @media (max-width: 768px) {
-          .lp-grid-3  { grid-template-columns: repeat(2, 1fr) !important; }
-          .lp-grid-4  { grid-template-columns: repeat(2, 1fr) !important; }
-          .lp-hide-sm { display: none !important; }
-          .lp-nav     { padding: 0 16px !important; }
-          .lp-hero-h  { font-size: 36px !important; }
-          .lp-hero    { padding: 40px 16px 24px !important; }
-          .lp-section { padding: 48px 16px !important; }
-          .lp-compare-wrap { overflow-x: auto; }
-        }
-        @media (max-width: 768px) {
-          .lp-grid-refer { grid-template-columns: 1fr !important; gap: 24px !important; }
-        }
-        @media (max-width: 480px) {
-          .lp-grid-3  { grid-template-columns: 1fr !important; }
-          .lp-grid-4  { grid-template-columns: 1fr !important; }
-          .lp-hero-h  { font-size: 30px !important; }
-          .lp-hero-p  { font-size: 16px !important; }
-          .lp-byok    { flex-direction: column; align-items: flex-start !important; gap: 16px !important; padding: 24px !important; }
-          .lp-cta-buttons { flex-direction: column; width: 100%; }
-          .lp-cta-buttons > a { width: 100%; justify-content: center; }
-        }
-      `}</style>
+// ============================================================================
+// REFERRAL RIBBON
+// ============================================================================
+function ReferralRibbon() {
+  return (
+    <div className="flex items-center justify-center gap-2 bg-emerald-600 px-4 py-2 text-center text-sm font-medium text-white">
+      <Gift className="h-4 w-4 shrink-0" />
+      <span>
+        You were invited — your {REFERRAL_DISCOUNT_PERCENT}% discount applies automatically at checkout.
+      </span>
+    </div>
+  )
+}
 
-      <div style={{ background:'#fff', color:'#111', minHeight:'100vh', fontFamily:'var(--font-inter),-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif' }}>
+// ============================================================================
+// NAV
+// ============================================================================
+function Nav({ signupHref }: { signupHref: string }) {
+  const links = [
+    ['#features', 'Features'],
+    ['#pricing', 'Pricing'],
+    ['#referrals', 'Refer'],
+    ['#compare', 'Compare'],
+    ['#faq', 'FAQ'],
+  ] as const
 
-        {/* ══ REFERRAL RIBBON — shown only on valid ?ref= ══════ */}
-        {hasValidRef ? (
-          <div style={{ background:'linear-gradient(90deg,#10b981,#059669)', color:'#fff', padding:'10px 24px', textAlign:'center', fontSize:14, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', gap:8, flexWrap:'wrap' }}>
-            <Gift style={{ width:16, height:16 }} />
-            You were invited — your {REFERRAL_DISCOUNT_PERCENT}% discount applies automatically at checkout.
-          </div>
-        ) : null}
-
-        {/* ══ NAV ═══════════════════════════════════════════════ */}
-        <header className="lp-nav" style={{ position:'sticky', top:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 40px', height:64, borderBottom:'1px solid #eee', background:'rgba(255,255,255,.97)', backdropFilter:'blur(8px)' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:36 }}>
-            <Link href="/" style={{ fontSize:20, fontWeight:800, color:'#7c3aed', textDecoration:'none', letterSpacing:'-.02em' }}>Clipflow</Link>
-            <nav className="lp-hide-sm" style={{ display:'flex', gap:28 }}>
-              {([
-                ['#features','Features'],
-                ['#pricing','Pricing'],
-                ['#referrals','Refer'],
-                ['#compare','Compare'],
-                ['#faq','FAQ'],
-              ] as [string, string][]).map(([h,l])=>(
-                <a key={h} href={h} style={{ fontSize:15, color:'#555', textDecoration:'none', fontWeight:500 }}>{l}</a>
-              ))}
-            </nav>
-          </div>
-          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <Link href="/login" className="lp-hide-sm" style={{ fontSize:14, fontWeight:500, color:'#555', textDecoration:'none', padding:'8px 16px', borderRadius:8, border:'1px solid #e5e5e5' }}>Log in</Link>
-            <Link href={signupHref} style={{ fontSize:14, fontWeight:600, color:'#fff', textDecoration:'none', padding:'8px 20px', borderRadius:8, background:'#7c3aed' }}>Try for free</Link>
-          </div>
-        </header>
-
-        <main>
-
-          {/* ══ HERO ════════════════════════════════════════════ */}
-          <section className="lp-hero" style={{ textAlign:'center', padding:'56px 24px 40px', background:'linear-gradient(180deg,#f5f0ff 0%,#fff 100%)' }}>
-            <div style={{ maxWidth:700, margin:'0 auto' }}>
-              <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'6px 16px', borderRadius:999, background:'#ede9fe', fontSize:14, fontWeight:600, color:'#7c3aed', marginBottom:20 }}>
-                <Zap style={{ width:14, height:14 }} /> Now with AI video rendering
-              </div>
-
-              <h1 className="lp-hero-h" style={{ fontSize:52, fontWeight:800, lineHeight:1.1, letterSpacing:'-.03em', color:'#111' }}>
-                Turn one video into content for <span style={{ color:'#7c3aed' }}>every platform</span>
-              </h1>
-
-              <p className="lp-hero-p" style={{ fontSize:18, lineHeight:1.6, color:'#555', maxWidth:520, margin:'16px auto 0' }}>
-                Paste a YouTube link. Get TikTok, Reels, Shorts &amp; LinkedIn drafts — with AI subtitles, B-Roll, and virality scoring. Real MP4 rendering included.
-              </p>
-
-              <div className="lp-cta-buttons" style={{ display:'flex', gap:12, justifyContent:'center', marginTop:28 }}>
-                <Link href={signupHref} style={{ display:'inline-flex', alignItems:'center', gap:8, height:52, padding:'0 32px', borderRadius:12, background:'#7c3aed', color:'#fff', fontSize:17, fontWeight:600, textDecoration:'none', boxShadow:'0 4px 16px rgba(124,58,237,.3)' }}>
-                  Start for free <ArrowRight style={{ width:18, height:18 }} />
-                </Link>
-                <Link href="#features" style={{ display:'inline-flex', alignItems:'center', gap:8, height:52, padding:'0 28px', borderRadius:12, border:'2px solid #e5e5e5', color:'#555', fontSize:17, fontWeight:500, textDecoration:'none' }}>
-                  <Play style={{ width:16, height:16 }} /> See features
-                </Link>
-              </div>
-              <p style={{ marginTop:10, fontSize:14, color:'#999' }}>No credit card required · Free forever</p>
-
-              {/* Social proof */}
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10, marginTop:24 }}>
-                <div style={{ display:'flex' }}>
-                  {['#7c3aed','#ec4899','#f97316','#10b981','#0ea5e9'].map((c,i)=>(
-                    <div key={i} style={{ width:32, height:32, borderRadius:'50%', background:c, border:'3px solid #fff', marginLeft:i>0?-10:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:700, color:'#fff' }}>
-                      {['S','M','P','J','L'][i]}
-                    </div>
-                  ))}
-                </div>
-                <span style={{ fontSize:15, color:'#555' }}>Trusted by <strong style={{ color:'#111' }}>2,400+</strong> creators</span>
-                <div style={{ display:'flex', gap:2 }}>
-                  {[1,2,3,4,5].map(i=><Star key={i} style={{ width:16, height:16, fill:'#facc15', color:'#facc15' }} />)}
-                </div>
-              </div>
-            </div>
-
-            {/* Mockup */}
-            <div style={{ marginTop:40, maxWidth:880, marginLeft:'auto', marginRight:'auto' }}>
-              <div style={{ borderRadius:16, border:'1px solid #e0e0e0', boxShadow:'0 24px 48px rgba(0,0,0,.08)', overflow:'hidden', background:'#0e0e12' }}>
-                <div style={{ display:'flex', alignItems:'center', height:38, padding:'0 14px', gap:7, borderBottom:'1px solid rgba(255,255,255,.06)' }}>
-                  {['#ff5f57','#febc2e','#28c840'].map((c,i)=>(<span key={i} style={{ width:11, height:11, borderRadius:'50%', background:c }} />))}
-                  <div style={{ flex:1, height:22, borderRadius:6, margin:'0 36px', background:'rgba(255,255,255,.05)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, color:'rgba(255,255,255,.2)' }}>clipflow.to</div>
-                </div>
-                <div style={{ display:'flex', minHeight:280 }}>
-                  <div style={{ width:140, flexShrink:0, background:'#111116', borderRight:'1px solid rgba(255,255,255,.06)', padding:'12px 8px' }}>
-                    {['Dashboard','Pipeline','Calendar','Ghostwriter','All Tools','Trends'].map((n,i)=>(
-                      <div key={n} style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 8px', borderRadius:6, marginBottom:1, background:i===4?'rgba(124,58,237,.15)':'transparent' }}>
-                        <span style={{ fontSize:11, color:i===4?'#a78bfa':'rgba(255,255,255,.25)' }}>{'◈▤◷✦🔮📈'[i]}</span>
-                        <span style={{ fontSize:11.5, color:i===4?'#e8e8e8':'rgba(255,255,255,.35)', fontWeight:i===4?500:400 }}>{n}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ flex:1, padding:'14px 16px', background:'#0e0e12' }}>
-                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:14 }}>
-                      <div>
-                        <p style={{ fontSize:14, fontWeight:600, color:'#fff' }}>Product Demo.mp4</p>
-                        <p style={{ fontSize:11, color:'rgba(255,255,255,.35)', marginTop:2 }}>4 drafts generated · 24 seconds · gpt-4o</p>
-                      </div>
-                      <span style={{ fontSize:10, fontWeight:600, padding:'4px 10px', borderRadius:999, background:'rgba(52,211,153,.12)', color:'#34d399', border:'1px solid rgba(52,211,153,.2)' }}>✓ Ready</span>
-                    </div>
-                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
-                      {[
-                        { p:'TikTok', s:94, bg:'rgba(236,72,153,.07)', b:'rgba(236,72,153,.15)', c:'#f9a8d4', h:'"POV: You spend 8 hours editing one video 😭"' },
-                        { p:'Instagram Reels', s:89, bg:'rgba(168,85,247,.07)', b:'rgba(168,85,247,.15)', c:'#d8b4fe', h:'"The workflow saving creators 6+ hours a week"' },
-                        { p:'YouTube Shorts', s:85, bg:'rgba(239,68,68,.07)', b:'rgba(239,68,68,.15)', c:'#fca5a5', h:'"I automated my entire content pipeline"' },
-                        { p:'LinkedIn', s:81, bg:'rgba(59,130,246,.07)', b:'rgba(59,130,246,.15)', c:'#93c5fd', h:'"80% of creators waste time on distribution"' },
-                      ].map(c=>(
-                        <div key={c.p} style={{ padding:'10px 12px', borderRadius:8, background:c.bg, border:`1px solid ${c.b}` }}>
-                          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
-                            <span style={{ fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:999, background:c.b, color:c.c }}>{c.p}</span>
-                            <span style={{ fontSize:12, fontWeight:700, color:c.s>88?'#34d399':'#fbbf24' }}>{c.s}<span style={{ fontSize:9, color:'rgba(255,255,255,.2)', fontWeight:400 }}>/100</span></span>
-                          </div>
-                          <p style={{ fontSize:11, lineHeight:1.5, color:'rgba(255,255,255,.55)' }}>{c.h}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ══ LOGOS ═══════════════════════════════════════════ */}
-          <section style={{ padding:'28px 24px', borderBottom:'1px solid #f0f0f0' }}>
-            <p style={{ textAlign:'center', fontSize:13, fontWeight:600, color:'#bbb', marginBottom:14, textTransform:'uppercase', letterSpacing:'.05em' }}>Powered by</p>
-            <div style={{ display:'flex', justifyContent:'center', alignItems:'center', gap:44, flexWrap:'wrap' }}>
-              {['OpenAI','Anthropic','Google Gemini','ElevenLabs','Shotstack','Pexels'].map(n=>(
-                <span key={n} style={{ fontSize:15, fontWeight:700, color:'#ccc' }}>{n}</span>
-              ))}
-            </div>
-          </section>
-
-          {/* ══ FEATURES ═══════════════════════════════════════ */}
-          <section id="features" className="lp-section" style={{ padding:'72px 24px' }}>
-            <div style={{ maxWidth:1000, margin:'0 auto' }}>
-              <div style={{ textAlign:'center', marginBottom:48 }}>
-                <p style={{ fontSize:15, fontWeight:700, color:'#7c3aed', marginBottom:6 }}>30+ AI Tools</p>
-                <h2 style={{ fontSize:40, fontWeight:800, lineHeight:1.12, letterSpacing:'-.025em', color:'#111' }}>Everything you need to repurpose content</h2>
-                <p style={{ fontSize:17, color:'#666', marginTop:10, maxWidth:500, marginLeft:'auto', marginRight:'auto' }}>From strategy to publishing — one platform replaces your entire content workflow.</p>
-              </div>
-
-              <div className="lp-grid-3" style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:20 }}>
-                {[
-                  { icon:Video, color:'#7c3aed', bg:'#f0ebff', title:'Video Rendering', desc:'Burn captions, stitch B-Roll, clip segments, add brand intros. Real MP4 output via Shotstack.' },
-                  { icon:Zap, color:'#f59e0b', bg:'#fffbeb', title:'4 Platform Drafts', desc:'TikTok, Reels, Shorts, LinkedIn — all generated simultaneously in under 30 seconds.' },
-                  { icon:PenTool, color:'#ec4899', bg:'#fdf2f8', title:'AI Ghostwriter', desc:'Full video scripts from a topic or trend. Brand voice and persona applied automatically.' },
-                  { icon:BarChart3, color:'#10b981', bg:'#ecfdf5', title:'Virality Score', desc:'AI scores every output on hook strength, scroll-stop power, and shareability.' },
-                  { icon:Mic, color:'#8b5cf6', bg:'#f5f3ff', title:'AI Persona', desc:'Give the AI a name, backstory, expertise, and writing style. Every draft sounds like them.' },
-                  { icon:Calendar, color:'#0ea5e9', bg:'#f0f9ff', title:'30-Day Calendar', desc:'Input your niche → AI generates a full month of content with hooks and scripts.' },
-                  { icon:Users, color:'#f97316', bg:'#fff7ed', title:'Creator Search', desc:'Find creators on YouTube, TikTok, Instagram, Twitter, LinkedIn. Analyze their stats.' },
-                  { icon:Hash, color:'#06b6d4', bg:'#ecfeff', title:'Hashtag Research', desc:'Data-driven analysis with reach estimates, competition levels, and ready-to-use sets.' },
-                  { icon:Globe, color:'#6366f1', bg:'#eef2ff', title:'24 Integrations', desc:'Slack, Discord, WordPress, Beehiiv, Notion, Airtable, Zapier, Make, and more.' },
-                ].map((f,i)=>(
-                  <div key={i} style={{ padding:'28px', borderRadius:16, border:'1px solid #f0f0f0', background:'#fff', boxShadow:'0 1px 3px rgba(0,0,0,.04)', transition:'all .2s' }}>
-                    <div style={{ width:48, height:48, borderRadius:12, background:f.bg, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:18 }}>
-                      <f.icon style={{ width:24, height:24, color:f.color }} />
-                    </div>
-                    <h3 style={{ fontSize:18, fontWeight:700, marginBottom:8, color:'#111' }}>{f.title}</h3>
-                    <p style={{ fontSize:15, lineHeight:1.6, color:'#666' }}>{f.desc}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* BYOK */}
-              <div className="lp-byok" style={{ marginTop:20, padding:'32px 40px', borderRadius:16, background:'linear-gradient(135deg,#7c3aed,#6366f1)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:32, boxShadow:'0 8px 24px rgba(124,58,237,.2)' }}>
-                <div>
-                  <h3 style={{ fontSize:22, fontWeight:800, color:'#fff' }}>BYOK — Bring Your Own Key</h3>
-                  <p style={{ fontSize:16, color:'rgba(255,255,255,.85)', marginTop:8, maxWidth:500 }}>Connect your own OpenAI, Anthropic, or Google key. All AI at cost — zero markup. Saves teams $200+/month.</p>
-                </div>
-                <Link href={signupHref} style={{ display:'inline-flex', alignItems:'center', gap:8, height:48, padding:'0 28px', borderRadius:12, background:'#fff', color:'#7c3aed', fontSize:16, fontWeight:700, textDecoration:'none', whiteSpace:'nowrap', flexShrink:0, boxShadow:'0 2px 8px rgba(0,0,0,.1)' }}>Try free <ArrowRight style={{ width:16, height:16 }} /></Link>
-              </div>
-            </div>
-          </section>
-
-          {/* ══ TESTIMONIALS ════════════════════════════════════ */}
-          <section style={{ padding:'48px 0', background:'#fafafa', borderTop:'1px solid #f0f0f0', borderBottom:'1px solid #f0f0f0', overflow:'hidden' }}>
-            <p style={{ textAlign:'center', fontSize:15, fontWeight:700, color:'#999', marginBottom:24 }}>What creators are saying</p>
-            <div style={{ display:'flex', width:'max-content' }} className="mq">
-              {[...Array(2)].map((_,si)=>(
-                <div key={si} style={{ display:'flex', gap:16, paddingRight:16 }}>
-                  {[
-                    { q:'"Cut my production time by 90%. This thing is insane."', n:'Sarah K.', r:'Creator · 280K followers' },
-                    { q:'"LinkedIn posts that actually sound human. Finally."', n:'Marcus T.', r:'B2B Agency Owner' },
-                    { q:'"BYOK saves us over $400 per month on AI costs."', n:'Priya M.', r:'Head of Content' },
-                    { q:'"The Content DNA feature changed how I plan content."', n:'Jake R.', r:'YouTuber · 150K subs' },
-                    { q:'"30 AI tools in one place. No more switching apps."', n:'Omar S.', r:'Freelance Creator' },
-                    { q:'"Finally real video rendering, not just text outputs."', n:'Lisa C.', r:'Social Media Manager' },
-                  ].map(t=>(
-                    <div key={t.n} style={{ minWidth:320, padding:'24px', borderRadius:16, background:'#fff', border:'1px solid #f0f0f0', boxShadow:'0 2px 6px rgba(0,0,0,.03)' }}>
-                      <div style={{ display:'flex', gap:2, marginBottom:12 }}>{[1,2,3,4,5].map(i=><Star key={i} style={{ width:14, height:14, fill:'#facc15', color:'#facc15' }} />)}</div>
-                      <p style={{ fontSize:16, fontWeight:500, color:'#222', marginBottom:14, lineHeight:1.5 }}>{t.q}</p>
-                      <p style={{ fontSize:14, color:'#888' }}><strong style={{ color:'#444' }}>{t.n}</strong> · {t.r}</p>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* ══ COMPARE ════════════════════════════════════════ */}
-          <section id="compare" className="lp-section" style={{ padding:'72px 24px' }}>
-            <div style={{ maxWidth:720, margin:'0 auto' }}>
-              <div style={{ textAlign:'center', marginBottom:40 }}>
-                <p style={{ fontSize:15, fontWeight:700, color:'#7c3aed', marginBottom:6 }}>Compare</p>
-                <h2 style={{ fontSize:36, fontWeight:800, letterSpacing:'-.02em', color:'#111' }}>More tools. Real video. Zero markup.</h2>
-              </div>
-              <div className="lp-compare-wrap" style={{ borderRadius:16, border:'1px solid #eee', overflow:'hidden', boxShadow:'0 1px 3px rgba(0,0,0,.04)' }}>
-                <table style={{ width:'100%', borderCollapse:'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom:'2px solid #f0f0f0', background:'#fafafa' }}>
-                      <th style={{ padding:'14px 20px', textAlign:'left', fontSize:14, fontWeight:600, color:'#888' }}>Feature</th>
-                      <th style={{ padding:'14px 20px', textAlign:'center', fontSize:14, fontWeight:800, color:'#7c3aed' }}>Clipflow</th>
-                      <th style={{ padding:'14px 20px', textAlign:'center', fontSize:14, fontWeight:600, color:'#888' }}>OpusClip</th>
-                      <th style={{ padding:'14px 20px', textAlign:'center', fontSize:14, fontWeight:600, color:'#888' }}>Klap</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {COMP.map((r,i)=>(
-                      <tr key={r.f} style={{ borderBottom:i<COMP.length-1?'1px solid #f5f5f5':'none' }}>
-                        <td style={{ padding:'12px 20px', fontSize:14, color:'#555' }}>{r.f}</td>
-                        {[r.c,r.o,r.k].map((v,j)=>(
-                          <td key={j} style={{ padding:'12px 20px', textAlign:'center' }}>
-                            {v===true?<Check style={{ width:18, height:18, color:'#7c3aed', margin:'0 auto' }} />:v===false?<X style={{ width:18, height:18, color:'#ddd', margin:'0 auto' }} />:<span style={{ fontSize:12, color:'#999', fontWeight:500 }}>{v}</span>}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </section>
-
-          {/* ══ PRICING ═══════════════════════════════════════ */}
-          <section id="pricing" className="lp-section" style={{ padding:'72px 24px', background:'#fafafa', borderTop:'1px solid #f0f0f0' }}>
-            <div style={{ maxWidth:960, margin:'0 auto' }}>
-              <div style={{ textAlign:'center', marginBottom:48 }}>
-                <p style={{ fontSize:15, fontWeight:700, color:'#7c3aed', marginBottom:6 }}>Pricing</p>
-                <h2 style={{ fontSize:36, fontWeight:800, letterSpacing:'-.02em', color:'#111' }}>Start free. Scale when ready.</h2>
-                <p style={{ fontSize:16, color:'#666', marginTop:8 }}>BYOK — pay your AI provider at cost. Zero markup.</p>
-              </div>
-              <div className="lp-grid-4" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16 }}>
-                {[
-                  { n:'Free', p:'$0', per:'/forever', d:'Try it out.', f:['3 content/mo','10 outputs/mo','1 workspace','All AI tools'], cta:'Get started', hl:false },
-                  { n:'Solo', p:'$19', per:'/mo', d:'For creators.', f:['20 content/mo','100 outputs/mo','Brand voice + persona','Video rendering','Review links'], cta:'Start trial', hl:true },
-                  { n:'Team', p:'$49', per:'/mo', d:'For teams.', f:['100 content/mo','500 outputs/mo','5 workspaces','Team members','Everything in Solo'], cta:'Start trial', hl:false },
-                  { n:'Agency', p:'$99', per:'/mo', d:'Unlimited.', f:['Unlimited content','Unlimited outputs','White-label portals','API access','Priority support'], cta:'Contact us', hl:false },
-                ].map(plan=>(
-                  <div key={plan.n} style={{ position:'relative', display:'flex', flexDirection:'column', padding:'28px 24px', borderRadius:16, background:'#fff', border:plan.hl?'2px solid #7c3aed':'1px solid #eee', boxShadow:plan.hl?'0 8px 32px rgba(124,58,237,.12)':'0 1px 3px rgba(0,0,0,.04)' }}>
-                    {plan.hl&&<div style={{ position:'absolute', top:-1, left:'50%', transform:'translateX(-50%)', background:'#7c3aed', color:'#fff', fontSize:12, fontWeight:700, padding:'4px 16px', borderRadius:'0 0 10px 10px' }}>Most popular</div>}
-                    <p style={{ fontSize:18, fontWeight:700, marginTop:plan.hl?14:0, color:'#111' }}>{plan.n}</p>
-                    <p style={{ fontSize:14, color:'#888', marginTop:2 }}>{plan.d}</p>
-                    <div style={{ display:'flex', alignItems:'baseline', gap:4, margin:'20px 0' }}>
-                      <span style={{ fontSize:44, fontWeight:800, letterSpacing:'-.04em', color:'#111' }}>{plan.p}</span>
-                      <span style={{ fontSize:15, color:'#888' }}>{plan.per}</span>
-                    </div>
-                    <ul style={{ display:'flex', flexDirection:'column', gap:10, flex:1 }}>
-                      {plan.f.map(f=>(
-                        <li key={f} style={{ display:'flex', alignItems:'center', gap:10, fontSize:14, color:'#555' }}>
-                          <Check style={{ width:16, height:16, color:'#10b981', flexShrink:0 }} />{f}
-                        </li>
-                      ))}
-                    </ul>
-                    <Link href={signupHref} style={{ display:'flex', alignItems:'center', justifyContent:'center', height:44, borderRadius:10, marginTop:24, fontSize:15, fontWeight:600, textDecoration:'none', background:plan.hl?'#7c3aed':'#fff', color:plan.hl?'#fff':'#555', border:plan.hl?'none':'1.5px solid #e5e5e5' }}>{plan.cta}</Link>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* ══ REFERRALS ═════════════════════════════════════ */}
-          <section id="referrals" className="lp-section" style={{ padding:'72px 24px' }}>
-            <div style={{ maxWidth:860, margin:'0 auto' }}>
-              <div style={{ position:'relative', borderRadius:24, background:'linear-gradient(135deg,#10b981 0%,#059669 100%)', padding:'56px 48px', color:'#fff', overflow:'hidden', boxShadow:'0 16px 48px rgba(16,185,129,.2)' }}>
-                {/* Decorative blob */}
-                <div aria-hidden style={{ position:'absolute', top:-80, right:-80, width:260, height:260, borderRadius:'50%', background:'rgba(255,255,255,.1)', filter:'blur(40px)' }} />
-                <div style={{ position:'relative', display:'grid', gridTemplateColumns:'1fr auto', gap:40, alignItems:'center' }} className="lp-grid-refer">
-                  <div style={{ minWidth:0 }}>
-                    <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'6px 14px', borderRadius:999, background:'rgba(255,255,255,.2)', fontSize:13, fontWeight:700, marginBottom:14 }}>
-                      <Gift style={{ width:14, height:14 }} /> Refer &amp; earn
-                    </div>
-                    <h2 style={{ fontSize:36, fontWeight:800, letterSpacing:'-.02em', lineHeight:1.15 }}>
-                      Give {REFERRAL_DISCOUNT_PERCENT}%, get {REFERRAL_DISCOUNT_PERCENT}%.
-                      Forever.
-                    </h2>
-                    <p style={{ fontSize:17, color:'rgba(255,255,255,.9)', marginTop:14, maxWidth:460, lineHeight:1.55 }}>
-                      When a friend signs up through your link and picks any paid plan,
-                      they get {REFERRAL_DISCOUNT_PERCENT}% off — and so do you, for as
-                      long as the subscription runs.
-                    </p>
-                    <div style={{ display:'flex', gap:20, marginTop:22, fontSize:14, color:'rgba(255,255,255,.85)' }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                        <Check style={{ width:16, height:16 }} /> No cap on referrals
-                      </div>
-                      <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                        <Check style={{ width:16, height:16 }} /> Stacks with annual pricing
-                      </div>
-                    </div>
-                  </div>
-                  <Link href={signupHref} style={{ display:'inline-flex', alignItems:'center', gap:8, height:52, padding:'0 28px', borderRadius:12, background:'#fff', color:'#059669', fontSize:16, fontWeight:700, textDecoration:'none', whiteSpace:'nowrap', flexShrink:0, boxShadow:'0 4px 16px rgba(0,0,0,.15)' }}>
-                    Get your link <ArrowRight style={{ width:16, height:16 }} />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ══ FAQ ════════════════════════════════════════════ */}
-          <section id="faq" className="lp-section" style={{ padding:'72px 24px' }}>
-            <div style={{ maxWidth:620, margin:'0 auto' }}>
-              <h2 style={{ textAlign:'center', fontSize:32, fontWeight:800, letterSpacing:'-.02em', marginBottom:36, color:'#111' }}>Frequently asked questions</h2>
-              <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                {FAQ.map(f=>(
-                  <details key={f.q} style={{ borderRadius:12, border:'1px solid #eee', background:'#fff' }}>
-                    <summary style={{ padding:'18px 24px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:16, fontWeight:600, color:'#111' }}>{f.q}<ChevronDown className="chv" style={{ width:18, height:18, color:'#bbb', flexShrink:0 }} /></summary>
-                    <div style={{ padding:'0 24px 18px', fontSize:15, lineHeight:1.65, color:'#666' }}>{f.a}</div>
-                  </details>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* ══ CTA ═══════════════════════════════════════════ */}
-          <section style={{ padding:'72px 24px', background:'linear-gradient(135deg,#7c3aed,#6366f1)', textAlign:'center' }}>
-            <div style={{ maxWidth:560, margin:'0 auto' }}>
-              <h2 style={{ fontSize:40, fontWeight:800, letterSpacing:'-.03em', lineHeight:1.12, color:'#fff' }}>Ready to stop editing and start publishing?</h2>
-              <p style={{ fontSize:17, color:'rgba(255,255,255,.85)', marginTop:14 }}>30+ AI tools. Real video rendering. Zero markup.</p>
-              <Link href={signupHref} style={{ display:'inline-flex', alignItems:'center', gap:8, height:52, padding:'0 36px', borderRadius:12, background:'#fff', color:'#7c3aed', fontSize:17, fontWeight:700, textDecoration:'none', marginTop:28, boxShadow:'0 4px 16px rgba(0,0,0,.15)' }}>Create free account <ArrowRight style={{ width:18, height:18 }} /></Link>
-              <p style={{ marginTop:10, fontSize:14, color:'rgba(255,255,255,.5)' }}>No credit card required</p>
-            </div>
-          </section>
-        </main>
-
-        {/* ══ FOOTER ══════════════════════════════════════════ */}
-        <footer style={{ padding:'48px 40px', borderTop:'1px solid #eee' }}>
-          <div style={{ maxWidth:960, margin:'0 auto', display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:32 }}>
-            <div>
-              <span style={{ fontSize:20, fontWeight:800, color:'#7c3aed' }}>Clipflow</span>
-              <p style={{ fontSize:14, color:'#999', marginTop:8, maxWidth:260, lineHeight:1.5 }}>AI video repurposing with real rendering. One video — every platform.</p>
-            </div>
-            <div style={{ display:'flex', gap:48 }}>
-              {([
-                { h:'Product', links:[['#features','Features'],['#pricing','Pricing'],['#compare','Compare'],['/changelog','Changelog']] },
-                { h:'Account', links:[['/login','Log in'],['/signup','Sign up']] },
-                { h:'Legal', links:[['/privacy','Privacy'],['/terms','Terms']] },
-              ] as { h: string; links: [string, string][] }[]).map(col=>(
-                <div key={col.h} style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                  <p style={{ fontWeight:700, color:'#222', fontSize:14, marginBottom:4 }}>{col.h}</p>
-                  {col.links.map(([h,l])=><Link key={h} href={h} style={{ fontSize:14, color:'#888', textDecoration:'none' }}>{l}</Link>)}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{ maxWidth:960, margin:'32px auto 0', paddingTop:20, borderTop:'1px solid #f0f0f0', fontSize:13, color:'#ccc' }}>© {new Date().getFullYear()} Clipflow. All rights reserved.</div>
-        </footer>
+  return (
+    <header className="sticky top-0 z-50 border-b border-zinc-200/60 bg-white/80 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-10">
+        <div className="flex items-center gap-10">
+          <Link
+            href="/"
+            className="text-xl font-semibold tracking-tight text-zinc-950"
+          >
+            Clip<span className="text-violet-600">flow</span>
+          </Link>
+          <nav className="hidden items-center gap-8 md:flex">
+            {links.map(([href, label]) => (
+              <a
+                key={href}
+                href={href}
+                className="text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-950"
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/login"
+            className="hidden text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-950 sm:inline-flex sm:px-4 sm:py-2"
+          >
+            Log in
+          </Link>
+          <Link
+            href={signupHref}
+            className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-5 py-2 text-sm font-semibold text-white transition-all hover:bg-zinc-800 hover:shadow-lg hover:shadow-zinc-900/20"
+          >
+            Start free
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
       </div>
+    </header>
+  )
+}
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({'@context':'https://schema.org','@type':'SoftwareApplication',name:'Clipflow',applicationCategory:'BusinessApplication',operatingSystem:'Web',url:'https://clipflow.to',offers:[{price:'0',name:'Free'},{price:'19',name:'Solo'},{price:'49',name:'Team'},{price:'99',name:'Agency'}].map(o=>({'@type':'Offer',priceCurrency:'USD',...o}))}) }} />
-    </>
+// ============================================================================
+// HERO
+// ============================================================================
+function Hero({ signupHref }: { signupHref: string }) {
+  return (
+    <section className="relative overflow-hidden bg-[#07070a] px-4 pb-24 pt-20 sm:px-6 sm:pt-28 lg:pt-32">
+      {/* Gradient mesh background */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-60"
+        style={{
+          background: `
+            radial-gradient(60% 50% at 50% 0%, rgba(124, 58, 237, 0.35), transparent 70%),
+            radial-gradient(30% 40% at 15% 40%, rgba(56, 189, 248, 0.18), transparent 70%),
+            radial-gradient(30% 40% at 85% 60%, rgba(236, 72, 153, 0.16), transparent 70%)
+          `,
+        }}
+      />
+      {/* Grid overlay */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)',
+          backgroundSize: '48px 48px',
+          maskImage:
+            'radial-gradient(ellipse 80% 50% at 50% 0%, #000 40%, transparent 100%)',
+          WebkitMaskImage:
+            'radial-gradient(ellipse 80% 50% at 50% 0%, #000 40%, transparent 100%)',
+        }}
+      />
+
+      <div className="relative mx-auto max-w-7xl">
+        {/* Announcement pill */}
+        <div className="flex justify-center">
+          <Link
+            href="#features"
+            className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium text-white/70 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+          >
+            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
+            Now with real MP4 rendering via Shotstack
+            <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+
+        {/* Headline */}
+        <h1 className="mx-auto mt-8 max-w-5xl text-center text-[44px] font-semibold leading-[1.04] tracking-[-0.035em] text-white sm:text-6xl md:text-7xl lg:text-[88px]">
+          One video.
+          <br />
+          <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-violet-500 bg-clip-text text-transparent">
+            Every platform.
+          </span>
+        </h1>
+
+        <p className="mx-auto mt-7 max-w-xl text-center text-lg leading-relaxed text-white/60 sm:text-xl">
+          Paste a YouTube link. Get TikTok, Reels, Shorts and LinkedIn drafts — with AI
+          subtitles, B-Roll and virality scoring — in under 30 seconds.
+        </p>
+
+        {/* CTA */}
+        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            href={signupHref}
+            className="group inline-flex h-12 items-center gap-2 rounded-full bg-white px-7 text-sm font-semibold text-zinc-950 shadow-[0_10px_40px_-10px_rgba(255,255,255,0.3)] transition-all hover:shadow-[0_10px_40px_-5px_rgba(255,255,255,0.5)]"
+          >
+            Start free — no card
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <a
+            href="#workflow"
+            className="inline-flex h-12 items-center gap-2 rounded-full border border-white/15 px-6 text-sm font-medium text-white/90 transition-all hover:border-white/30 hover:bg-white/5"
+          >
+            See how it works
+          </a>
+        </div>
+
+        <p className="mt-6 text-center text-xs text-white/40">
+          Free forever · 3 content items/mo · all AI tools included
+        </p>
+
+        {/* Product mockup */}
+        <div className="mx-auto mt-16 max-w-5xl sm:mt-20">
+          <HeroMockup />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function HeroMockup() {
+  const outputs = [
+    {
+      platform: 'TikTok',
+      score: 94,
+      hook: '"POV: You spend 8 hours editing one video 😭"',
+      accent: 'from-pink-500/20 to-pink-500/5',
+      border: 'border-pink-500/20',
+      text: 'text-pink-300',
+    },
+    {
+      platform: 'Reels',
+      score: 89,
+      hook: '"The workflow saving creators 6+ hours a week"',
+      accent: 'from-fuchsia-500/20 to-fuchsia-500/5',
+      border: 'border-fuchsia-500/20',
+      text: 'text-fuchsia-300',
+    },
+    {
+      platform: 'YouTube Shorts',
+      score: 85,
+      hook: '"I automated my entire content pipeline"',
+      accent: 'from-red-500/20 to-red-500/5',
+      border: 'border-red-500/20',
+      text: 'text-red-300',
+    },
+    {
+      platform: 'LinkedIn',
+      score: 81,
+      hook: '"80% of creators waste time on distribution"',
+      accent: 'from-sky-500/20 to-sky-500/5',
+      border: 'border-sky-500/20',
+      text: 'text-sky-300',
+    },
+  ]
+
+  return (
+    <div className="relative">
+      {/* Ambient glow */}
+      <div
+        aria-hidden
+        className="absolute -inset-x-20 -inset-y-10 rounded-[48px] opacity-60 blur-3xl"
+        style={{
+          background:
+            'linear-gradient(90deg, rgba(124, 58, 237, 0.3), rgba(236, 72, 153, 0.2))',
+        }}
+      />
+
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]">
+        {/* Window chrome */}
+        <div className="flex h-10 items-center border-b border-white/5 bg-zinc-900/80 px-4">
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+            <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+            <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+          </div>
+          <div className="mx-auto flex h-6 w-60 items-center justify-center gap-1.5 rounded-md bg-white/5 text-xs text-white/30">
+            clipflow.to / workspace
+          </div>
+        </div>
+
+        <div className="flex min-h-[340px]">
+          {/* Sidebar */}
+          <div className="hidden w-40 shrink-0 border-r border-white/5 bg-[#0b0b10] p-3 sm:block">
+            {[
+              ['◉', 'Dashboard'],
+              ['≡', 'Pipeline'],
+              ['◷', 'Calendar'],
+              ['✎', 'Ghostwriter'],
+              ['✶', 'All Tools', true],
+              ['▲', 'Trends'],
+              ['◢', 'Creators'],
+            ].map(([icon, label, active]) => (
+              <div
+                key={String(label)}
+                className={`mb-0.5 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs ${
+                  active
+                    ? 'bg-violet-500/10 text-white'
+                    : 'text-white/40 hover:text-white/70'
+                }`}
+              >
+                <span className={active ? 'text-violet-400' : 'text-white/30'}>
+                  {icon}
+                </span>
+                {label}
+              </div>
+            ))}
+          </div>
+
+          {/* Main */}
+          <div className="flex-1 bg-gradient-to-br from-[#0b0b10] to-[#07070a] p-4 sm:p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-semibold text-white">Product-Demo.mp4</p>
+                <p className="mt-1 text-xs text-white/40">
+                  4 drafts · 24s · gpt-4o · generated in 28s
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Ready
+              </span>
+            </div>
+
+            <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {outputs.map((o) => (
+                <div
+                  key={o.platform}
+                  className={`rounded-lg border ${o.border} bg-gradient-to-br ${o.accent} p-3`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={`rounded-full border ${o.border} bg-white/5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${o.text}`}>
+                      {o.platform}
+                    </span>
+                    <span
+                      className={`text-sm font-bold ${
+                        o.score > 88 ? 'text-emerald-300' : 'text-amber-300'
+                      }`}
+                    >
+                      {o.score}
+                      <span className="text-[9px] font-medium text-white/30">/100</span>
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-snug text-white/70">{o.hook}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================================
+// POWERED BY (logos strip)
+// ============================================================================
+function PoweredBy() {
+  const logos = [
+    'OpenAI',
+    'Anthropic',
+    'Google Gemini',
+    'ElevenLabs',
+    'Shotstack',
+    'Pexels',
+    'Whisper',
+  ]
+
+  return (
+    <section className="border-y border-zinc-100 bg-white px-6 py-12">
+      <p className="text-center text-xs font-semibold uppercase tracking-[0.25em] text-zinc-400">
+        Powered by the best AI stack
+      </p>
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+        {logos.map((logo) => (
+          <span
+            key={logo}
+            className="text-base font-bold tracking-tight text-zinc-400 transition-colors hover:text-zinc-700 sm:text-lg"
+          >
+            {logo}
+          </span>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+// ============================================================================
+// HOW IT WORKS
+// ============================================================================
+function Workflow() {
+  const steps = [
+    {
+      n: '01',
+      title: 'Paste or upload',
+      desc: 'Drop a YouTube URL, upload a video, or paste a transcript. Works with any source, any length.',
+      accent: 'text-violet-600',
+    },
+    {
+      n: '02',
+      title: 'AI drafts for every platform',
+      desc: 'TikTok, Reels, Shorts and LinkedIn — all in parallel. Brand voice, persona and tone applied automatically.',
+      accent: 'text-fuchsia-600',
+    },
+    {
+      n: '03',
+      title: 'Render, schedule, publish',
+      desc: 'Burn captions, add B-Roll, render real MP4s. Schedule or download — one source, everywhere.',
+      accent: 'text-emerald-600',
+    },
+  ]
+
+  return (
+    <section id="workflow" className="bg-zinc-50 px-6 py-24 sm:py-32">
+      <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
+            How it works
+          </p>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
+            Three steps. That&apos;s it.
+          </h2>
+          <p className="mt-4 text-lg text-zinc-500">
+            No settings to tune. No prompts to write. You supply one video — Clipflow handles the rest.
+          </p>
+        </div>
+
+        <div className="mt-16 grid gap-px overflow-hidden rounded-3xl bg-zinc-200 sm:grid-cols-3">
+          {steps.map((step) => (
+            <div
+              key={step.n}
+              className="bg-white p-10 transition-colors hover:bg-zinc-50/50"
+            >
+              <div
+                className={`text-sm font-mono font-semibold ${step.accent}`}
+              >
+                {step.n}
+              </div>
+              <h3 className="mt-6 text-2xl font-semibold tracking-tight text-zinc-950">
+                {step.title}
+              </h3>
+              <p className="mt-3 text-[15px] leading-relaxed text-zinc-600">
+                {step.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ============================================================================
+// FEATURES BENTO
+// ============================================================================
+function FeaturesBento() {
+  return (
+    <section id="features" className="bg-white px-6 py-24 sm:py-32">
+      <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
+            Features
+          </p>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
+            30+ tools.
+            <br />
+            One subscription.
+          </h2>
+          <p className="mt-4 text-lg text-zinc-500">
+            Everything you&apos;d stitch together from five separate SaaS products — already integrated.
+          </p>
+        </div>
+
+        <div className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2">
+          {/* LARGE — Video Rendering */}
+          <BentoCard
+            className="lg:col-span-2 lg:row-span-2 bg-gradient-to-br from-violet-600 via-violet-700 to-fuchsia-700 text-white"
+            eyebrow="Core"
+            title="Real video rendering"
+            desc="Not just text outputs. Burn subtitles, stitch B-Roll with voice-over, add brand intros and outros. Real MP4s, cloud-rendered via Shotstack."
+            icon={Video}
+            variant="dark"
+          />
+
+          <BentoCard
+            eyebrow="Speed"
+            title="4 platform drafts in 30s"
+            desc="TikTok, Reels, Shorts, LinkedIn — generated in parallel, not sequentially."
+            icon={Layers}
+          />
+
+          <BentoCard
+            eyebrow="Voice"
+            title="Brand voice + AI persona"
+            desc="Train a persona on your own writing. Every output sounds like you."
+            icon={Mic2}
+          />
+
+          <BentoCard
+            eyebrow="Strategy"
+            title="Virality scoring"
+            desc="AI rates each hook on scroll-stop power, shareability and pacing — before you publish."
+            icon={TrendingUp}
+          />
+
+          <BentoCard
+            eyebrow="Creation"
+            title="AI Ghostwriter"
+            desc="Topic → full script with hooks, CTA and platform variants. Zero prompt writing."
+            icon={Wand2}
+          />
+        </div>
+
+        {/* More-tools strip */}
+        <div className="mt-4 overflow-hidden rounded-2xl bg-zinc-950 p-8 text-white sm:p-10">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-violet-400">+ 25 more tools</p>
+              <h3 className="mt-1 text-2xl font-semibold tracking-tight">
+                Hashtag research, content DNA, thumbnail generator, trend radar, competitor analysis…
+              </h3>
+            </div>
+            <Link
+              href="/signup"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-zinc-950 transition-all hover:bg-zinc-100"
+            >
+              Browse all tools
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function BentoCard({
+  className = '',
+  eyebrow,
+  title,
+  desc,
+  icon: Icon,
+  variant = 'light',
+}: {
+  className?: string
+  eyebrow: string
+  title: string
+  desc: string
+  icon: React.ComponentType<{ className?: string }>
+  variant?: 'light' | 'dark'
+}) {
+  const isDark = variant === 'dark'
+  return (
+    <div
+      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border p-8 transition-all sm:p-10 ${
+        isDark
+          ? 'border-white/10 shadow-2xl shadow-violet-500/10'
+          : 'border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-lg'
+      } ${className}`}
+    >
+      <div>
+        <div
+          className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${
+            isDark ? 'bg-white/10' : 'bg-violet-50'
+          }`}
+        >
+          <Icon className={`h-5 w-5 ${isDark ? 'text-white' : 'text-violet-600'}`} />
+        </div>
+        <p
+          className={`mt-6 text-xs font-semibold uppercase tracking-wider ${
+            isDark ? 'text-white/60' : 'text-violet-600'
+          }`}
+        >
+          {eyebrow}
+        </p>
+        <h3
+          className={`mt-2 text-2xl font-semibold leading-tight tracking-tight sm:text-3xl ${
+            isDark ? 'text-white' : 'text-zinc-950'
+          }`}
+        >
+          {title}
+        </h3>
+        <p
+          className={`mt-3 text-[15px] leading-relaxed ${
+            isDark ? 'text-white/70' : 'text-zinc-600'
+          }`}
+        >
+          {desc}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================================
+// PLATFORM SHOWCASE
+// ============================================================================
+function PlatformShowcase() {
+  const platforms = [
+    {
+      name: 'TikTok',
+      hue: 'from-pink-500 to-fuchsia-500',
+      swatch: 'bg-pink-500',
+      caption: 'Hook-first. Scroll-stopping. 9:16 rendered.',
+    },
+    {
+      name: 'Instagram Reels',
+      hue: 'from-fuchsia-500 to-violet-500',
+      swatch: 'bg-fuchsia-500',
+      caption: 'Story-driven. Music-synced. Cover-ready.',
+    },
+    {
+      name: 'YouTube Shorts',
+      hue: 'from-red-500 to-orange-500',
+      swatch: 'bg-red-500',
+      caption: 'Retention-optimized. Pattern-interrupt hooks.',
+    },
+    {
+      name: 'LinkedIn',
+      hue: 'from-sky-500 to-blue-500',
+      swatch: 'bg-sky-500',
+      caption: 'Insight-first. Discussion-worthy. CTA baked in.',
+    },
+  ]
+
+  return (
+    <section className="relative overflow-hidden bg-[#07070a] px-6 py-24 sm:py-32">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-40"
+        style={{
+          background:
+            'radial-gradient(50% 50% at 50% 50%, rgba(124, 58, 237, 0.25), transparent 70%)',
+        }}
+      />
+      <div className="relative mx-auto max-w-6xl">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-300">
+            Platform-native, not lowest-common-denominator
+          </p>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl">
+            One source.
+            <br />
+            <span className="text-white/60">Four voices.</span>
+          </h2>
+          <p className="mt-4 text-lg text-white/60">
+            Every platform has its own rules. Clipflow rewrites — not just reposts — for each.
+          </p>
+        </div>
+
+        <div className="mt-16 grid gap-4 sm:grid-cols-2">
+          {platforms.map((p) => (
+            <div
+              key={p.name}
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-8 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/[0.04]"
+            >
+              <div
+                aria-hidden
+                className={`absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br ${p.hue} opacity-20 blur-3xl transition-opacity group-hover:opacity-40`}
+              />
+              <div className="relative flex items-center gap-3">
+                <span className={`h-2 w-2 rounded-full ${p.swatch}`} />
+                <span className="text-sm font-semibold text-white">{p.name}</span>
+              </div>
+              <p className="relative mt-6 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+                {p.caption}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ============================================================================
+// BYOK HIGHLIGHT
+// ============================================================================
+function ByokHighlight({ signupHref }: { signupHref: string }) {
+  return (
+    <section className="bg-white px-6 py-24 sm:py-32">
+      <div className="mx-auto max-w-6xl">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-950 via-zinc-900 to-violet-950 p-10 sm:p-16">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full opacity-30 blur-3xl"
+            style={{ background: 'radial-gradient(circle, #8b5cf6, transparent 70%)' }}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full opacity-20 blur-3xl"
+            style={{ background: 'radial-gradient(circle, #ec4899, transparent 70%)' }}
+          />
+
+          <div className="relative grid gap-10 lg:grid-cols-2 lg:items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-white">
+                <KeyRound className="h-3.5 w-3.5" />
+                BYOK
+              </div>
+              <h2 className="mt-5 text-4xl font-semibold leading-[1.08] tracking-tight text-white sm:text-5xl md:text-6xl">
+                Bring your own key.
+                <br />
+                <span className="text-white/60">Pay AI at cost.</span>
+              </h2>
+              <p className="mt-5 max-w-md text-lg text-white/70">
+                Every tool that bakes AI into their subscription makes money on your tokens. We
+                don&apos;t. Connect your OpenAI, Anthropic or Google key — all AI calls run through your
+                account at provider cost. Teams save $200–$500/month.
+              </p>
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <Link
+                  href={signupHref}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-zinc-950 transition-all hover:bg-zinc-100"
+                >
+                  Connect your key
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <a
+                  href="#faq"
+                  className="text-sm font-medium text-white/70 underline-offset-4 hover:text-white hover:underline"
+                >
+                  How does BYOK work?
+                </a>
+              </div>
+            </div>
+
+            {/* Cost comparison */}
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm">
+              <p className="text-xs font-semibold uppercase tracking-wider text-white/50">
+                Monthly AI cost · 500 outputs / mo
+              </p>
+              <div className="mt-6 space-y-4">
+                {[
+                  { label: 'Typical "AI included" tool', cost: '$247', bar: 100, tone: 'bg-red-500/80' },
+                  { label: 'Clipflow + your API key', cost: '$18', bar: 14, tone: 'bg-emerald-500' },
+                ].map((row) => (
+                  <div key={row.label}>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-white/80">{row.label}</span>
+                      <span className="font-semibold text-white">{row.cost}</span>
+                    </div>
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+                      <div
+                        className={`h-full rounded-full ${row.tone}`}
+                        style={{ width: `${row.bar}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-6 text-xs text-white/40">
+                Based on gpt-4o-mini at $0.15/1M input tokens.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ============================================================================
+// REFERRAL CTA
+// ============================================================================
+function ReferralCta({ signupHref }: { signupHref: string }) {
+  return (
+    <section id="referrals" className="bg-white px-6 py-24 sm:py-32">
+      <div className="mx-auto max-w-5xl">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 p-10 text-white sm:p-14">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-3xl"
+          />
+          <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider">
+                <Gift className="h-3.5 w-3.5" />
+                Refer &amp; earn
+              </div>
+              <h2 className="mt-5 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl md:text-6xl">
+                Give {REFERRAL_DISCOUNT_PERCENT}%, get {REFERRAL_DISCOUNT_PERCENT}%.
+                <br />
+                <span className="text-white/80">Forever.</span>
+              </h2>
+              <p className="mt-5 max-w-xl text-lg text-white/90">
+                Every friend you bring in saves {REFERRAL_DISCOUNT_PERCENT}% on any paid plan — and
+                so do you, for as long as the subscription runs. No cap on referrals.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-6 text-sm font-medium text-white/90">
+                {['No cap on referrals', 'Stacks across plans', 'Applies forever'].map((f) => (
+                  <div key={f} className="flex items-center gap-2">
+                    <Check className="h-4 w-4" />
+                    {f}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <Link
+              href={signupHref}
+              className="inline-flex h-14 shrink-0 items-center justify-center gap-2 rounded-full bg-white px-8 text-base font-semibold text-emerald-700 shadow-xl transition-all hover:bg-zinc-50"
+            >
+              Get your link
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ============================================================================
+// COMPARE
+// ============================================================================
+function Compare() {
+  const rows = [
+    { f: 'All 4 platform drafts in parallel', c: true, o: false, k: false },
+    { f: 'Burn captions onto video', c: true, o: true, k: true },
+    { f: 'Brand voice + AI persona', c: true, o: false, k: false },
+    { f: 'Virality scoring', c: true, o: true, k: false },
+    { f: 'AI B-Roll assembly', c: true, o: 'Beta', k: false },
+    { f: 'Content DNA analyzer', c: true, o: false, k: false },
+    { f: '30-day content calendar', c: true, o: false, k: false },
+    { f: 'Creator search (5 platforms)', c: true, o: false, k: false },
+    { f: 'BYOK — zero AI markup', c: true, o: false, k: false },
+  ]
+
+  return (
+    <section id="compare" className="bg-zinc-50 px-6 py-24 sm:py-32">
+      <div className="mx-auto max-w-3xl">
+        <div className="text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
+            The comparison
+          </p>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">
+            More tools. Real video. Zero markup.
+          </h2>
+        </div>
+
+        <div className="mt-14 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-zinc-200 bg-zinc-50/60">
+                  <th className="px-6 py-4 text-left text-sm font-medium text-zinc-500">
+                    Feature
+                  </th>
+                  <th className="px-6 py-4 text-center text-sm font-bold text-violet-600">
+                    Clipflow
+                  </th>
+                  <th className="px-6 py-4 text-center text-sm font-medium text-zinc-400">
+                    OpusClip
+                  </th>
+                  <th className="px-6 py-4 text-center text-sm font-medium text-zinc-400">
+                    Klap
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr
+                    key={r.f}
+                    className={i < rows.length - 1 ? 'border-b border-zinc-100' : ''}
+                  >
+                    <td className="px-6 py-3.5 text-sm text-zinc-700">{r.f}</td>
+                    {[r.c, r.o, r.k].map((v, j) => (
+                      <td key={j} className="px-6 py-3.5 text-center">
+                        {v === true ? (
+                          <Check className="mx-auto h-4 w-4 text-violet-600" strokeWidth={3} />
+                        ) : v === false ? (
+                          <X className="mx-auto h-4 w-4 text-zinc-300" />
+                        ) : (
+                          <span className="text-xs font-medium text-zinc-500">{v}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ============================================================================
+// FINAL CTA
+// ============================================================================
+function FinalCta({ signupHref }: { signupHref: string }) {
+  return (
+    <section className="relative overflow-hidden bg-[#07070a] px-6 py-32 sm:py-40">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-60"
+        style={{
+          background: `
+            radial-gradient(60% 60% at 50% 100%, rgba(124, 58, 237, 0.4), transparent 70%),
+            radial-gradient(30% 40% at 20% 20%, rgba(56, 189, 248, 0.15), transparent 70%)
+          `,
+        }}
+      />
+      <div className="relative mx-auto max-w-4xl text-center">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium text-white/70 backdrop-blur-sm">
+          <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+          Built for creators who ship, not tinker
+        </div>
+        <h2 className="mt-6 text-5xl font-semibold leading-[1.05] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
+          Stop editing.
+          <br />
+          <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-violet-500 bg-clip-text text-transparent">
+            Start shipping.
+          </span>
+        </h2>
+        <p className="mx-auto mt-6 max-w-lg text-lg text-white/60">
+          30+ AI tools. Real video rendering. Zero AI markup. Free forever plan.
+        </p>
+        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            href={signupHref}
+            className="group inline-flex h-14 items-center gap-2 rounded-full bg-white px-8 text-base font-semibold text-zinc-950 shadow-[0_10px_40px_-10px_rgba(255,255,255,0.4)] transition-all hover:shadow-[0_10px_40px_-5px_rgba(255,255,255,0.6)]"
+          >
+            Create free account
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+        <p className="mt-6 text-xs text-white/40">No credit card · 30-second signup</p>
+      </div>
+    </section>
+  )
+}
+
+// ============================================================================
+// FOOTER
+// ============================================================================
+function Footer() {
+  const cols: Array<{ h: string; links: Array<[string, string]> }> = [
+    {
+      h: 'Product',
+      links: [
+        ['#features', 'Features'],
+        ['#pricing', 'Pricing'],
+        ['#compare', 'Compare'],
+        ['#referrals', 'Refer & earn'],
+        ['/changelog', 'Changelog'],
+      ],
+    },
+    {
+      h: 'Account',
+      links: [
+        ['/login', 'Log in'],
+        ['/signup', 'Sign up'],
+      ],
+    },
+    {
+      h: 'Legal',
+      links: [
+        ['/privacy', 'Privacy'],
+        ['/terms', 'Terms'],
+      ],
+    },
+  ]
+
+  return (
+    <footer className="bg-white px-6 pt-20 pb-12">
+      <div className="mx-auto max-w-7xl">
+        <div className="grid gap-12 pb-14 lg:grid-cols-[2fr_3fr]">
+          <div>
+            <Link
+              href="/"
+              className="text-xl font-semibold tracking-tight text-zinc-950"
+            >
+              Clip<span className="text-violet-600">flow</span>
+            </Link>
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-zinc-500">
+              AI content repurposing with real MP4 rendering. One video, every platform, zero markup.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
+            {cols.map((col) => (
+              <div key={col.h}>
+                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-900">
+                  {col.h}
+                </p>
+                <ul className="mt-4 space-y-3">
+                  {col.links.map(([href, label]) => (
+                    <li key={href}>
+                      <Link
+                        href={href}
+                        className="text-sm text-zinc-500 transition-colors hover:text-zinc-900"
+                      >
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col items-start justify-between gap-4 border-t border-zinc-100 pt-8 text-xs text-zinc-400 sm:flex-row sm:items-center">
+          <p>© {new Date().getFullYear()} Clipflow. All rights reserved.</p>
+          <p>Made for indie creators and teams that ship.</p>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
+// ============================================================================
+// JSON-LD
+// ============================================================================
+function StructuredData() {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'SoftwareApplication',
+          name: 'Clipflow',
+          applicationCategory: 'BusinessApplication',
+          operatingSystem: 'Web',
+          url: 'https://clipflow.to',
+          offers: [
+            { price: '0', name: 'Free' },
+            { price: '19', name: 'Solo' },
+            { price: '49', name: 'Team' },
+            { price: '99', name: 'Agency' },
+          ].map((o) => ({ '@type': 'Offer', priceCurrency: 'USD', ...o })),
+        }),
+      }}
+    />
   )
 }
