@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useFormState, useFormStatus } from 'react-dom'
 import Link from 'next/link'
 import { ArrowLeft, Loader2 } from 'lucide-react'
@@ -287,7 +288,17 @@ function ResultsRenderer({ data, toolId }: { data: unknown; toolId: string }) {
           {(obj.thumbnails as Array<Record<string, unknown>>).map((thumb, i) => (
             <div key={i} className="space-y-2 rounded-lg border border-border/50 p-3">
               {thumb.imageUrl ? (
-                <img src={String(thumb.imageUrl)} alt={String(thumb.style ?? '')} className="w-full rounded-lg" />
+                // DALL-E returns time-limited S3 URLs from various hosts —
+                // `unoptimized` skips Next's optimizer so we don't have to
+                // whitelist each.
+                <Image
+                  src={String(thumb.imageUrl)}
+                  alt={String(thumb.style ?? '')}
+                  width={512}
+                  height={512}
+                  unoptimized
+                  className="w-full rounded-lg"
+                />
               ) : null}
               <p className="text-xs font-semibold">{String(thumb.style ?? '')}</p>
               <p className="text-xs text-muted-foreground">{String(thumb.textOverlay ?? '')}</p>

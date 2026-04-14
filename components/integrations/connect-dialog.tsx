@@ -89,10 +89,10 @@ interface ConnectDialogProps {
   isConnected: boolean
 }
 
-export function ConnectDialog({ integrationId, integrationName, workspaceId, isConnected }: ConnectDialogProps) {
+export function ConnectDialog({ integrationId, integrationName: _integrationName, workspaceId, isConnected }: ConnectDialogProps) {
   const [open, setOpen] = useState(false)
   const [connectState, connectAction] = useFormState(saveIntegrationAction, {} as ConnectState)
-  const [disconnectState, disconnectAction] = useFormState(disconnectIntegrationAction, {} as ConnectState)
+  const [, disconnectAction] = useFormState(disconnectIntegrationAction, {} as ConnectState)
 
   const fields = INTEGRATION_FIELDS[integrationId] ?? []
   const isOAuth = OAUTH_INTEGRATIONS.includes(integrationId)

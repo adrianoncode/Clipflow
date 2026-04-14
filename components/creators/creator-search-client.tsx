@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useFormState, useFormStatus } from 'react-dom'
 import { useState } from 'react'
 import { Search, Youtube, Users } from 'lucide-react'
@@ -29,7 +30,7 @@ function SubmitButton() {
   )
 }
 
-export function CreatorSearchClient({ workspaceId }: CreatorSearchClientProps) {
+export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearchClientProps) {
   const [state, formAction] = useFormState(searchCreatorsAction, {})
   const [platform, setPlatform] = useState('youtube')
 
@@ -131,7 +132,16 @@ function CreatorCard({ creator, platform }: { creator: Record<string, unknown>; 
       {/* Header */}
       <div className="flex items-center gap-3">
         {thumbnail ? (
-          <img src={thumbnail} alt={name} className="h-10 w-10 rounded-full object-cover" />
+          // Creator thumbnails come from ScrapeCreators (varied hosts) — keep
+          // unoptimized so we don't have to maintain a remotePatterns list.
+          <Image
+            src={thumbnail}
+            alt={name}
+            width={40}
+            height={40}
+            unoptimized
+            className="h-10 w-10 rounded-full object-cover"
+          />
         ) : (
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
             <Users className="h-5 w-5 text-muted-foreground" />

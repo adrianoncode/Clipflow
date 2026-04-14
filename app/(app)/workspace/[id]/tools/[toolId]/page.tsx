@@ -1,5 +1,4 @@
 import { redirect, notFound } from 'next/navigation'
-import { cookies } from 'next/headers'
 import { getUser } from '@/lib/auth/get-user'
 import { ToolPage } from '@/components/tools/tool-page'
 

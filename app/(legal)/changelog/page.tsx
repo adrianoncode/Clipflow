@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { Zap, Video, Sparkles, Shield, Globe } from 'lucide-react'
+import { Zap, Video, Sparkles } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Changelog — Clipflow',

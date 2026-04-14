@@ -1,11 +1,19 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { ArrowRight, Check, X, ChevronDown, Play, Star, Zap, Video, PenTool, BarChart3, Globe, Calendar, Mic, Hash, Users } from 'lucide-react'
+import { ArrowRight, Check, X, ChevronDown, Play, Star, Zap, Video, PenTool, BarChart3, Globe, Calendar, Mic, Hash, Users, Gift } from 'lucide-react'
+
+import { normalizeReferralCode } from '@/lib/referrals/normalize-code'
+import { lookupReferrerUserId } from '@/lib/referrals/lookup-referrer'
+import { REFERRAL_DISCOUNT_PERCENT } from '@/lib/referrals/constants'
 
 export const metadata: Metadata = {
   title: 'Clipflow — AI Video Repurposing · TikTok, Reels, Shorts & LinkedIn',
   description: 'Turn one video into platform-native content. AI subtitles, B-Roll, virality scoring, video clipping. BYOK — zero AI markup.',
   alternates: { canonical: 'https://clipflow.to' },
+}
+
+interface HomePageProps {
+  searchParams: { ref?: string; source?: string }
 }
 
 const COMP = [
@@ -28,7 +36,15 @@ const FAQ = [
   { q:'Can I use it for client work?', a:'Absolutely. Team and Agency plans include multi-client dashboards, white-label review portals, and unlimited workspaces.' },
 ]
 
-export default function HomePage() {
+export default async function HomePage({ searchParams }: HomePageProps) {
+  // Confirm the ref code resolves to a real user before showing the
+  // banner. Typo-in-URL or stale codes silently pass through — no banner.
+  const refCode = normalizeReferralCode(searchParams.ref)
+  const hasValidRef = refCode ? Boolean(await lookupReferrerUserId(refCode)) : false
+  const signupHref = hasValidRef
+    ? `/signup?ref=${refCode}${searchParams.source ? `&source=${encodeURIComponent(searchParams.source)}` : ''}`
+    : '/signup'
+
   return (
     <>
       <style>{`
@@ -36,45 +52,86 @@ export default function HomePage() {
         .mq { animation:marquee 30s linear infinite }
         details summary { list-style:none } details summary::-webkit-details-marker { display:none }
         details[open] .chv { transform:rotate(180deg) } .chv { transition:transform .2s }
+
+        /* Mobile-first responsive overrides for the inline-styled grids.
+           Hitting 768px (tablet) and 480px (phone) collapses multi-column
+           grids into stacks, shrinks hero type, and relaxes padding so the
+           page is actually usable below the original desktop-only design. */
+        @media (max-width: 768px) {
+          .lp-grid-3  { grid-template-columns: repeat(2, 1fr) !important; }
+          .lp-grid-4  { grid-template-columns: repeat(2, 1fr) !important; }
+          .lp-hide-sm { display: none !important; }
+          .lp-nav     { padding: 0 16px !important; }
+          .lp-hero-h  { font-size: 36px !important; }
+          .lp-hero    { padding: 40px 16px 24px !important; }
+          .lp-section { padding: 48px 16px !important; }
+          .lp-compare-wrap { overflow-x: auto; }
+        }
+        @media (max-width: 768px) {
+          .lp-grid-refer { grid-template-columns: 1fr !important; gap: 24px !important; }
+        }
+        @media (max-width: 480px) {
+          .lp-grid-3  { grid-template-columns: 1fr !important; }
+          .lp-grid-4  { grid-template-columns: 1fr !important; }
+          .lp-hero-h  { font-size: 30px !important; }
+          .lp-hero-p  { font-size: 16px !important; }
+          .lp-byok    { flex-direction: column; align-items: flex-start !important; gap: 16px !important; padding: 24px !important; }
+          .lp-cta-buttons { flex-direction: column; width: 100%; }
+          .lp-cta-buttons > a { width: 100%; justify-content: center; }
+        }
       `}</style>
 
       <div style={{ background:'#fff', color:'#111', minHeight:'100vh', fontFamily:'var(--font-inter),-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif' }}>
 
+        {/* ══ REFERRAL RIBBON — shown only on valid ?ref= ══════ */}
+        {hasValidRef ? (
+          <div style={{ background:'linear-gradient(90deg,#10b981,#059669)', color:'#fff', padding:'10px 24px', textAlign:'center', fontSize:14, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', gap:8, flexWrap:'wrap' }}>
+            <Gift style={{ width:16, height:16 }} />
+            You were invited — your {REFERRAL_DISCOUNT_PERCENT}% discount applies automatically at checkout.
+          </div>
+        ) : null}
+
         {/* ══ NAV ═══════════════════════════════════════════════ */}
-        <header style={{ position:'sticky', top:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 40px', height:64, borderBottom:'1px solid #eee', background:'rgba(255,255,255,.97)', backdropFilter:'blur(8px)' }}>
+        <header className="lp-nav" style={{ position:'sticky', top:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 40px', height:64, borderBottom:'1px solid #eee', background:'rgba(255,255,255,.97)', backdropFilter:'blur(8px)' }}>
           <div style={{ display:'flex', alignItems:'center', gap:36 }}>
             <Link href="/" style={{ fontSize:20, fontWeight:800, color:'#7c3aed', textDecoration:'none', letterSpacing:'-.02em' }}>Clipflow</Link>
-            <nav style={{ display:'flex', gap:28 }}>
-              {[['#features','Features'],['#pricing','Pricing'],['#compare','Compare'],['#faq','FAQ']].map(([h,l])=>(
+            <nav className="lp-hide-sm" style={{ display:'flex', gap:28 }}>
+              {([
+                ['#features','Features'],
+                ['#pricing','Pricing'],
+                ['#referrals','Refer'],
+                ['#compare','Compare'],
+                ['#faq','FAQ'],
+              ] as [string, string][]).map(([h,l])=>(
                 <a key={h} href={h} style={{ fontSize:15, color:'#555', textDecoration:'none', fontWeight:500 }}>{l}</a>
               ))}
             </nav>
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <Link href="/login" style={{ fontSize:14, fontWeight:500, color:'#555', textDecoration:'none', padding:'8px 16px', borderRadius:8, border:'1px solid #e5e5e5' }}>Log in</Link>
-            <Link href="/signup" style={{ fontSize:14, fontWeight:600, color:'#fff', textDecoration:'none', padding:'8px 20px', borderRadius:8, background:'#7c3aed' }}>Try for free</Link>
+            <Link href="/login" className="lp-hide-sm" style={{ fontSize:14, fontWeight:500, color:'#555', textDecoration:'none', padding:'8px 16px', borderRadius:8, border:'1px solid #e5e5e5' }}>Log in</Link>
+            <Link href={signupHref} style={{ fontSize:14, fontWeight:600, color:'#fff', textDecoration:'none', padding:'8px 20px', borderRadius:8, background:'#7c3aed' }}>Try for free</Link>
           </div>
         </header>
 
         <main>
 
           {/* ══ HERO ════════════════════════════════════════════ */}
-          <section style={{ textAlign:'center', padding:'56px 24px 40px', background:'linear-gradient(180deg,#f5f0ff 0%,#fff 100%)' }}>
+          <section className="lp-hero" style={{ textAlign:'center', padding:'56px 24px 40px', background:'linear-gradient(180deg,#f5f0ff 0%,#fff 100%)' }}>
             <div style={{ maxWidth:700, margin:'0 auto' }}>
               <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'6px 16px', borderRadius:999, background:'#ede9fe', fontSize:14, fontWeight:600, color:'#7c3aed', marginBottom:20 }}>
                 <Zap style={{ width:14, height:14 }} /> Now with AI video rendering
               </div>
 
-              <h1 style={{ fontSize:52, fontWeight:800, lineHeight:1.1, letterSpacing:'-.03em', color:'#111' }}>
+              <h1 className="lp-hero-h" style={{ fontSize:52, fontWeight:800, lineHeight:1.1, letterSpacing:'-.03em', color:'#111' }}>
                 Turn one video into content for <span style={{ color:'#7c3aed' }}>every platform</span>
               </h1>
 
-              <p style={{ fontSize:18, lineHeight:1.6, color:'#555', maxWidth:520, margin:'16px auto 0' }}>
+              <p className="lp-hero-p" style={{ fontSize:18, lineHeight:1.6, color:'#555', maxWidth:520, margin:'16px auto 0' }}>
                 Paste a YouTube link. Get TikTok, Reels, Shorts &amp; LinkedIn drafts — with AI subtitles, B-Roll, and virality scoring. Real MP4 rendering included.
               </p>
 
-              <div style={{ display:'flex', gap:12, justifyContent:'center', marginTop:28 }}>
-                <Link href="/signup" style={{ display:'inline-flex', alignItems:'center', gap:8, height:52, padding:'0 32px', borderRadius:12, background:'#7c3aed', color:'#fff', fontSize:17, fontWeight:600, textDecoration:'none', boxShadow:'0 4px 16px rgba(124,58,237,.3)' }}>
+              <div className="lp-cta-buttons" style={{ display:'flex', gap:12, justifyContent:'center', marginTop:28 }}>
+                <Link href={signupHref} style={{ display:'inline-flex', alignItems:'center', gap:8, height:52, padding:'0 32px', borderRadius:12, background:'#7c3aed', color:'#fff', fontSize:17, fontWeight:600, textDecoration:'none', boxShadow:'0 4px 16px rgba(124,58,237,.3)' }}>
                   Start for free <ArrowRight style={{ width:18, height:18 }} />
                 </Link>
                 <Link href="#features" style={{ display:'inline-flex', alignItems:'center', gap:8, height:52, padding:'0 28px', borderRadius:12, border:'2px solid #e5e5e5', color:'#555', fontSize:17, fontWeight:500, textDecoration:'none' }}>
@@ -156,7 +213,7 @@ export default function HomePage() {
           </section>
 
           {/* ══ FEATURES ═══════════════════════════════════════ */}
-          <section id="features" style={{ padding:'72px 24px' }}>
+          <section id="features" className="lp-section" style={{ padding:'72px 24px' }}>
             <div style={{ maxWidth:1000, margin:'0 auto' }}>
               <div style={{ textAlign:'center', marginBottom:48 }}>
                 <p style={{ fontSize:15, fontWeight:700, color:'#7c3aed', marginBottom:6 }}>30+ AI Tools</p>
@@ -164,7 +221,7 @@ export default function HomePage() {
                 <p style={{ fontSize:17, color:'#666', marginTop:10, maxWidth:500, marginLeft:'auto', marginRight:'auto' }}>From strategy to publishing — one platform replaces your entire content workflow.</p>
               </div>
 
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:20 }}>
+              <div className="lp-grid-3" style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:20 }}>
                 {[
                   { icon:Video, color:'#7c3aed', bg:'#f0ebff', title:'Video Rendering', desc:'Burn captions, stitch B-Roll, clip segments, add brand intros. Real MP4 output via Shotstack.' },
                   { icon:Zap, color:'#f59e0b', bg:'#fffbeb', title:'4 Platform Drafts', desc:'TikTok, Reels, Shorts, LinkedIn — all generated simultaneously in under 30 seconds.' },
@@ -187,12 +244,12 @@ export default function HomePage() {
               </div>
 
               {/* BYOK */}
-              <div style={{ marginTop:20, padding:'32px 40px', borderRadius:16, background:'linear-gradient(135deg,#7c3aed,#6366f1)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:32, boxShadow:'0 8px 24px rgba(124,58,237,.2)' }}>
+              <div className="lp-byok" style={{ marginTop:20, padding:'32px 40px', borderRadius:16, background:'linear-gradient(135deg,#7c3aed,#6366f1)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:32, boxShadow:'0 8px 24px rgba(124,58,237,.2)' }}>
                 <div>
                   <h3 style={{ fontSize:22, fontWeight:800, color:'#fff' }}>BYOK — Bring Your Own Key</h3>
                   <p style={{ fontSize:16, color:'rgba(255,255,255,.85)', marginTop:8, maxWidth:500 }}>Connect your own OpenAI, Anthropic, or Google key. All AI at cost — zero markup. Saves teams $200+/month.</p>
                 </div>
-                <Link href="/signup" style={{ display:'inline-flex', alignItems:'center', gap:8, height:48, padding:'0 28px', borderRadius:12, background:'#fff', color:'#7c3aed', fontSize:16, fontWeight:700, textDecoration:'none', whiteSpace:'nowrap', flexShrink:0, boxShadow:'0 2px 8px rgba(0,0,0,.1)' }}>Try free <ArrowRight style={{ width:16, height:16 }} /></Link>
+                <Link href={signupHref} style={{ display:'inline-flex', alignItems:'center', gap:8, height:48, padding:'0 28px', borderRadius:12, background:'#fff', color:'#7c3aed', fontSize:16, fontWeight:700, textDecoration:'none', whiteSpace:'nowrap', flexShrink:0, boxShadow:'0 2px 8px rgba(0,0,0,.1)' }}>Try free <ArrowRight style={{ width:16, height:16 }} /></Link>
               </div>
             </div>
           </section>
@@ -223,13 +280,13 @@ export default function HomePage() {
           </section>
 
           {/* ══ COMPARE ════════════════════════════════════════ */}
-          <section id="compare" style={{ padding:'72px 24px' }}>
+          <section id="compare" className="lp-section" style={{ padding:'72px 24px' }}>
             <div style={{ maxWidth:720, margin:'0 auto' }}>
               <div style={{ textAlign:'center', marginBottom:40 }}>
                 <p style={{ fontSize:15, fontWeight:700, color:'#7c3aed', marginBottom:6 }}>Compare</p>
                 <h2 style={{ fontSize:36, fontWeight:800, letterSpacing:'-.02em', color:'#111' }}>More tools. Real video. Zero markup.</h2>
               </div>
-              <div style={{ borderRadius:16, border:'1px solid #eee', overflow:'hidden', boxShadow:'0 1px 3px rgba(0,0,0,.04)' }}>
+              <div className="lp-compare-wrap" style={{ borderRadius:16, border:'1px solid #eee', overflow:'hidden', boxShadow:'0 1px 3px rgba(0,0,0,.04)' }}>
                 <table style={{ width:'100%', borderCollapse:'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom:'2px solid #f0f0f0', background:'#fafafa' }}>
@@ -257,14 +314,14 @@ export default function HomePage() {
           </section>
 
           {/* ══ PRICING ═══════════════════════════════════════ */}
-          <section id="pricing" style={{ padding:'72px 24px', background:'#fafafa', borderTop:'1px solid #f0f0f0' }}>
+          <section id="pricing" className="lp-section" style={{ padding:'72px 24px', background:'#fafafa', borderTop:'1px solid #f0f0f0' }}>
             <div style={{ maxWidth:960, margin:'0 auto' }}>
               <div style={{ textAlign:'center', marginBottom:48 }}>
                 <p style={{ fontSize:15, fontWeight:700, color:'#7c3aed', marginBottom:6 }}>Pricing</p>
                 <h2 style={{ fontSize:36, fontWeight:800, letterSpacing:'-.02em', color:'#111' }}>Start free. Scale when ready.</h2>
                 <p style={{ fontSize:16, color:'#666', marginTop:8 }}>BYOK — pay your AI provider at cost. Zero markup.</p>
               </div>
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16 }}>
+              <div className="lp-grid-4" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16 }}>
                 {[
                   { n:'Free', p:'$0', per:'/forever', d:'Try it out.', f:['3 content/mo','10 outputs/mo','1 workspace','All AI tools'], cta:'Get started', hl:false },
                   { n:'Solo', p:'$19', per:'/mo', d:'For creators.', f:['20 content/mo','100 outputs/mo','Brand voice + persona','Video rendering','Review links'], cta:'Start trial', hl:true },
@@ -286,15 +343,52 @@ export default function HomePage() {
                         </li>
                       ))}
                     </ul>
-                    <Link href="/signup" style={{ display:'flex', alignItems:'center', justifyContent:'center', height:44, borderRadius:10, marginTop:24, fontSize:15, fontWeight:600, textDecoration:'none', background:plan.hl?'#7c3aed':'#fff', color:plan.hl?'#fff':'#555', border:plan.hl?'none':'1.5px solid #e5e5e5' }}>{plan.cta}</Link>
+                    <Link href={signupHref} style={{ display:'flex', alignItems:'center', justifyContent:'center', height:44, borderRadius:10, marginTop:24, fontSize:15, fontWeight:600, textDecoration:'none', background:plan.hl?'#7c3aed':'#fff', color:plan.hl?'#fff':'#555', border:plan.hl?'none':'1.5px solid #e5e5e5' }}>{plan.cta}</Link>
                   </div>
                 ))}
               </div>
             </div>
           </section>
 
+          {/* ══ REFERRALS ═════════════════════════════════════ */}
+          <section id="referrals" className="lp-section" style={{ padding:'72px 24px' }}>
+            <div style={{ maxWidth:860, margin:'0 auto' }}>
+              <div style={{ position:'relative', borderRadius:24, background:'linear-gradient(135deg,#10b981 0%,#059669 100%)', padding:'56px 48px', color:'#fff', overflow:'hidden', boxShadow:'0 16px 48px rgba(16,185,129,.2)' }}>
+                {/* Decorative blob */}
+                <div aria-hidden style={{ position:'absolute', top:-80, right:-80, width:260, height:260, borderRadius:'50%', background:'rgba(255,255,255,.1)', filter:'blur(40px)' }} />
+                <div style={{ position:'relative', display:'grid', gridTemplateColumns:'1fr auto', gap:40, alignItems:'center' }} className="lp-grid-refer">
+                  <div style={{ minWidth:0 }}>
+                    <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'6px 14px', borderRadius:999, background:'rgba(255,255,255,.2)', fontSize:13, fontWeight:700, marginBottom:14 }}>
+                      <Gift style={{ width:14, height:14 }} /> Refer &amp; earn
+                    </div>
+                    <h2 style={{ fontSize:36, fontWeight:800, letterSpacing:'-.02em', lineHeight:1.15 }}>
+                      Give {REFERRAL_DISCOUNT_PERCENT}%, get {REFERRAL_DISCOUNT_PERCENT}%.
+                      Forever.
+                    </h2>
+                    <p style={{ fontSize:17, color:'rgba(255,255,255,.9)', marginTop:14, maxWidth:460, lineHeight:1.55 }}>
+                      When a friend signs up through your link and picks any paid plan,
+                      they get {REFERRAL_DISCOUNT_PERCENT}% off — and so do you, for as
+                      long as the subscription runs.
+                    </p>
+                    <div style={{ display:'flex', gap:20, marginTop:22, fontSize:14, color:'rgba(255,255,255,.85)' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                        <Check style={{ width:16, height:16 }} /> No cap on referrals
+                      </div>
+                      <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                        <Check style={{ width:16, height:16 }} /> Stacks with annual pricing
+                      </div>
+                    </div>
+                  </div>
+                  <Link href={signupHref} style={{ display:'inline-flex', alignItems:'center', gap:8, height:52, padding:'0 28px', borderRadius:12, background:'#fff', color:'#059669', fontSize:16, fontWeight:700, textDecoration:'none', whiteSpace:'nowrap', flexShrink:0, boxShadow:'0 4px 16px rgba(0,0,0,.15)' }}>
+                    Get your link <ArrowRight style={{ width:16, height:16 }} />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* ══ FAQ ════════════════════════════════════════════ */}
-          <section id="faq" style={{ padding:'72px 24px' }}>
+          <section id="faq" className="lp-section" style={{ padding:'72px 24px' }}>
             <div style={{ maxWidth:620, margin:'0 auto' }}>
               <h2 style={{ textAlign:'center', fontSize:32, fontWeight:800, letterSpacing:'-.02em', marginBottom:36, color:'#111' }}>Frequently asked questions</h2>
               <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
@@ -313,7 +407,7 @@ export default function HomePage() {
             <div style={{ maxWidth:560, margin:'0 auto' }}>
               <h2 style={{ fontSize:40, fontWeight:800, letterSpacing:'-.03em', lineHeight:1.12, color:'#fff' }}>Ready to stop editing and start publishing?</h2>
               <p style={{ fontSize:17, color:'rgba(255,255,255,.85)', marginTop:14 }}>30+ AI tools. Real video rendering. Zero markup.</p>
-              <Link href="/signup" style={{ display:'inline-flex', alignItems:'center', gap:8, height:52, padding:'0 36px', borderRadius:12, background:'#fff', color:'#7c3aed', fontSize:17, fontWeight:700, textDecoration:'none', marginTop:28, boxShadow:'0 4px 16px rgba(0,0,0,.15)' }}>Create free account <ArrowRight style={{ width:18, height:18 }} /></Link>
+              <Link href={signupHref} style={{ display:'inline-flex', alignItems:'center', gap:8, height:52, padding:'0 36px', borderRadius:12, background:'#fff', color:'#7c3aed', fontSize:17, fontWeight:700, textDecoration:'none', marginTop:28, boxShadow:'0 4px 16px rgba(0,0,0,.15)' }}>Create free account <ArrowRight style={{ width:18, height:18 }} /></Link>
               <p style={{ marginTop:10, fontSize:14, color:'rgba(255,255,255,.5)' }}>No credit card required</p>
             </div>
           </section>
@@ -327,11 +421,11 @@ export default function HomePage() {
               <p style={{ fontSize:14, color:'#999', marginTop:8, maxWidth:260, lineHeight:1.5 }}>AI video repurposing with real rendering. One video — every platform.</p>
             </div>
             <div style={{ display:'flex', gap:48 }}>
-              {[
+              {([
                 { h:'Product', links:[['#features','Features'],['#pricing','Pricing'],['#compare','Compare'],['/changelog','Changelog']] },
                 { h:'Account', links:[['/login','Log in'],['/signup','Sign up']] },
                 { h:'Legal', links:[['/privacy','Privacy'],['/terms','Terms']] },
-              ].map(col=>(
+              ] as { h: string; links: [string, string][] }[]).map(col=>(
                 <div key={col.h} style={{ display:'flex', flexDirection:'column', gap:8 }}>
                   <p style={{ fontWeight:700, color:'#222', fontSize:14, marginBottom:4 }}>{col.h}</p>
                   {col.links.map(([h,l])=><Link key={h} href={h} style={{ fontSize:14, color:'#888', textDecoration:'none' }}>{l}</Link>)}
