@@ -1,13 +1,11 @@
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import {
-  BarChart3,
   CheckCircle2,
   ChevronRight,
   FileText,
   Globe,
   Layers,
-  PenTool,
   Rss,
   Star,
   TrendingUp,
@@ -15,7 +13,7 @@ import {
   Youtube,
 } from 'lucide-react'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { AddAiKeyBanner } from '@/components/dashboard/add-ai-key-banner'
 import { GettingStartedChecklist } from '@/components/dashboard/getting-started-checklist'
 import { ReferralHeroStat } from '@/components/dashboard/referral-hero-stat'
@@ -73,33 +71,25 @@ const PIPELINE_LABELS: Record<string, string> = {
   exported: 'Exported',
 }
 
-// Stat cards share a single accent so the dashboard reads calm — the
-// four cards are distinguished by their icons + numbers, not a
-// rainbow of background colors.
-const STAT_CARD_STYLES = [
-  { iconBg: 'bg-primary/10', iconColor: 'text-primary' },
-  { iconBg: 'bg-primary/10', iconColor: 'text-primary' },
-  { iconBg: 'bg-primary/10', iconColor: 'text-primary' },
-  { iconBg: 'bg-primary/10', iconColor: 'text-primary' },
-] as const
 
 function UsageBar({ used, limit }: { used: number; limit: number }) {
   if (limit === -1) {
-    return <span className="text-xs text-muted-foreground">Unlimited</span>
+    return (
+      <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+        <div className="h-full w-full rounded-full bg-primary/30" />
+      </div>
+    )
   }
   const pct = Math.min(100, Math.round((used / limit) * 100))
-  const color = pct >= 90 ? 'bg-destructive' : pct >= 70 ? 'bg-amber-500' : 'bg-primary'
+  // Single-color rule: usage pressure shown via opacity darkening, not
+  // by switching to amber/red. Destructive state at >= 100 % only.
+  const color = pct >= 100 ? 'bg-destructive' : 'bg-primary'
   return (
-    <div className="space-y-1">
-      <div className="h-1.5 w-full rounded-full bg-muted">
-        <div
-          className={`h-1.5 rounded-full transition-all duration-500 ${color}`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <p className="text-xs text-muted-foreground">
-        {used} / {limit} used
-      </p>
+    <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+      <div
+        className={`h-full rounded-full transition-all duration-500 ${color}`}
+        style={{ width: `${pct}%` }}
+      />
     </div>
   )
 }
@@ -233,200 +223,183 @@ export default async function DashboardPage() {
         />
       ) : null}
 
-      {/* Stats cards */}
+      {/* Data masthead — editorial row of stats with hair-line dividers
+          between cells. Replaces the 4-card stat grid (generic). Numbers
+          are monospaced and tracking-tight; labels are mono-uppercase so
+          the whole thing reads like a terminal status bar, not a kids'
+          dashboard. Trend arrow is inline next to the number. */}
       {stats && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              label: 'Total content',
-              value: stats.totalContent,
-              icon: FileText,
-              trend: stats.contentThisMonth > 0 ? `+${stats.contentThisMonth} this month` : 'content items',
-              trendUp: stats.contentThisMonth > 0,
-            },
-            {
-              label: 'Total outputs',
-              value: stats.totalOutputs,
-              icon: Layers,
-              trend: stats.outputsThisMonth > 0 ? `+${stats.outputsThisMonth} this month` : 'platform drafts',
-              trendUp: stats.outputsThisMonth > 0,
-            },
-            {
-              label: 'Starred',
-              value: stats.starredOutputs,
-              icon: Star,
-              trend: 'strong outputs',
-              trendUp: false,
-            },
-            {
-              label: 'Approved',
-              value: stats.approvedOutputs,
-              icon: CheckCircle2,
-              trend: 'ready to publish',
-              trendUp: false,
-            },
-          ].map((card, i) => {
-            const style = STAT_CARD_STYLES[i] ?? STAT_CARD_STYLES[0]
-            return (
-              <Card
-                key={card.label}
-                className="relative overflow-hidden border-border/60 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-sm"
-              >
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between">
-                    <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${style.iconBg}`}>
-                      <card.icon className={`h-4 w-4 ${style.iconColor}`} />
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+          <div className="grid grid-cols-2 divide-y divide-border/50 sm:grid-cols-4 sm:divide-x sm:divide-y-0">
+            {([
+              {
+                key: 'content',
+                label: 'Content',
+                value: stats.totalContent,
+                delta: stats.contentThisMonth,
+                icon: FileText,
+              },
+              {
+                key: 'outputs',
+                label: 'Outputs',
+                value: stats.totalOutputs,
+                delta: stats.outputsThisMonth,
+                icon: Layers,
+              },
+              {
+                key: 'starred',
+                label: 'Starred',
+                value: stats.starredOutputs,
+                delta: 0,
+                icon: Star,
+              },
+              {
+                key: 'approved',
+                label: 'Approved',
+                value: stats.approvedOutputs,
+                delta: 0,
+                icon: CheckCircle2,
+              },
+            ] as const).map((m) => (
+              <div key={m.key} className="group relative px-5 py-5">
+                <div className="flex items-center gap-1.5">
+                  <m.icon className="h-3 w-3 text-muted-foreground/60" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                    {m.label}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-baseline gap-2">
+                  <span className="font-mono text-3xl font-semibold tabular-nums tracking-tight text-foreground">
+                    {m.value}
+                  </span>
+                  {m.delta > 0 ? (
+                    <span className="inline-flex items-center gap-0.5 font-mono text-[11px] font-medium text-primary">
+                      <TrendingUp className="h-2.5 w-2.5" />
+                      {m.delta}
                     </span>
-                    {card.trendUp ? (
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                        <TrendingUp className="h-2.5 w-2.5" />
-                        +{card.label === 'Total content' ? stats.contentThisMonth : stats.outputsThisMonth}
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-4 text-3xl font-semibold tabular-nums tracking-tight">
-                    {card.value}
-                  </p>
-                  <p className="mt-0.5 text-xs font-medium text-muted-foreground">
-                    {card.label}
-                  </p>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Quick actions — minimal row, one accent color, no emojis so
-          the dashboard reads as a tool rather than a kids' app. */}
-      {currentWorkspace && (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {[
-            { href: `/workspace/${currentWorkspace.id}/content/new`, label: 'New content', desc: 'Upload or paste', icon: FileText },
-            { href: `/workspace/${currentWorkspace.id}/ghostwriter`, label: 'Ghostwriter', desc: 'AI writes scripts', icon: PenTool },
-            { href: `/workspace/${currentWorkspace.id}/trends`, label: 'Trend Radar', desc: 'Find trending topics', icon: TrendingUp },
-            { href: `/workspace/${currentWorkspace.id}/tools`, label: 'All tools', desc: '30+ in one place', icon: Layers },
-          ].map((action) => (
-            <Link
-              key={action.href}
-              href={action.href}
-              className="group flex items-center gap-3 rounded-xl border border-border/60 bg-card/50 p-3 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/[0.03] hover:shadow-sm"
-            >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/15">
-                <action.icon className="h-4 w-4" />
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-xs font-semibold">{action.label}</p>
-                <p className="truncate text-[10px] text-muted-foreground">
-                  {action.desc}
-                </p>
+                  ) : null}
+                </div>
               </div>
-            </Link>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Pipeline funnel */}
-      {stats && (
-        <Card className="border-border/50">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                Content Pipeline
-              </CardTitle>
-              {currentWorkspace && (
-                <Link
-                  href={`/workspace/${currentWorkspace.id}/pipeline`}
-                  className="flex items-center gap-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  View full pipeline
-                  <ChevronRight className="h-3 w-3" />
-                </Link>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border/50 bg-border/50 sm:grid-cols-4">
+      {/* Pipeline — inline row under the masthead. No card chrome, just
+          mono labels with counts separated by hairlines. Reads as a
+          status bar, not a "feature". */}
+      {stats && currentWorkspace ? (
+        <div className="flex flex-wrap items-center justify-between gap-y-2 rounded-xl border border-border/60 bg-card px-5 py-3.5">
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              Pipeline
+            </span>
+            <span aria-hidden className="h-3 w-px bg-border/60" />
+            <div className="flex items-center gap-4">
               {(['draft', 'review', 'approved', 'exported'] as const).map((state) => (
-                <div
-                  key={state}
-                  className="flex items-baseline justify-between gap-2 bg-card px-4 py-3 sm:flex-col sm:items-center sm:gap-1.5 sm:text-center"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span className={`h-1.5 w-1.5 rounded-full ${PIPELINE_DOT_COLORS[state]}`} />
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                      {PIPELINE_LABELS[state]}
-                    </span>
-                  </div>
-                  <span className="text-2xl font-semibold tabular-nums">
+                <div key={state} className="flex items-center gap-1.5">
+                  <span className={`h-1.5 w-1.5 rounded-full ${PIPELINE_DOT_COLORS[state]}`} />
+                  <span className="text-[11px] text-muted-foreground">
+                    {PIPELINE_LABELS[state]}
+                  </span>
+                  <span className="font-mono text-[12px] font-semibold tabular-nums text-foreground">
                     {stats.pipelineByState[state]}
                   </span>
                 </div>
               ))}
             </div>
-            {stats.totalOutputs === 0 && (
-              <p className="mt-3 text-xs text-muted-foreground">
-                No outputs yet — generate some from a content item.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      )}
+          </div>
+          <Link
+            href={`/workspace/${currentWorkspace.id}/pipeline`}
+            className="flex items-center gap-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Open board
+            <ChevronRight className="h-3 w-3" />
+          </Link>
+        </div>
+      ) : null}
 
       {/* Main content: 2/3 + 1/3 layout */}
       {stats && (
         <div className="grid gap-6 lg:grid-cols-3">
           {/* LEFT: Recent Content */}
           <div className="space-y-6 lg:col-span-2">
-            {/* Recent Content — two-line rows (title + meta), improved
-                hover state, outputs action promoted to chevron button. */}
+            {/* Activity — timeline-style feed with a vertical rail on the
+                left, timestamps on the right. Reads like a changelog or
+                commit history, not a generic "recent items" list. */}
             {stats.recentContent.length > 0 && (
-              <Card className="border-border/60">
-                <CardHeader className="flex flex-row items-center justify-between pb-3">
-                  <CardTitle className="text-sm font-semibold">Recent content</CardTitle>
+              <div className="rounded-2xl border border-border/60 bg-card">
+                <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                      Activity
+                    </span>
+                    <span className="font-mono text-[10px] text-muted-foreground/60">
+                      · last {stats.recentContent.length}
+                    </span>
+                  </div>
                   {currentWorkspace ? (
                     <Link
                       href={`/workspace/${currentWorkspace.id}`}
-                      className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                      className="text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
                     >
-                      View all →
+                      All content →
                     </Link>
                   ) : null}
-                </CardHeader>
-                <CardContent className="p-0">
-                  <ul className="divide-y divide-border/50">
-                    {stats.recentContent.map((item) => {
-                      const Icon = KIND_ICON[item.kind as keyof typeof KIND_ICON] ?? FileText
-                      const kindLabel = item.kind.replace('_', ' ')
-                      return (
-                        <li key={item.id} className="group">
-                          <Link
-                            href={`/workspace/${currentWorkspace?.id}/content/${item.id}`}
-                            className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-accent/40"
-                          >
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/70 text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
-                              <Icon className="h-4 w-4" aria-hidden />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-medium text-foreground">
+                </div>
+                <ol className="relative px-5 py-3">
+                  {/* Vertical timeline rail */}
+                  <span
+                    aria-hidden
+                    className="absolute left-[34px] top-6 bottom-6 w-px bg-border/70"
+                  />
+                  {stats.recentContent.map((item, idx) => {
+                    const Icon = KIND_ICON[item.kind as keyof typeof KIND_ICON] ?? FileText
+                    const kindLabel = item.kind.replace('_', ' ')
+                    const verb =
+                      item.status === 'ready'
+                        ? 'ready'
+                        : item.status === 'processing'
+                          ? 'processing'
+                          : item.status === 'failed'
+                            ? 'failed'
+                            : 'added'
+                    return (
+                      <li key={item.id} className="group relative">
+                        <Link
+                          href={`/workspace/${currentWorkspace?.id}/content/${item.id}`}
+                          className="relative flex items-center gap-3 rounded-lg px-2 py-2.5 -mx-2 transition-colors hover:bg-accent/40"
+                        >
+                          {/* Timeline node — circular on the rail */}
+                          <div className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background text-muted-foreground transition-all group-hover:border-primary/40 group-hover:bg-primary/5 group-hover:text-primary">
+                            <Icon className="h-3.5 w-3.5" aria-hidden />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm">
+                              <span className="font-medium text-foreground">
                                 {item.title ?? 'Untitled'}
-                              </p>
-                              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <span className="capitalize">{kindLabel}</span>
-                                <span className="text-muted-foreground/40">·</span>
-                                <span>{formatRelative(item.created_at)}</span>
-                              </p>
-                            </div>
-                            <ContentStatusBadge status={item.status} />
-                            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-foreground" />
-                          </Link>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </CardContent>
-              </Card>
+                              </span>
+                              <span className="ml-1.5 text-muted-foreground">
+                                · {verb}
+                              </span>
+                            </p>
+                            <p className="mt-0.5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/80">
+                              <span>{kindLabel}</span>
+                              {idx < stats.recentContent.length ? (
+                                <>
+                                  <span className="text-muted-foreground/40">·</span>
+                                  <span>{formatRelative(item.created_at)}</span>
+                                </>
+                              ) : null}
+                            </p>
+                          </div>
+                          <ContentStatusBadge status={item.status} />
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ol>
+              </div>
             )}
 
             {/* Recycle suggestions */}
@@ -490,50 +463,75 @@ export default async function DashboardPage() {
           <div className="space-y-6">
             {/* Platform breakdown */}
             {stats.totalOutputs > 0 && (
-              <Card className="border-border/50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold">Platform breakdown</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
+              <div className="rounded-2xl border border-border/60 bg-card">
+                <div className="border-b border-border/50 px-5 py-3">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                    By platform
+                  </span>
+                </div>
+                <div className="space-y-3 p-5">
                   {Object.entries(stats.outputsByPlatform).map(([platform, count]) => {
                     const pct = Math.round((count / maxPlatformCount) * 100)
                     return (
                       <div key={platform} className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium">
+                          <span className="text-xs font-medium text-foreground">
                             {PLATFORM_LABELS[platform] ?? platform}
                           </span>
-                          <span className="text-xs tabular-nums text-muted-foreground">{count}</span>
+                          <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                            {count}
+                          </span>
                         </div>
-                        <div className="h-1.5 w-full rounded-full bg-muted">
+                        <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
                           <div
-                            className={`h-1.5 rounded-full transition-all duration-700 ${PLATFORM_BAR_CLASS}`}
+                            className={`h-full rounded-full transition-all duration-700 ${PLATFORM_BAR_CLASS}`}
                             style={{ width: `${pct}%` }}
                           />
                         </div>
                       </div>
                     )
                   })}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
-            {/* Monthly usage */}
+            {/* Monthly usage — compact data-sheet style */}
             {usage && (
-              <Card className="border-border/50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold">Monthly usage</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+              <div className="rounded-2xl border border-border/60 bg-card">
+                <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                    This month
+                  </span>
+                  <span className="font-mono text-[10px] tabular-nums text-muted-foreground/70">
+                    {new Date().toLocaleDateString(undefined, { month: 'short', year: 'numeric' }).toUpperCase()}
+                  </span>
+                </div>
+                <div className="space-y-4 p-5">
                   <div className="space-y-1.5">
-                    <p className="text-xs font-medium text-muted-foreground">Content items</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-foreground">Content items</span>
+                      <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                        {usage.contentItemsThisMonth}
+                        {planDef.limits.contentItemsPerMonth !== -1
+                          ? ` / ${planDef.limits.contentItemsPerMonth}`
+                          : ' / ∞'}
+                      </span>
+                    </div>
                     <UsageBar
                       used={usage.contentItemsThisMonth}
                       limit={planDef.limits.contentItemsPerMonth}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-xs font-medium text-muted-foreground">Outputs generated</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-foreground">Outputs generated</span>
+                      <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                        {usage.outputsThisMonth}
+                        {planDef.limits.outputsPerMonth !== -1
+                          ? ` / ${planDef.limits.outputsPerMonth}`
+                          : ' / ∞'}
+                      </span>
+                    </div>
                     <UsageBar
                       used={usage.outputsThisMonth}
                       limit={planDef.limits.outputsPerMonth}
@@ -544,11 +542,11 @@ export default async function DashboardPage() {
                       href="/billing"
                       className="block rounded-lg border border-primary/20 bg-primary/5 py-2 text-center text-xs font-medium text-primary transition-colors hover:bg-primary/10"
                     >
-                      Upgrade for more
+                      Upgrade for more →
                     </Link>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </div>
         </div>
