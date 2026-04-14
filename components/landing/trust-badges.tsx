@@ -1,5 +1,7 @@
 import { ShieldCheck, KeyRound, Lock, HeartHandshake } from 'lucide-react'
 
+import { SectionBadge } from '@/components/landing/detail-primitives'
+
 const ITEMS = [
   {
     icon: KeyRound,
@@ -30,15 +32,31 @@ const ITEMS = [
  */
 export function TrustBadges() {
   return (
-    <section className="border-y border-zinc-100 bg-zinc-50/40 px-6 py-14">
-      <div className="mx-auto max-w-6xl">
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+    <section className="relative overflow-hidden border-y border-zinc-100 bg-zinc-50/40 px-6 py-16">
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-dots-subtle opacity-60" />
+      <div className="relative mx-auto max-w-6xl">
+        <div className="mb-10 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end">
+          <div>
+            <SectionBadge number="08" label="Trust" />
+            <h3 className="mt-3 font-display text-2xl font-semibold tracking-tight text-zinc-950 sm:text-3xl">
+              Quiet signals, not promises.
+            </h3>
+          </div>
+          <p className="max-w-sm text-sm text-zinc-500">
+            We don&apos;t have SOC 2 yet — but here&apos;s how your data is actually
+            handled today.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-200 sm:grid-cols-2 lg:grid-cols-4">
           {ITEMS.map((item) => (
-            <div key={item.label} className="flex items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white ring-1 ring-zinc-200">
-                <item.icon className="h-4.5 w-4.5 text-zinc-700" />
+            <div
+              key={item.label}
+              className="flex items-start gap-3 bg-white p-5 transition-colors hover:bg-zinc-50/70"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-50 ring-1 ring-violet-100">
+                <item.icon className="h-4 w-4 text-violet-700" />
               </span>
-              <div>
+              <div className="min-w-0">
                 <p className="text-sm font-semibold text-zinc-900">{item.label}</p>
                 <p className="mt-0.5 text-xs leading-snug text-zinc-500">
                   {item.desc}

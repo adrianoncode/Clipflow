@@ -5,10 +5,8 @@ import {
   ArrowUpRight,
   Check,
   Gift,
-  KeyRound,
   Layers,
   Mic2,
-  Sparkles,
   TrendingUp,
   Video,
   Wand2,
@@ -21,10 +19,16 @@ import { Reveal } from '@/components/landing/reveal'
 import { SpotlightCard } from '@/components/landing/spotlight-card'
 import { LogoMarquee } from '@/components/landing/logo-marquee'
 import { AnimatedHeroMockup } from '@/components/landing/animated-hero-mockup'
-import { TestimonialsWall } from '@/components/landing/testimonials-wall'
+import { SocialProofPosts } from '@/components/landing/social-proof-posts'
 import { ScrollProgress } from '@/components/landing/scroll-progress'
 import { AudienceTabs } from '@/components/landing/audience-tabs'
 import { TrustBadges } from '@/components/landing/trust-badges'
+import {
+  SectionBadge,
+  HairlineDivider,
+  CornerTag,
+  DataLabel,
+} from '@/components/landing/detail-primitives'
 import { normalizeReferralCode } from '@/lib/referrals/normalize-code'
 import { lookupReferrerUserId } from '@/lib/referrals/lookup-referrer'
 import { REFERRAL_DISCOUNT_PERCENT } from '@/lib/referrals/constants'
@@ -57,13 +61,15 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <Nav signupHref={signupHref} />
       <main>
         <Hero signupHref={signupHref} />
+        <HairlineDivider />
         <PoweredBy />
         <Workflow />
+        <HairlineDivider />
         <AudienceTabs signupHref={signupHref} />
         <FeaturesBento />
         <PlatformShowcase />
         <ByokHighlight signupHref={signupHref} />
-        <TestimonialsWall />
+        <SocialProofPosts />
         <PricingSection signupHref={signupHref} />
         <TrustBadges />
         <ReferralCta signupHref={signupHref} />
@@ -150,108 +156,164 @@ function Nav({ signupHref }: { signupHref: string }) {
 // ============================================================================
 function Hero({ signupHref }: { signupHref: string }) {
   return (
-    <section className="relative overflow-hidden bg-white px-4 pb-24 pt-20 sm:px-6 sm:pt-28 lg:pt-32">
-      {/* Subtle violet wash at the top of the hero — keeps the page
-          light but adds a hint of the brand color. No dark panels,
-          no noise overlays. */}
+    <section className="relative overflow-hidden bg-white px-4 pb-24 pt-16 sm:px-6 sm:pt-20 lg:pt-28">
+      {/* Dot-grid texture across the whole hero — adds subtle tactile
+          depth without going dark. Masked so it fades at the bottom. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-dots opacity-70"
+        style={{
+          maskImage:
+            'radial-gradient(ellipse 100% 70% at 50% 0%, #000 40%, transparent 100%)',
+          WebkitMaskImage:
+            'radial-gradient(ellipse 100% 70% at 50% 0%, #000 40%, transparent 100%)',
+        }}
+      />
+      {/* Soft violet wash at the top */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
           background: `
-            radial-gradient(60% 45% at 50% 0%, rgba(124, 58, 237, 0.08), transparent 70%),
-            radial-gradient(30% 35% at 20% 30%, rgba(124, 58, 237, 0.05), transparent 70%)
+            radial-gradient(60% 45% at 50% 0%, rgba(124, 58, 237, 0.10), transparent 70%),
+            radial-gradient(30% 35% at 15% 25%, rgba(124, 58, 237, 0.06), transparent 70%),
+            radial-gradient(25% 30% at 85% 15%, rgba(124, 58, 237, 0.05), transparent 70%)
           `,
-        }}
-      />
-      {/* Very faint grid on the top quarter for subtle texture. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, #0a0a0a 1px, transparent 1px), linear-gradient(to bottom, #0a0a0a 1px, transparent 1px)',
-          backgroundSize: '48px 48px',
-          maskImage:
-            'radial-gradient(ellipse 70% 40% at 50% 0%, #000 30%, transparent 100%)',
-          WebkitMaskImage:
-            'radial-gradient(ellipse 70% 40% at 50% 0%, #000 30%, transparent 100%)',
         }}
       />
 
       <div className="relative mx-auto max-w-7xl">
+        {/* Section marker — "v9 · build notes" style, feels distinctive */}
+        <div className="flex items-center justify-between">
+          <SectionBadge number="00" label="What is Clipflow" />
+          <div className="hidden items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-zinc-400 sm:flex">
+            <span className="h-1.5 w-1.5 rounded-full bg-violet-500 animate-soft-pulse" />
+            ver. 2.4 · live
+          </div>
+        </div>
+
         {/* Announcement pill */}
-        <div className="flex justify-center">
+        <div className="mt-10 flex justify-center">
           <Link
             href="#features"
-            className="group inline-flex items-center gap-2 rounded-full border border-violet-200/70 bg-violet-50/60 px-4 py-1.5 text-xs font-semibold text-violet-700 backdrop-blur-sm transition-all hover:border-violet-300 hover:bg-violet-50"
+            className="group inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white px-4 py-1.5 text-xs font-semibold text-violet-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md"
           >
-            <span className="flex h-1.5 w-1.5 rounded-full bg-violet-500" />
-            Now with real MP4 rendering via Shotstack
+            <span className="flex h-1.5 w-1.5 rounded-full bg-violet-500 animate-soft-pulse" />
+            New — real MP4 rendering via Shotstack
             <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
 
-        {/* Headline */}
-        <h1 className="mx-auto mt-8 max-w-5xl text-center font-display text-[44px] font-semibold leading-[1.02] tracking-[-0.04em] text-zinc-950 sm:text-6xl md:text-7xl lg:text-[88px]">
+        {/* Headline — oversized, mix of weights, italic accent for drama */}
+        <h1 className="mx-auto mt-8 max-w-5xl text-center font-display text-[46px] font-semibold leading-[0.98] tracking-[-0.045em] text-zinc-950 sm:text-[64px] md:text-[80px] lg:text-[104px]">
           One video.
           <br />
-          <span className="bg-gradient-to-r from-violet-600 via-violet-500 to-violet-700 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-violet-600 via-violet-500 to-violet-700 bg-clip-text italic text-transparent">
             Every platform.
           </span>
         </h1>
 
-        <p className="mx-auto mt-7 max-w-xl text-center text-lg leading-relaxed text-zinc-500 sm:text-xl">
+        <p className="mx-auto mt-7 max-w-xl text-center text-lg leading-relaxed text-zinc-600 sm:text-xl">
           Paste a YouTube link. Get TikTok, Reels, Shorts and LinkedIn drafts — with AI
           subtitles, B-Roll and virality scoring — in under 30 seconds.
         </p>
 
-        {/* CTA — primary is violet, secondary is quiet outline */}
+        {/* CTA */}
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href={signupHref}
-            className="group inline-flex h-12 items-center gap-2 rounded-full bg-violet-600 px-7 text-sm font-semibold text-white shadow-lg shadow-violet-600/25 transition-all hover:bg-violet-700 hover:shadow-xl hover:shadow-violet-600/30"
+            className="group inline-flex h-12 items-center gap-2 rounded-full bg-violet-600 px-7 text-sm font-semibold text-white shadow-lg shadow-violet-600/25 transition-all hover:-translate-y-0.5 hover:bg-violet-700 hover:shadow-xl hover:shadow-violet-600/30"
           >
             Start free — no card
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
           <a
             href="#workflow"
-            className="inline-flex h-12 items-center gap-2 rounded-full border border-zinc-200 bg-white px-6 text-sm font-semibold text-zinc-900 transition-all hover:border-zinc-300 hover:bg-zinc-50"
+            className="group inline-flex h-12 items-center gap-2 rounded-full border border-zinc-200 bg-white px-6 text-sm font-semibold text-zinc-900 transition-all hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-md"
           >
             See how it works
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-100 text-[10px] text-zinc-500 transition-transform group-hover:translate-x-0.5">
+              →
+            </span>
           </a>
         </div>
 
-        <p className="mt-6 text-center text-xs text-zinc-400">
-          Free forever · 3 content items/mo · all AI tools included
-        </p>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-zinc-400">
+          <span className="inline-flex items-center gap-1.5">
+            <Check className="h-3 w-3 text-violet-500" strokeWidth={3} />
+            Free forever plan
+          </span>
+          <span className="text-zinc-300">·</span>
+          <span className="inline-flex items-center gap-1.5">
+            <Check className="h-3 w-3 text-violet-500" strokeWidth={3} />
+            No credit card
+          </span>
+          <span className="text-zinc-300">·</span>
+          <span className="inline-flex items-center gap-1.5">
+            <Check className="h-3 w-3 text-violet-500" strokeWidth={3} />
+            30-second signup
+          </span>
+        </div>
 
-        {/* Product mockup — animated, wrapped in rotating conic glow */}
+        {/* Product mockup + floating pills around it */}
         <div className="mx-auto mt-16 max-w-5xl sm:mt-20">
-          <div className="conic-glow rounded-3xl p-px">
-            <AnimatedHeroMockup />
+          <div className="relative">
+            {/* Floating glass-pills — positioned off the mockup corners
+                with a slow float animation. Adds the "this product
+                exists" feel without being too noisy. */}
+            <div
+              className="glass-pill animate-float absolute -left-4 top-6 z-20 hidden items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium text-zinc-800 sm:flex"
+              style={{ animationDelay: '0s' }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />
+              4 platforms in parallel
+            </div>
+            <div
+              className="glass-pill animate-float absolute -right-4 top-24 z-20 hidden items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium text-zinc-800 sm:flex"
+              style={{ animationDelay: '1.5s' }}
+            >
+              <span className="font-mono font-bold text-violet-700">+28s</span>
+              avg generation
+            </div>
+            <div
+              className="glass-pill animate-float absolute -right-2 bottom-16 z-20 hidden items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium text-zinc-800 md:flex"
+              style={{ animationDelay: '3s' }}
+            >
+              <span className="font-mono font-bold text-violet-700">94/100</span>
+              virality score
+            </div>
+
+            <div className="conic-glow rounded-3xl p-px">
+              <AnimatedHeroMockup />
+            </div>
           </div>
         </div>
 
-        {/* Stats strip — clean violet numbers on white */}
-        <div className="mx-auto mt-20 grid max-w-4xl grid-cols-2 gap-y-10 sm:grid-cols-4">
-          {[
-            { n: '30+', l: 'AI tools', s: 'in one place' },
-            { n: '4', l: 'platforms', s: 'TikTok · Reels · Shorts · LinkedIn' },
-            { n: '~30s', l: 'to generate', s: '4 drafts in parallel' },
-            { n: '$0', l: 'AI markup', s: 'BYOK — you pay at cost' },
-          ].map((stat) => (
-            <div key={stat.l} className="text-center">
-              <div className="font-display text-4xl font-semibold tracking-tight text-violet-600 sm:text-5xl">
-                {stat.n}
+        {/* Stats strip — tabular, label on LEFT of number for an editorial feel */}
+        <div className="mx-auto mt-20 max-w-5xl">
+          <div className="grid grid-cols-2 divide-zinc-200 border-y border-zinc-200 sm:grid-cols-4 sm:divide-x">
+            {[
+              { n: '30+', l: 'AI tools', s: 'in one place' },
+              { n: '4', l: 'platforms', s: 'covered' },
+              { n: '~30s', l: 'to generate', s: '4 drafts in parallel' },
+              { n: '$0', l: 'AI markup', s: 'BYOK — pay at cost' },
+            ].map((stat, i) => (
+              <div
+                key={stat.l}
+                className={`px-4 py-6 sm:px-8 sm:py-8 ${i >= 2 ? 'border-t border-zinc-200 sm:border-t-0' : ''}`}
+              >
+                <div className="flex items-baseline gap-2">
+                  <span className="font-display text-4xl font-semibold tracking-tight text-violet-600 sm:text-5xl">
+                    {stat.n}
+                  </span>
+                  <span className="text-sm font-medium text-zinc-900">
+                    {stat.l}
+                  </span>
+                </div>
+                <div className="mt-1 text-xs text-zinc-400">{stat.s}</div>
               </div>
-              <div className="mt-1 text-sm font-medium text-zinc-900">
-                {stat.l}
-              </div>
-              <div className="text-xs text-zinc-400">{stat.s}</div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -313,15 +375,16 @@ function Workflow() {
   ]
 
   return (
-    <section id="workflow" className="bg-zinc-50 px-6 py-24 sm:py-32">
-      <div className="mx-auto max-w-6xl">
+    <section id="workflow" className="relative bg-zinc-50/60 px-6 py-24 sm:py-32">
+      {/* Subtle dot-grid background that gives the section its own texture */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-dots-subtle" />
+      <div className="relative mx-auto max-w-6xl">
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
-              How it works
-            </p>
-            <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
-              Three steps. That&apos;s it.
+            <SectionBadge number="01" label="How it works" className="justify-center" />
+            <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
+              Three steps.{' '}
+              <span className="text-zinc-400 italic">That&apos;s it.</span>
             </h2>
             <p className="mt-4 text-lg text-zinc-500">
               No settings to tune. No prompts to write. You supply one video — Clipflow handles the rest.
@@ -329,14 +392,16 @@ function Workflow() {
           </div>
         </Reveal>
 
-        <div className="mt-16 grid gap-px overflow-hidden rounded-3xl bg-zinc-200 sm:grid-cols-3">
+        <div className="mt-16 grid gap-4 sm:grid-cols-3">
           {steps.map((step, i) => (
             <Reveal key={step.n} delay={i * 120}>
-              <div className="bg-white p-10 transition-colors hover:bg-zinc-50/50 sm:h-full">
-                <div
-                  className={`font-mono text-sm font-semibold ${step.accent}`}
-                >
+              <div className="group relative h-full rounded-2xl border border-zinc-200 bg-white p-8 premium-shadow">
+                {/* Big step number in the top-right corner */}
+                <span className="absolute right-5 top-5 font-display text-5xl font-bold leading-none text-violet-100 transition-colors group-hover:text-violet-200">
                   {step.n}
+                </span>
+                <div className={`font-mono text-xs font-semibold uppercase tracking-wider ${step.accent}`}>
+                  Step {step.n}
                 </div>
                 <h3 className="mt-6 font-display text-2xl font-semibold tracking-tight text-zinc-950">
                   {step.title}
@@ -344,6 +409,14 @@ function Workflow() {
                 <p className="mt-3 text-[15px] leading-relaxed text-zinc-600">
                   {step.desc}
                 </p>
+                {/* Connecting line to next step — hidden on mobile,
+                    visible between cards on desktop */}
+                {i < steps.length - 1 ? (
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute -right-4 top-1/2 hidden h-px w-4 -translate-y-1/2 bg-gradient-to-r from-violet-300 to-transparent sm:block"
+                  />
+                ) : null}
               </div>
             </Reveal>
           ))}
@@ -362,13 +435,11 @@ function FeaturesBento() {
       <div className="mx-auto max-w-7xl">
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
-              Features
-            </p>
-            <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
+            <SectionBadge number="03" label="The feature grid" className="justify-center" />
+            <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
               30+ tools.
               <br />
-              One subscription.
+              <span className="italic text-zinc-400">One subscription.</span>
             </h2>
             <p className="mt-4 text-lg text-zinc-500">
               Everything you&apos;d stitch together from five separate SaaS products — already integrated.
@@ -377,18 +448,25 @@ function FeaturesBento() {
         </Reveal>
 
         <div className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2">
-          {/* LARGE — Video Rendering. Now a light violet card so it
-              matches the rest of the page rather than being a lone
-              dark gradient. */}
+          {/* LARGE — Video Rendering. Light violet card with corner
+              tag + data labels for a non-generic "spec sheet" feel. */}
           <Reveal className="lg:col-span-2 lg:row-span-2">
             <SpotlightCard className="h-full rounded-2xl" size={700}>
-              <BentoCard
-                className="h-full border-violet-200 bg-gradient-to-br from-violet-50 via-white to-violet-50/30"
-                eyebrow="Core"
-                title="Real video rendering"
-                desc="Not just text outputs. Burn subtitles, stitch B-Roll with voice-over, add brand intros and outros. Real MP4s, cloud-rendered via Shotstack."
-                icon={Video}
-              />
+              <div className="relative h-full">
+                <CornerTag position="tr">CORE</CornerTag>
+                <BentoCard
+                  className="h-full border-violet-200 bg-gradient-to-br from-violet-50 via-white to-violet-50/30"
+                  eyebrow="Real rendering"
+                  title="Not just text. Real MP4s."
+                  desc="Burn subtitles, stitch B-Roll with voice-over, add brand intros and outros. Cloud-rendered via Shotstack — you get downloadable files, not JSON."
+                  icon={Video}
+                />
+                <div className="absolute bottom-8 left-10 flex flex-wrap gap-2 sm:bottom-10">
+                  <DataLabel value="1080p" label="output" />
+                  <DataLabel value="9:16" label="auto-reframe" />
+                  <DataLabel value="~45s" label="render time" />
+                </div>
+              </div>
             </SpotlightCard>
           </Reveal>
 
@@ -536,17 +614,16 @@ function PlatformShowcase() {
   ]
 
   return (
-    <section className="relative overflow-hidden bg-zinc-50 px-6 py-24 sm:py-32">
+    <section className="relative overflow-hidden bg-zinc-50/80 px-6 py-24 sm:py-32">
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-dots-subtle" />
       <div className="relative mx-auto max-w-6xl">
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
-              Platform-native, not lowest-common-denominator
-            </p>
-            <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
+            <SectionBadge number="04" label="Platform-native" className="justify-center" />
+            <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
               One source.
               <br />
-              <span className="text-zinc-400">Four voices.</span>
+              <span className="italic text-zinc-400">Four voices.</span>
             </h2>
             <p className="mt-4 text-lg text-zinc-500">
               Every platform has its own rules. Clipflow rewrites — not just reposts — for each.
@@ -597,14 +674,11 @@ function ByokHighlight({ signupHref }: { signupHref: string }) {
 
             <div className="relative grid gap-10 lg:grid-cols-2 lg:items-center">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">
-                  <KeyRound className="h-3.5 w-3.5" />
-                  BYOK
-                </div>
-                <h2 className="mt-5 font-display text-4xl font-semibold leading-[1.08] tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
+                <SectionBadge number="05" label="BYOK model" />
+                <h2 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
                   Bring your own key.
                   <br />
-                  <span className="text-zinc-400">Pay AI at cost.</span>
+                  <span className="italic text-zinc-400">Pay AI at cost.</span>
                 </h2>
                 <p className="mt-5 max-w-md text-lg text-zinc-600">
                   Every tool that bakes AI into their subscription makes money on your tokens.
@@ -691,14 +765,17 @@ function ReferralCta({ signupHref }: { signupHref: string }) {
             />
             <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider">
-                  <Gift className="h-3.5 w-3.5" />
-                  Refer &amp; earn
+                <div className="inline-flex items-center gap-2.5">
+                  <span className="font-mono text-xs font-medium text-white/60">09</span>
+                  <span className="h-px w-6 bg-white/40" />
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-white">
+                    Refer &amp; earn
+                  </span>
                 </div>
-                <h2 className="mt-5 font-display text-4xl font-semibold leading-tight tracking-tight sm:text-5xl md:text-6xl">
+                <h2 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
                   Give {REFERRAL_DISCOUNT_PERCENT}%, get {REFERRAL_DISCOUNT_PERCENT}%.
                   <br />
-                  <span className="text-white/80">Forever.</span>
+                  <span className="italic text-white/80">Forever.</span>
                 </h2>
                 <p className="mt-5 max-w-xl text-lg text-white/90">
                   Every friend you bring in saves {REFERRAL_DISCOUNT_PERCENT}% on any paid
@@ -750,11 +827,10 @@ function Compare() {
       <div className="mx-auto max-w-3xl">
         <Reveal>
           <div className="text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
-              The comparison
-            </p>
-            <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">
-              More tools. Real video. Zero markup.
+            <SectionBadge number="10" label="The comparison" className="justify-center" />
+            <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-zinc-950 sm:text-5xl">
+              More tools. Real video.{' '}
+              <span className="italic text-violet-600">Zero markup.</span>
             </h2>
           </div>
         </Reveal>
@@ -828,14 +904,11 @@ function FinalCta({ signupHref }: { signupHref: string }) {
               }}
             />
             <div className="relative">
-              <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white px-4 py-1.5 text-xs font-semibold text-violet-700 shadow-sm">
-                <Sparkles className="h-3.5 w-3.5 text-violet-600" />
-                Built for creators who ship, not tinker
-              </div>
-              <h2 className="mt-6 font-display text-5xl font-semibold leading-[1.02] tracking-[-0.04em] text-zinc-950 sm:text-6xl md:text-7xl lg:text-8xl">
+              <SectionBadge number="12" label="The ask" className="justify-center" />
+              <h2 className="mt-5 font-display text-5xl font-semibold leading-[0.98] tracking-[-0.045em] text-zinc-950 sm:text-6xl md:text-7xl lg:text-8xl">
                 Stop editing.
                 <br />
-                <span className="bg-gradient-to-r from-violet-600 via-violet-500 to-violet-700 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-violet-600 via-violet-500 to-violet-700 bg-clip-text italic text-transparent">
                   Start shipping.
                 </span>
               </h2>

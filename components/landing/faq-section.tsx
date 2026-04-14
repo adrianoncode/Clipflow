@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
 
+import { SectionBadge } from '@/components/landing/detail-primitives'
+
 interface FaqItem {
   q: string
   a: string
@@ -56,11 +58,9 @@ export function FaqSection() {
     <section id="faq" className="bg-white px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-3xl">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
-            FAQ
-          </p>
-          <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">
-            Questions, answered.
+          <SectionBadge number="11" label="The questions" className="justify-center" />
+          <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-zinc-950 sm:text-5xl">
+            Questions, <span className="italic text-violet-600">answered.</span>
           </h2>
         </div>
 

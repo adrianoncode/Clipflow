@@ -10,6 +10,8 @@ import {
   Check,
 } from 'lucide-react'
 
+import { SectionBadge } from '@/components/landing/detail-primitives'
+
 interface Audience {
   id: string
   tabLabel: string
@@ -90,11 +92,9 @@ export function AudienceTabs({ signupHref }: AudienceTabsProps) {
     <section className="bg-white px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
-            Built for every creator
-          </p>
-          <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
-            Pick your lane.
+          <SectionBadge number="02" label="Built for every creator" className="justify-center" />
+          <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
+            Pick <span className="italic text-violet-600">your lane.</span>
           </h2>
           <p className="mt-4 text-lg text-zinc-500">
             Same platform — completely different stories for solo creators, teams,

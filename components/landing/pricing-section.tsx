@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Check } from 'lucide-react'
 
 import { SpotlightCard } from '@/components/landing/spotlight-card'
+import { SectionBadge } from '@/components/landing/detail-primitives'
 
 interface Plan {
   id: string
@@ -96,11 +97,10 @@ export function PricingSection({ signupHref }: PricingSectionProps) {
       <div className="mx-auto max-w-6xl">
         {/* Eyebrow + headline */}
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
-            Pricing
-          </p>
-          <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
-            Start free. Scale when ready.
+          <SectionBadge number="07" label="Pricing" className="justify-center" />
+          <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
+            Start free.{' '}
+            <span className="italic text-zinc-400">Scale when ready.</span>
           </h2>
           <p className="mt-4 text-lg text-zinc-500 sm:text-xl">
             BYOK — pay your AI provider at cost. We take zero markup on tokens.
