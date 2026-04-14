@@ -56,7 +56,7 @@ interface NavGroup {
   items: NavItem[]
 }
 
-export function AppShell({ user, workspaces, currentWorkspaceId, referralLink, referralStats, currentPlan, children }: AppShellProps) {
+export function AppShell({ user: _user, workspaces, currentWorkspaceId, referralLink, referralStats, currentPlan, children }: AppShellProps) {
   const pathname = usePathname()
 
   const navGroups: NavGroup[] = [
@@ -126,17 +126,22 @@ export function AppShell({ user, workspaces, currentWorkspaceId, referralLink, r
     <div className="flex min-h-screen flex-col">
       <KeyboardShortcuts workspaceId={currentWorkspaceId} />
       <FeedbackWidget />
-      {/* Header */}
-      <header className="flex items-center justify-between border-b bg-white px-4 py-2.5 sm:px-6">
+      {/* Header — tightened. Email moved out (user menu covers identity),
+          vertical divider between logo-area and nav-actions for rhythm. */}
+      <header className="flex h-14 items-center justify-between border-b border-border/60 bg-white px-4 sm:px-6">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="font-display text-lg font-semibold tracking-tight text-primary">
+          <Link
+            href="/dashboard"
+            className="font-display text-lg font-semibold tracking-tight text-primary"
+          >
             Clipflow
           </Link>
+          <span aria-hidden className="h-4 w-px bg-border/80" />
           <WorkspaceSwitcher workspaces={workspaces} currentWorkspaceId={currentWorkspaceId} />
           <Link
             href="/workspace/new"
             title="New workspace"
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-xs text-muted-foreground/60 transition-colors hover:bg-accent hover:text-accent-foreground"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-[13px] text-muted-foreground/60 transition-colors hover:bg-accent hover:text-accent-foreground"
           >
             +
           </Link>
@@ -144,21 +149,22 @@ export function AppShell({ user, workspaces, currentWorkspaceId, referralLink, r
             <GlobalSearch workspaceId={currentWorkspaceId} />
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <NotificationBell initialCount={0} />
           <ThemeToggle />
-          <span className="hidden text-xs text-muted-foreground sm:inline">{user.email}</span>
+          <span aria-hidden className="mx-1 hidden h-4 w-px bg-border/80 sm:inline-block" />
           <SignoutButton />
         </div>
       </header>
 
       <div className="flex flex-1">
-        {/* Sidebar */}
-        <aside className="hidden w-52 shrink-0 flex-col border-r bg-[#fafafa] sm:flex">
-          <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 py-4">
+        {/* Sidebar — refined group labels + indented rail with a soft
+            active indicator dot instead of a heavy left-border. */}
+        <aside className="hidden w-52 shrink-0 flex-col border-r border-border/60 bg-[#fafafa] sm:flex">
+          <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-4">
             {navGroups.map((group) => (
               <div key={group.label}>
-                <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+                <p className="mb-1 px-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60">
                   {group.label}
                 </p>
                 <div className="flex flex-col gap-0.5">
@@ -168,13 +174,23 @@ export function AppShell({ user, workspaces, currentWorkspaceId, referralLink, r
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                        className={`group relative flex items-center gap-2.5 rounded-md px-3 py-1.5 text-[13px] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                           active
-                            ? 'border-l-2 border-l-primary bg-primary/10 font-medium text-foreground'
-                            : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
+                            ? 'bg-primary/10 font-medium text-primary'
+                            : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
                         }`}
                       >
-                        <item.icon className={`h-4 w-4 shrink-0 ${active ? 'text-primary' : ''}`} />
+                        {active ? (
+                          <span
+                            aria-hidden
+                            className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r-full bg-primary"
+                          />
+                        ) : null}
+                        <item.icon
+                          className={`h-4 w-4 shrink-0 transition-colors ${
+                            active ? 'text-primary' : 'text-muted-foreground/80 group-hover:text-foreground'
+                          }`}
+                        />
                         {item.label}
                       </Link>
                     )
@@ -196,7 +212,7 @@ export function AppShell({ user, workspaces, currentWorkspaceId, referralLink, r
           ) : null}
 
           {/* Bottom section */}
-          <div className="border-t px-3 py-3">
+          <div className="border-t border-border/60 px-3 py-3">
             <div className="flex flex-col gap-0.5">
               {bottomItems.map((item) => {
                 const active = isActive(item.href)
@@ -204,13 +220,23 @@ export function AppShell({ user, workspaces, currentWorkspaceId, referralLink, r
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm transition-colors ${
+                    className={`group relative flex items-center gap-2.5 rounded-md px-3 py-1.5 text-[13px] transition-colors ${
                       active
-                        ? 'border-l-2 border-l-primary bg-primary/10 font-medium text-foreground'
-                        : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
+                        ? 'bg-primary/10 font-medium text-primary'
+                        : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
                     }`}
                   >
-                    <item.icon className={`h-4 w-4 shrink-0 ${active ? 'text-primary' : ''}`} />
+                    {active ? (
+                      <span
+                        aria-hidden
+                        className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r-full bg-primary"
+                      />
+                    ) : null}
+                    <item.icon
+                      className={`h-4 w-4 shrink-0 transition-colors ${
+                        active ? 'text-primary' : 'text-muted-foreground/80 group-hover:text-foreground'
+                      }`}
+                    />
                     {item.label}
                   </Link>
                 )

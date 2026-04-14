@@ -55,12 +55,9 @@ const PLATFORM_LABELS: Record<string, string> = {
   linkedin: 'LinkedIn',
 }
 
-const PLATFORM_COLORS: Record<string, string> = {
-  tiktok: 'bg-pink-500',
-  instagram_reels: 'bg-purple-500',
-  youtube_shorts: 'bg-red-500',
-  linkedin: 'bg-blue-500',
-}
+// Single-color app: every platform uses the primary violet, bars are
+// distinguished by width alone. No rainbow.
+const PLATFORM_BAR_CLASS = 'bg-primary'
 
 const PIPELINE_DOT_COLORS: Record<string, string> = {
   draft: 'bg-zinc-400',
@@ -162,12 +159,19 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
-      {/* Header — greeting + single primary action. Secondary tools live
-          in the sidebar and the quick-actions row below, so we don't
-          double-up here. */}
+      {/* Header — greeting + a short context summary + single primary
+          action. The date row adds a subtle "at-a-glance" signal that
+          the page is live data, not stale. */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+        <div className="min-w-0 flex-1">
+          <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+            {new Date().toLocaleDateString(undefined, {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
             {greeting}, {displayName.split(' ')[0] ?? displayName}
           </h1>
           <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -178,15 +182,29 @@ export default async function DashboardPage() {
             <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
               {planDef.name} plan
             </span>
+            {stats && stats.totalContent > 0 ? (
+              <>
+                <span className="text-muted-foreground/40">·</span>
+                <span className="text-[12px]">
+                  <span className="font-semibold text-foreground tabular-nums">
+                    {stats.totalContent}
+                  </span>{' '}
+                  content, <span className="font-semibold text-foreground tabular-nums">{stats.totalOutputs}</span> outputs
+                </span>
+              </>
+            ) : null}
           </div>
         </div>
         {currentWorkspace ? (
           <Link
             href={`/workspace/${currentWorkspace.id}/content/new`}
-            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-md hover:shadow-primary/30"
+            className="group inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/30"
           >
             <span className="text-base leading-none">+</span>
             New content
+            <kbd className="ml-1.5 hidden rounded border border-white/20 bg-white/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-white/70 sm:inline-block">
+              N
+            </kbd>
           </Link>
         ) : null}
       </div>
@@ -329,11 +347,11 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-4 gap-px overflow-hidden rounded-xl border border-border/50 bg-border/50">
+            <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border/50 bg-border/50 sm:grid-cols-4">
               {(['draft', 'review', 'approved', 'exported'] as const).map((state) => (
                 <div
                   key={state}
-                  className="flex flex-col items-center gap-1 bg-card px-3 py-3 text-center"
+                  className="flex items-baseline justify-between gap-2 bg-card px-4 py-3 sm:flex-col sm:items-center sm:gap-1.5 sm:text-center"
                 >
                   <div className="flex items-center gap-1.5">
                     <span className={`h-1.5 w-1.5 rounded-full ${PIPELINE_DOT_COLORS[state]}`} />
@@ -361,57 +379,52 @@ export default async function DashboardPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* LEFT: Recent Content */}
           <div className="space-y-6 lg:col-span-2">
-            {/* Recent Content */}
+            {/* Recent Content — two-line rows (title + meta), improved
+                hover state, outputs action promoted to chevron button. */}
             {stats.recentContent.length > 0 && (
-              <Card className="border-border/50">
-                <CardHeader className="pb-3">
+              <Card className="border-border/60">
+                <CardHeader className="flex flex-row items-center justify-between pb-3">
                   <CardTitle className="text-sm font-semibold">Recent content</CardTitle>
+                  {currentWorkspace ? (
+                    <Link
+                      href={`/workspace/${currentWorkspace.id}`}
+                      className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      View all →
+                    </Link>
+                  ) : null}
                 </CardHeader>
                 <CardContent className="p-0">
                   <ul className="divide-y divide-border/50">
                     {stats.recentContent.map((item) => {
                       const Icon = KIND_ICON[item.kind as keyof typeof KIND_ICON] ?? FileText
+                      const kindLabel = item.kind.replace('_', ' ')
                       return (
-                        <li key={item.id}>
+                        <li key={item.id} className="group">
                           <Link
                             href={`/workspace/${currentWorkspace?.id}/content/${item.id}`}
-                            className="flex items-center gap-3 px-6 py-3 transition-colors hover:bg-accent/50"
+                            className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-accent/40"
                           >
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                              <Icon className="h-4 w-4 text-muted-foreground" aria-hidden />
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/70 text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+                              <Icon className="h-4 w-4" aria-hidden />
                             </div>
-                            <span className="flex-1 truncate text-sm font-medium">
-                              {item.title ?? 'Untitled'}
-                            </span>
-                            <span className="shrink-0 text-xs text-muted-foreground">
-                              {formatRelative(item.created_at)}
-                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium text-foreground">
+                                {item.title ?? 'Untitled'}
+                              </p>
+                              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <span className="capitalize">{kindLabel}</span>
+                                <span className="text-muted-foreground/40">·</span>
+                                <span>{formatRelative(item.created_at)}</span>
+                              </p>
+                            </div>
                             <ContentStatusBadge status={item.status} />
-                            {item.status === 'ready' && (
-                              <Link
-                                href={`/workspace/${currentWorkspace?.id}/content/${item.id}/outputs`}
-                                className="shrink-0 text-xs text-primary underline-offset-4 hover:underline"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                outputs
-                              </Link>
-                            )}
+                            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-foreground" />
                           </Link>
                         </li>
                       )
                     })}
                   </ul>
-                  {currentWorkspace && (
-                    <div className="border-t border-border/50 px-6 py-3">
-                      <Link
-                        href={`/workspace/${currentWorkspace.id}`}
-                        className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        View all content
-                        <ChevronRight className="ml-0.5 inline h-3 w-3" />
-                      </Link>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             )}
@@ -421,44 +434,55 @@ export default async function DashboardPage() {
               <RecycleSuggestions items={recyclable} workspaceId={currentWorkspace.id} />
             )}
 
-            {/* Empty state */}
+            {/* Empty state — one confident card instead of two competing
+                options. Secondary actions hang below as quiet links. */}
             {stats.totalContent === 0 && currentWorkspace && (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Card className="border-border/50 card-hover">
-                  <CardContent className="flex flex-col items-center py-8 text-center">
-                    <div className="mb-4 rounded-2xl bg-blue-500/10 p-4">
-                      <Video className="h-8 w-8 text-blue-500" />
-                    </div>
-                    <h3 className="text-base font-medium">Start creating</h3>
-                    <p className="mt-1 max-w-[220px] text-sm text-muted-foreground">
-                      Upload a video, paste a YouTube link, or drop a script to get started.
+              <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background">
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 opacity-60"
+                  style={{
+                    background:
+                      'radial-gradient(50% 60% at 0% 0%, rgba(124,58,237,0.07), transparent 70%)',
+                  }}
+                />
+                <CardContent className="relative flex flex-col items-start gap-5 p-8 sm:flex-row sm:items-center sm:gap-8">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20">
+                    <Video className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold tracking-tight">
+                      Drop your first video to get going.
+                    </h3>
+                    <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                      Paste a YouTube link, upload an MP4, or drop a transcript. You&apos;ll
+                      have 4 platform-native drafts in under a minute.
                     </p>
-                    <Link
-                      href={`/workspace/${currentWorkspace.id}/content/new`}
-                      className="mt-4 inline-flex h-9 items-center rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90"
-                    >
-                      New content
-                    </Link>
-                  </CardContent>
-                </Card>
-                <Card className="border-border/50 card-hover">
-                  <CardContent className="flex flex-col items-center py-8 text-center">
-                    <div className="mb-4 rounded-2xl bg-purple-500/10 p-4">
-                      <PenTool className="h-8 w-8 text-purple-500" />
+                    <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
+                      <Link
+                        href="/settings/brand-voice"
+                        className="font-medium text-foreground underline-offset-4 hover:underline"
+                      >
+                        Set brand voice first
+                      </Link>
+                      <span className="text-muted-foreground/40">·</span>
+                      <Link
+                        href="/settings/ai-keys"
+                        className="font-medium text-foreground underline-offset-4 hover:underline"
+                      >
+                        Connect your AI key
+                      </Link>
                     </div>
-                    <h3 className="text-base font-medium">Set your brand voice</h3>
-                    <p className="mt-1 max-w-[220px] text-sm text-muted-foreground">
-                      Tell the AI your tone and style. Every draft will match automatically.
-                    </p>
-                    <Link
-                      href="/settings/brand-voice"
-                      className="mt-4 inline-flex h-9 items-center rounded-xl border border-border px-5 text-sm font-medium transition-colors hover:bg-accent"
-                    >
-                      Configure voice
-                    </Link>
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                  <Link
+                    href={`/workspace/${currentWorkspace.id}/content/new`}
+                    className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
+                  >
+                    <span className="text-base leading-none">+</span>
+                    New content
+                  </Link>
+                </CardContent>
+              </Card>
             )}
           </div>
 
@@ -483,7 +507,7 @@ export default async function DashboardPage() {
                         </div>
                         <div className="h-1.5 w-full rounded-full bg-muted">
                           <div
-                            className={`h-1.5 rounded-full transition-all duration-700 ${PLATFORM_COLORS[platform] ?? 'bg-primary'}`}
+                            className={`h-1.5 rounded-full transition-all duration-700 ${PLATFORM_BAR_CLASS}`}
                             style={{ width: `${pct}%` }}
                           />
                         </div>
