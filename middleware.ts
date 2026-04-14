@@ -1,6 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { createMiddlewareClient } from '@/lib/supabase/middleware'
+import {
+  REFERRAL_COOKIE,
+  REFERRAL_COOKIE_MAX_AGE,
+  REFERRAL_SOURCE_COOKIE,
+} from '@/lib/referrals/constants'
+import { normalizeReferralCode } from '@/lib/referrals/normalize-code'
 
 /**
  * Route-group folders like `(app)` and `(auth)` don't appear in
@@ -15,6 +21,38 @@ function isPrefixOf(pathname: string, prefixes: readonly string[]): boolean {
   return prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`))
 }
 
+/**
+ * Persist `?ref=XXXX` into a cookie so the signup flow can pick it up
+ * even if the user clicks around the site before creating an account.
+ * Safe to call on every request — no-ops when the param is missing or
+ * malformed.
+ */
+function attachReferralCookie(request: NextRequest, res: NextResponse): void {
+  const raw = request.nextUrl.searchParams.get('ref')
+  const code = normalizeReferralCode(raw)
+  if (!code) return
+
+  const baseCookie = {
+    maxAge: REFERRAL_COOKIE_MAX_AGE,
+    path: '/',
+    sameSite: 'lax' as const,
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+  }
+  res.cookies.set(REFERRAL_COOKIE, code, baseCookie)
+
+  // Optional attribution channel — `?source=twitter`, `?source=linkedin`,
+  // etc. Only persist if the attached ref is also present so dangling
+  // `?source=` params don't poison later signups.
+  const rawSource = request.nextUrl.searchParams.get('source')
+  if (rawSource) {
+    const cleaned = rawSource.trim().toLowerCase()
+    if (/^[a-z0-9_-]{1,32}$/.test(cleaned)) {
+      res.cookies.set(REFERRAL_SOURCE_COOKIE, cleaned, baseCookie)
+    }
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const { supabase, response } = createMiddlewareClient(request)
 
@@ -27,7 +65,11 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Public routes (e.g. /review/[token]) bypass auth entirely.
-  if (isPrefixOf(pathname, PUBLIC_ROUTES)) return response()
+  if (isPrefixOf(pathname, PUBLIC_ROUTES)) {
+    const res = response()
+    attachReferralCookie(request, res)
+    return res
+  }
 
   const isAppRoute = isPrefixOf(pathname, APP_ROUTES)
   const isAuthRoute = isPrefixOf(pathname, AUTH_ROUTES)
@@ -40,6 +82,7 @@ export async function middleware(request: NextRequest) {
     for (const cookie of response().cookies.getAll()) {
       redirect.cookies.set(cookie)
     }
+    attachReferralCookie(request, redirect)
     return redirect
   }
 
@@ -54,7 +97,9 @@ export async function middleware(request: NextRequest) {
     return redirect
   }
 
-  return response()
+  const res = response()
+  attachReferralCookie(request, res)
+  return res
 }
 
 export const config = {

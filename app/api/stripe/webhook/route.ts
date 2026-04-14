@@ -4,6 +4,7 @@ import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe/client'
 import { upsertSubscription } from '@/app/(app)/billing/actions'
 import type { BillingPlan } from '@/lib/billing/plans'
+import { confirmReferralAndRewardReferrer } from '@/lib/referrals/confirm-referral'
 
 const RELEVANT_EVENTS = new Set([
   'checkout.session.completed',
@@ -79,6 +80,17 @@ export async function POST(req: Request) {
           ;(sub.metadata as Record<string, string>).workspace_id = session.metadata.workspace_id
         }
         await handleSubscriptionEvent(sub)
+
+        // Referral: if this checkout started as a referee conversion,
+        // mark the referral confirmed and push the coupon onto the
+        // referrer's existing subscription(s). Metadata was copied from
+        // the checkout session into the subscription when created.
+        const referralId =
+          (sub.metadata?.referral_id as string | undefined) ??
+          (session.metadata?.referral_id as string | undefined)
+        if (referralId) {
+          await confirmReferralAndRewardReferrer({ referralId })
+        }
       }
     } else if (
       event.type === 'customer.subscription.updated' ||

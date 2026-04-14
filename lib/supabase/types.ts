@@ -26,6 +26,7 @@ export type OutputState = 'draft' | 'review' | 'approved' | 'exported'
 export type OnboardingRoleType = 'solo' | 'team' | 'agency'
 export type AiProvider = 'openai' | 'anthropic' | 'google'
 export type BillingPlan = 'free' | 'solo' | 'team' | 'agency'
+export type ReferralStatus = 'pending' | 'confirmed' | 'blocked'
 export type SubscriptionStatus =
   | 'trialing'
   | 'active'
@@ -47,6 +48,7 @@ export type Database = {
           avatar_url: string | null
           onboarded_at: string | null
           role_type: OnboardingRoleType | null
+          referral_code: string
           created_at: string
           updated_at: string
         }
@@ -57,6 +59,7 @@ export type Database = {
           avatar_url?: string | null
           onboarded_at?: string | null
           role_type?: OnboardingRoleType | null
+          referral_code?: string
           created_at?: string
           updated_at?: string
         }
@@ -67,6 +70,7 @@ export type Database = {
           avatar_url?: string | null
           onboarded_at?: string | null
           role_type?: OnboardingRoleType | null
+          referral_code?: string
           created_at?: string
           updated_at?: string
         }
@@ -447,6 +451,36 @@ export type Database = {
         }
         Relationships: []
       }
+      referrals: {
+        Row: {
+          id: string
+          referrer_user_id: string
+          referee_user_id: string
+          status: ReferralStatus
+          source: string | null
+          confirmed_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          referrer_user_id: string
+          referee_user_id: string
+          status?: ReferralStatus
+          source?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          referrer_user_id?: string
+          referee_user_id?: string
+          status?: ReferralStatus
+          source?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           id: string
@@ -780,6 +814,7 @@ export type Database = {
       output_state: OutputState
       billing_plan: BillingPlan
       subscription_status: SubscriptionStatus
+      referral_status: ReferralStatus
     }
     CompositeTypes: {
       [_ in never]: never

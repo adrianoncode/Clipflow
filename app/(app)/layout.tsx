@@ -5,6 +5,9 @@ import { AppShell } from '@/components/workspace/app-shell'
 import { getProfile } from '@/lib/auth/get-profile'
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
+import { getOwnReferralCode } from '@/lib/referrals/get-referral-code'
+import { getReferralStats } from '@/lib/referrals/get-stats'
+import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 
 const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
 
@@ -14,7 +17,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/login')
   }
 
-  const [profile, workspaces] = await Promise.all([getProfile(), getWorkspaces()])
+  const [profile, workspaces, referralCode, referralStats] = await Promise.all([
+    getProfile(),
+    getWorkspaces(),
+    getOwnReferralCode(),
+    getReferralStats(user.id),
+  ])
 
   // Onboarding gate: newly signed-up users must run the wizard before they
   // can reach the main app shell. Profile may also be null if RLS or timing
@@ -37,11 +45,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const currentWorkspace =
     workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://clipflow.io'
+  const referralLink = referralCode ? `${baseUrl}/signup?ref=${referralCode}` : null
+
+  // Know the plan so the referral card can tailor its wording — free users
+  // have earned a discount that's waiting for them to upgrade.
+  const currentPlan = await getWorkspacePlan(currentWorkspace.id)
+
   return (
     <AppShell
       user={{ id: user.id, email: user.email ?? '' }}
       workspaces={workspaces}
       currentWorkspaceId={currentWorkspace.id}
+      referralLink={referralLink}
+      referralStats={referralStats}
+      currentPlan={currentPlan}
     >
       {children}
     </AppShell>

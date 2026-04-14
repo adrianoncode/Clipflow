@@ -1,47 +1,34 @@
-'use client'
+import { redirect } from 'next/navigation'
 
-import { useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { BillingPlansClient } from './billing-plans-client'
+import { ActiveDiscountBanner } from '@/components/billing/active-discount-banner'
+import { getUser } from '@/lib/auth/get-user'
+import { getSubscription } from '@/lib/billing/get-subscription'
+import { getActiveStripeDiscount } from '@/lib/billing/get-active-discount'
+import { PLANS, type BillingPlan } from '@/lib/billing/plans'
 
-import { PlanCard } from '@/components/billing/plan-card'
-import { cn } from '@/lib/utils'
+export const dynamic = 'force-dynamic'
+export const metadata = { title: 'Billing · Clipflow' }
 
-// Billing page is fully client-rendered — interval toggle + query params.
-
-function IntervalToggle({
-  value,
-  onChange,
-}: {
-  value: 'monthly' | 'annual'
-  onChange: (v: 'monthly' | 'annual') => void
-}) {
-  return (
-    <div className="flex items-center gap-1 rounded-full border bg-muted/30 p-1 text-sm">
-      {(['monthly', 'annual'] as const).map((opt) => (
-        <button
-          key={opt}
-          type="button"
-          onClick={() => onChange(opt)}
-          className={cn(
-            'rounded-full px-4 py-1 font-medium transition-colors',
-            value === opt ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground',
-          )}
-        >
-          {opt === 'monthly' ? 'Monthly' : 'Annual · 20% off'}
-        </button>
-      ))}
-    </div>
-  )
+interface BillingPageProps {
+  searchParams: { workspace_id?: string; plan?: string }
 }
 
-export default function BillingPage() {
-  const searchParams = useSearchParams()
-  const workspaceId = searchParams.get('workspace_id') ?? ''
-  const [interval, setInterval] = useState<'monthly' | 'annual'>('monthly')
+export default async function BillingPage({ searchParams }: BillingPageProps) {
+  const user = await getUser()
+  if (!user) redirect('/login')
 
-  // currentPlan is passed via server wrapper; for now default to 'free'
-  // The actual plan is shown correctly once the BillingShell passes it down.
-  const currentPlan = (searchParams.get('plan') ?? 'free') as 'free' | 'solo' | 'team' | 'agency'
+  const workspaceId = searchParams.workspace_id ?? ''
+  const sub = workspaceId ? await getSubscription(workspaceId) : null
+
+  const currentPlan: BillingPlan =
+    (searchParams.plan as BillingPlan | undefined) ?? sub?.plan ?? 'free'
+
+  const discount = sub?.stripe_subscription_id
+    ? await getActiveStripeDiscount(sub.stripe_subscription_id)
+    : null
+
+  const baseMonthlyCents = PLANS[currentPlan].monthlyPrice
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 p-4 sm:p-8">
@@ -52,27 +39,11 @@ export default function BillingPage() {
         </p>
       </div>
 
-      <div className="flex justify-center">
-        <IntervalToggle value={interval} onChange={setInterval} />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {(['free', 'solo', 'team', 'agency'] as const).map((planId) => (
-          <PlanCard
-            key={planId}
-            planId={planId}
-            interval={interval}
-            workspaceId={workspaceId}
-            currentPlan={currentPlan}
-          />
-        ))}
-      </div>
-
-      {!workspaceId ? (
-        <p className="text-center text-sm text-muted-foreground">
-          Open this page from a workspace to manage your subscription.
-        </p>
+      {discount ? (
+        <ActiveDiscountBanner discount={discount} baseMonthlyCents={baseMonthlyCents} />
       ) : null}
+
+      <BillingPlansClient workspaceId={workspaceId} currentPlan={currentPlan} />
     </div>
   )
 }

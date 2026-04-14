@@ -21,7 +21,6 @@ import {
   Sparkles,
   Mic,
   MessageSquare,
-  Link2,
   Key,
 } from 'lucide-react'
 
@@ -30,14 +29,19 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { WorkspaceSwitcher } from '@/components/workspace/workspace-switcher'
 import { GlobalSearch } from '@/components/workspace/global-search'
 import { NotificationBell } from '@/components/workspace/notification-bell'
+import { ReferralSidebarCard } from '@/components/workspace/referral-sidebar-card'
 import { KeyboardShortcuts } from '@/components/keyboard-shortcuts'
 import { FeedbackWidget } from '@/components/feedback-widget'
 import type { WorkspaceSummary } from '@/lib/auth/get-workspaces'
+import type { BillingPlan } from '@/lib/billing/plans'
 
 interface AppShellProps {
   user: { id: string; email: string }
   workspaces: WorkspaceSummary[]
   currentWorkspaceId: string
+  referralLink: string | null
+  referralStats: { pending: number; confirmed: number }
+  currentPlan: BillingPlan
   children: React.ReactNode
 }
 
@@ -52,7 +56,7 @@ interface NavGroup {
   items: NavItem[]
 }
 
-export function AppShell({ user, workspaces, currentWorkspaceId, children }: AppShellProps) {
+export function AppShell({ user, workspaces, currentWorkspaceId, referralLink, referralStats, currentPlan, children }: AppShellProps) {
   const pathname = usePathname()
 
   const navGroups: NavGroup[] = [
@@ -179,6 +183,17 @@ export function AppShell({ user, workspaces, currentWorkspaceId, children }: App
               </div>
             ))}
           </nav>
+
+          {/* Referral share card — sits above the bottom nav so it's
+              always visible without scrolling. */}
+          {referralLink ? (
+            <ReferralSidebarCard
+              link={referralLink}
+              pending={referralStats.pending}
+              confirmed={referralStats.confirmed}
+              currentPlan={currentPlan}
+            />
+          ) : null}
 
           {/* Bottom section */}
           <div className="border-t px-3 py-3">

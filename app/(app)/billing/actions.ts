@@ -8,6 +8,8 @@ import { PRICE_IDS } from '@/lib/stripe/price-ids'
 import { getUser } from '@/lib/auth/get-user'
 import { getSubscription } from '@/lib/billing/get-subscription'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getReferralCouponId } from '@/lib/referrals/constants'
+import { getEarnedReferrerCouponId } from '@/lib/referrals/confirm-referral'
 
 const checkoutSchema = z.object({
   workspace_id: z.string().uuid(),
@@ -51,20 +53,42 @@ export async function createCheckoutSessionAction(
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
+  // Referral: attach the 20 %-off coupon if EITHER
+  //   (a) this user was referred by someone else and hasn't converted yet
+  //       (they get the discount as the referee), or
+  //   (b) this user has already earned the discount by referring someone
+  //       paying (they get the discount as the referrer, carried over to
+  //       a fresh subscription).
+  // Same coupon in both cases — Stripe only allows one discount anyway.
+  const couponId = getReferralCouponId()
+  const pendingRefereeRow = await findPendingReferralForUser(user.id)
+  const earnedReferrerCoupon = await getEarnedReferrerCouponId(user.id)
+  const shouldApplyCoupon = Boolean(
+    couponId && (pendingRefereeRow || earnedReferrerCoupon),
+  )
+  const discounts = shouldApplyCoupon ? [{ coupon: couponId }] : undefined
+  const referral = pendingRefereeRow
+
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
     mode: 'subscription',
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${baseUrl}/workspace/${parsed.data.workspace_id}?billing=success`,
     cancel_url: `${baseUrl}/billing?workspace_id=${parsed.data.workspace_id}`,
+    ...(discounts ? { discounts } : {}),
+    // Stripe forbids combining `discounts` with `allow_promotion_codes`;
+    // our referral coupon takes priority over manual promo codes.
+    ...(discounts ? {} : { allow_promotion_codes: true }),
     metadata: {
       workspace_id: parsed.data.workspace_id,
       plan: parsed.data.plan,
+      ...(referral ? { referral_id: referral.id } : {}),
     },
     subscription_data: {
       metadata: {
         workspace_id: parsed.data.workspace_id,
         plan: parsed.data.plan,
+        ...(referral ? { referral_id: referral.id } : {}),
       },
     },
   })
@@ -72,6 +96,21 @@ export async function createCheckoutSessionAction(
   if (!session.url) return { error: 'Could not create checkout session.' }
 
   redirect(session.url)
+}
+
+/**
+ * Pull the pending referral (if any) where the current user is the referee.
+ * RLS allows the user to read their own referral row, so no admin client.
+ */
+async function findPendingReferralForUser(userId: string): Promise<{ id: string } | null> {
+  const admin = createAdminClient()
+  const { data } = await admin
+    .from('referrals')
+    .select('id')
+    .eq('referee_user_id', userId)
+    .eq('status', 'pending')
+    .maybeSingle()
+  return (data as { id: string } | null) ?? null
 }
 
 export async function createPortalSessionAction(

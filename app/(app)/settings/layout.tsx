@@ -3,6 +3,7 @@ import Link from 'next/link'
 const sections = [
   { href: '/settings/profile', label: 'Profile' },
   { href: '/settings/workspace', label: 'Workspace' },
+  { href: '/settings/referrals', label: 'Refer & earn' },
   { href: '/settings/ai-keys', label: 'AI keys' },
   { href: '/settings/brand-voice', label: 'Brand Voice' },
   { href: '/settings/personas', label: 'AI Personas' },

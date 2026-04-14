@@ -20,6 +20,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AddAiKeyBanner } from '@/components/dashboard/add-ai-key-banner'
 import { GettingStartedChecklist } from '@/components/dashboard/getting-started-checklist'
+import { ReferralHeroStat } from '@/components/dashboard/referral-hero-stat'
 import { ContentStatusBadge } from '@/components/content/content-status-badge'
 import { RecycleSuggestions } from '@/components/content/recycle-suggestions'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
@@ -31,6 +32,7 @@ import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { PLANS } from '@/lib/billing/plans'
 import { getWorkspaceStats } from '@/lib/dashboard/get-workspace-stats'
 import { getRecyclableContent } from '@/lib/content/get-recyclable-content'
+import { getReferralStats } from '@/lib/referrals/get-stats'
 
 export const dynamic = 'force-dynamic'
 
@@ -136,7 +138,7 @@ export default async function DashboardPage() {
   const currentWorkspace =
     workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal ?? workspaces[0]
 
-  const [aiKeys, stats, usage, plan, brandVoice, recyclable] = currentWorkspace
+  const [aiKeys, stats, usage, plan, brandVoice, recyclable, referralStats] = currentWorkspace && user
     ? await Promise.all([
         getAiKeys(currentWorkspace.id),
         getWorkspaceStats(currentWorkspace.id),
@@ -144,8 +146,9 @@ export default async function DashboardPage() {
         getWorkspacePlan(currentWorkspace.id),
         getActiveBrandVoice(currentWorkspace.id),
         getRecyclableContent(currentWorkspace.id),
+        getReferralStats(user.id),
       ])
-    : [[], null, null, 'free' as const, null, []]
+    : [[], null, null, 'free' as const, null, [], { pending: 0, confirmed: 0 }]
 
   const showAiKeyNudge =
     !!currentWorkspace && currentWorkspace.role === 'owner' && aiKeys.length === 0
@@ -197,6 +200,15 @@ export default async function DashboardPage() {
       {showAiKeyNudge && currentWorkspace ? (
         <AddAiKeyBanner workspaceName={currentWorkspace.name} />
       ) : null}
+
+      {/* Referral achievement — shown only when user has paid conversions. */}
+      <ReferralHeroStat
+        confirmedCount={referralStats.confirmed}
+        pendingCount={referralStats.pending}
+        currentPlan={plan ?? 'free'}
+        monthlyBaseCents={planDef.monthlyPrice}
+      />
+
 
       {currentWorkspace && stats ? (
         <GettingStartedChecklist
