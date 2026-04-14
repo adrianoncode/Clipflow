@@ -1,11 +1,12 @@
-import { cn } from '@/lib/utils'
 import { Check } from 'lucide-react'
 
+import { cn } from '@/lib/utils'
+
 const STEPS = [
-  { n: 1, label: 'You' },
+  { n: 1, label: 'Role' },
   { n: 2, label: 'Workspace' },
-  { n: 3, label: 'AI Key' },
-  { n: 4, label: 'Magic' },
+  { n: 3, label: 'AI key' },
+  { n: 4, label: 'Launch' },
 ] as const
 
 export type StepNumber = 1 | 2 | 3 | 4
@@ -14,47 +15,74 @@ interface OnboardingStepperProps {
   activeStep: StepNumber
 }
 
+/**
+ * Minimal progress indicator. Each step is a mono-font number + label
+ * connected by a thin progress bar that fills proportionally to the
+ * active step. Replaces the rainbow circle+check pattern — feels like
+ * a setup wizard for a real tool, not a game.
+ */
 export function OnboardingStepper({ activeStep }: OnboardingStepperProps) {
-  return (
-    <nav className="flex items-center justify-center gap-0" aria-label="Onboarding progress">
-      {STEPS.map((step, idx) => {
-        const isActive = step.n === activeStep
-        const isDone = step.n < activeStep
+  const totalSteps = STEPS.length
+  const progressPct = ((activeStep - 1) / (totalSteps - 1)) * 100
 
-        return (
-          <div key={step.n} className="flex items-center">
-            <div className="flex flex-col items-center gap-1.5">
+  return (
+    <nav aria-label="Onboarding progress" className="relative">
+      {/* Step pips + labels */}
+      <div className="relative flex items-center justify-between">
+        {/* Background track */}
+        <span
+          aria-hidden
+          className="absolute left-3 right-3 top-3 h-px bg-border"
+        />
+        {/* Active track */}
+        <span
+          aria-hidden
+          className="absolute left-3 top-3 h-px bg-primary transition-all duration-500"
+          style={{
+            width: `calc((100% - 24px) * ${progressPct / 100})`,
+          }}
+        />
+
+        {STEPS.map((step) => {
+          const isActive = step.n === activeStep
+          const isDone = step.n < activeStep
+          return (
+            <div
+              key={step.n}
+              className="relative flex flex-col items-center gap-2"
+            >
               <div
                 className={cn(
-                  'flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-all duration-300',
-                  isActive && 'bg-violet-500 text-white shadow-lg shadow-violet-500/30 ring-4 ring-violet-500/20',
-                  isDone && 'bg-emerald-500 text-white',
-                  !isActive && !isDone && 'bg-muted text-muted-foreground',
+                  'flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-mono font-semibold transition-all duration-300',
+                  isActive &&
+                    'border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/30 ring-4 ring-primary/15',
+                  isDone && 'border-primary bg-primary text-primary-foreground',
+                  !isActive &&
+                    !isDone &&
+                    'border-border bg-background text-muted-foreground',
                 )}
                 aria-current={isActive ? 'step' : undefined}
               >
-                {isDone ? <Check className="h-4 w-4" /> : step.n}
+                {isDone ? (
+                  <Check className="h-3 w-3" strokeWidth={3} />
+                ) : (
+                  step.n
+                )}
               </div>
               <span
                 className={cn(
-                  'text-[10px] font-medium transition-colors',
-                  isActive ? 'text-foreground' : 'text-muted-foreground',
+                  'font-mono text-[10px] uppercase tracking-[0.15em] transition-colors',
+                  isActive || isDone
+                    ? 'text-foreground'
+                    : 'text-muted-foreground/70',
                 )}
               >
                 {step.label}
               </span>
             </div>
-            {idx < STEPS.length - 1 && (
-              <div
-                className={cn(
-                  'mx-3 mt-[-18px] h-[2px] w-12 rounded-full transition-colors duration-300',
-                  step.n < activeStep ? 'bg-emerald-500' : 'bg-border',
-                )}
-              />
-            )}
-          </div>
-        )
-      })}
+          )
+        })}
+      </div>
     </nav>
   )
 }

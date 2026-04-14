@@ -1,7 +1,6 @@
 import Link from 'next/link'
-import { Shield, Zap, Key } from 'lucide-react'
+import { Shield, Zap } from 'lucide-react'
 
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { AiKeyForm } from '@/components/ai-keys/ai-key-form'
 import { OnboardingStepper } from '@/components/onboarding/stepper'
 import { saveAiKeyOnboardingAction } from '@/app/(onboarding)/onboarding/ai-key/actions'
@@ -10,44 +9,61 @@ export const metadata = { title: 'Connect your AI' }
 
 export default function OnboardingAiKeyPage() {
   return (
-    <Card className="w-full max-w-lg border-border/50 shadow-2xl">
-      <CardHeader className="space-y-6 pb-2 text-center">
-        <OnboardingStepper activeStep={3} />
-        <div className="space-y-2">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/10">
-            <Key className="h-6 w-6 text-violet-400" />
+    <div className="space-y-10">
+      <OnboardingStepper activeStep={3} />
+      <div className="space-y-2 text-center">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+          Step 03 — your AI provider
+        </p>
+        <h1 className="font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+          Connect your AI key
+        </h1>
+        <p className="mx-auto max-w-md text-sm text-muted-foreground">
+          Clipflow runs on your own API key — you pay your provider directly at
+          cost. Zero markup, ever.
+        </p>
+      </div>
+
+      {/* Trust signals — monochrome, aligned to the data-sheet style */}
+      <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-border/60 bg-border/60 sm:grid-cols-2">
+        <div className="flex items-center gap-2.5 bg-card px-4 py-3">
+          <Shield className="h-4 w-4 shrink-0 text-primary" />
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-foreground">
+              AES-256 encrypted
+            </p>
+            <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+              at rest, per row
+            </p>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Connect your AI key</h1>
-          <p className="text-sm text-muted-foreground">
-            Clipflow uses your own API key — you pay your provider directly at cost. Zero markup, ever.
-          </p>
         </div>
-
-        {/* Trust signals */}
-        <div className="grid grid-cols-2 gap-3 pt-2">
-          <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
-            <Shield className="h-4 w-4 text-emerald-400" />
-            <span className="text-xs text-muted-foreground">AES-256 encrypted</span>
-          </div>
-          <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
-            <Zap className="h-4 w-4 text-amber-400" />
-            <span className="text-xs text-muted-foreground">Validated before save</span>
+        <div className="flex items-center gap-2.5 bg-card px-4 py-3">
+          <Zap className="h-4 w-4 shrink-0 text-primary" />
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-foreground">
+              Validated before save
+            </p>
+            <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+              we test-call the provider
+            </p>
           </div>
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="space-y-4">
-        <AiKeyForm action={saveAiKeyOnboardingAction} submitLabel="Save and continue" />
-
+      <div className="space-y-4">
+        <AiKeyForm
+          action={saveAiKeyOnboardingAction}
+          submitLabel="Save and continue →"
+        />
         <div className="text-center">
           <Link
             href="/onboarding/complete"
-            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+            className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
             Skip for now — I&apos;ll add a key later
           </Link>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

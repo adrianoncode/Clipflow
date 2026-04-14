@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { OnboardingStepper } from '@/components/onboarding/stepper'
 import { RoleStep } from '@/components/onboarding/role-step'
 
@@ -6,24 +5,21 @@ export const metadata = { title: 'Welcome to Clipflow' }
 
 export default function OnboardingRolePage() {
   return (
-    <Card className="w-full max-w-lg border-border/50 shadow-2xl">
-      <CardHeader className="space-y-6 pb-2 text-center">
-        <OnboardingStepper activeStep={1} />
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight">
-            Welcome to{' '}
-            <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
-              Clipflow
-            </span>
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            How will you use Clipflow? This helps us set up your workspace.
-          </p>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <RoleStep />
-      </CardContent>
-    </Card>
+    <div className="space-y-10">
+      <OnboardingStepper activeStep={1} />
+      <div className="space-y-2 text-center">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+          Step 01 — who you are
+        </p>
+        <h1 className="font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+          How will you use Clipflow?
+        </h1>
+        <p className="mx-auto max-w-md text-sm text-muted-foreground">
+          This tunes your workspace, pipeline, and member defaults. You can
+          always change it later in settings.
+        </p>
+      </div>
+      <RoleStep />
+    </div>
   )
 }
