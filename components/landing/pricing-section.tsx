@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Check } from 'lucide-react'
 
+import { SpotlightCard } from '@/components/landing/spotlight-card'
+
 interface Plan {
   id: string
   name: string
@@ -97,7 +99,7 @@ export function PricingSection({ signupHref }: PricingSectionProps) {
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
             Pricing
           </p>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
+          <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
             Start free. Scale when ready.
           </h2>
           <p className="mt-4 text-lg text-zinc-500 sm:text-xl">
@@ -141,9 +143,14 @@ export function PricingSection({ signupHref }: PricingSectionProps) {
           {PLANS.map((plan) => {
             const price = interval === 'annual' ? plan.annual : plan.monthly
             return (
-              <div
+              <SpotlightCard
                 key={plan.id}
-                className={`relative flex flex-col rounded-2xl p-8 transition-all ${
+                className="h-full rounded-2xl"
+                color={plan.highlight ? 'rgba(255,255,255,0.08)' : 'rgba(124, 58, 237, 0.12)'}
+                size={400}
+              >
+              <div
+                className={`relative flex h-full flex-col rounded-2xl p-8 transition-all ${
                   plan.highlight
                     ? 'bg-zinc-950 text-white shadow-2xl shadow-violet-500/20 ring-1 ring-zinc-900'
                     : 'border border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-md'
@@ -199,6 +206,7 @@ export function PricingSection({ signupHref }: PricingSectionProps) {
                   {plan.ctaLabel}
                 </Link>
               </div>
+              </SpotlightCard>
             )
           })}
         </div>

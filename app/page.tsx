@@ -17,6 +17,11 @@ import {
 
 import { PricingSection } from '@/components/landing/pricing-section'
 import { FaqSection } from '@/components/landing/faq-section'
+import { Reveal } from '@/components/landing/reveal'
+import { SpotlightCard } from '@/components/landing/spotlight-card'
+import { LogoMarquee } from '@/components/landing/logo-marquee'
+import { AnimatedHeroMockup } from '@/components/landing/animated-hero-mockup'
+import { TestimonialsWall } from '@/components/landing/testimonials-wall'
 import { normalizeReferralCode } from '@/lib/referrals/normalize-code'
 import { lookupReferrerUserId } from '@/lib/referrals/lookup-referrer'
 import { REFERRAL_DISCOUNT_PERCENT } from '@/lib/referrals/constants'
@@ -53,6 +58,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <FeaturesBento />
         <PlatformShowcase />
         <ByokHighlight signupHref={signupHref} />
+        <TestimonialsWall />
         <PricingSection signupHref={signupHref} />
         <ReferralCta signupHref={signupHref} />
         <Compare />
@@ -180,7 +186,7 @@ function Hero({ signupHref }: { signupHref: string }) {
         </div>
 
         {/* Headline */}
-        <h1 className="mx-auto mt-8 max-w-5xl text-center text-[44px] font-semibold leading-[1.04] tracking-[-0.035em] text-white sm:text-6xl md:text-7xl lg:text-[88px]">
+        <h1 className="mx-auto mt-8 max-w-5xl text-center font-display text-[44px] font-semibold leading-[1.02] tracking-[-0.04em] text-white sm:text-6xl md:text-7xl lg:text-[88px]">
           One video.
           <br />
           <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-violet-500 bg-clip-text text-transparent">
@@ -214,146 +220,12 @@ function Hero({ signupHref }: { signupHref: string }) {
           Free forever · 3 content items/mo · all AI tools included
         </p>
 
-        {/* Product mockup */}
+        {/* Product mockup — animated */}
         <div className="mx-auto mt-16 max-w-5xl sm:mt-20">
-          <HeroMockup />
+          <AnimatedHeroMockup />
         </div>
       </div>
     </section>
-  )
-}
-
-function HeroMockup() {
-  const outputs = [
-    {
-      platform: 'TikTok',
-      score: 94,
-      hook: '"POV: You spend 8 hours editing one video 😭"',
-      accent: 'from-pink-500/20 to-pink-500/5',
-      border: 'border-pink-500/20',
-      text: 'text-pink-300',
-    },
-    {
-      platform: 'Reels',
-      score: 89,
-      hook: '"The workflow saving creators 6+ hours a week"',
-      accent: 'from-fuchsia-500/20 to-fuchsia-500/5',
-      border: 'border-fuchsia-500/20',
-      text: 'text-fuchsia-300',
-    },
-    {
-      platform: 'YouTube Shorts',
-      score: 85,
-      hook: '"I automated my entire content pipeline"',
-      accent: 'from-red-500/20 to-red-500/5',
-      border: 'border-red-500/20',
-      text: 'text-red-300',
-    },
-    {
-      platform: 'LinkedIn',
-      score: 81,
-      hook: '"80% of creators waste time on distribution"',
-      accent: 'from-sky-500/20 to-sky-500/5',
-      border: 'border-sky-500/20',
-      text: 'text-sky-300',
-    },
-  ]
-
-  return (
-    <div className="relative">
-      {/* Ambient glow */}
-      <div
-        aria-hidden
-        className="absolute -inset-x-20 -inset-y-10 rounded-[48px] opacity-60 blur-3xl"
-        style={{
-          background:
-            'linear-gradient(90deg, rgba(124, 58, 237, 0.3), rgba(236, 72, 153, 0.2))',
-        }}
-      />
-
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]">
-        {/* Window chrome */}
-        <div className="flex h-10 items-center border-b border-white/5 bg-zinc-900/80 px-4">
-          <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
-            <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
-            <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-          </div>
-          <div className="mx-auto flex h-6 w-60 items-center justify-center gap-1.5 rounded-md bg-white/5 text-xs text-white/30">
-            clipflow.to / workspace
-          </div>
-        </div>
-
-        <div className="flex min-h-[340px]">
-          {/* Sidebar */}
-          <div className="hidden w-40 shrink-0 border-r border-white/5 bg-[#0b0b10] p-3 sm:block">
-            {[
-              ['◉', 'Dashboard'],
-              ['≡', 'Pipeline'],
-              ['◷', 'Calendar'],
-              ['✎', 'Ghostwriter'],
-              ['✶', 'All Tools', true],
-              ['▲', 'Trends'],
-              ['◢', 'Creators'],
-            ].map(([icon, label, active]) => (
-              <div
-                key={String(label)}
-                className={`mb-0.5 flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs ${
-                  active
-                    ? 'bg-violet-500/10 text-white'
-                    : 'text-white/40 hover:text-white/70'
-                }`}
-              >
-                <span className={active ? 'text-violet-400' : 'text-white/30'}>
-                  {icon}
-                </span>
-                {label}
-              </div>
-            ))}
-          </div>
-
-          {/* Main */}
-          <div className="flex-1 bg-gradient-to-br from-[#0b0b10] to-[#07070a] p-4 sm:p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm font-semibold text-white">Product-Demo.mp4</p>
-                <p className="mt-1 text-xs text-white/40">
-                  4 drafts · 24s · gpt-4o · generated in 28s
-                </p>
-              </div>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                Ready
-              </span>
-            </div>
-
-            <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {outputs.map((o) => (
-                <div
-                  key={o.platform}
-                  className={`rounded-lg border ${o.border} bg-gradient-to-br ${o.accent} p-3`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className={`rounded-full border ${o.border} bg-white/5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${o.text}`}>
-                      {o.platform}
-                    </span>
-                    <span
-                      className={`text-sm font-bold ${
-                        o.score > 88 ? 'text-emerald-300' : 'text-amber-300'
-                      }`}
-                    >
-                      {o.score}
-                      <span className="text-[9px] font-medium text-white/30">/100</span>
-                    </span>
-                  </div>
-                  <p className="mt-2 text-xs leading-snug text-white/70">{o.hook}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   )
 }
 
@@ -369,22 +241,18 @@ function PoweredBy() {
     'Shotstack',
     'Pexels',
     'Whisper',
+    'Replicate',
+    'Stripe',
+    'Resend',
   ]
 
   return (
-    <section className="border-y border-zinc-100 bg-white px-6 py-12">
+    <section className="border-y border-zinc-100 bg-white py-12">
       <p className="text-center text-xs font-semibold uppercase tracking-[0.25em] text-zinc-400">
         Powered by the best AI stack
       </p>
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-        {logos.map((logo) => (
-          <span
-            key={logo}
-            className="text-base font-bold tracking-tight text-zinc-400 transition-colors hover:text-zinc-700 sm:text-lg"
-          >
-            {logo}
-          </span>
-        ))}
+      <div className="mt-8">
+        <LogoMarquee logos={logos} />
       </div>
     </section>
   )
@@ -418,36 +286,37 @@ function Workflow() {
   return (
     <section id="workflow" className="bg-zinc-50 px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
-            How it works
-          </p>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
-            Three steps. That&apos;s it.
-          </h2>
-          <p className="mt-4 text-lg text-zinc-500">
-            No settings to tune. No prompts to write. You supply one video — Clipflow handles the rest.
-          </p>
-        </div>
+        <Reveal>
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
+              How it works
+            </p>
+            <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
+              Three steps. That&apos;s it.
+            </h2>
+            <p className="mt-4 text-lg text-zinc-500">
+              No settings to tune. No prompts to write. You supply one video — Clipflow handles the rest.
+            </p>
+          </div>
+        </Reveal>
 
         <div className="mt-16 grid gap-px overflow-hidden rounded-3xl bg-zinc-200 sm:grid-cols-3">
-          {steps.map((step) => (
-            <div
-              key={step.n}
-              className="bg-white p-10 transition-colors hover:bg-zinc-50/50"
-            >
-              <div
-                className={`text-sm font-mono font-semibold ${step.accent}`}
-              >
-                {step.n}
+          {steps.map((step, i) => (
+            <Reveal key={step.n} delay={i * 120}>
+              <div className="bg-white p-10 transition-colors hover:bg-zinc-50/50 sm:h-full">
+                <div
+                  className={`font-mono text-sm font-semibold ${step.accent}`}
+                >
+                  {step.n}
+                </div>
+                <h3 className="mt-6 font-display text-2xl font-semibold tracking-tight text-zinc-950">
+                  {step.title}
+                </h3>
+                <p className="mt-3 text-[15px] leading-relaxed text-zinc-600">
+                  {step.desc}
+                </p>
               </div>
-              <h3 className="mt-6 text-2xl font-semibold tracking-tight text-zinc-950">
-                {step.title}
-              </h3>
-              <p className="mt-3 text-[15px] leading-relaxed text-zinc-600">
-                {step.desc}
-              </p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -462,78 +331,110 @@ function FeaturesBento() {
   return (
     <section id="features" className="bg-white px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-7xl">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
-            Features
-          </p>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
-            30+ tools.
-            <br />
-            One subscription.
-          </h2>
-          <p className="mt-4 text-lg text-zinc-500">
-            Everything you&apos;d stitch together from five separate SaaS products — already integrated.
-          </p>
-        </div>
+        <Reveal>
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
+              Features
+            </p>
+            <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
+              30+ tools.
+              <br />
+              One subscription.
+            </h2>
+            <p className="mt-4 text-lg text-zinc-500">
+              Everything you&apos;d stitch together from five separate SaaS products — already integrated.
+            </p>
+          </div>
+        </Reveal>
 
         <div className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2">
           {/* LARGE — Video Rendering */}
-          <BentoCard
-            className="lg:col-span-2 lg:row-span-2 bg-gradient-to-br from-violet-600 via-violet-700 to-fuchsia-700 text-white"
-            eyebrow="Core"
-            title="Real video rendering"
-            desc="Not just text outputs. Burn subtitles, stitch B-Roll with voice-over, add brand intros and outros. Real MP4s, cloud-rendered via Shotstack."
-            icon={Video}
-            variant="dark"
-          />
+          <Reveal className="lg:col-span-2 lg:row-span-2">
+            <SpotlightCard
+              className="h-full rounded-2xl"
+              color="rgba(255, 255, 255, 0.08)"
+              size={700}
+            >
+              <BentoCard
+                className="h-full bg-gradient-to-br from-violet-600 via-violet-700 to-fuchsia-700 text-white"
+                eyebrow="Core"
+                title="Real video rendering"
+                desc="Not just text outputs. Burn subtitles, stitch B-Roll with voice-over, add brand intros and outros. Real MP4s, cloud-rendered via Shotstack."
+                icon={Video}
+                variant="dark"
+              />
+            </SpotlightCard>
+          </Reveal>
 
-          <BentoCard
-            eyebrow="Speed"
-            title="4 platform drafts in 30s"
-            desc="TikTok, Reels, Shorts, LinkedIn — generated in parallel, not sequentially."
-            icon={Layers}
-          />
+          <Reveal delay={80}>
+            <SpotlightCard className="h-full rounded-2xl">
+              <BentoCard
+                className="h-full"
+                eyebrow="Speed"
+                title="4 platform drafts in 30s"
+                desc="TikTok, Reels, Shorts, LinkedIn — generated in parallel, not sequentially."
+                icon={Layers}
+              />
+            </SpotlightCard>
+          </Reveal>
 
-          <BentoCard
-            eyebrow="Voice"
-            title="Brand voice + AI persona"
-            desc="Train a persona on your own writing. Every output sounds like you."
-            icon={Mic2}
-          />
+          <Reveal delay={160}>
+            <SpotlightCard className="h-full rounded-2xl">
+              <BentoCard
+                className="h-full"
+                eyebrow="Voice"
+                title="Brand voice + AI persona"
+                desc="Train a persona on your own writing. Every output sounds like you."
+                icon={Mic2}
+              />
+            </SpotlightCard>
+          </Reveal>
 
-          <BentoCard
-            eyebrow="Strategy"
-            title="Virality scoring"
-            desc="AI rates each hook on scroll-stop power, shareability and pacing — before you publish."
-            icon={TrendingUp}
-          />
+          <Reveal delay={240}>
+            <SpotlightCard className="h-full rounded-2xl">
+              <BentoCard
+                className="h-full"
+                eyebrow="Strategy"
+                title="Virality scoring"
+                desc="AI rates each hook on scroll-stop power, shareability and pacing — before you publish."
+                icon={TrendingUp}
+              />
+            </SpotlightCard>
+          </Reveal>
 
-          <BentoCard
-            eyebrow="Creation"
-            title="AI Ghostwriter"
-            desc="Topic → full script with hooks, CTA and platform variants. Zero prompt writing."
-            icon={Wand2}
-          />
+          <Reveal delay={320}>
+            <SpotlightCard className="h-full rounded-2xl">
+              <BentoCard
+                className="h-full"
+                eyebrow="Creation"
+                title="AI Ghostwriter"
+                desc="Topic → full script with hooks, CTA and platform variants. Zero prompt writing."
+                icon={Wand2}
+              />
+            </SpotlightCard>
+          </Reveal>
         </div>
 
         {/* More-tools strip */}
-        <div className="mt-4 overflow-hidden rounded-2xl bg-zinc-950 p-8 text-white sm:p-10">
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-violet-400">+ 25 more tools</p>
-              <h3 className="mt-1 text-2xl font-semibold tracking-tight">
-                Hashtag research, content DNA, thumbnail generator, trend radar, competitor analysis…
-              </h3>
+        <Reveal className="mt-4">
+          <div className="overflow-hidden rounded-2xl bg-zinc-950 p-8 text-white sm:p-10">
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-violet-400">+ 25 more tools</p>
+                <h3 className="mt-1 font-display text-2xl font-semibold tracking-tight">
+                  Hashtag research, content DNA, thumbnail generator, trend radar, competitor analysis…
+                </h3>
+              </div>
+              <Link
+                href="/signup"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-zinc-950 transition-all hover:bg-zinc-100"
+              >
+                Browse all tools
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
             </div>
-            <Link
-              href="/signup"
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-zinc-950 transition-all hover:bg-zinc-100"
-            >
-              Browse all tools
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   )
@@ -557,7 +458,7 @@ function BentoCard({
   const isDark = variant === 'dark'
   return (
     <div
-      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border p-8 transition-all sm:p-10 ${
+      className={`relative flex flex-col justify-between overflow-hidden rounded-2xl border p-8 transition-all sm:p-10 ${
         isDark
           ? 'border-white/10 shadow-2xl shadow-violet-500/10'
           : 'border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-lg'
@@ -579,7 +480,7 @@ function BentoCard({
           {eyebrow}
         </p>
         <h3
-          className={`mt-2 text-2xl font-semibold leading-tight tracking-tight sm:text-3xl ${
+          className={`mt-2 font-display text-2xl font-semibold leading-tight tracking-tight sm:text-3xl ${
             isDark ? 'text-white' : 'text-zinc-950'
           }`}
         >
@@ -639,38 +540,45 @@ function PlatformShowcase() {
         }}
       />
       <div className="relative mx-auto max-w-6xl">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-300">
-            Platform-native, not lowest-common-denominator
-          </p>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl">
-            One source.
-            <br />
-            <span className="text-white/60">Four voices.</span>
-          </h2>
-          <p className="mt-4 text-lg text-white/60">
-            Every platform has its own rules. Clipflow rewrites — not just reposts — for each.
-          </p>
-        </div>
+        <Reveal>
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-300">
+              Platform-native, not lowest-common-denominator
+            </p>
+            <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl">
+              One source.
+              <br />
+              <span className="text-white/60">Four voices.</span>
+            </h2>
+            <p className="mt-4 text-lg text-white/60">
+              Every platform has its own rules. Clipflow rewrites — not just reposts — for each.
+            </p>
+          </div>
+        </Reveal>
 
         <div className="mt-16 grid gap-4 sm:grid-cols-2">
-          {platforms.map((p) => (
-            <div
-              key={p.name}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-8 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/[0.04]"
-            >
-              <div
-                aria-hidden
-                className={`absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br ${p.hue} opacity-20 blur-3xl transition-opacity group-hover:opacity-40`}
-              />
-              <div className="relative flex items-center gap-3">
-                <span className={`h-2 w-2 rounded-full ${p.swatch}`} />
-                <span className="text-sm font-semibold text-white">{p.name}</span>
-              </div>
-              <p className="relative mt-6 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-                {p.caption}
-              </p>
-            </div>
+          {platforms.map((p, i) => (
+            <Reveal key={p.name} delay={i * 80}>
+              <SpotlightCard
+                className="rounded-2xl"
+                color="rgba(255, 255, 255, 0.08)"
+                size={400}
+              >
+                <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-8 backdrop-blur-sm transition-all hover:border-white/20 hover:bg-white/[0.04]">
+                  <div
+                    aria-hidden
+                    className={`absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br ${p.hue} opacity-20 blur-3xl transition-opacity group-hover:opacity-40`}
+                  />
+                  <div className="relative flex items-center gap-3">
+                    <span className={`h-2 w-2 rounded-full ${p.swatch}`} />
+                    <span className="text-sm font-semibold text-white">{p.name}</span>
+                  </div>
+                  <p className="relative mt-6 font-display text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+                    {p.caption}
+                  </p>
+                </div>
+              </SpotlightCard>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -685,6 +593,7 @@ function ByokHighlight({ signupHref }: { signupHref: string }) {
   return (
     <section className="bg-white px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl">
+        <Reveal>
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-950 via-zinc-900 to-violet-950 p-10 sm:p-16">
           <div
             aria-hidden
@@ -703,7 +612,7 @@ function ByokHighlight({ signupHref }: { signupHref: string }) {
                 <KeyRound className="h-3.5 w-3.5" />
                 BYOK
               </div>
-              <h2 className="mt-5 text-4xl font-semibold leading-[1.08] tracking-tight text-white sm:text-5xl md:text-6xl">
+              <h2 className="mt-5 font-display text-4xl font-semibold leading-[1.08] tracking-tight text-white sm:text-5xl md:text-6xl">
                 Bring your own key.
                 <br />
                 <span className="text-white/60">Pay AI at cost.</span>
@@ -760,6 +669,7 @@ function ByokHighlight({ signupHref }: { signupHref: string }) {
             </div>
           </div>
         </div>
+        </Reveal>
       </div>
     </section>
   )
@@ -772,6 +682,7 @@ function ReferralCta({ signupHref }: { signupHref: string }) {
   return (
     <section id="referrals" className="bg-white px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-5xl">
+        <Reveal>
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 p-10 text-white sm:p-14">
           <div
             aria-hidden
@@ -783,7 +694,7 @@ function ReferralCta({ signupHref }: { signupHref: string }) {
                 <Gift className="h-3.5 w-3.5" />
                 Refer &amp; earn
               </div>
-              <h2 className="mt-5 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl md:text-6xl">
+              <h2 className="mt-5 font-display text-4xl font-semibold leading-tight tracking-tight sm:text-5xl md:text-6xl">
                 Give {REFERRAL_DISCOUNT_PERCENT}%, get {REFERRAL_DISCOUNT_PERCENT}%.
                 <br />
                 <span className="text-white/80">Forever.</span>
@@ -810,6 +721,7 @@ function ReferralCta({ signupHref }: { signupHref: string }) {
             </Link>
           </div>
         </div>
+        </Reveal>
       </div>
     </section>
   )
@@ -834,16 +746,19 @@ function Compare() {
   return (
     <section id="compare" className="bg-zinc-50 px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-3xl">
-        <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
-            The comparison
-          </p>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">
-            More tools. Real video. Zero markup.
-          </h2>
-        </div>
+        <Reveal>
+          <div className="text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
+              The comparison
+            </p>
+            <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">
+              More tools. Real video. Zero markup.
+            </h2>
+          </div>
+        </Reveal>
 
-        <div className="mt-14 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+        <Reveal delay={100} className="mt-14">
+        <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -886,6 +801,7 @@ function Compare() {
             </table>
           </div>
         </div>
+        </Reveal>
       </div>
     </section>
   )
@@ -908,11 +824,12 @@ function FinalCta({ signupHref }: { signupHref: string }) {
         }}
       />
       <div className="relative mx-auto max-w-4xl text-center">
+        <Reveal>
         <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium text-white/70 backdrop-blur-sm">
           <Sparkles className="h-3.5 w-3.5 text-violet-400" />
           Built for creators who ship, not tinker
         </div>
-        <h2 className="mt-6 text-5xl font-semibold leading-[1.05] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
+        <h2 className="mt-6 font-display text-5xl font-semibold leading-[1.02] tracking-[-0.04em] text-white sm:text-6xl md:text-7xl lg:text-8xl">
           Stop editing.
           <br />
           <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-violet-500 bg-clip-text text-transparent">
@@ -932,6 +849,7 @@ function FinalCta({ signupHref }: { signupHref: string }) {
           </Link>
         </div>
         <p className="mt-6 text-xs text-white/40">No credit card · 30-second signup</p>
+        </Reveal>
       </div>
     </section>
   )

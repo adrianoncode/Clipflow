@@ -59,7 +59,7 @@ export function FaqSection() {
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
             FAQ
           </p>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">
+          <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">
             Questions, answered.
           </h2>
         </div>
