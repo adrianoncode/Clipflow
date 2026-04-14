@@ -25,6 +25,9 @@ export interface WorkspaceStats {
   contentLastMonth: number
   outputsLastMonth: number
   pipelineByState: Record<PipelineState, number>
+  /** 7-day rolling buckets for sparklines. Index 0 = oldest day. */
+  contentByDay: number[]
+  outputsByDay: number[]
 }
 
 export async function getWorkspaceStats(workspaceId: string): Promise<WorkspaceStats> {
@@ -34,6 +37,11 @@ export async function getWorkspaceStats(workspaceId: string): Promise<WorkspaceS
   const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString()
   const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+
+  // 7-day trailing window (midnight today minus 6 days) for sparklines.
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const sparklineStart = new Date(todayStart.getTime() - 6 * 24 * 60 * 60 * 1000)
+  const sparklineStartIso = sparklineStart.toISOString()
 
   const [
     contentResult,
@@ -47,6 +55,8 @@ export async function getWorkspaceStats(workspaceId: string): Promise<WorkspaceS
     contentLastMonthResult,
     outputsLastMonthResult,
     allStatesResult,
+    contentSparkResult,
+    outputsSparkResult,
   ] = await Promise.all([
     // Total content items
     supabase
@@ -124,7 +134,37 @@ export async function getWorkspaceStats(workspaceId: string): Promise<WorkspaceS
       .select('output_id, state, created_at')
       .eq('workspace_id', workspaceId)
       .order('created_at', { ascending: false }),
+
+    // 7-day sparkline data — created_at timestamps for each content/output
+    supabase
+      .from('content_items')
+      .select('created_at')
+      .eq('workspace_id', workspaceId)
+      .gte('created_at', sparklineStartIso),
+
+    supabase
+      .from('outputs')
+      .select('created_at')
+      .eq('workspace_id', workspaceId)
+      .gte('created_at', sparklineStartIso),
   ])
+
+  // Bucket by day for sparklines — 7 slots, index 0 is the oldest day
+  // (6 days ago), index 6 is today.
+  function bucketByDay(rows: Array<{ created_at: string }> | null): number[] {
+    const buckets = Array(7).fill(0)
+    for (const row of rows ?? []) {
+      const date = new Date(row.created_at)
+      const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+      const daysAgo = Math.floor(
+        (todayStart.getTime() - dayStart.getTime()) / (24 * 60 * 60 * 1000),
+      )
+      if (daysAgo >= 0 && daysAgo <= 6) {
+        buckets[6 - daysAgo]++
+      }
+    }
+    return buckets
+  }
 
   // Platform breakdown
   const platformCounts: Record<string, number> = {}
@@ -169,5 +209,7 @@ export async function getWorkspaceStats(workspaceId: string): Promise<WorkspaceS
     contentLastMonth: contentLastMonthResult.count ?? 0,
     outputsLastMonth: outputsLastMonthResult.count ?? 0,
     pipelineByState,
+    contentByDay: bucketByDay(contentSparkResult.data ?? null),
+    outputsByDay: bucketByDay(outputsSparkResult.data ?? null),
   }
 }

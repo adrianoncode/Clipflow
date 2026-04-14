@@ -17,6 +17,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { AddAiKeyBanner } from '@/components/dashboard/add-ai-key-banner'
 import { GettingStartedChecklist } from '@/components/dashboard/getting-started-checklist'
 import { ReferralHeroStat } from '@/components/dashboard/referral-hero-stat'
+import { Sparkline } from '@/components/dashboard/sparkline'
 import { ContentStatusBadge } from '@/components/content/content-status-badge'
 import { RecycleSuggestions } from '@/components/content/recycle-suggestions'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
@@ -211,11 +212,10 @@ export default async function DashboardPage() {
         />
       ) : null}
 
-      {/* Data masthead — editorial row of stats with hair-line dividers
-          between cells. Replaces the 4-card stat grid (generic). Numbers
-          are monospaced and tracking-tight; labels are mono-uppercase so
-          the whole thing reads like a terminal status bar, not a kids'
-          dashboard. Trend arrow is inline next to the number. */}
+      {/* Data masthead — editorial stat row with 7-day sparklines per
+          metric. The sparklines make the whole thing feel alive rather
+          than static — this is the main thing lifting it out of
+          "generic dashboard" territory. */}
       {stats && (
         <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="grid grid-cols-2 divide-y divide-border/50 sm:grid-cols-4 sm:divide-x sm:divide-y-0">
@@ -226,6 +226,7 @@ export default async function DashboardPage() {
                 value: stats.totalContent,
                 delta: stats.contentThisMonth,
                 icon: FileText,
+                spark: stats.contentByDay,
               },
               {
                 key: 'outputs',
@@ -233,6 +234,7 @@ export default async function DashboardPage() {
                 value: stats.totalOutputs,
                 delta: stats.outputsThisMonth,
                 icon: Layers,
+                spark: stats.outputsByDay,
               },
               {
                 key: 'starred',
@@ -240,6 +242,7 @@ export default async function DashboardPage() {
                 value: stats.starredOutputs,
                 delta: 0,
                 icon: Star,
+                spark: null,
               },
               {
                 key: 'approved',
@@ -247,31 +250,109 @@ export default async function DashboardPage() {
                 value: stats.approvedOutputs,
                 delta: 0,
                 icon: CheckCircle2,
+                spark: null,
               },
             ] as const).map((m) => (
-              <div key={m.key} className="group relative px-5 py-5">
-                <div className="flex items-center gap-1.5">
-                  <m.icon className="h-3 w-3 text-muted-foreground/60" />
-                  <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                    {m.label}
-                  </span>
-                </div>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="font-mono text-3xl font-semibold tabular-nums tracking-tight text-foreground">
-                    {m.value}
-                  </span>
-                  {m.delta > 0 ? (
-                    <span className="inline-flex items-center gap-0.5 font-mono text-[11px] font-medium text-primary">
-                      <TrendingUp className="h-2.5 w-2.5" />
-                      {m.delta}
+              <div key={m.key} className="group relative flex flex-col justify-between gap-4 px-5 py-5">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <m.icon className="h-3 w-3 text-muted-foreground/60" />
+                    <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                      {m.label}
                     </span>
-                  ) : null}
+                  </div>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="font-mono text-3xl font-semibold tabular-nums tracking-tight text-foreground">
+                      {m.value}
+                    </span>
+                    {m.delta > 0 ? (
+                      <span className="inline-flex items-center gap-0.5 font-mono text-[11px] font-medium text-primary">
+                        <TrendingUp className="h-2.5 w-2.5" />
+                        {m.delta}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
+                {m.spark ? (
+                  <div className="flex items-end justify-between gap-3">
+                    <Sparkline
+                      data={m.spark}
+                      width={80}
+                      height={24}
+                      variant="bars"
+                      label={`${m.label} — last 7 days`}
+                    />
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground/60">
+                      7d
+                    </span>
+                  </div>
+                ) : (
+                  <div className="h-6" />
+                )}
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* "Pick up where you left off" — spotlight card that surfaces the
+          most recent content item so the dashboard has a clear single
+          next-action. Only renders when the user has content. */}
+      {stats && stats.recentContent.length > 0 && currentWorkspace ? (
+        (() => {
+          const next = stats.recentContent[0]!
+          const kindLabel = next.kind.replace('_', ' ')
+          const verb =
+            next.status === 'ready'
+              ? 'View outputs'
+              : next.status === 'processing'
+                ? 'Check progress'
+                : next.status === 'failed'
+                  ? 'Retry'
+                  : 'Continue'
+          const href =
+            next.status === 'ready'
+              ? `/workspace/${currentWorkspace.id}/content/${next.id}/outputs`
+              : `/workspace/${currentWorkspace.id}/content/${next.id}`
+          return (
+            <Link
+              href={href}
+              className="group relative flex items-center gap-5 overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-5 transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-lg hover:shadow-primary/5"
+            >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full opacity-50 blur-3xl"
+                style={{
+                  background:
+                    'radial-gradient(circle, hsl(var(--primary) / 0.15), transparent 70%)',
+                }}
+              />
+              <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+                <FileText className="h-5 w-5" />
+              </div>
+              <div className="relative min-w-0 flex-1">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Pick up where you left off
+                </p>
+                <p className="mt-1 truncate text-base font-semibold">
+                  {next.title ?? 'Untitled'}
+                </p>
+                <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="capitalize">{kindLabel}</span>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span>{formatRelative(next.created_at)}</span>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span className="capitalize text-foreground">{next.status}</span>
+                </p>
+              </div>
+              <div className="relative flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-transform group-hover:translate-x-0.5">
+                {verb}
+                <ChevronRight className="h-3.5 w-3.5" />
+              </div>
+            </Link>
+          )
+        })()
+      ) : null}
 
       {/* Pipeline — inline row under the masthead. No card chrome, just
           mono labels with counts separated by hairlines. Reads as a
@@ -307,11 +388,13 @@ export default async function DashboardPage() {
         </div>
       ) : null}
 
-      {/* Main content: 2/3 + 1/3 layout */}
+      {/* Activity occupies the full width now — no more cramped 2/3
+          split. Platform + Usage move to a compact horizontal strip
+          below. Reads as "stream of work + quick reference" instead of
+          a textbook dashboard. */}
       {stats && (
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* LEFT: Recent Content */}
-          <div className="space-y-6 lg:col-span-2">
+        <div className="space-y-6">
+          <div className="space-y-6">
             {/* Activity — timeline-style feed with a vertical rail on the
                 left, timestamps on the right. Reads like a changelog or
                 commit history, not a generic "recent items" list. */}
@@ -447,8 +530,10 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          {/* RIGHT: Platform breakdown + Usage */}
-          <div className="space-y-6">
+          {/* Bottom strip: Platform + Usage side-by-side instead of a
+              narrow right rail. Gives each more room and breaks the
+              "everything's a card in a column" monotony. */}
+          <div className="grid gap-4 lg:grid-cols-2">
             {/* Platform breakdown */}
             {stats.totalOutputs > 0 && (
               <div className="rounded-2xl border border-border/60 bg-card">
