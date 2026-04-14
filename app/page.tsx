@@ -183,17 +183,8 @@ function Hero({ signupHref }: { signupHref: string }) {
       />
 
       <div className="relative mx-auto max-w-7xl">
-        {/* Section marker — "v9 · build notes" style, feels distinctive */}
-        <div className="flex items-center justify-between">
-          <SectionBadge number="00" label="What is Clipflow" />
-          <div className="hidden items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-zinc-400 sm:flex">
-            <span className="h-1.5 w-1.5 rounded-full bg-violet-500 animate-soft-pulse" />
-            ver. 2.4 · live
-          </div>
-        </div>
-
         {/* Announcement pill */}
-        <div className="mt-10 flex justify-center">
+        <div className="flex justify-center">
           <Link
             href="#features"
             className="group inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white px-4 py-1.5 text-xs font-semibold text-violet-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md"
