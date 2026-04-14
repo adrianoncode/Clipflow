@@ -27,6 +27,19 @@ export type OnboardingRoleType = 'solo' | 'team' | 'agency'
 export type AiProvider = 'openai' | 'anthropic' | 'google'
 export type BillingPlan = 'free' | 'solo' | 'team' | 'agency'
 export type ReferralStatus = 'pending' | 'confirmed' | 'blocked'
+export type RenderKind =
+  | 'burn_captions'
+  | 'assemble_broll'
+  | 'branded_video'
+  | 'clip'
+  | 'batch_clip'
+  | 'reframe'
+  | 'subtitles'
+  | 'avatar'
+  | 'dub'
+  | 'faceless'
+export type RenderStatus = 'rendering' | 'done' | 'failed'
+export type RenderProvider = 'shotstack' | 'replicate'
 export type SubscriptionStatus =
   | 'trialing'
   | 'active'
@@ -451,6 +464,54 @@ export type Database = {
         }
         Relationships: []
       }
+      renders: {
+        Row: {
+          id: string
+          workspace_id: string
+          content_id: string | null
+          kind: RenderKind
+          provider: RenderProvider
+          provider_render_id: string | null
+          status: RenderStatus
+          url: string | null
+          error: string | null
+          metadata: Json
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          workspace_id: string
+          content_id?: string | null
+          kind: RenderKind
+          provider?: RenderProvider
+          provider_render_id?: string | null
+          status?: RenderStatus
+          url?: string | null
+          error?: string | null
+          metadata?: Json
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          workspace_id?: string
+          content_id?: string | null
+          kind?: RenderKind
+          provider?: RenderProvider
+          provider_render_id?: string | null
+          status?: RenderStatus
+          url?: string | null
+          error?: string | null
+          metadata?: Json
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       referrals: {
         Row: {
           id: string
@@ -815,6 +876,9 @@ export type Database = {
       billing_plan: BillingPlan
       subscription_status: SubscriptionStatus
       referral_status: ReferralStatus
+      render_kind: RenderKind
+      render_status: RenderStatus
+      render_provider: RenderProvider
     }
     CompositeTypes: {
       [_ in never]: never

@@ -194,9 +194,17 @@ export function ContentDetailView({
             </p>
           )}
 
-          {/* AI Tools grid */}
+          {/* Video Studio — was "AI Tools" but that hid the fact that
+              these tools actually produce rendered MP4s, not more text. */}
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/50">AI Tools</h3>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Video Studio
+              </h3>
+              <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                Renders MP4s
+              </span>
+            </div>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               <ToolCard
                 icon={<Clapperboard className="h-4 w-4 text-muted-foreground" />}

@@ -15,11 +15,14 @@ import { GenerateOutputsForm } from '@/components/outputs/generate-outputs-form'
 import { OutputsGrid } from '@/components/outputs/outputs-grid'
 import { RegenerateButton } from '@/components/outputs/regenerate-button'
 import { ReviewLinkPanel } from '@/components/outputs/review-link-panel'
+import { VideoStudioPanel } from '@/components/outputs/video-studio-panel'
+import { RenderHistoryPanel } from '@/components/outputs/render-history-panel'
 import { ReviewCommentsPanel } from '@/components/review/review-comments-panel'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getOutputs } from '@/lib/content/get-outputs'
 import { getReviewLinksForContent } from '@/lib/review/get-review-links-for-content'
 import { getReviewCommentsForContent } from '@/lib/review/get-review-comments-for-content'
+import { listRenders } from '@/lib/video/renders/list-renders'
 
 /**
  * `force-dynamic` so we never cache the generated outputs — the route
@@ -54,10 +57,11 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
     redirect(`/workspace/${params.id}/content/${params.contentId}`)
   }
 
-  const [outputs, reviewLinks, reviewComments] = await Promise.all([
+  const [outputs, reviewLinks, reviewComments, renders] = await Promise.all([
     getOutputs(params.contentId, params.id),
     getReviewLinksForContent(params.contentId, params.id),
     getReviewCommentsForContent(params.contentId, params.id),
+    listRenders({ workspaceId: params.id, contentId: params.contentId, limit: 12 }),
   ])
   const title = item.title ?? 'Untitled'
 
@@ -104,6 +108,22 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
       ) : (
         <>
           <OutputsGrid outputs={outputs} contentId={params.contentId} workspaceId={params.id} />
+
+          {/* Video Studio — prominent reminder that rendered MP4s are
+              the logical next step after text drafts. Sits directly
+              below the drafts so "only scripts come out" is impossible
+              to conclude. */}
+          <VideoStudioPanel
+            workspaceId={params.id}
+            contentId={params.contentId}
+            isVideo={item.kind === 'video'}
+            renderCount={renders.length}
+          />
+
+          {/* Persisted render history — only renders when there's at
+              least one render. Live-polls in-progress rows. */}
+          <RenderHistoryPanel initialRenders={renders} />
+
           <AiCoachPanel
             workspaceId={params.id}
             outputBodies={outputs
