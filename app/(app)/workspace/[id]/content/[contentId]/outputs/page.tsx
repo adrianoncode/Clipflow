@@ -23,6 +23,8 @@ import { getOutputs } from '@/lib/content/get-outputs'
 import { getReviewLinksForContent } from '@/lib/review/get-review-links-for-content'
 import { getReviewCommentsForContent } from '@/lib/review/get-review-comments-for-content'
 import { listRenders } from '@/lib/video/renders/list-renders'
+import { getPlanFeatures } from '@/lib/billing/plans'
+import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 
 /**
  * `force-dynamic` so we never cache the generated outputs — the route
@@ -57,12 +59,14 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
     redirect(`/workspace/${params.id}/content/${params.contentId}`)
   }
 
-  const [outputs, reviewLinks, reviewComments, renders] = await Promise.all([
+  const [outputs, reviewLinks, reviewComments, renders, plan] = await Promise.all([
     getOutputs(params.contentId, params.id),
     getReviewLinksForContent(params.contentId, params.id),
     getReviewCommentsForContent(params.contentId, params.id),
     listRenders({ workspaceId: params.id, contentId: params.contentId, limit: 12 }),
+    getWorkspacePlan(params.id),
   ])
+  const planFeatures = getPlanFeatures(plan)
   const title = item.title ?? 'Untitled'
 
   return (
@@ -118,6 +122,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
             contentId={params.contentId}
             isVideo={item.kind === 'video'}
             renderCount={renders.length}
+            trendingSoundsEnabled={planFeatures.trendingSounds}
           />
 
           {/* Persisted render history — only renders when there's at

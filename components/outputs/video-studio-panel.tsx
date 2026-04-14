@@ -9,12 +9,16 @@ import {
   ArrowUpRight,
 } from 'lucide-react'
 
+import { MakeVideoButton } from '@/components/outputs/make-video-button'
+
 interface VideoStudioPanelProps {
   workspaceId: string
   contentId: string
   /** Whether the source item is a video (enables reframe/dub). */
   isVideo: boolean
   renderCount: number
+  /** Team+ gate: trending-sound picker only shown on paid tiers. */
+  trendingSoundsEnabled: boolean
 }
 
 interface Tool {
@@ -37,6 +41,7 @@ export function VideoStudioPanel({
   contentId,
   isVideo,
   renderCount,
+  trendingSoundsEnabled,
 }: VideoStudioPanelProps) {
   const tools: Tool[] = [
     {
@@ -98,7 +103,7 @@ export function VideoStudioPanel({
         }}
       />
 
-      <div className="relative flex items-start justify-between gap-4 border-b border-primary/10 px-5 py-4">
+      <div className="relative flex flex-col gap-4 border-b border-primary/10 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
             Video Studio
@@ -107,15 +112,24 @@ export function VideoStudioPanel({
             Now render actual videos.
           </h3>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            The drafts above are starting points — turn them into real
-            MP4s with captions, B-Roll, avatars or translations.
+            One click turns the drafts above into a rendered MP4 with
+            captions, your aspect ratio, and optional trending audio.
           </p>
         </div>
-        {renderCount > 0 ? (
-          <span className="shrink-0 rounded-full border border-border/60 bg-background px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-            {renderCount} rendered
-          </span>
-        ) : null}
+        <div className="flex items-center gap-2 sm:shrink-0">
+          {renderCount > 0 ? (
+            <span className="rounded-full border border-border/60 bg-background px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+              {renderCount} rendered
+            </span>
+          ) : null}
+          {isVideo ? (
+            <MakeVideoButton
+              workspaceId={workspaceId}
+              contentId={contentId}
+              trendingSoundsEnabled={trendingSoundsEnabled}
+            />
+          ) : null}
+        </div>
       </div>
 
       <div className="relative grid grid-cols-1 gap-2 p-4 sm:grid-cols-2 lg:grid-cols-3">

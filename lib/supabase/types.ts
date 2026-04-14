@@ -464,6 +464,33 @@ export type Database = {
         }
         Relationships: []
       }
+      scraper_cache: {
+        Row: {
+          cache_key: string
+          actor: string
+          data: Json
+          expires_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          cache_key: string
+          actor: string
+          data: Json
+          expires_at: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          cache_key?: string
+          actor?: string
+          data?: Json
+          expires_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       renders: {
         Row: {
           id: string
