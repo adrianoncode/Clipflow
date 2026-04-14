@@ -90,7 +90,10 @@ export function PlanCard({ planId, interval, workspaceId, currentPlan }: PlanCar
       <CardContent className="flex flex-1 flex-col gap-4">
         <ul className="space-y-1 text-sm text-muted-foreground">
           <li>{formatLimit(limits.contentItemsPerMonth)} content items/mo</li>
-          <li>{formatLimit(limits.outputsPerMonth)} outputs/mo</li>
+          <li>{formatLimit(limits.outputsPerMonth)} text drafts/mo</li>
+          <li>{formatLimit(limits.videoRendersPerMonth)} video renders/mo</li>
+          <li>{formatLimit(limits.avatarVideosPerMonth)} AI avatars/mo</li>
+          <li>{formatLimit(limits.voiceClonesMax)} voice clone{limits.voiceClonesMax !== 1 ? 's' : ''}</li>
           <li>{formatLimit(limits.workspaces)} workspace{limits.workspaces !== 1 ? 's' : ''}</li>
         </ul>
         <div className="mt-auto">

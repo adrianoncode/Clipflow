@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { getUser } from '@/lib/auth/get-user'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { startDubbingJob } from '@/lib/dubbing/translate-and-dub'
+import { checkRenderQuota } from '@/lib/billing/check-feature'
 
 const dubbingSchema = z.object({
   workspace_id: z.string().uuid(),
@@ -49,6 +50,12 @@ export async function startDubbingAction(
 
   if (!item.source_url) {
     return { ok: false, error: 'No video file found. Auto-dubbing requires an uploaded video file.' }
+  }
+
+  // Auto-dub is Team+ only — separate quota.
+  const quota = await checkRenderQuota(parsed.data.workspace_id, 'dub_video')
+  if (!quota.ok) {
+    return { ok: false, error: quota.message ?? 'Auto-dub quota reached.' }
   }
 
   // Get signed URL for the video

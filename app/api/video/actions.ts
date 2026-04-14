@@ -8,7 +8,24 @@ import { assembleBRollVideo } from '@/lib/video/assemble-broll'
 import { renderBrandedVideo } from '@/lib/video/brand-template'
 import { clipVideo, batchClipVideo } from '@/lib/video/clip-video'
 import { insertRender } from '@/lib/video/renders/insert-render'
+import { checkRenderQuota, type QuotaKey } from '@/lib/billing/check-feature'
 import type { RenderKind } from '@/lib/supabase/types'
+
+/**
+ * Shared pre-submit gate. Returns the error-shaped result if the
+ * workspace is over its monthly cap for `quota`; returns null to
+ * indicate "proceed". We call this BEFORE touching any provider API
+ * so we don't burn Shotstack/Replicate credits on rejected requests.
+ */
+async function gateOrReturn(
+  workspaceId: string | null,
+  quota: QuotaKey,
+): Promise<{ ok: false; error: string } | null> {
+  if (!workspaceId) return null
+  const check = await checkRenderQuota(workspaceId, quota)
+  if (check.ok) return null
+  return { ok: false, error: check.message ?? 'Plan limit reached.' }
+}
 
 type VideoActionResult =
   | { ok?: undefined }
@@ -82,6 +99,9 @@ export async function burnCaptionsAction(
   if (subtitles.length === 0)
     return { ok: false, error: 'No subtitles provided.' }
 
+  const gated = await gateOrReturn(workspaceId, 'video_render')
+  if (gated) return gated
+
   const result = await burnCaptions({
     videoUrl,
     subtitles,
@@ -135,6 +155,9 @@ export async function assembleBRollAction(
 
   if (clips.length === 0) return { ok: false, error: 'No B-Roll clips.' }
 
+  const gated = await gateOrReturn(workspaceId, 'video_render')
+  if (gated) return gated
+
   const result = await assembleBRollVideo({
     brollClips: clips,
     audioUrl,
@@ -181,6 +204,9 @@ export async function renderBrandedAction(
 
   if (!videoUrl) return { ok: false, error: 'No video URL.' }
 
+  const gated = await gateOrReturn(workspaceId, 'video_render')
+  if (gated) return gated
+
   const result = await renderBrandedVideo({
     videoUrl,
     videoDuration: duration,
@@ -224,6 +250,9 @@ export async function clipVideoAction(
     | '1:1'
 
   if (!videoUrl) return { ok: false, error: 'No video URL.' }
+
+  const gated = await gateOrReturn(workspaceId, 'video_render')
+  if (gated) return gated
 
   const result = await clipVideo({
     videoUrl,
@@ -271,6 +300,9 @@ export async function batchClipAction(
   }
 
   if (clips.length === 0) return { ok: false, error: 'No clips defined.' }
+
+  const gated = await gateOrReturn(workspaceId, 'video_render')
+  if (gated) return gated
 
   const renders = await batchClipVideo({ videoUrl, clips, aspectRatio })
 

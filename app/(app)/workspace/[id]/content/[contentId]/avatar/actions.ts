@@ -7,6 +7,7 @@ import { getUser } from '@/lib/auth/get-user'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { generateAvatarVideo } from '@/lib/avatar/generate-avatar-video'
 import type { AvatarVideoResult } from '@/lib/avatar/generate-avatar-video'
+import { checkRenderQuota } from '@/lib/billing/check-feature'
 
 const avatarSchema = z.object({
   workspace_id: z.string().uuid(),
@@ -44,6 +45,13 @@ export async function generateAvatarAction(
   const script = parsed.data.script_override ?? (item.transcript?.slice(0, 1500) ?? '')
   if (!script) {
     return { ok: false, error: 'No script available. Add a transcript or provide a custom script.' }
+  }
+
+  // Avatar videos are the most expensive per-use (Replicate/HeyGen) —
+  // gated separately from regular video renders.
+  const quota = await checkRenderQuota(parsed.data.workspace_id, 'avatar_video')
+  if (!quota.ok) {
+    return { ok: false, error: quota.message ?? 'Avatar quota reached.' }
   }
 
   const result = await generateAvatarVideo({ script })
