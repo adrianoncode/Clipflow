@@ -36,6 +36,31 @@ export interface ShotstackSubtitle {
   length: number
 }
 
+/**
+ * Visual style presets for captions.
+ * - tiktok-bold  : Huge white text, fat black stroke — the viral TikTok look
+ * - minimal      : Clean small white text, no stroke
+ * - neon         : Yellow glow, high contrast
+ * - white-bar    : Text on a semi-transparent black pill — Instagram Reels style
+ */
+export type CaptionStyle = 'tiktok-bold' | 'minimal' | 'neon' | 'white-bar'
+
+function buildCaptionHtml(text: string, style: CaptionStyle): string {
+  const escaped = escapeHtml(text)
+  switch (style) {
+    case 'tiktok-bold':
+      return `<p style="font-family:'Arial Black',Arial;font-size:68px;font-weight:900;color:#FFFFFF;-webkit-text-stroke:4px #000000;text-align:center;padding:16px 24px;line-height:1.1;letter-spacing:-1px;">${escaped}</p>`
+    case 'minimal':
+      return `<p style="font-family:Arial;font-size:38px;font-weight:500;color:#FFFFFF;text-align:center;padding:12px 24px;opacity:0.95;letter-spacing:-0.3px;">${escaped}</p>`
+    case 'neon':
+      return `<p style="font-family:'Arial Black',Arial;font-size:58px;font-weight:800;color:#FFE600;text-shadow:0 0 12px rgba(255,230,0,0.9),0 0 30px rgba(255,230,0,0.5),2px 2px 0 #000;text-align:center;padding:16px 24px;">${escaped}</p>`
+    case 'white-bar':
+      return `<div style="display:inline-block;background:rgba(0,0,0,0.72);border-radius:12px;padding:10px 28px;"><p style="font-family:Arial;font-size:44px;font-weight:700;color:#FFFFFF;text-align:center;margin:0;">${escaped}</p></div>`
+    default:
+      return `<p style="font-family:Arial;font-size:48px;font-weight:bold;color:white;text-shadow:2px 2px 10px rgba(0,0,0,0.9);text-align:center;padding:20px;">${escaped}</p>`
+  }
+}
+
 export interface RenderInput {
   /** Video clips (B-Roll footage) */
   clips: ShotstackClip[]
@@ -47,6 +72,10 @@ export interface RenderInput {
   resolution?: 'sd' | 'hd' | '1080'
   /** Aspect ratio */
   aspectRatio?: '16:9' | '9:16' | '1:1'
+  /** Caption visual style — defaults to tiktok-bold */
+  captionStyle?: CaptionStyle
+  /** Optional hook text shown at the very start (0–2.5 s) */
+  hookText?: string
   /**
    * Workspace doing the render — lets us pick up the user's BYOK
    * Shotstack key. Optional for backward compatibility; omitting it
@@ -73,15 +102,36 @@ export async function submitRender(input: RenderInput): Promise<
 
   const tracks = []
 
-  // Track 1: Subtitles (top layer)
+  const captionStyle: CaptionStyle = input.captionStyle ?? 'tiktok-bold'
+
+  // Track 1: Hook text (shown at very start, 2.5 s)
+  if (input.hookText) {
+    tracks.push({
+      clips: [
+        {
+          asset: {
+            type: 'html',
+            html: `<p style="font-family:'Arial Black',Arial;font-size:54px;font-weight:900;color:#FFE600;text-shadow:0 0 12px rgba(255,230,0,0.8),2px 2px 0 #000;text-align:center;padding:20px 32px;line-height:1.15;">${escapeHtml(input.hookText)}</p>`,
+            width: 1080,
+            height: 320,
+          },
+          start: 0,
+          length: 2.5,
+          position: 'center',
+        },
+      ],
+    })
+  }
+
+  // Track 2: Subtitles (styled captions)
   if (input.subtitles && input.subtitles.length > 0) {
     tracks.push({
       clips: input.subtitles.map((sub) => ({
         asset: {
           type: 'html',
-          html: `<p style="font-family:Arial;font-size:42px;font-weight:bold;color:white;text-shadow:2px 2px 8px rgba(0,0,0,0.9);text-align:center;padding:20px;">${escapeHtml(sub.text)}</p>`,
+          html: buildCaptionHtml(sub.text, captionStyle),
           width: 1080,
-          height: 200,
+          height: 220,
         },
         start: sub.start,
         length: sub.length,

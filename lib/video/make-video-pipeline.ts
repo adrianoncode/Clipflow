@@ -6,6 +6,7 @@ import {
   submitRender,
   type ShotstackClip,
   type ShotstackSubtitle,
+  type CaptionStyle,
 } from '@/lib/video/shotstack-render'
 import { insertRender } from '@/lib/video/renders/insert-render'
 
@@ -18,6 +19,10 @@ export interface MakeVideoInput {
   clipRange?: { start: number; end: number } | null
   /** Optional background music URL (from trending sounds or Pexels Audio). */
   musicUrl?: string | null
+  /** Visual style for captions — defaults to tiktok-bold */
+  captionStyle?: CaptionStyle
+  /** Optional hook text shown at the start of the video */
+  hookText?: string | null
 }
 
 export type MakeVideoResult =
@@ -92,6 +97,8 @@ export async function makeVideoPipeline(
     subtitles,
     audioUrl: input.musicUrl ?? undefined,
     aspectRatio: input.aspectRatio ?? '9:16',
+    captionStyle: input.captionStyle ?? 'tiktok-bold',
+    hookText: input.hookText ?? undefined,
     resolution: '1080',
   })
 
