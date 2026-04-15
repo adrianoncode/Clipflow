@@ -14,7 +14,7 @@ const groups = [
   {
     label: 'AI',
     items: [
-      { href: '/settings/ai-keys', label: 'AI keys' },
+      { href: '/settings/ai-keys', label: 'API keys' },
       { href: '/settings/brand-voice', label: 'Brand Voice' },
       { href: '/settings/personas', label: 'AI Personas' },
     ],

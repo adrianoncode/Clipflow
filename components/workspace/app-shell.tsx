@@ -77,7 +77,7 @@ export function AppShell({ user: _user, workspaces, currentWorkspaceId, referral
         { href: `/workspace/${currentWorkspaceId}/competitors`, label: 'Competitors', icon: Eye },
         { href: '/settings/personas', label: 'AI Personas', icon: Mic },
         { href: '/settings/brand-voice', label: 'Brand Voice', icon: MessageSquare },
-        { href: '/settings/ai-keys', label: 'AI Keys', icon: Key },
+        { href: '/settings/ai-keys', label: 'API Keys', icon: Key },
       ],
     },
     {
