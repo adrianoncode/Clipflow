@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { FormMessage } from '@/components/ui/form-message'
 import { EditOutputDialog } from '@/components/outputs/edit-output-dialog'
 import { HookVariantsDialog } from '@/components/outputs/hook-variants-dialog'
+import { PublishPanel } from '@/components/outputs/publish-panel'
 import {
   regenerateOutputAction,
   starOutputAction,
@@ -19,6 +20,7 @@ import type { OutputRow } from '@/lib/content/get-outputs'
 interface OutputActionsProps {
   output: OutputRow
   contentId: string
+  hasPublishKey?: boolean
 }
 
 const initialRegenerateState: RegenerateOutputState = {}
@@ -34,10 +36,11 @@ function RegenerateSubmitButton() {
   )
 }
 
-export function OutputActions({ output, contentId }: OutputActionsProps) {
+export function OutputActions({ output, contentId, hasPublishKey = false }: OutputActionsProps) {
   const [editOpen, setEditOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [scheduleOpen, setScheduleOpen] = useState(false)
+  const [publishOpen, setPublishOpen] = useState(false)
   const [starred, setStarred] = useState((output as OutputRow & { is_starred?: boolean }).is_starred ?? false)
   const [regenState, regenFormAction] = useFormState(regenerateOutputAction, initialRegenerateState)
   const [, starFormAction] = useFormState(starOutputAction, initialStarState)
@@ -94,6 +97,15 @@ export function OutputActions({ output, contentId }: OutputActionsProps) {
           {scheduleOpen ? 'Hide schedule' : 'Schedule'}
         </Button>
 
+        <Button
+          variant={publishOpen ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setPublishOpen((s) => !s)}
+          title="Publish to TikTok, Instagram, YouTube, LinkedIn"
+        >
+          {publishOpen ? 'Hide publish' : '↑ Publish'}
+        </Button>
+
         <form
           action={regenFormAction}
           onSubmit={(e) => {
@@ -146,6 +158,20 @@ export function OutputActions({ output, contentId }: OutputActionsProps) {
             <span className="text-xs text-destructive">{scheduleState.error}</span>
           )}
         </form>
+      )}
+
+      {publishOpen && (
+        <PublishPanel
+          workspaceId={output.workspace_id}
+          outputId={output.id}
+          defaultPlatform={output.platform}
+          defaultCaption={
+            ((output.metadata as Record<string, unknown> | null)?.caption as string | undefined) ??
+            output.body?.slice(0, 500) ??
+            ''
+          }
+          hasPublishKey={hasPublishKey}
+        />
       )}
 
       {regenState.ok === false && (

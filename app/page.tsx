@@ -7,6 +7,7 @@ import {
   Gift,
   Layers,
   Mic2,
+  Send,
   TrendingUp,
   Video,
   Wand2,
@@ -359,8 +360,8 @@ function Workflow() {
     },
     {
       n: '03',
-      title: 'Render, schedule, publish',
-      desc: 'Burn captions, add B-Roll, render real MP4s. Schedule or download — one source, everywhere.',
+      title: 'Render, then publish in one click',
+      desc: 'Burn captions, render real MP4s. Then hit Publish — TikTok, Instagram, YouTube, LinkedIn go live simultaneously. Connect Upload-Post once, never copy-paste again.',
       accent: 'text-violet-600',
     },
   ]
@@ -505,6 +506,18 @@ function FeaturesBento() {
                 title="AI Ghostwriter"
                 desc="Topic → full script with hooks, CTA and platform variants. Zero prompt writing."
                 icon={Wand2}
+              />
+            </SpotlightCard>
+          </Reveal>
+
+          <Reveal delay={400}>
+            <SpotlightCard className="h-full rounded-2xl">
+              <BentoCard
+                className="h-full border-violet-100 bg-gradient-to-br from-violet-50 to-white"
+                eyebrow="Publishing"
+                title="One click → all platforms"
+                desc="Connect Upload-Post once. Hit Publish on any output — TikTok, Instagram Reels, YouTube Shorts and LinkedIn go live simultaneously. Your account, your followers, zero copy-paste."
+                icon={Send}
               />
             </SpotlightCard>
           </Reveal>
@@ -826,6 +839,7 @@ function Compare() {
   const rows = [
     { f: 'All 4 platform drafts in parallel', c: true, o: false, k: false },
     { f: 'Burn captions onto video', c: true, o: true, k: true },
+    { f: 'Publish to TikTok/IG/YT/LI in one click', c: true, o: true, k: false },
     { f: 'Brand voice + AI persona', c: true, o: false, k: false },
     { f: 'Virality scoring', c: true, o: true, k: false },
     { f: 'AI B-Roll assembly', c: true, o: 'Beta', k: false },

@@ -28,10 +28,11 @@ interface OutputsGridProps {
   outputs: OutputRow[]
   contentId: string
   workspaceId?: string
+  hasPublishKey?: boolean
   failed?: Array<{ platform: OutputPlatform; error: string }>
 }
 
-export function OutputsGrid({ outputs, contentId, workspaceId, failed = [] }: OutputsGridProps) {
+export function OutputsGrid({ outputs, contentId, workspaceId, hasPublishKey = false, failed = [] }: OutputsGridProps) {
   const byPlatform = new Map<OutputPlatform, OutputRow>()
   for (const output of outputs) {
     byPlatform.set(output.platform, output)
@@ -47,7 +48,7 @@ export function OutputsGrid({ outputs, contentId, workspaceId, failed = [] }: Ou
         const output = byPlatform.get(platform)
         const failure = failedByPlatform.get(platform)
         if (output) {
-          return <OutputCard key={platform} output={output} contentId={contentId} workspaceId={workspaceId} />
+          return <OutputCard key={platform} output={output} contentId={contentId} workspaceId={workspaceId} hasPublishKey={hasPublishKey} />
         }
         if (failure) {
           return (

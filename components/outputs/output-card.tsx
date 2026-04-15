@@ -76,9 +76,10 @@ interface OutputCardProps {
   output: OutputRow
   contentId: string
   workspaceId?: string
+  hasPublishKey?: boolean
 }
 
-export function OutputCard({ output, contentId, workspaceId }: OutputCardProps) {
+export function OutputCard({ output, contentId, workspaceId, hasPublishKey = false }: OutputCardProps) {
   const [openSection, setOpenSection] = useState<SectionKey | null>(null)
   const toggle = (s: SectionKey) => setOpenSection((prev) => (prev === s ? null : s))
 
@@ -103,7 +104,7 @@ export function OutputCard({ output, contentId, workspaceId }: OutputCardProps) 
         </div>
       </CardContent>
       <CardFooter className="flex flex-col items-start gap-3">
-        <OutputActions output={output} contentId={contentId} />
+        <OutputActions output={output} contentId={contentId} hasPublishKey={hasPublishKey} />
         <StateTransitionPills
           outputId={output.id}
           workspaceId={output.workspace_id}

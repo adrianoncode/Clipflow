@@ -25,6 +25,7 @@ import { getReviewCommentsForContent } from '@/lib/review/get-review-comments-fo
 import { listRenders } from '@/lib/video/renders/list-renders'
 import { getPlanFeatures } from '@/lib/billing/plans'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
+import { getAiKeys } from '@/lib/ai/get-ai-keys'
 
 /**
  * `force-dynamic` so we never cache the generated outputs — the route
@@ -59,14 +60,16 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
     redirect(`/workspace/${params.id}/content/${params.contentId}`)
   }
 
-  const [outputs, reviewLinks, reviewComments, renders, plan] = await Promise.all([
+  const [outputs, reviewLinks, reviewComments, renders, plan, aiKeys] = await Promise.all([
     getOutputs(params.contentId, params.id),
     getReviewLinksForContent(params.contentId, params.id),
     getReviewCommentsForContent(params.contentId, params.id),
     listRenders({ workspaceId: params.id, contentId: params.contentId, limit: 12 }),
     getWorkspacePlan(params.id),
+    getAiKeys(params.id),
   ])
   const planFeatures = getPlanFeatures(plan)
+  const hasPublishKey = aiKeys.some((k) => k.provider === 'upload-post')
   const title = item.title ?? 'Untitled'
 
   return (
@@ -111,7 +114,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
         </Card>
       ) : (
         <>
-          <OutputsGrid outputs={outputs} contentId={params.contentId} workspaceId={params.id} />
+          <OutputsGrid outputs={outputs} contentId={params.contentId} workspaceId={params.id} hasPublishKey={hasPublishKey} />
 
           {/* Video Studio — prominent reminder that rendered MP4s are
               the logical next step after text drafts. Sits directly
