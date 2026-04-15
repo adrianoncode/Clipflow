@@ -22,7 +22,8 @@ export async function GET(request: Request) {
   if (!renderId)
     return NextResponse.json({ error: 'Missing render ID' }, { status: 400 })
 
-  const status = await getRenderStatus(renderId)
+  const workspaceId = searchParams.get('workspace_id') ?? undefined
+  const status = await getRenderStatus(renderId, workspaceId)
 
   // Persist terminal states back to the DB — no-op while still rendering.
   if (status.status === 'done') {

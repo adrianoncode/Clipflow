@@ -1,7 +1,7 @@
 'use client'
 
 import { useFormState, useFormStatus } from 'react-dom'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import {
   Check,
@@ -24,6 +24,8 @@ import {
   Square,
   Clock,
   Youtube,
+  Music2,
+  ChevronDown,
 } from 'lucide-react'
 
 import {
@@ -325,54 +327,87 @@ export function RenderStudioClient({
   const [selectedAspect, setSelectedAspect] = useState<'9:16' | '1:1' | '16:9'>('9:16')
   const [selectedStyle, setSelectedStyle] = useState<string>('tiktok-bold')
   const [hookText, setHookText] = useState('')
+  const [musicUrl, setMusicUrl] = useState('')
+  const [showMusicInput, setShowMusicInput] = useState(false)
   const [clonedStyle, setClonedStyle] = useState<StyleAnalysis | null>(null)
 
-  // Renders (with local refresh)
+  // Renders with live per-render polling
   const [renders, setRenders] = useState<RenderRow[]>(initialRenders)
-  const refreshInterval = useRef<ReturnType<typeof setInterval> | null>(null)
+  const pollingRefs = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map())
 
   const [renderState, renderAction] = useFormState<StudioRenderState, FormData>(studioRenderAction, {})
   const [cloneState, cloneAction] = useFormState<StyleCloneState, FormData>(analyzeStyleAction, {})
 
-  // Auto-refresh renders while any are still in "rendering" state
-  useEffect(() => {
-    const hasActive = renders.some((r) => r.status === 'rendering')
-    if (!hasActive) {
-      if (refreshInterval.current) clearInterval(refreshInterval.current)
-      return
-    }
-    refreshInterval.current = setInterval(() => {
-      window.location.reload()
-    }, 12_000) // reload every 12 s while rendering
-    return () => {
-      if (refreshInterval.current) clearInterval(refreshInterval.current)
-    }
-  }, [renders])
+  // Poll a single render every 5 s until it reaches a terminal state
+  const startPolling = useCallback((providerRenderId: string) => {
+    if (pollingRefs.current.has(providerRenderId)) return
+    const timer = setInterval(async () => {
+      try {
+        const res = await fetch(
+          `/api/video/render-status?id=${providerRenderId}&workspace_id=${workspaceId}`,
+        )
+        if (!res.ok) return
+        const data = (await res.json()) as { status: string; url?: string; error?: string }
+        if (data.status === 'done' || data.status === 'failed') {
+          setRenders((prev) =>
+            prev.map((r) =>
+              r.provider_render_id === providerRenderId
+                ? {
+                    ...r,
+                    status: data.status as RenderRow['status'],
+                    url: data.url ?? null,
+                    error: data.error ?? null,
+                  }
+                : r,
+            ),
+          )
+          clearInterval(timer)
+          pollingRefs.current.delete(providerRenderId)
+        }
+      } catch {
+        // network error — will retry on next tick
+      }
+    }, 5_000)
+    pollingRefs.current.set(providerRenderId, timer)
+  }, [workspaceId])
 
-  // When a render succeeds, add the new item to the queue optimistically
+  // Bootstrap polling for any renders that are already "rendering" on mount
+  useEffect(() => {
+    renders.forEach((r) => {
+      if (r.status === 'rendering' && r.provider_render_id) {
+        startPolling(r.provider_render_id)
+      }
+    })
+    return () => {
+      pollingRefs.current.forEach((t) => clearInterval(t))
+      pollingRefs.current.clear()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // When a render submits successfully: add optimistic row + start polling
   useEffect(() => {
     if (renderState.ok === true) {
-      setRenders((prev) => [
-        {
-          id: renderState.renderRowId ?? renderState.renderId,
-          workspace_id: workspaceId,
-          content_id: selectedContentId,
-          kind: 'branded_video',
-          provider: 'shotstack',
-          provider_render_id: renderState.renderId,
-          status: 'rendering',
-          url: null,
-          error: null,
-          metadata: {
-            aspectRatio: selectedAspect,
-            captionStyle: selectedStyle,
-            pipeline: 'one-click',
-          },
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+      const newRow: RenderRow = {
+        id: renderState.renderRowId ?? renderState.renderId,
+        workspace_id: workspaceId,
+        content_id: selectedContentId,
+        kind: 'branded_video',
+        provider: 'shotstack',
+        provider_render_id: renderState.renderId,
+        status: 'rendering',
+        url: null,
+        error: null,
+        metadata: {
+          aspectRatio: selectedAspect,
+          captionStyle: selectedStyle,
+          pipeline: 'one-click',
         },
-        ...prev,
-      ])
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+      setRenders((prev) => [newRow, ...prev])
+      startPolling(renderState.renderId)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [renderState])
@@ -421,7 +456,7 @@ export function RenderStudioClient({
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Link
-                  href={`/workspace/${workspaceId}/settings/ai-keys`}
+                  href="/settings/ai-keys"
                   className="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-amber-700"
                 >
                   <Key className="h-4 w-4" />
@@ -494,6 +529,7 @@ export function RenderStudioClient({
         <input type="hidden" name="aspect_ratio" value={selectedAspect} />
         <input type="hidden" name="caption_style" value={selectedStyle} />
         <input type="hidden" name="hook_text" value={hookText} />
+        <input type="hidden" name="music_url" value={musicUrl} />
 
         {/* ── STEP 1 — Pick video ── */}
         <div className="rounded-2xl border border-border/60 bg-card">
@@ -752,6 +788,69 @@ export function RenderStudioClient({
           </div>
         </div>
 
+        {/* ── Background music (optional, collapsible) ── */}
+        <div
+          className={`overflow-hidden rounded-2xl border border-border/50 bg-card transition-opacity duration-300 ${
+            !step3Ready ? 'pointer-events-none opacity-40' : ''
+          }`}
+        >
+          <button
+            type="button"
+            onClick={() => setShowMusicInput((v) => !v)}
+            className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors hover:bg-accent/20"
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                  musicUrl ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                <Music2 className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">
+                  Background music{' '}
+                  <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                    optional
+                  </span>
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {musicUrl ? 'Custom audio URL set' : 'Add background audio to your render'}
+                </p>
+              </div>
+            </div>
+            <ChevronDown
+              className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+                showMusicInput ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+
+          {showMusicInput && (
+            <div className="border-t border-border/40 px-5 pb-5 pt-4 space-y-2">
+              <input
+                type="url"
+                value={musicUrl}
+                onChange={(e) => setMusicUrl(e.target.value)}
+                placeholder="https://cdn.pixabay.com/audio/..."
+                className="w-full rounded-xl border border-border/60 bg-muted/30 px-4 py-2.5 text-sm placeholder:text-muted-foreground/40 focus:border-primary/40 focus:bg-background focus:outline-none focus:ring-1 focus:ring-primary/20"
+              />
+              <p className="text-xs text-muted-foreground">
+                Direct link to an MP3/WAV file. Fades out at end.{' '}
+                <a
+                  href="https://pixabay.com/music/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-primary underline-offset-2 hover:underline"
+                >
+                  Pixabay Music
+                </a>{' '}
+                has royalty-free tracks.
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* ── STEP 4 — Render ── */}
         <div
           className={`rounded-2xl border border-border/60 bg-card transition-opacity duration-300 ${
@@ -815,7 +914,7 @@ export function RenderStudioClient({
                 <div>
                   <p className="font-semibold text-emerald-800">Render queued!</p>
                   <p className="text-xs text-emerald-700">
-                    Usually ready in ~60 seconds. Auto-refreshing the queue below…
+                    Usually ready in ~60 seconds. The queue below updates live — no refresh needed.
                   </p>
                 </div>
               </div>
@@ -952,7 +1051,7 @@ export function RenderStudioClient({
             <h2 className="text-sm font-semibold">Render Queue</h2>
             <p className="text-xs text-muted-foreground">
               {renders.some((r) => r.status === 'rendering')
-                ? 'Auto-refreshing every 12 s…'
+                ? 'Live polling — updates automatically'
                 : 'Your recent video renders'}
             </p>
           </div>

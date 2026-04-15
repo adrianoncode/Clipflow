@@ -112,6 +112,8 @@ export async function makeVideoPipeline(
     providerRenderId: renderResult.renderId,
     metadata: {
       aspectRatio: input.aspectRatio ?? '9:16',
+      captionStyle: input.captionStyle ?? 'tiktok-bold',
+      hookText: input.hookText ?? null,
       clipStart,
       clipLength,
       hasMusic: Boolean(input.musicUrl),
