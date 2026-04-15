@@ -188,6 +188,15 @@ export async function submitRender(input: RenderInput): Promise<
       ? { width: 1080, height: 1080 }
       : { width: 1920, height: 1080 }
 
+  // Shotstack webhook callback — only set when the app URL + secret are
+  // both configured in the environment (i.e. production deployments).
+  const webhookSecret = process.env.SHOTSTACK_WEBHOOK_SECRET
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL
+  const callbackUrl =
+    appUrl && webhookSecret
+      ? `${appUrl}/api/webhooks/shotstack?secret=${webhookSecret}`
+      : undefined
+
   const body = {
     timeline: {
       tracks,
@@ -198,6 +207,7 @@ export async function submitRender(input: RenderInput): Promise<
       format: 'mp4',
       resolution: input.resolution ?? 'hd',
       size: outputSize,
+      ...(callbackUrl ? { callback: callbackUrl } : {}),
     },
   }
 

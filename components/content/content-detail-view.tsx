@@ -6,6 +6,7 @@ import {
   Sparkles,
   Globe,
   Scissors,
+  Play,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -192,6 +193,27 @@ export function ContentDetailView({
             <p className="text-xs text-muted-foreground">
               Produces TikTok, Reels, Shorts, and LinkedIn drafts in one pass.
             </p>
+          )}
+
+          {/* One-click Studio shortcut for video/youtube items */}
+          {(item.kind === 'video' || item.kind === 'youtube') && (
+            <Link
+              href={`/workspace/${workspaceId}/studio?content_id=${item.id}`}
+              className="group flex w-full items-center justify-between rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/[0.06] to-background px-5 py-4 transition-all hover:border-primary/50 hover:bg-primary/[0.08] hover:shadow-sm"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
+                  <Play className="h-4 w-4 fill-current text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Render in Video Studio</p>
+                  <p className="text-xs text-muted-foreground">
+                    AI captions + reframe → ready-to-post MP4 in ~60 s
+                  </p>
+                </div>
+              </div>
+              <Clapperboard className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary/60" />
+            </Link>
           )}
 
           {/* Video Studio — was "AI Tools" but that hid the fact that

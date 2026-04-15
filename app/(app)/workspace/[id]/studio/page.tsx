@@ -14,7 +14,13 @@ import { RenderStudioClient } from '@/components/studio/render-studio-client'
 export const metadata = { title: 'Video Studio' }
 export const dynamic = 'force-dynamic'
 
-export default async function StudioPage({ params }: { params: { id: string } }) {
+export default async function StudioPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams: { content_id?: string }
+}) {
   const user = await getUser()
   if (!user) redirect('/login')
 
@@ -62,6 +68,7 @@ export default async function StudioPage({ params }: { params: { id: string } })
           contentItems={contentItems}
           recentRenders={recentRenders}
           hasShotstackKey={!!shotstackKey}
+          defaultContentId={searchParams.content_id}
         />
       </UpgradeGate>
     </div>

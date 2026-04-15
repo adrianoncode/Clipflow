@@ -309,6 +309,7 @@ interface Props {
   contentItems: ContentItemListRow[]
   recentRenders: RenderRow[]
   hasShotstackKey: boolean
+  defaultContentId?: string
 }
 
 export function RenderStudioClient({
@@ -316,13 +317,18 @@ export function RenderStudioClient({
   contentItems,
   recentRenders: initialRenders,
   hasShotstackKey,
+  defaultContentId,
 }: Props) {
   const videoItems = contentItems.filter(
     (c) => c.status === 'ready' && (c.kind === 'video' || c.kind === 'youtube'),
   )
 
-  // Form state
-  const [selectedContentId, setSelectedContentId] = useState(videoItems[0]?.id ?? '')
+  // Form state — prefer URL-provided content_id, then first ready video
+  const initialContentId =
+    (defaultContentId && videoItems.find((v) => v.id === defaultContentId)?.id) ??
+    videoItems[0]?.id ??
+    ''
+  const [selectedContentId, setSelectedContentId] = useState(initialContentId)
   const [selectedPlatformLabel, setSelectedPlatformLabel] = useState<string>('TikTok')
   const [selectedAspect, setSelectedAspect] = useState<'9:16' | '1:1' | '16:9'>('9:16')
   const [selectedStyle, setSelectedStyle] = useState<string>('tiktok-bold')
