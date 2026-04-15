@@ -203,7 +203,6 @@ export function AppShell({
               <div className="flex flex-col gap-0.5">
                 {workflowItems.map((item, i) => {
                   const active = isActive(item.href)
-                  const Icon = item.icon
                   return (
                     <Link
                       key={item.href}

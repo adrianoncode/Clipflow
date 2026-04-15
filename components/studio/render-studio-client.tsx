@@ -384,9 +384,11 @@ export function RenderStudioClient({
         startPolling(r.provider_render_id)
       }
     })
+    // Capture the ref map at effect time for stable cleanup
+    const timers = pollingRefs.current
     return () => {
-      pollingRefs.current.forEach((t) => clearInterval(t))
-      pollingRefs.current.clear()
+      timers.forEach((t) => clearInterval(t))
+      timers.clear()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

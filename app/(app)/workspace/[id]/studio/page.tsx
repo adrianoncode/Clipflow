@@ -32,7 +32,7 @@ export default async function StudioPage({
   ])
 
   const planDef = PLANS[plan ?? 'free']
-  const canRender = planDef.limits.videoRendersPerMonth !== 0
+  const _canRender = planDef.limits.videoRendersPerMonth !== 0
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">

@@ -20,7 +20,7 @@ export default async function CompetitorsPage({ params }: PageProps) {
 
   const plan = await getWorkspacePlan(params.id)
   const planDef = PLANS[plan ?? 'free']
-  const canAnalyze = planDef.features.competitorAnalysis && planDef.limits.competitorAnalysesPerMonth !== 0
+  const _canAnalyze = planDef.features.competitorAnalysis && planDef.limits.competitorAnalysesPerMonth !== 0
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
