@@ -8,7 +8,13 @@ import { ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { FormMessage } from '@/components/ui/form-message'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import {
   saveIntegrationAction,
   disconnectIntegrationAction,
@@ -89,7 +95,8 @@ const FIELDS: Record<string, FieldDef[]> = {
       label: 'Application Password',
       placeholder: 'xxxx xxxx xxxx xxxx',
       type: 'password',
-      helpUrl: 'https://make.wordpress.org/core/2020/11/05/application-passwords-integration-guide/',
+      helpUrl:
+        'https://make.wordpress.org/core/2020/11/05/application-passwords-integration-guide/',
       helpLabel: 'How to create an Application Password',
     },
   ],
@@ -136,6 +143,112 @@ const MANAGED_DOCS: Record<string, string> = {
   make: 'https://www.make.com/en/help/tools/webhooks',
 }
 
+// ── Inner form component (uses useFormState inside Dialog) ─────────────────
+
+function ConnectForm({
+  integrationId,
+  integrationName,
+  workspaceId,
+  connectionType,
+  onClose,
+}: {
+  integrationId: string
+  integrationName: string
+  workspaceId: string
+  connectionType: ConnectionType
+  onClose: () => void
+}) {
+  const [saveState, saveAction] = useFormState(
+    saveIntegrationAction,
+    {} as ConnectState,
+  )
+
+  const fields = FIELDS[integrationId] ?? []
+
+  return (
+    <div className="space-y-4">
+      {/* Context */}
+      <div className="rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground">
+        {connectionType === 'webhook' ? (
+          <>
+            Create a webhook in{' '}
+            <span className="font-semibold text-foreground">{integrationName}</span> and paste the
+            URL below.
+          </>
+        ) : (
+          <>
+            Paste your <span className="font-semibold text-foreground">{integrationName}</span> API
+            key below. You&apos;ll find it in their settings or developer portal.
+          </>
+        )}
+      </div>
+
+      <form action={saveAction} className="space-y-3">
+        <input type="hidden" name="workspace_id" value={workspaceId} />
+        <input type="hidden" name="integration_id" value={integrationId} />
+
+        {fields.map((field) => (
+          <div key={field.name} className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor={`${integrationId}-${field.name}`} className="text-xs">
+                {field.label}
+              </Label>
+              {field.helpUrl && (
+                <a
+                  href={field.helpUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-0.5 text-[10px] text-primary hover:underline"
+                >
+                  {field.helpLabel ?? 'How to get this?'}
+                  <ExternalLink className="h-2.5 w-2.5" />
+                </a>
+              )}
+            </div>
+            <Input
+              id={`${integrationId}-${field.name}`}
+              name={`config_${field.name}`}
+              type={field.type ?? 'text'}
+              placeholder={field.placeholder}
+              required
+              className="h-8 text-xs"
+              autoComplete="off"
+            />
+          </div>
+        ))}
+
+        {saveState.ok === false && (
+          <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            {saveState.error}
+          </p>
+        )}
+        {saveState.ok === true && (
+          <p className="rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+            ✓ Connected successfully!
+          </p>
+        )}
+
+        <div className="flex gap-2 pt-1">
+          <Button type="submit" size="sm" className="h-8 text-xs">
+            Save
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 text-xs"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
+// ── Main component ──────────────────────────────────────────────────────────
+
 export function ConnectDialog({
   integrationId,
   integrationName,
@@ -143,15 +256,17 @@ export function ConnectDialog({
   isConnected,
   connectionType,
 }: ConnectDialogProps) {
-  const [formOpen, setFormOpen] = useState(false)
-  const [saveState, saveAction] = useFormState(saveIntegrationAction, {} as ConnectState)
-  const [, disconnectAction] = useFormState(disconnectIntegrationAction, {} as ConnectState)
+  const [open, setOpen] = useState(false)
+  const [, disconnectAction] = useFormState(
+    disconnectIntegrationAction,
+    {} as ConnectState,
+  )
 
   // ── OAuth (Composio) ──────────────────────────────────────────
   if (connectionType === 'oauth' && OAUTH_IDS.includes(integrationId)) {
     if (isConnected) {
       return (
-        <form action={disconnectAction} className="flex items-center gap-1.5">
+        <form action={disconnectAction}>
           <input type="hidden" name="workspace_id" value={workspaceId} />
           <input type="hidden" name="integration_id" value={integrationId} />
           <button
@@ -190,111 +305,56 @@ export function ConnectDialog({
     )
   }
 
-  // ── Webhook / API key — form-based ────────────────────────────
-  const fields = FIELDS[integrationId] ?? []
-
-  if (isConnected && !formOpen) {
-    return (
-      <div className="flex gap-1.5">
-        <button
-          onClick={() => setFormOpen(true)}
-          className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent"
-        >
-          Edit
-        </button>
-        <form action={disconnectAction}>
-          <input type="hidden" name="workspace_id" value={workspaceId} />
-          <input type="hidden" name="integration_id" value={integrationId} />
-          <button
-            type="submit"
-            className="rounded-lg px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"
-          >
-            Disconnect
-          </button>
-        </form>
-      </div>
-    )
-  }
-
-  if (!formOpen) {
-    return (
-      <button
-        onClick={() => setFormOpen(true)}
-        className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-      >
-        Connect
-      </button>
-    )
-  }
-
-  // Form open
+  // ── Webhook / API key — modal form ────────────────────────────
   return (
-    <div className="mt-3 w-full border-t border-border/50 pt-4">
-      {/* Context — what you need and where to get it */}
-      <div className="mb-3 rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground">
-        <p className="font-semibold text-foreground">
-          {connectionType === 'webhook'
-            ? `Create a webhook in ${integrationName} and paste the URL below.`
-            : `Paste your ${integrationName} API key below. Found in their settings.`}
-        </p>
-      </div>
-
-      <form action={saveAction} className="space-y-3">
-        <input type="hidden" name="workspace_id" value={workspaceId} />
-        <input type="hidden" name="integration_id" value={integrationId} />
-
-        {fields.map((field) => (
-          <div key={field.name} className="space-y-1">
-            <div className="flex items-center justify-between">
-              <Label htmlFor={`${integrationId}-${field.name}`} className="text-xs">
-                {field.label}
-              </Label>
-              {field.helpUrl && (
-                <a
-                  href={field.helpUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-0.5 text-[10px] text-primary hover:underline"
-                >
-                  {field.helpLabel ?? 'How to get this?'}
-                  <ExternalLink className="h-2.5 w-2.5" />
-                </a>
-              )}
-            </div>
-            <Input
-              id={`${integrationId}-${field.name}`}
-              name={`config_${field.name}`}
-              type={field.type ?? 'text'}
-              placeholder={field.placeholder}
-              required
-              className="h-8 text-xs"
-              autoComplete="off"
-            />
-          </div>
-        ))}
-
-        {saveState.ok === false && (
-          <FormMessage variant="error">{saveState.error}</FormMessage>
-        )}
-        {saveState.ok === true && (
-          <FormMessage variant="success">Connected successfully!</FormMessage>
-        )}
-
-        <div className="flex gap-2">
-          <Button type="submit" size="sm" className="h-8 text-xs">
-            Save
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 text-xs"
-            onClick={() => setFormOpen(false)}
+    <>
+      {isConnected ? (
+        <div className="flex gap-1.5">
+          <button
+            onClick={() => setOpen(true)}
+            className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent"
           >
-            Cancel
-          </Button>
+            Edit
+          </button>
+          <form action={disconnectAction}>
+            <input type="hidden" name="workspace_id" value={workspaceId} />
+            <input type="hidden" name="integration_id" value={integrationId} />
+            <button
+              type="submit"
+              className="rounded-lg px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"
+            >
+              Disconnect
+            </button>
+          </form>
         </div>
-      </form>
-    </div>
+      ) : (
+        <button
+          onClick={() => setOpen(true)}
+          className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        >
+          Connect
+        </button>
+      )}
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Connect {integrationName}</DialogTitle>
+            <DialogDescription>
+              {connectionType === 'webhook'
+                ? `Set up a webhook from ${integrationName} to receive notifications.`
+                : `Enter your ${integrationName} credentials to enable the integration.`}
+            </DialogDescription>
+          </DialogHeader>
+          <ConnectForm
+            integrationId={integrationId}
+            integrationName={integrationName}
+            workspaceId={workspaceId}
+            connectionType={connectionType}
+            onClose={() => setOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

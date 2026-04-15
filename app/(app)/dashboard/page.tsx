@@ -1,42 +1,41 @@
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import {
+  ArrowRight,
   CheckCircle2,
   ChevronRight,
+  Clock,
   FileText,
   Globe,
+  KeyRound,
   Layers,
+  Lock,
+  Mic,
   Rss,
+  Send,
   Star,
   TrendingUp,
+  Upload,
   Video,
+  Wand2,
   Youtube,
+  Zap,
 } from 'lucide-react'
 
-import { Card, CardContent } from '@/components/ui/card'
-import { ApiKeysBanner } from '@/components/dashboard/api-keys-banner'
-import { GettingStartedChecklist } from '@/components/dashboard/getting-started-checklist'
-import { ReferralHeroStat } from '@/components/dashboard/referral-hero-stat'
 import { Sparkline } from '@/components/dashboard/sparkline'
 import { ContentStatusBadge } from '@/components/content/content-status-badge'
-import { RecycleSuggestions } from '@/components/content/recycle-suggestions'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getActiveBrandVoice } from '@/lib/brand-voice/get-active-brand-voice'
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getWorkspaceUsage } from '@/lib/billing/get-usage'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
-import { PLANS } from '@/lib/billing/plans'
+import { PLANS, type BillingPlan } from '@/lib/billing/plans'
 import { getWorkspaceStats } from '@/lib/dashboard/get-workspace-stats'
-import { getRecyclableContent } from '@/lib/content/get-recyclable-content'
-import { getReferralStats } from '@/lib/referrals/get-stats'
-import { SERVICE_DIRECTORY } from '@/components/ai-keys/service-directory'
+// import { getRecyclableContent } from '@/lib/content/get-recyclable-content'
 
 export const dynamic = 'force-dynamic'
-
-export const metadata = {
-  title: 'Dashboard',
-}
+export const metadata = { title: 'Dashboard' }
 
 const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
 
@@ -55,578 +54,732 @@ const PLATFORM_LABELS: Record<string, string> = {
   linkedin: 'LinkedIn',
 }
 
-// Single-color app: every platform uses the primary violet, bars are
-// distinguished by width alone. No rainbow.
-const PLATFORM_BAR_CLASS = 'bg-primary'
-
-const PIPELINE_DOT_COLORS: Record<string, string> = {
+const PIPELINE_DOT: Record<string, string> = {
   draft: 'bg-zinc-400',
   review: 'bg-amber-400',
   approved: 'bg-emerald-400',
   exported: 'bg-blue-400',
 }
 
-const PIPELINE_LABELS: Record<string, string> = {
-  draft: 'Draft',
-  review: 'Review',
-  approved: 'Approved',
-  exported: 'Exported',
+function formatRelative(iso: string): string {
+  try {
+    const diff = Date.now() - new Date(iso).getTime()
+    const min = Math.round(diff / 60_000)
+    if (min < 1) return 'just now'
+    if (min < 60) return `${min}m ago`
+    const h = Math.round(min / 60)
+    if (h < 24) return `${h}h ago`
+    return `${Math.round(h / 24)}d ago`
+  } catch {
+    return iso
+  }
 }
 
-
 function UsageBar({ used, limit }: { used: number; limit: number }) {
-  if (limit === -1) {
+  if (limit === -1)
     return (
       <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
-        <div className="h-full w-full rounded-full bg-primary/30" />
+        <div className="h-full w-1/3 rounded-full bg-primary/30" />
       </div>
     )
-  }
   const pct = Math.min(100, Math.round((used / limit) * 100))
-  // Single-color rule: usage pressure shown via opacity darkening, not
-  // by switching to amber/red. Destructive state at >= 100 % only.
-  const color = pct >= 100 ? 'bg-destructive' : 'bg-primary'
   return (
     <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
       <div
-        className={`h-full rounded-full transition-all duration-500 ${color}`}
+        className={`h-full rounded-full transition-all duration-500 ${pct >= 100 ? 'bg-destructive' : 'bg-primary'}`}
         style={{ width: `${pct}%` }}
       />
     </div>
   )
 }
 
-function formatRelative(iso: string): string {
-  try {
-    const diff = Date.now() - new Date(iso).getTime()
-    const minutes = Math.round(diff / 60_000)
-    if (minutes < 1) return 'just now'
-    if (minutes < 60) return `${minutes} min ago`
-    const hours = Math.round(minutes / 60)
-    if (hours < 24) return `${hours} h ago`
-    const days = Math.round(hours / 24)
-    if (days < 7) return `${days} d ago`
-    return new Date(iso).toLocaleDateString()
-  } catch {
-    return iso
-  }
-}
-
 export default async function DashboardPage() {
   const [user, workspaces] = await Promise.all([getUser(), getWorkspaces()])
   const fullName =
-    typeof user?.user_metadata?.full_name === 'string'
-      ? user.user_metadata.full_name
-      : null
-  const displayName = fullName ?? user?.email ?? 'there'
+    typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : null
+  const firstName = (fullName ?? user?.email ?? 'there').split(/[\s@]/)[0] ?? 'there'
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   const cookieWorkspaceId = cookies().get(CURRENT_WORKSPACE_COOKIE)?.value
   const personal = workspaces.find((w) => w.type === 'personal')
-  const currentWorkspace =
-    workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal ?? workspaces[0]
+  const workspace = workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal ?? workspaces[0]
 
-  const [aiKeys, stats, usage, plan, brandVoice, recyclable, referralStats] = currentWorkspace && user
-    ? await Promise.all([
-        getAiKeys(currentWorkspace.id),
-        getWorkspaceStats(currentWorkspace.id),
-        getWorkspaceUsage(currentWorkspace.id),
-        getWorkspacePlan(currentWorkspace.id),
-        getActiveBrandVoice(currentWorkspace.id),
-        getRecyclableContent(currentWorkspace.id),
-        getReferralStats(user.id),
-      ])
-    : [[], null, null, 'free' as const, null, [], { pending: 0, confirmed: 0 }]
+  const [aiKeys, stats, usage, plan, brandVoice] =
+    workspace && user
+      ? await Promise.all([
+          getAiKeys(workspace.id),
+          getWorkspaceStats(workspace.id),
+          getWorkspaceUsage(workspace.id),
+          getWorkspacePlan(workspace.id),
+          getActiveBrandVoice(workspace.id),
+        ])
+      : [[], null, null, 'free' as const, null]
 
   const planDef = PLANS[plan ?? 'free']
+  const hasLlm = aiKeys.some((k) => ['openai', 'anthropic', 'google'].includes(k.provider))
 
-  const maxPlatformCount = stats
-    ? Math.max(...Object.values(stats.outputsByPlatform), 1)
-    : 1
+  // Determine state for smart next-action card
+  const pendingReview = stats?.pipelineByState.review ?? 0
+  const processing = stats?.recentContent.find((c) => c.status === 'processing')
+  const readyContent = stats?.recentContent.find((c) => c.status === 'ready')
+  const isEmpty = (stats?.totalContent ?? 0) === 0
+  const maxPlatformCount = stats ? Math.max(...Object.values(stats.outputsByPlatform), 1) : 1
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
-      {/* Header — greeting + a short context summary + single primary
-          action. The date row adds a subtle "at-a-glance" signal that
-          the page is live data, not stale. */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1">
+    <div className="mx-auto w-full max-w-5xl space-y-5 p-4 sm:p-8">
+
+      {/* ── Header ─────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
             {new Date().toLocaleDateString(undefined, {
-              weekday: 'short',
-              month: 'short',
+              weekday: 'long',
+              month: 'long',
               day: 'numeric',
             })}
           </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-            {greeting}, {displayName.split(' ')[0] ?? displayName}
+          <h1 className="mt-0.5 text-2xl font-semibold tracking-tight sm:text-3xl">
+            {greeting}, {firstName}
           </h1>
-          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <span className="truncate">
-              {currentWorkspace ? currentWorkspace.name : ''}
-            </span>
-            <span className="text-muted-foreground/40">·</span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
-              {planDef.name} plan
+          <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+            {workspace?.name && <span>{workspace.name}</span>}
+            <span className="text-muted-foreground/30">·</span>
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+              {planDef.name}
             </span>
           </div>
         </div>
-        {currentWorkspace ? (
+        {workspace && (
           <Link
-            href={`/workspace/${currentWorkspace.id}/content/new`}
-            className="group inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary pl-4 pr-3 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/30"
+            href={`/workspace/${workspace.id}/content/new`}
+            className="group inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-primary pl-4 pr-3 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md"
           >
-            <span className="text-base leading-none">+</span>
+            <span className="text-lg leading-none">+</span>
             New content
-            <kbd className="ml-1 hidden rounded border border-white/20 bg-white/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-white/80 sm:inline-block">
-              ⌘N
-            </kbd>
           </Link>
-        ) : null}
+        )}
       </div>
 
-      {/* Banners — connected-services nudge. Shows until the workspace
-          has all 6 keys; copy hardens when no LLM is connected yet. */}
-      {currentWorkspace ? (
-        <ApiKeysBanner
-          connectedCount={new Set(aiKeys.map((k) => k.provider)).size}
-          totalCount={SERVICE_DIRECTORY.length}
-          hasLlm={aiKeys.some((k) =>
-            ['openai', 'anthropic', 'google'].includes(k.provider),
+      {/* ══════════════════════════════════════════════════════════════
+          PLAN UPGRADE CARD — shown for free & solo users
+          Highlights what they're missing + one-click upgrade CTA.
+      ══════════════════════════════════════════════════════════════ */}
+      {workspace && plan !== 'team' && plan !== 'agency' && (() => {
+        type FeatureLock = { label: string; plan: BillingPlan }
+        const locked: FeatureLock[] = []
+        if (planDef.limits.videoRendersPerMonth === 0)
+          locked.push({ label: 'Video Reframe & Rendering', plan: 'solo' })
+        if (planDef.limits.avatarVideosPerMonth === 0)
+          locked.push({ label: 'AI Avatar Videos', plan: 'solo' })
+        if (planDef.limits.dubVideosPerMonth === 0)
+          locked.push({ label: 'Voice Dubbing (ElevenLabs)', plan: 'team' })
+        if (!planDef.features.trendingSounds)
+          locked.push({ label: 'Trending Sounds', plan: 'solo' })
+        if (!planDef.features.competitorAnalysis)
+          locked.push({ label: 'Competitor Analysis', plan: 'solo' })
+        if (!planDef.features.backgroundMusic)
+          locked.push({ label: 'Background Music', plan: 'solo' })
+
+        const nextPlan: BillingPlan = plan === 'free' ? 'solo' : 'team'
+        const nextPlanName = nextPlan === 'solo' ? 'Solo' : 'Team'
+        const nextPlanPrice = nextPlan === 'solo' ? '$19/mo' : '$49/mo'
+
+        return (
+          <div className="overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background">
+            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:justify-between">
+              {/* Left: current plan + locked features */}
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
+                    {planDef.name} Plan
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    — upgrade to unlock more
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                  {locked.slice(0, 4).map((f) => (
+                    <div key={f.label} className="flex items-center gap-2">
+                      <Lock className="h-3 w-3 shrink-0 text-muted-foreground/50" />
+                      <span className="text-xs text-muted-foreground">{f.label}</span>
+                      <span className="ml-auto rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">
+                        {f.plan === 'solo' ? 'Solo' : 'Team'}+
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right: CTA */}
+              <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+                <Link
+                  href={`/billing?workspace_id=${workspace.id}&plan=${nextPlan}`}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
+                >
+                  <Zap className="h-4 w-4" />
+                  Upgrade to {nextPlanName}
+                </Link>
+                <p className="text-xs text-muted-foreground">
+                  {nextPlanPrice} · cancel anytime
+                </p>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* ══════════════════════════════════════════════════════════════
+          EMPTY STATE — No content yet, has LLM key
+          Show a clear 4-step workflow so the user knows exactly
+          what Clipflow does and what to do first.
+      ══════════════════════════════════════════════════════════════ */}
+      {isEmpty && hasLlm && workspace && (
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+          {/* How it works header */}
+          <div className="border-b border-border/50 px-6 py-4">
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              How Clipflow works
+            </p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Four steps from raw video to published content — AI handles the heavy lifting.
+            </p>
+          </div>
+
+          {/* 4-step workflow */}
+          <div className="grid grid-cols-2 divide-x divide-y divide-border/50 sm:grid-cols-4 sm:divide-y-0">
+            {[
+              {
+                step: '1',
+                icon: Upload,
+                title: 'Import',
+                desc: 'Paste a YouTube link, upload an MP4, or drop a transcript.',
+                color: 'bg-violet-50 text-violet-600',
+              },
+              {
+                step: '2',
+                icon: Wand2,
+                title: 'Generate',
+                desc: 'AI writes TikTok, LinkedIn, Reels, and Shorts drafts in seconds.',
+                color: 'bg-primary/10 text-primary',
+              },
+              {
+                step: '3',
+                icon: CheckCircle2,
+                title: 'Review',
+                desc: 'Edit drafts, approve your favourites, star the best ones.',
+                color: 'bg-emerald-50 text-emerald-600',
+              },
+              {
+                step: '4',
+                icon: Send,
+                title: 'Publish',
+                desc: 'Post to TikTok, LinkedIn, Reels & Shorts via Upload-Post.',
+                color: 'bg-blue-50 text-blue-600',
+              },
+            ].map(({ step, icon: Icon, title, desc, color }) => (
+              <div key={step} className="flex flex-col gap-3 p-5">
+                <div className="flex items-center gap-2">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${color}`}>
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <span className="font-mono text-[10px] text-muted-foreground/50">
+                    Step {step}
+                  </span>
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">{title}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="border-t border-border/50 px-6 py-4">
+            <Link
+              href={`/workspace/${workspace.id}/content/new`}
+              className="group inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md"
+            >
+              Start: Import your first video
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            <p className="mt-2 text-xs text-muted-foreground">
+              YouTube link, MP4, or plain text transcript — all work.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════
+          NO LLM KEY — Critical blocker
+      ══════════════════════════════════════════════════════════════ */}
+      {!hasLlm && (
+        <Link
+          href="/settings/ai-keys"
+          className="group flex items-center gap-4 rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 via-background to-background p-5 transition-all hover:-translate-y-0.5 hover:shadow-md"
+        >
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 ring-1 ring-amber-200">
+            <KeyRound className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold">Add an AI key to start generating content</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              OpenAI, Anthropic, or Google — each offers free credits at signup. Takes 1 minute.
+            </p>
+          </div>
+          <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1" />
+        </Link>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════
+          SETUP CHECKLIST — show until brand voice + 1st output done
+          Compact 4-step row, collapses once fully complete
+      ══════════════════════════════════════════════════════════════ */}
+      {workspace && (() => {
+        const steps = [
+          {
+            id: 'key',
+            label: 'Add AI key',
+            hint: 'OpenAI, Anthropic or Google',
+            done: hasLlm,
+            href: '/settings/ai-keys',
+            icon: KeyRound,
+          },
+          {
+            id: 'brand',
+            label: 'Set brand voice',
+            hint: 'Tone, style, audience',
+            done: !!brandVoice,
+            href: '/settings/brand-voice',
+            icon: Mic,
+          },
+          {
+            id: 'content',
+            label: 'Import content',
+            hint: 'Video, YouTube, transcript',
+            done: (stats?.totalContent ?? 0) > 0,
+            href: `/workspace/${workspace.id}/content/new`,
+            icon: Upload,
+          },
+          {
+            id: 'outputs',
+            label: 'Generate outputs',
+            hint: 'TikTok, LinkedIn, Reels…',
+            done: (stats?.totalOutputs ?? 0) > 0,
+            href: `/workspace/${workspace.id}`,
+            icon: Wand2,
+          },
+        ]
+        const done = steps.filter((s) => s.done).length
+        if (done === steps.length) return null // Hide when all done
+
+        const nextIdx = steps.findIndex((s) => !s.done)
+
+        return (
+          <div className="rounded-xl border border-border/60 bg-card p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-semibold">
+                Setup — {done} of {steps.length} done
+              </p>
+              <div className="flex gap-1">
+                {steps.map((s) => (
+                  <span
+                    key={s.id}
+                    className={`h-1.5 w-6 rounded-full transition-colors ${s.done ? 'bg-primary' : 'bg-border'}`}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {steps.map((step, i) => {
+                const Icon = step.icon
+                const isCurrent = i === nextIdx
+                return (
+                  <Link
+                    key={step.id}
+                    href={step.href}
+                    className={`flex flex-col gap-2.5 rounded-lg border p-3 transition-all ${
+                      step.done
+                        ? 'pointer-events-none border-emerald-200/60 bg-emerald-50/30 opacity-60'
+                        : isCurrent
+                          ? 'border-primary/30 bg-primary/5 hover:border-primary/50 hover:bg-primary/8 hover:-translate-y-0.5'
+                          : 'border-border/40 bg-muted/20 opacity-50 hover:opacity-70'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div
+                        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                          step.done
+                            ? 'bg-emerald-500 text-white'
+                            : isCurrent
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted text-muted-foreground'
+                        }`}
+                      >
+                        {step.done ? '✓' : i + 1}
+                      </div>
+                      {isCurrent && (
+                        <Icon className="h-4 w-4 text-primary" />
+                      )}
+                    </div>
+                    <div>
+                      <p
+                        className={`text-xs font-semibold leading-tight ${step.done ? 'text-muted-foreground line-through' : 'text-foreground'}`}
+                      >
+                        {step.label}
+                      </p>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">{step.hint}</p>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* ══════════════════════════════════════════════════════════════
+          SMART NEXT ACTION — one card, dynamic based on state
+      ══════════════════════════════════════════════════════════════ */}
+      {workspace && hasLlm && !isEmpty && (
+        <>
+          {/* Something is processing */}
+          {processing && (
+            <div className="flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                <Clock className="h-5 w-5 animate-pulse" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">
+                  &ldquo;{processing.title ?? 'Content'}&rdquo; is being processed
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Usually takes 1–3 minutes. You&apos;ll see it appear in your recent work below
+                  when it&apos;s ready.
+                </p>
+              </div>
+              <Link
+                href={`/workspace/${workspace.id}/content/${processing.id}`}
+                className="shrink-0 text-xs font-medium text-primary hover:underline"
+              >
+                Check →
+              </Link>
+            </div>
           )}
-        />
-      ) : null}
 
-      {/* Referral achievement — shown only when user has paid conversions. */}
-      <ReferralHeroStat
-        confirmedCount={referralStats.confirmed}
-        pendingCount={referralStats.pending}
-        currentPlan={plan ?? 'free'}
-        monthlyBaseCents={planDef.monthlyPrice}
-      />
+          {/* Outputs waiting for review */}
+          {!processing && pendingReview > 0 && (
+            <Link
+              href={`/workspace/${workspace.id}/pipeline`}
+              className="group flex items-center gap-4 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 via-background to-background p-5 transition-all hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">
+                  {pendingReview} draft{pendingReview !== 1 ? 's' : ''} waiting for your review
+                </p>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  Open the Pipeline to approve, edit, or star your best outputs before publishing.
+                </p>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-transform group-hover:translate-x-0.5">
+                Review now
+                <ArrowRight className="h-3.5 w-3.5" />
+              </span>
+            </Link>
+          )}
 
-      {currentWorkspace && stats ? (
-        <GettingStartedChecklist
-          workspaceId={currentWorkspace.id}
-          hasAiKey={aiKeys.length > 0}
-          hasContent={stats.totalContent > 0}
-          hasOutputs={stats.totalOutputs > 0}
-          hasBrandVoice={!!brandVoice}
-        />
-      ) : null}
+          {/* Content ready — view outputs */}
+          {!processing && pendingReview === 0 && readyContent && (
+            <Link
+              href={`/workspace/${workspace.id}/content/${readyContent.id}/outputs`}
+              className="group flex items-center gap-4 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 via-background to-background p-5 transition-all hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
+                <Wand2 className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">
+                  &ldquo;{readyContent.title ?? 'Content'}&rdquo; is ready
+                </p>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  Your AI-generated drafts are ready. Review and edit before approving.
+                </p>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-transform group-hover:translate-x-0.5">
+                View outputs
+                <ArrowRight className="h-3.5 w-3.5" />
+              </span>
+            </Link>
+          )}
+        </>
+      )}
 
-      {/* Data masthead — editorial stat row with 7-day sparklines per
-          metric. The sparklines make the whole thing feel alive rather
-          than static — this is the main thing lifting it out of
-          "generic dashboard" territory. */}
-      {stats && (
+      {/* ══════════════════════════════════════════════════════════════
+          STATS ROW — only shown when user has data
+      ══════════════════════════════════════════════════════════════ */}
+      {stats && stats.totalContent > 0 && (
         <div className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="grid grid-cols-2 divide-y divide-border/50 sm:grid-cols-4 sm:divide-x sm:divide-y-0">
-            {([
+            {[
               {
                 key: 'content',
-                label: 'Content',
+                label: 'Videos',
                 value: stats.totalContent,
                 delta: stats.contentThisMonth,
-                icon: FileText,
+                icon: Video,
                 spark: stats.contentByDay,
+                href: workspace ? `/workspace/${workspace.id}` : '#',
+                hint: 'imported',
               },
               {
                 key: 'outputs',
-                label: 'Outputs',
+                label: 'Drafts',
                 value: stats.totalOutputs,
                 delta: stats.outputsThisMonth,
                 icon: Layers,
                 spark: stats.outputsByDay,
+                href: workspace ? `/workspace/${workspace.id}/pipeline` : '#',
+                hint: 'generated',
               },
               {
                 key: 'starred',
                 label: 'Starred',
                 value: stats.starredOutputs,
-                delta: 0,
                 icon: Star,
                 spark: null,
+                href: workspace ? `/workspace/${workspace.id}/pipeline` : '#',
+                hint: 'favourites',
               },
               {
                 key: 'approved',
                 label: 'Approved',
                 value: stats.approvedOutputs,
-                delta: 0,
                 icon: CheckCircle2,
                 spark: null,
+                href: workspace ? `/workspace/${workspace.id}/pipeline` : '#',
+                hint: 'ready to publish',
               },
-            ] as const).map((m) => (
-              <div key={m.key} className="group relative flex flex-col justify-between gap-4 px-5 py-5">
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <m.icon className="h-3 w-3 text-muted-foreground/60" />
-                    <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                      {m.label}
-                    </span>
-                  </div>
-                  <div className="mt-2 flex items-baseline gap-2">
-                    <span className="font-mono text-3xl font-semibold tabular-nums tracking-tight text-foreground">
+            ].map((m) => (
+              <Link
+                key={m.key}
+                href={m.href}
+                className="group flex flex-col justify-between gap-3 px-5 py-4 transition-colors hover:bg-muted/30"
+              >
+                <div className="flex items-center gap-1.5">
+                  <m.icon className="h-3 w-3 text-muted-foreground/60" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                    {m.label}
+                  </span>
+                </div>
+                <div className="flex items-baseline justify-between gap-2">
+                  <div>
+                    <span className="font-mono text-3xl font-semibold tabular-nums tracking-tight">
                       {m.value}
                     </span>
-                    {m.delta > 0 ? (
-                      <span className="inline-flex items-center gap-0.5 font-mono text-[11px] font-medium text-primary">
-                        <TrendingUp className="h-2.5 w-2.5" />
-                        {m.delta}
-                      </span>
-                    ) : null}
+                    <span className="ml-1.5 text-[10px] text-muted-foreground">{m.hint}</span>
                   </div>
+                  {'delta' in m && m.delta && m.delta > 0 ? (
+                    <span className="flex items-center gap-0.5 font-mono text-[10px] font-medium text-primary">
+                      <TrendingUp className="h-2.5 w-2.5" />+{m.delta}
+                    </span>
+                  ) : null}
                 </div>
                 {m.spark ? (
-                  <div className="flex items-end justify-between gap-3">
-                    <Sparkline
-                      data={m.spark}
-                      width={80}
-                      height={24}
-                      variant="bars"
-                      label={`${m.label} — last 7 days`}
-                    />
-                    <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground/60">
-                      7d
-                    </span>
-                  </div>
+                  <Sparkline
+                    data={m.spark}
+                    width={80}
+                    height={18}
+                    variant="bars"
+                    label={`${m.label} last 7 days`}
+                  />
                 ) : (
-                  <div className="h-6" />
+                  <div className="h-[18px]" />
                 )}
-              </div>
+              </Link>
             ))}
           </div>
         </div>
       )}
 
-      {/* "Pick up where you left off" — spotlight card that surfaces the
-          most recent content item so the dashboard has a clear single
-          next-action. Only renders when the user has content. */}
-      {stats && stats.recentContent.length > 0 && currentWorkspace ? (
-        (() => {
-          const next = stats.recentContent[0]!
-          const kindLabel = next.kind.replace('_', ' ')
-          const verb =
-            next.status === 'ready'
-              ? 'View outputs'
-              : next.status === 'processing'
-                ? 'Check progress'
-                : next.status === 'failed'
-                  ? 'Retry'
-                  : 'Continue'
-          const href =
-            next.status === 'ready'
-              ? `/workspace/${currentWorkspace.id}/content/${next.id}/outputs`
-              : `/workspace/${currentWorkspace.id}/content/${next.id}`
-          return (
-            <Link
-              href={href}
-              className="group relative flex items-center gap-5 overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-5 transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-lg hover:shadow-primary/5"
-            >
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full opacity-50 blur-3xl"
-                style={{
-                  background:
-                    'radial-gradient(circle, hsl(var(--primary) / 0.15), transparent 70%)',
-                }}
-              />
-              <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15">
-                <FileText className="h-5 w-5" />
-              </div>
-              <div className="relative min-w-0 flex-1">
-                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  Pick up where you left off
-                </p>
-                <p className="mt-1 truncate text-base font-semibold">
-                  {next.title ?? 'Untitled'}
-                </p>
-                <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <span className="capitalize">{kindLabel}</span>
-                  <span className="text-muted-foreground/40">·</span>
-                  <span>{formatRelative(next.created_at)}</span>
-                  <span className="text-muted-foreground/40">·</span>
-                  <span className="capitalize text-foreground">{next.status}</span>
-                </p>
-              </div>
-              <div className="relative flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-transform group-hover:translate-x-0.5">
-                {verb}
-                <ChevronRight className="h-3.5 w-3.5" />
-              </div>
-            </Link>
-          )
-        })()
-      ) : null}
-
-      {/* Pipeline — inline row under the masthead. No card chrome, just
-          mono labels with counts separated by hairlines. Reads as a
-          status bar, not a "feature". */}
-      {stats && currentWorkspace ? (
-        <div className="flex flex-wrap items-center justify-between gap-y-2 rounded-xl border border-border/60 bg-card px-5 py-3.5">
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+      {/* ══════════════════════════════════════════════════════════════
+          PIPELINE STRIP
+      ══════════════════════════════════════════════════════════════ */}
+      {stats && workspace && stats.totalOutputs > 0 && (
+        <div className="flex items-center justify-between rounded-xl border border-border/60 bg-card px-5 py-3">
+          <div className="flex items-center gap-4 overflow-x-auto">
+            <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               Pipeline
             </span>
-            <span aria-hidden className="h-3 w-px bg-border/60" />
-            <div className="flex items-center gap-4">
-              {(['draft', 'review', 'approved', 'exported'] as const).map((state) => (
-                <div key={state} className="flex items-center gap-1.5">
-                  <span className={`h-1.5 w-1.5 rounded-full ${PIPELINE_DOT_COLORS[state]}`} />
-                  <span className="text-[11px] text-muted-foreground">
-                    {PIPELINE_LABELS[state]}
-                  </span>
-                  <span className="font-mono text-[12px] font-semibold tabular-nums text-foreground">
-                    {stats.pipelineByState[state]}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <span aria-hidden className="h-3 w-px shrink-0 bg-border/60" />
+            {(['draft', 'review', 'approved', 'exported'] as const).map((state) => (
+              <div key={state} className="flex shrink-0 items-center gap-1.5">
+                <span className={`h-2 w-2 rounded-full ${PIPELINE_DOT[state]}`} />
+                <span className="text-xs text-muted-foreground capitalize">{state}</span>
+                <span className="font-mono text-xs font-semibold tabular-nums">
+                  {stats.pipelineByState[state]}
+                </span>
+              </div>
+            ))}
           </div>
           <Link
-            href={`/workspace/${currentWorkspace.id}/pipeline`}
-            className="flex items-center gap-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+            href={`/workspace/${workspace.id}/pipeline`}
+            className="ml-4 flex shrink-0 items-center gap-0.5 text-[11px] font-medium text-muted-foreground hover:text-foreground"
           >
-            Open board
+            Open
             <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
-      ) : null}
+      )}
 
-      {/* Activity occupies the full width now — no more cramped 2/3
-          split. Platform + Usage move to a compact horizontal strip
-          below. Reads as "stream of work + quick reference" instead of
-          a textbook dashboard. */}
-      {stats && (
-        <div className="space-y-6">
-          <div className="space-y-6">
-            {/* Activity — timeline-style feed with a vertical rail on the
-                left, timestamps on the right. Reads like a changelog or
-                commit history, not a generic "recent items" list. */}
-            {stats.recentContent.length > 0 && (
-              <div className="rounded-2xl border border-border/60 bg-card">
-                <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                      Activity
-                    </span>
-                    <span className="font-mono text-[10px] text-muted-foreground/60">
-                      · last {stats.recentContent.length}
-                    </span>
+      {/* ══════════════════════════════════════════════════════════════
+          RECENT WORK — clean list, no timeline rail
+      ══════════════════════════════════════════════════════════════ */}
+      {stats && stats.recentContent.length > 0 && workspace && (
+        <div className="rounded-2xl border border-border/60 bg-card">
+          <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              Recent work
+            </p>
+            <Link
+              href={`/workspace/${workspace.id}`}
+              className="text-[11px] font-medium text-muted-foreground hover:text-foreground"
+            >
+              All content →
+            </Link>
+          </div>
+          <div className="divide-y divide-border/40">
+            {stats.recentContent.map((item) => {
+              const Icon = KIND_ICON[item.kind as keyof typeof KIND_ICON] ?? FileText
+              const href =
+                item.status === 'ready'
+                  ? `/workspace/${workspace.id}/content/${item.id}/outputs`
+                  : `/workspace/${workspace.id}/content/${item.id}`
+              return (
+                <Link
+                  key={item.id}
+                  href={href}
+                  className="group flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-accent/40"
+                >
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background text-muted-foreground transition-colors group-hover:border-primary/30 group-hover:text-primary">
+                    <Icon className="h-3.5 w-3.5" />
                   </div>
-                  {currentWorkspace ? (
-                    <Link
-                      href={`/workspace/${currentWorkspace.id}`}
-                      className="text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      All content →
-                    </Link>
-                  ) : null}
-                </div>
-                <ol className="relative px-5 py-3">
-                  {/* Vertical timeline rail */}
-                  <span
-                    aria-hidden
-                    className="absolute left-[34px] top-6 bottom-6 w-px bg-border/70"
-                  />
-                  {stats.recentContent.map((item, idx) => {
-                    const Icon = KIND_ICON[item.kind as keyof typeof KIND_ICON] ?? FileText
-                    const kindLabel = item.kind.replace('_', ' ')
-                    const verb =
-                      item.status === 'ready'
-                        ? 'ready'
-                        : item.status === 'processing'
-                          ? 'processing'
-                          : item.status === 'failed'
-                            ? 'failed'
-                            : 'added'
-                    return (
-                      <li key={item.id} className="group relative">
-                        <Link
-                          href={`/workspace/${currentWorkspace?.id}/content/${item.id}`}
-                          className="relative flex items-center gap-3 rounded-lg px-2 py-2.5 -mx-2 transition-colors hover:bg-accent/40"
-                        >
-                          {/* Timeline node — circular on the rail */}
-                          <div className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background text-muted-foreground transition-all group-hover:border-primary/40 group-hover:bg-primary/5 group-hover:text-primary">
-                            <Icon className="h-3.5 w-3.5" aria-hidden />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm">
-                              <span className="font-medium text-foreground">
-                                {item.title ?? 'Untitled'}
-                              </span>
-                              <span className="ml-1.5 text-muted-foreground">
-                                · {verb}
-                              </span>
-                            </p>
-                            <p className="mt-0.5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/80">
-                              <span>{kindLabel}</span>
-                              {idx < stats.recentContent.length ? (
-                                <>
-                                  <span className="text-muted-foreground/40">·</span>
-                                  <span>{formatRelative(item.created_at)}</span>
-                                </>
-                              ) : null}
-                            </p>
-                          </div>
-                          <ContentStatusBadge status={item.status} />
-                        </Link>
-                      </li>
-                    )
-                  })}
-                </ol>
-              </div>
-            )}
-
-            {/* Recycle suggestions */}
-            {currentWorkspace && recyclable && recyclable.length > 0 && (
-              <RecycleSuggestions items={recyclable} workspaceId={currentWorkspace.id} />
-            )}
-
-            {/* Empty state — one confident card instead of two competing
-                options. Secondary actions hang below as quiet links. */}
-            {stats.totalContent === 0 && currentWorkspace && (
-              <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background">
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 opacity-60"
-                  style={{
-                    background:
-                      'radial-gradient(50% 60% at 0% 0%, rgba(124,58,237,0.07), transparent 70%)',
-                  }}
-                />
-                <CardContent className="relative flex flex-col items-start gap-5 p-8 sm:flex-row sm:items-center sm:gap-8">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20">
-                    <Video className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold tracking-tight">
-                      Drop your first video to get going.
-                    </h3>
-                    <p className="mt-1 max-w-md text-sm text-muted-foreground">
-                      Paste a YouTube link, upload an MP4, or drop a transcript. You&apos;ll
-                      have 4 platform-native drafts in under a minute.
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">
+                      {item.title ?? 'Untitled'}
                     </p>
-                    <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
-                      <Link
-                        href="/settings/brand-voice"
-                        className="font-medium text-foreground underline-offset-4 hover:underline"
-                      >
-                        Set brand voice first
-                      </Link>
-                      <span className="text-muted-foreground/40">·</span>
-                      <Link
-                        href="/settings/ai-keys"
-                        className="font-medium text-foreground underline-offset-4 hover:underline"
-                      >
-                        Connect your AI key
-                      </Link>
-                    </div>
+                    <p className="mt-0.5 text-[10px] text-muted-foreground">
+                      {item.kind.replace(/_/g, ' ')} · {formatRelative(item.created_at)}
+                    </p>
                   </div>
-                  <Link
-                    href={`/workspace/${currentWorkspace.id}/content/new`}
-                    className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
-                  >
-                    <span className="text-base leading-none">+</span>
-                    New content
-                  </Link>
-                </CardContent>
-              </Card>
-            )}
+                  <ContentStatusBadge status={item.status} />
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              )
+            })}
           </div>
+        </div>
+      )}
 
-          {/* Bottom strip: Platform + Usage side-by-side instead of a
-              narrow right rail. Gives each more room and breaks the
-              "everything's a card in a column" monotony. */}
-          <div className="grid gap-4 lg:grid-cols-2">
-            {/* Platform breakdown */}
-            {stats.totalOutputs > 0 && (
-              <div className="rounded-2xl border border-border/60 bg-card">
-                <div className="border-b border-border/50 px-5 py-3">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                    By platform
-                  </span>
-                </div>
-                <div className="space-y-3 p-5">
-                  {Object.entries(stats.outputsByPlatform).map(([platform, count]) => {
-                    const pct = Math.round((count / maxPlatformCount) * 100)
-                    return (
-                      <div key={platform} className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium text-foreground">
-                            {PLATFORM_LABELS[platform] ?? platform}
-                          </span>
-                          <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-                            {count}
-                          </span>
-                        </div>
-                        <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
-                          <div
-                            className={`h-full rounded-full transition-all duration-700 ${PLATFORM_BAR_CLASS}`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
+      {/* ══════════════════════════════════════════════════════════════
+          BOTTOM: Platform breakdown + Usage — only when has data
+      ══════════════════════════════════════════════════════════════ */}
+      {stats && (stats.totalOutputs > 0 || usage) && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {/* Platform breakdown */}
+          {stats.totalOutputs > 0 && (
+            <div className="rounded-2xl border border-border/60 bg-card">
+              <div className="border-b border-border/50 px-5 py-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Outputs by platform
+                </p>
+              </div>
+              <div className="space-y-3 p-5">
+                {Object.entries(stats.outputsByPlatform).map(([platform, count]) => {
+                  if (count === 0) return null
+                  const pct = Math.round((count / maxPlatformCount) * 100)
+                  return (
+                    <div key={platform} className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium">
+                          {PLATFORM_LABELS[platform] ?? platform}
+                        </span>
+                        <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                          {count}
+                        </span>
                       </div>
-                    )
-                  })}
-                </div>
+                      <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all duration-700"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Monthly usage — compact data-sheet style */}
-            {usage && (
-              <div className="rounded-2xl border border-border/60 bg-card">
-                <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                    This month
-                  </span>
-                  <span className="font-mono text-[10px] tabular-nums text-muted-foreground/70">
-                    {new Date().toLocaleDateString(undefined, { month: 'short', year: 'numeric' }).toUpperCase()}
-                  </span>
-                </div>
-                <div className="space-y-4 p-5">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-foreground">Content items</span>
-                      <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-                        {usage.contentItemsThisMonth}
-                        {planDef.limits.contentItemsPerMonth !== -1
-                          ? ` / ${planDef.limits.contentItemsPerMonth}`
-                          : ' / ∞'}
-                      </span>
-                    </div>
-                    <UsageBar
-                      used={usage.contentItemsThisMonth}
-                      limit={planDef.limits.contentItemsPerMonth}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-foreground">Outputs generated</span>
-                      <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-                        {usage.outputsThisMonth}
-                        {planDef.limits.outputsPerMonth !== -1
-                          ? ` / ${planDef.limits.outputsPerMonth}`
-                          : ' / ∞'}
-                      </span>
-                    </div>
-                    <UsageBar
-                      used={usage.outputsThisMonth}
-                      limit={planDef.limits.outputsPerMonth}
-                    />
-                  </div>
-                  {plan === 'free' && currentWorkspace && (
-                    <Link
-                      href="/billing"
-                      className="block rounded-lg border border-primary/20 bg-primary/5 py-2 text-center text-xs font-medium text-primary transition-colors hover:bg-primary/10"
-                    >
-                      Upgrade for more →
-                    </Link>
-                  )}
-                </div>
+          {/* Monthly usage */}
+          {usage && (
+            <div className="rounded-2xl border border-border/60 bg-card">
+              <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  This month
+                </p>
+                <span className="font-mono text-[10px] text-muted-foreground/60">
+                  {new Date()
+                    .toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+                    .toUpperCase()}
+                </span>
               </div>
-            )}
-          </div>
+              <div className="space-y-4 p-5">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium">Videos imported</span>
+                    <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                      {usage.contentItemsThisMonth}
+                      {planDef.limits.contentItemsPerMonth !== -1
+                        ? ` / ${planDef.limits.contentItemsPerMonth}`
+                        : ' / ∞'}
+                    </span>
+                  </div>
+                  <UsageBar
+                    used={usage.contentItemsThisMonth}
+                    limit={planDef.limits.contentItemsPerMonth}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium">Drafts generated</span>
+                    <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                      {usage.outputsThisMonth}
+                      {planDef.limits.outputsPerMonth !== -1
+                        ? ` / ${planDef.limits.outputsPerMonth}`
+                        : ' / ∞'}
+                    </span>
+                  </div>
+                  <UsageBar
+                    used={usage.outputsThisMonth}
+                    limit={planDef.limits.outputsPerMonth}
+                  />
+                </div>
+                {plan === 'free' && workspace && (
+                  <Link
+                    href="/billing"
+                    className="block rounded-lg border border-primary/20 bg-primary/5 py-2 text-center text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+                  >
+                    Upgrade for more →
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,5 +1,9 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
+import { getUser } from '@/lib/auth/get-user'
+import { getWorkspacePlan } from '@/lib/billing/get-subscription'
+import { UpgradeGate } from '@/components/billing/upgrade-gate'
 import { TrendRadarClient } from '@/components/workspace/trend-radar-client'
 
 export const dynamic = 'force-dynamic'
@@ -9,7 +13,12 @@ interface PageProps {
   params: { id: string }
 }
 
-export default function TrendsPage({ params }: PageProps) {
+export default async function TrendsPage({ params }: PageProps) {
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const plan = await getWorkspacePlan(params.id)
+
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <div>
@@ -26,7 +35,15 @@ export default function TrendsPage({ params }: PageProps) {
           What&apos;s trending right now — matched to your content
         </p>
       </div>
-      <TrendRadarClient workspaceId={params.id} />
+      <UpgradeGate
+        currentPlan={plan ?? 'free'}
+        requiredPlan="solo"
+        workspaceId={params.id}
+        featureName="Trend Radar"
+        description="See what's trending right now on TikTok, Instagram, and YouTube — matched to your content niche. Powered by Apify scrapers."
+      >
+        <TrendRadarClient workspaceId={params.id} />
+      </UpgradeGate>
     </div>
   )
 }

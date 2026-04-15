@@ -10,6 +10,8 @@ import {
   Globe,
   Webhook,
   Video,
+  Send,
+  Check,
 } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
@@ -23,166 +25,142 @@ const WORKSPACE_COOKIE = 'clipflow.current_workspace'
 
 type ConnectionType = 'webhook' | 'api_key' | 'oauth' | 'coming_soon' | 'managed'
 
-interface IntegrationSpec {
+interface IntegrationDef {
   id: string
   name: string
-  description: string
   icon: React.ComponentType<{ className?: string }>
-  category: string
   connectionType: ConnectionType
-  color: string
-  bg: string
+  iconColor: string
+  iconBg: string
+  benefit: string
 }
 
-const INTEGRATIONS: IntegrationSpec[] = [
-  // ── Notifications ──────────────────────────────────────────────
-  {
-    id: 'slack',
-    name: 'Slack',
-    description: 'Get notified in Slack when a render finishes or output is ready.',
-    icon: MessageSquare,
-    category: 'Notifications',
-    connectionType: 'webhook',
-    color: 'text-purple-600',
-    bg: 'bg-purple-50',
-  },
-  {
-    id: 'discord',
-    name: 'Discord',
-    description: 'Post updates to your Discord server via webhook.',
-    icon: MessageSquare,
-    category: 'Notifications',
-    connectionType: 'webhook',
-    color: 'text-indigo-600',
-    bg: 'bg-indigo-50',
-  },
-
-  // ── Export / Publish ───────────────────────────────────────────
-  {
-    id: 'beehiiv',
-    name: 'Beehiiv',
-    description: 'Push newsletter content directly to your Beehiiv publication.',
-    icon: Mail,
-    category: 'Export',
-    connectionType: 'api_key',
-    color: 'text-orange-600',
-    bg: 'bg-orange-50',
-  },
-  {
-    id: 'wordpress',
-    name: 'WordPress',
-    description: 'Publish blog posts and SEO content directly to your WordPress site.',
-    icon: Globe,
-    category: 'Export',
-    connectionType: 'api_key',
-    color: 'text-blue-600',
-    bg: 'bg-blue-50',
-  },
-  {
-    id: 'medium',
-    name: 'Medium',
-    description: 'Publish articles to Medium with one click after generation.',
-    icon: FileText,
-    category: 'Export',
-    connectionType: 'api_key',
-    color: 'text-zinc-700',
-    bg: 'bg-zinc-100',
-  },
-
-  // ── Import ─────────────────────────────────────────────────────
-  {
-    id: 'google-drive',
-    name: 'Google Drive',
-    description: 'Import source videos and documents directly from Drive.',
-    icon: Cloud,
-    category: 'Import',
-    connectionType: 'oauth',
-    color: 'text-yellow-600',
-    bg: 'bg-yellow-50',
-  },
-  {
-    id: 'notion',
-    name: 'Notion',
-    description: 'Sync your content calendar and push outputs to a Notion database.',
-    icon: FileText,
-    category: 'Import',
-    connectionType: 'oauth',
-    color: 'text-zinc-700',
-    bg: 'bg-zinc-100',
-  },
-  {
-    id: 'zoom',
-    name: 'Zoom',
-    description: 'Import meeting recordings automatically.',
-    icon: Video,
-    category: 'Import',
-    connectionType: 'coming_soon',
-    color: 'text-blue-600',
-    bg: 'bg-blue-50',
-  },
-
-  // ── Data ───────────────────────────────────────────────────────
-  {
-    id: 'airtable',
-    name: 'Airtable',
-    description: 'Sync your content calendar and analytics to an Airtable base.',
-    icon: Table2,
-    category: 'Data',
-    connectionType: 'api_key',
-    color: 'text-teal-600',
-    bg: 'bg-teal-50',
-  },
-  {
-    id: 'google-sheets',
-    name: 'Google Sheets',
-    description: 'Export analytics and output data to a Google Sheet.',
-    icon: Table2,
-    category: 'Data',
-    connectionType: 'oauth',
-    color: 'text-green-600',
-    bg: 'bg-green-50',
-  },
-
-  // ── Automation ─────────────────────────────────────────────────
-  {
-    id: 'zapier',
-    name: 'Zapier',
-    description: 'Trigger Zaps when outputs are ready. Use our webhook URL in Zapier.',
-    icon: Webhook,
-    category: 'Automation',
-    connectionType: 'managed',
-    color: 'text-orange-600',
-    bg: 'bg-orange-50',
-  },
-  {
-    id: 'make',
-    name: 'Make',
-    description: 'Trigger Make scenarios from Clipflow webhooks.',
-    icon: Webhook,
-    category: 'Automation',
-    connectionType: 'managed',
-    color: 'text-violet-600',
-    bg: 'bg-violet-50',
-  },
-]
-
-const CONNECTION_TYPE_LABEL: Record<ConnectionType, string> = {
-  webhook: 'Webhook',
-  api_key: 'API key',
-  oauth: 'OAuth',
-  coming_soon: 'Coming soon',
-  managed: 'Via webhook',
+const INTEGRATIONS: Record<string, IntegrationDef[]> = {
+  'One-click OAuth': [
+    {
+      id: 'notion',
+      name: 'Notion',
+      icon: FileText,
+      connectionType: 'oauth',
+      iconColor: 'text-zinc-700',
+      iconBg: 'bg-zinc-100',
+      benefit: 'Sync outputs to a Notion database.',
+    },
+    {
+      id: 'google-drive',
+      name: 'Google Drive',
+      icon: Cloud,
+      connectionType: 'oauth',
+      iconColor: 'text-yellow-600',
+      iconBg: 'bg-yellow-50',
+      benefit: 'Import videos and docs from Drive.',
+    },
+    {
+      id: 'google-sheets',
+      name: 'Google Sheets',
+      icon: Table2,
+      connectionType: 'oauth',
+      iconColor: 'text-green-600',
+      iconBg: 'bg-green-50',
+      benefit: 'Export analytics to a Sheet.',
+    },
+  ],
+  'Paste a Webhook URL': [
+    {
+      id: 'slack',
+      name: 'Slack',
+      icon: MessageSquare,
+      connectionType: 'webhook',
+      iconColor: 'text-purple-600',
+      iconBg: 'bg-purple-50',
+      benefit: 'Get notified when renders finish.',
+    },
+    {
+      id: 'discord',
+      name: 'Discord',
+      icon: MessageSquare,
+      connectionType: 'webhook',
+      iconColor: 'text-indigo-600',
+      iconBg: 'bg-indigo-50',
+      benefit: 'Post updates to your Discord server.',
+    },
+  ],
+  'Paste an API Key': [
+    {
+      id: 'beehiiv',
+      name: 'Beehiiv',
+      icon: Mail,
+      connectionType: 'api_key',
+      iconColor: 'text-orange-600',
+      iconBg: 'bg-orange-50',
+      benefit: 'Push newsletters directly to Beehiiv.',
+    },
+    {
+      id: 'wordpress',
+      name: 'WordPress',
+      icon: Globe,
+      connectionType: 'api_key',
+      iconColor: 'text-blue-600',
+      iconBg: 'bg-blue-50',
+      benefit: 'Publish blog posts to your site.',
+    },
+    {
+      id: 'medium',
+      name: 'Medium',
+      icon: FileText,
+      connectionType: 'api_key',
+      iconColor: 'text-zinc-700',
+      iconBg: 'bg-zinc-100',
+      benefit: 'One-click publish to Medium.',
+    },
+    {
+      id: 'airtable',
+      name: 'Airtable',
+      icon: Table2,
+      connectionType: 'api_key',
+      iconColor: 'text-teal-600',
+      iconBg: 'bg-teal-50',
+      benefit: 'Sync your content calendar to Airtable.',
+    },
+  ],
+  'Automation Platforms': [
+    {
+      id: 'zapier',
+      name: 'Zapier',
+      icon: Webhook,
+      connectionType: 'managed',
+      iconColor: 'text-orange-600',
+      iconBg: 'bg-orange-50',
+      benefit: 'Trigger any Zap when outputs are ready.',
+    },
+    {
+      id: 'make',
+      name: 'Make',
+      icon: Webhook,
+      connectionType: 'managed',
+      iconColor: 'text-violet-600',
+      iconBg: 'bg-violet-50',
+      benefit: 'Trigger Make scenarios from Clipflow.',
+    },
+  ],
+  'Coming Soon': [
+    {
+      id: 'zoom',
+      name: 'Zoom',
+      icon: Video,
+      connectionType: 'coming_soon',
+      iconColor: 'text-blue-600',
+      iconBg: 'bg-blue-50',
+      benefit: 'Auto-import meeting recordings.',
+    },
+  ],
 }
 
-const CONNECTION_TYPE_STYLE: Record<ConnectionType, string> = {
-  webhook: 'bg-blue-50 text-blue-700 border-blue-200',
-  api_key: 'bg-violet-50 text-violet-700 border-violet-200',
-  oauth: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  coming_soon: 'bg-zinc-100 text-zinc-500 border-zinc-200',
-  managed: 'bg-zinc-100 text-zinc-600 border-zinc-200',
-}
-
-export default async function IntegrationsPage() {
+export default async function IntegrationsPage({
+  searchParams,
+}: {
+  searchParams: { error?: string; connected?: string }
+}) {
   const user = await getUser()
   if (!user) redirect('/login')
 
@@ -203,142 +181,133 @@ export default async function IntegrationsPage() {
     } catch { /* ignore */ }
   }
 
-  const categories = [...new Set(INTEGRATIONS.map((i) => i.category))]
-  const connectedCount = INTEGRATIONS.filter((i) => connectedIds.has(i.id)).length
+  const allIntegrations = Object.values(INTEGRATIONS).flat()
+  const connectedCount = allIntegrations.filter((i) => connectedIds.has(i.id)).length
+  const urlError = searchParams.error
+  const urlConnected = searchParams.connected
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold">Integrations</h1>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          Connect Clipflow with your existing tools. Notifications go to Slack
-          or Discord, content exports to Beehiiv, WordPress or Medium, and data
-          syncs to Airtable or Google Sheets.
-        </p>
-        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            {connectedCount} connected
-          </span>
-          <span className="text-muted-foreground/40">·</span>
-          {/* Connection type legend */}
-          {(['oauth', 'api_key', 'webhook'] as ConnectionType[]).map((t) => (
-            <span
-              key={t}
-              className={`inline-flex items-center rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${CONNECTION_TYPE_STYLE[t]}`}
-            >
-              {CONNECTION_TYPE_LABEL[t]}
-            </span>
-          ))}
-        </div>
-      </div>
+    <div className="max-w-2xl space-y-8">
 
-      {/* How connection types work */}
-      <div className="rounded-xl border border-border/60 bg-muted/30 p-5">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          Connection types explained
+      {/* Header */}
+      <div>
+        <h1 className="text-xl font-semibold">Integrations</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Connect Clipflow to your existing tools. Start with the easiest ones — OAuth is one click.
         </p>
-        <div className="mt-3 grid gap-4 sm:grid-cols-3 text-xs text-muted-foreground">
-          <div>
-            <span className="font-semibold text-foreground">OAuth</span> — Click Connect,
-            log in to the service (Google, Notion), we get access automatically.
-            Nothing to copy.
-          </div>
-          <div>
-            <span className="font-semibold text-foreground">API key</span> — Paste your
-            API key from the service (Beehiiv, Airtable). Found in their settings.
-            Takes 1 minute.
-          </div>
-          <div>
-            <span className="font-semibold text-foreground">Webhook</span> — Paste a
-            webhook URL you create in Slack or Discord. We&apos;ll POST notifications
-            there when events happen.
-          </div>
-        </div>
+        {connectedCount > 0 && (
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              {connectedCount} connected
+            </span>
+          </p>
+        )}
       </div>
 
       {/* Social publishing notice */}
       <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm">
-        <span className="mt-0.5 shrink-0 text-lg">↑</span>
+        <Send className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
         <div>
-          <p className="font-semibold">Social publishing (TikTok, Instagram, YouTube, LinkedIn)</p>
+          <p className="font-semibold">Social publishing → TikTok, Instagram, YouTube, LinkedIn</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Handled via Upload-Post — connect it in{' '}
-            <Link href="/settings/ai-keys" className="font-medium text-primary underline-offset-4 hover:underline">
+            Set up in{' '}
+            <Link href="/settings/ai-keys" className="font-medium text-primary underline-offset-2 hover:underline">
               API Keys → Publishing
             </Link>
-            . One key, all four platforms, no OAuth setup needed.
+            {' '}via Upload-Post. One key, all four platforms, no OAuth needed.
           </p>
         </div>
       </div>
 
-      {/* Integration groups */}
-      {categories.map((category) => {
-        const items = INTEGRATIONS.filter((i) => i.category === category)
-        return (
-          <section key={category} className="space-y-3">
-            <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              {category}
-            </h2>
-            <div className="space-y-2">
-              {items.map((integration) => {
-                const isConnected = connectedIds.has(integration.id)
-                return (
-                  <div
-                    key={integration.id}
-                    className={`flex items-start gap-4 rounded-xl border p-4 transition-colors ${
-                      isConnected
-                        ? 'border-primary/20 bg-primary/5'
-                        : integration.connectionType === 'coming_soon'
-                          ? 'border-border/40 opacity-60'
-                          : 'border-border/60 hover:border-border'
-                    }`}
-                  >
-                    {/* Icon */}
-                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${integration.bg}`}>
-                      <integration.icon className={`h-4 w-4 ${integration.color}`} />
-                    </div>
+      {/* Feedback from OAuth redirect */}
+      {urlError && (
+        <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white">!</span>
+          <div>
+            <p className="font-semibold text-destructive">Connection failed</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {urlError === 'session_expired'
+                ? 'Session timed out — click Connect again.'
+                : urlError === 'auth_cancelled'
+                ? 'Sign-in cancelled — try again when ready.'
+                : decodeURIComponent(urlError)}
+            </p>
+          </div>
+        </div>
+      )}
+      {urlConnected && (
+        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 text-sm">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">✓</span>
+          <div>
+            <p className="font-semibold text-emerald-800">
+              {urlConnected.replace(/-/g, ' ')} connected
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Ready to use.</p>
+          </div>
+        </div>
+      )}
 
-                    {/* Info */}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-semibold">{integration.name}</p>
-                        <span
-                          className={`inline-flex items-center rounded-full border px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider ${CONNECTION_TYPE_STYLE[integration.connectionType]}`}
-                        >
-                          {CONNECTION_TYPE_LABEL[integration.connectionType]}
-                        </span>
-                        {isConnected && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
-                            ✓ Connected
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                        {integration.description}
-                      </p>
-                    </div>
+      {/* Integration sections */}
+      {Object.entries(INTEGRATIONS).map(([groupTitle, items]) => (
+        <section key={groupTitle} className="space-y-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {groupTitle}
+          </h2>
 
-                    {/* Action */}
-                    {integration.connectionType !== 'coming_soon' && workspaceId && (
-                      <div className="shrink-0">
-                        <ConnectDialog
-                          integrationId={integration.id}
-                          integrationName={integration.name}
-                          workspaceId={workspaceId}
-                          isConnected={isConnected}
-                          connectionType={integration.connectionType}
-                        />
-                      </div>
-                    )}
+          <div className="overflow-hidden rounded-xl border border-border/60">
+            {items.map((integration, idx) => {
+              const Icon = integration.icon
+              const isConnected = connectedIds.has(integration.id)
+              const isLast = idx === items.length - 1
+
+              return (
+                <div
+                  key={integration.id}
+                  className={`flex items-center gap-4 px-4 py-3.5 ${!isLast ? 'border-b border-border/50' : ''} ${isConnected ? 'bg-emerald-50/30' : 'bg-card'}`}
+                >
+                  {/* Icon */}
+                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${integration.iconBg}`}>
+                    <Icon className={`h-4 w-4 ${integration.iconColor}`} />
                   </div>
-                )
-              })}
-            </div>
-          </section>
-        )
-      })}
+
+                  {/* Info */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{integration.name}</span>
+                      {isConnected && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+                          <Check className="h-2.5 w-2.5" />
+                          Connected
+                        </span>
+                      )}
+                      {integration.connectionType === 'coming_soon' && (
+                        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-500">
+                          Soon
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{integration.benefit}</p>
+                  </div>
+
+                  {/* Action */}
+                  {integration.connectionType !== 'coming_soon' && workspaceId && (
+                    <div className="shrink-0">
+                      <ConnectDialog
+                        integrationId={integration.id}
+                        integrationName={integration.name}
+                        workspaceId={workspaceId}
+                        isConnected={isConnected}
+                        connectionType={integration.connectionType}
+                      />
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      ))}
     </div>
   )
 }

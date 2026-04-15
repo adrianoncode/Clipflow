@@ -6,6 +6,10 @@ import { notFound } from 'next/navigation'
 import { ReframeClient } from '@/components/content/reframe-client'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getSignedUrl } from '@/lib/content/get-signed-url'
+import { getServiceKey } from '@/lib/ai/get-service-key'
+import { getWorkspacePlan } from '@/lib/billing/get-subscription'
+import { PLANS } from '@/lib/billing/plans'
+import { UpgradeGate } from '@/components/billing/upgrade-gate'
 
 interface ReframePageProps {
   params: { id: string; contentId: string }
@@ -52,15 +56,30 @@ export default async function ReframePage({ params }: ReframePageProps) {
       ? (meta.reframe_job as { jobId: string; aspectRatio: string })
       : null
 
-  const hasReplicateKey = !!process.env.REPLICATE_API_TOKEN
+  // BYOK-first: check user's own Replicate key, fall back to platform key
+  const [{ key: replicateKey }, plan] = await Promise.all([
+    getServiceKey(workspaceId, 'replicate'),
+    getWorkspacePlan(workspaceId),
+  ])
+  const hasReplicateKey = !!replicateKey
+  const planDef = PLANS[plan ?? 'free']
+  const canRender = planDef.limits.videoRendersPerMonth !== 0
 
   return (
-    <ReframeClient
+    <UpgradeGate
+      currentPlan={plan ?? 'free'}
+      requiredPlan="solo"
       workspaceId={workspaceId}
-      contentId={contentId}
-      videoUrl={videoUrl}
-      existingJob={existingJob}
-      hasReplicateKey={hasReplicateKey}
-    />
+      featureName="Video Reframe"
+      description="Automatically crop and resize your video for TikTok, Reels, Shorts, or landscape. AI keeps the subject centred."
+    >
+      <ReframeClient
+        workspaceId={workspaceId}
+        contentId={contentId}
+        videoUrl={videoUrl}
+        existingJob={existingJob}
+        hasReplicateKey={hasReplicateKey && canRender}
+      />
+    </UpgradeGate>
   )
 }

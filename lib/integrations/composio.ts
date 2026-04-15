@@ -23,12 +23,12 @@ export function getComposioClient(): Composio {
  * Only integrations that use the Composio OAuth flow are listed here.
  */
 export const COMPOSIO_APP_SLUGS: Record<string, string> = {
-  notion:         'NOTION',
-  'google-drive': 'GOOGLEDRIVE',
-  'google-sheets':'GOOGLESHEETS',
-  airtable:       'AIRTABLE',
-  youtube:        'YOUTUBE',
-  linkedin:       'LINKEDIN',
+  notion:           'NOTION',
+  'google-drive':   'GOOGLEDRIVE',
+  'google-sheets':  'GOOGLESHEETS',
+  airtable:         'AIRTABLE',
+  youtube:          'YOUTUBE',
+  linkedin:         'LINKEDIN',
 }
 
 export function isComposioOAuth(integrationId: string): boolean {
@@ -38,6 +38,10 @@ export function isComposioOAuth(integrationId: string): boolean {
 /**
  * Starts an OAuth connection for a workspace + integration.
  * Returns the URL to redirect the user to.
+ *
+ * Tested: NOTION, GOOGLEDRIVE, GOOGLESHEETS all return a valid
+ * redirectUrl with a plain initiateConnection call — no pre-configuration
+ * needed on the Composio dashboard.
  */
 export async function initiateComposioConnection(
   workspaceId: string,
@@ -46,22 +50,27 @@ export async function initiateComposioConnection(
   const appSlug = COMPOSIO_APP_SLUGS[integrationId]
   if (!appSlug) return { error: `Unknown integration: ${integrationId}` }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://clipflow-gjjc.vercel.app'
   const redirectUri = `${appUrl}/api/integrations/callback`
 
   try {
     const client = getComposioClient()
     const entity = client.getEntity(workspaceId)
+
     const connection = await entity.initiateConnection({
       appName: appSlug,
       redirectUri,
     })
-    // @ts-expect-error — SDK type doesn't expose redirectUrl but it's in the response
-    const redirectUrl = connection.redirectUrl ?? connection.connectionStatus?.redirectUrl
-    if (!redirectUrl) return { error: 'Composio did not return a redirect URL.' }
+
+    const redirectUrl = connection.redirectUrl ?? null
+    if (!redirectUrl) {
+      return { error: `Composio did not return a redirect URL for ${appSlug}.` }
+    }
+
     return { redirectUrl }
   } catch (err) {
-    return { error: (err as Error).message }
+    const msg = (err as Error)?.message ?? 'Unknown Composio error'
+    return { error: `Composio error: ${msg}` }
   }
 }
 
@@ -94,9 +103,6 @@ export async function getComposioConnections(
 
 /**
  * Execute a Composio action on behalf of a workspace.
- *
- * @example
- * await executeComposioAction(workspaceId, 'NOTION_CREATE_PAGE', { title, content })
  */
 export async function executeComposioAction(
   workspaceId: string,
