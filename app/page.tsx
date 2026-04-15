@@ -667,21 +667,43 @@ function ByokHighlight({ signupHref }: { signupHref: string }) {
               <div>
                 <SectionBadge number="05" label="BYOK model" />
                 <h2 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
-                  Bring your own key.
+                  Bring your own keys.
                   <br />
-                  <span className="italic text-zinc-400">Pay AI at cost.</span>
+                  <span className="italic text-zinc-400">Pay providers at cost.</span>
                 </h2>
                 <p className="mt-5 max-w-md text-lg text-zinc-600">
-                  Every tool that bakes AI into their subscription makes money on your tokens.
-                  We don&apos;t. Connect your OpenAI, Anthropic or Google key — all AI calls
-                  run through your account at provider cost. Teams save $200–$500/month.
+                  Every tool that bundles AI, rendering and voice into their price
+                  marks your tokens up 5–10×. We don&apos;t. You bring 6 keys — LLM,
+                  video render, avatars, voice — and each provider bills you direct.
+                  We make money on workflow, not your tokens. Teams save $200–$500/mo.
+                </p>
+                <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-2 text-[13px] text-zinc-600 sm:max-w-md">
+                  {[
+                    { label: 'OpenAI / Anthropic / Google', tag: 'LLM' },
+                    { label: 'Shotstack', tag: 'Render' },
+                    { label: 'Replicate', tag: 'Avatars' },
+                    { label: 'ElevenLabs', tag: 'Voice' },
+                  ].map((svc) => (
+                    <div key={svc.label} className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />
+                      <span className="truncate">{svc.label}</span>
+                      <span className="ml-auto shrink-0 font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-400">
+                        {svc.tag}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-5 max-w-md text-sm text-zinc-500">
+                  What <span className="font-semibold text-zinc-700">we</span> provide:
+                  the scraper stack, creator database, workflow, and templates. That&apos;s
+                  what your subscription pays for.
                 </p>
                 <div className="mt-8 flex flex-wrap items-center gap-4">
                   <Link
                     href={signupHref}
                     className="inline-flex items-center gap-2 rounded-full bg-violet-600 px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-violet-600/20 transition-all hover:bg-violet-700"
                   >
-                    Connect your key
+                    Connect your keys
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <a
@@ -696,21 +718,21 @@ function ByokHighlight({ signupHref }: { signupHref: string }) {
               {/* Cost comparison — light, with violet fill for Clipflow row */}
               <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
                 <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                  Monthly AI cost · 500 outputs / mo
+                  Monthly cost · 500 outputs + 100 renders
                 </p>
                 <div className="mt-6 space-y-5">
                   {[
                     {
-                      label: 'Typical "AI included" tool',
-                      cost: '$247',
+                      label: 'Typical all-in-one SaaS',
+                      cost: '$399',
                       bar: 100,
                       tone: 'bg-zinc-300',
                       costTone: 'text-zinc-500',
                     },
                     {
-                      label: 'Clipflow + your API key',
-                      cost: '$18',
-                      bar: 14,
+                      label: 'Clipflow + your keys',
+                      cost: '$49 + ~$35 at cost',
+                      bar: 21,
                       tone: 'bg-violet-600',
                       costTone: 'text-violet-700 font-bold',
                     },
@@ -730,7 +752,7 @@ function ByokHighlight({ signupHref }: { signupHref: string }) {
                   ))}
                 </div>
                 <p className="mt-6 text-xs text-zinc-400">
-                  Based on gpt-4o-mini at $0.15/1M input tokens.
+                  Each provider has a free tier — new signups test every feature for $0.
                 </p>
               </div>
             </div>

@@ -13,7 +13,7 @@ interface FaqItem {
 const FAQ: FaqItem[] = [
   {
     q: 'What does BYOK mean and why does it matter?',
-    a: 'Bring Your Own Key. You connect your own OpenAI, Anthropic or Google key. Every AI call runs through your account at the provider’s actual cost — we never add a markup. Teams typically save $200–$500/month vs. tools that bake AI into their subscription.',
+    a: 'Bring Your Own Keys. You connect your own accounts for the LLM (OpenAI, Anthropic or Google), video rendering (Shotstack), avatars + reframe (Replicate), and voice (ElevenLabs). Every call bills against your provider account at cost — we never mark up tokens, renders or voice. What you pay us for is the workflow: scrapers, creator database, templates, automations. Teams typically save $200–$500/month vs. all-in-one tools that bundle (and mark up) everything.',
   },
   {
     q: 'How is this different from OpusClip or Klap?',

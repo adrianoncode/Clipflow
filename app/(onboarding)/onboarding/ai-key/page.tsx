@@ -1,30 +1,42 @@
 import Link from 'next/link'
 import { Shield, Zap } from 'lucide-react'
 
-import { AiKeyForm } from '@/components/ai-keys/ai-key-form'
+import { OnboardingServicePicker } from '@/components/onboarding/service-picker'
 import { OnboardingStepper } from '@/components/onboarding/stepper'
-import { saveAiKeyOnboardingAction } from '@/app/(onboarding)/onboarding/ai-key/actions'
+import { getAiKeys } from '@/lib/ai/get-ai-keys'
+import { getWorkspaces } from '@/lib/auth/get-workspaces'
 
-export const metadata = { title: 'Connect your AI' }
+export const metadata = { title: 'Connect your APIs' }
 
-export default function OnboardingAiKeyPage() {
+export default async function OnboardingApiKeysPage() {
+  const workspaces = await getWorkspaces()
+  const currentWorkspace =
+    workspaces.find((w) => w.type === 'personal') ?? workspaces[0]
+
+  const existingKeys = currentWorkspace
+    ? await getAiKeys(currentWorkspace.id)
+    : []
+  const connectedProviders = new Set(existingKeys.map((k) => k.provider))
+
   return (
     <div className="space-y-10">
       <OnboardingStepper activeStep={3} />
       <div className="space-y-2 text-center">
         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
-          Step 03 — your AI provider
+          Step 03 — bring your APIs
         </p>
         <h1 className="font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-          Connect your AI key
+          Connect your APIs
         </h1>
-        <p className="mx-auto max-w-md text-sm text-muted-foreground">
-          Clipflow runs on your own API key — you pay your provider directly at
-          cost. Zero markup, ever.
+        <p className="mx-auto max-w-lg text-sm text-muted-foreground">
+          Clipflow never marks up API costs. Bring your own keys — you pay
+          providers directly, at cost. Pick at least one AI provider to get
+          started; the media stack is optional and unlocks rendering when you
+          connect it.
         </p>
       </div>
 
-      {/* Trust signals — monochrome, aligned to the data-sheet style */}
+      {/* Trust signals */}
       <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-border/60 bg-border/60 sm:grid-cols-2">
         <div className="flex items-center gap-2.5 bg-card px-4 py-3">
           <Shield className="h-4 w-4 shrink-0 text-primary" />
@@ -44,25 +56,26 @@ export default function OnboardingAiKeyPage() {
               Validated before save
             </p>
             <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-              we test-call the provider
+              we test every key
             </p>
           </div>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <AiKeyForm
-          action={saveAiKeyOnboardingAction}
-          submitLabel="Save and continue →"
+      {currentWorkspace ? (
+        <OnboardingServicePicker
+          workspaceId={currentWorkspace.id}
+          connectedProviders={Array.from(connectedProviders)}
         />
-        <div className="text-center">
-          <Link
-            href="/onboarding/complete"
-            className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-          >
-            Skip for now — I&apos;ll add a key later
-          </Link>
-        </div>
+      ) : null}
+
+      <div className="text-center">
+        <Link
+          href="/onboarding/complete"
+          className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        >
+          Skip for now — I&apos;ll add keys later in Settings
+        </Link>
       </div>
     </div>
   )

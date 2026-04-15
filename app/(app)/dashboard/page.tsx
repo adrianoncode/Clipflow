@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 
 import { Card, CardContent } from '@/components/ui/card'
-import { AddAiKeyBanner } from '@/components/dashboard/add-ai-key-banner'
+import { ApiKeysBanner } from '@/components/dashboard/api-keys-banner'
 import { GettingStartedChecklist } from '@/components/dashboard/getting-started-checklist'
 import { ReferralHeroStat } from '@/components/dashboard/referral-hero-stat'
 import { Sparkline } from '@/components/dashboard/sparkline'
@@ -139,9 +139,6 @@ export default async function DashboardPage() {
       ])
     : [[], null, null, 'free' as const, null, [], { pending: 0, confirmed: 0 }]
 
-  const showAiKeyNudge =
-    !!currentWorkspace && currentWorkspace.role === 'owner' && aiKeys.length === 0
-
   const planDef = PLANS[plan ?? 'free']
 
   const maxPlatformCount = stats
@@ -189,9 +186,16 @@ export default async function DashboardPage() {
         ) : null}
       </div>
 
-      {/* Banners */}
-      {showAiKeyNudge && currentWorkspace ? (
-        <AddAiKeyBanner workspaceName={currentWorkspace.name} />
+      {/* Banners — connected-services nudge. Shows until the workspace
+          has all 6 keys; copy hardens when no LLM is connected yet. */}
+      {currentWorkspace ? (
+        <ApiKeysBanner
+          connectedCount={new Set(aiKeys.map((k) => k.provider)).size}
+          totalCount={6}
+          hasLlm={aiKeys.some((k) =>
+            ['openai', 'anthropic', 'google'].includes(k.provider),
+          )}
+        />
       ) : null}
 
       {/* Referral achievement — shown only when user has paid conversions. */}
