@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { CheckCircle2, Loader2, AlertCircle, Download, ExternalLink } from 'lucide-react'
 
-import { formatRenderKind } from '@/lib/video/renders/list-renders'
-import type { RenderRow } from '@/lib/video/renders/list-renders'
+import { formatRenderKind } from '@/lib/video/renders/types'
+import type { RenderRow } from '@/lib/video/renders/types'
 
 interface RenderHistoryPanelProps {
   initialRenders: RenderRow[]
