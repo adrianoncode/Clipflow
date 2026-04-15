@@ -1,18 +1,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import {
-  Cloud,
-  FileText,
-  Mail,
-  MessageSquare,
-  Table2,
-  Globe,
-  Webhook,
-  Video,
-  Send,
-  Check,
-} from 'lucide-react'
+import { Send, Zap, Check } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
 import { createClient } from '@/lib/supabase/server'
@@ -28,133 +17,165 @@ type ConnectionType = 'webhook' | 'api_key' | 'oauth' | 'coming_soon' | 'managed
 interface IntegrationDef {
   id: string
   name: string
-  icon: React.ComponentType<{ className?: string }>
   connectionType: ConnectionType
-  iconColor: string
-  iconBg: string
   benefit: string
+  /** Brand letter / symbol shown in the icon square */
+  letter: string
+  /** Tailwind bg class for the icon */
+  iconBg: string
+  /** Tailwind text class for the letter */
+  iconText: string
 }
 
-const INTEGRATIONS: Record<string, IntegrationDef[]> = {
-  'One-click OAuth': [
-    {
-      id: 'notion',
-      name: 'Notion',
-      icon: FileText,
-      connectionType: 'oauth',
-      iconColor: 'text-zinc-700',
-      iconBg: 'bg-zinc-100',
-      benefit: 'Sync outputs to a Notion database.',
-    },
-    {
-      id: 'google-drive',
-      name: 'Google Drive',
-      icon: Cloud,
-      connectionType: 'oauth',
-      iconColor: 'text-yellow-600',
-      iconBg: 'bg-yellow-50',
-      benefit: 'Import videos and docs from Drive.',
-    },
-    {
-      id: 'google-sheets',
-      name: 'Google Sheets',
-      icon: Table2,
-      connectionType: 'oauth',
-      iconColor: 'text-green-600',
-      iconBg: 'bg-green-50',
-      benefit: 'Export analytics to a Sheet.',
-    },
-  ],
-  'Paste a Webhook URL': [
-    {
-      id: 'slack',
-      name: 'Slack',
-      icon: MessageSquare,
-      connectionType: 'webhook',
-      iconColor: 'text-purple-600',
-      iconBg: 'bg-purple-50',
-      benefit: 'Get notified when renders finish.',
-    },
-    {
-      id: 'discord',
-      name: 'Discord',
-      icon: MessageSquare,
-      connectionType: 'webhook',
-      iconColor: 'text-indigo-600',
-      iconBg: 'bg-indigo-50',
-      benefit: 'Post updates to your Discord server.',
-    },
-  ],
-  'Paste an API Key': [
-    {
-      id: 'beehiiv',
-      name: 'Beehiiv',
-      icon: Mail,
-      connectionType: 'api_key',
-      iconColor: 'text-orange-600',
-      iconBg: 'bg-orange-50',
-      benefit: 'Push newsletters directly to Beehiiv.',
-    },
-    {
-      id: 'wordpress',
-      name: 'WordPress',
-      icon: Globe,
-      connectionType: 'api_key',
-      iconColor: 'text-blue-600',
-      iconBg: 'bg-blue-50',
-      benefit: 'Publish blog posts to your site.',
-    },
-    {
-      id: 'medium',
-      name: 'Medium',
-      icon: FileText,
-      connectionType: 'api_key',
-      iconColor: 'text-zinc-700',
-      iconBg: 'bg-zinc-100',
-      benefit: 'One-click publish to Medium.',
-    },
-    {
-      id: 'airtable',
-      name: 'Airtable',
-      icon: Table2,
-      connectionType: 'api_key',
-      iconColor: 'text-teal-600',
-      iconBg: 'bg-teal-50',
-      benefit: 'Sync your content calendar to Airtable.',
-    },
-  ],
-  'Automation Platforms': [
-    {
-      id: 'zapier',
-      name: 'Zapier',
-      icon: Webhook,
-      connectionType: 'managed',
-      iconColor: 'text-orange-600',
-      iconBg: 'bg-orange-50',
-      benefit: 'Trigger any Zap when outputs are ready.',
-    },
-    {
-      id: 'make',
-      name: 'Make',
-      icon: Webhook,
-      connectionType: 'managed',
-      iconColor: 'text-violet-600',
-      iconBg: 'bg-violet-50',
-      benefit: 'Trigger Make scenarios from Clipflow.',
-    },
-  ],
-  'Coming Soon': [
-    {
-      id: 'zoom',
-      name: 'Zoom',
-      icon: Video,
-      connectionType: 'coming_soon',
-      iconColor: 'text-blue-600',
-      iconBg: 'bg-blue-50',
-      benefit: 'Auto-import meeting recordings.',
-    },
-  ],
-}
+// ─── Integration catalogue ────────────────────────────────────────────────────
+
+const GROUPS: { title: string; subtitle: string; color: string; items: IntegrationDef[] }[] = [
+  {
+    title: 'One-click OAuth',
+    subtitle: 'Connect in seconds — no keys to copy',
+    color: 'bg-violet-500',
+    items: [
+      {
+        id: 'notion',
+        name: 'Notion',
+        connectionType: 'oauth',
+        benefit: 'Sync AI outputs straight into any Notion database.',
+        letter: 'N',
+        iconBg: 'bg-zinc-900',
+        iconText: 'text-white',
+      },
+      {
+        id: 'google-drive',
+        name: 'Google Drive',
+        connectionType: 'oauth',
+        benefit: 'Import source videos and docs from Drive.',
+        letter: 'G',
+        iconBg: 'bg-gradient-to-br from-blue-500 via-green-500 to-yellow-400',
+        iconText: 'text-white',
+      },
+      {
+        id: 'google-sheets',
+        name: 'Google Sheets',
+        connectionType: 'oauth',
+        benefit: 'Export analytics and content calendar to a Sheet.',
+        letter: 'S',
+        iconBg: 'bg-emerald-600',
+        iconText: 'text-white',
+      },
+    ],
+  },
+  {
+    title: 'Notifications',
+    subtitle: 'Get pinged when renders and outputs are ready',
+    color: 'bg-indigo-500',
+    items: [
+      {
+        id: 'slack',
+        name: 'Slack',
+        connectionType: 'webhook',
+        benefit: 'Post render-complete and output-ready alerts to any channel.',
+        letter: '#',
+        iconBg: 'bg-[#4A154B]',
+        iconText: 'text-white',
+      },
+      {
+        id: 'discord',
+        name: 'Discord',
+        connectionType: 'webhook',
+        benefit: 'Announce new content drops to your Discord server.',
+        letter: '◈',
+        iconBg: 'bg-[#5865F2]',
+        iconText: 'text-white',
+      },
+    ],
+  },
+  {
+    title: 'Publishing',
+    subtitle: 'Push finished content straight to your platforms',
+    color: 'bg-orange-500',
+    items: [
+      {
+        id: 'beehiiv',
+        name: 'Beehiiv',
+        connectionType: 'api_key',
+        benefit: 'Push newsletter drafts directly into your Beehiiv publication.',
+        letter: 'B',
+        iconBg: 'bg-gradient-to-br from-orange-400 to-red-500',
+        iconText: 'text-white',
+      },
+      {
+        id: 'wordpress',
+        name: 'WordPress',
+        connectionType: 'api_key',
+        benefit: 'Auto-publish blog posts from AI outputs to your WP site.',
+        letter: 'W',
+        iconBg: 'bg-[#21759B]',
+        iconText: 'text-white',
+      },
+      {
+        id: 'medium',
+        name: 'Medium',
+        connectionType: 'api_key',
+        benefit: 'One-click publish polished articles to Medium.',
+        letter: 'M',
+        iconBg: 'bg-zinc-900',
+        iconText: 'text-white',
+      },
+      {
+        id: 'airtable',
+        name: 'Airtable',
+        connectionType: 'api_key',
+        benefit: 'Keep your content calendar in Airtable in sync.',
+        letter: 'A',
+        iconBg: 'bg-gradient-to-br from-cyan-400 to-teal-500',
+        iconText: 'text-white',
+      },
+    ],
+  },
+  {
+    title: 'Automation',
+    subtitle: 'Wire Clipflow into any workflow',
+    color: 'bg-amber-500',
+    items: [
+      {
+        id: 'zapier',
+        name: 'Zapier',
+        connectionType: 'managed',
+        benefit: 'Trigger any Zap when renders or outputs are ready.',
+        letter: 'Z',
+        iconBg: 'bg-[#FF4A00]',
+        iconText: 'text-white',
+      },
+      {
+        id: 'make',
+        name: 'Make',
+        connectionType: 'managed',
+        benefit: 'Trigger Make scenarios from Clipflow events.',
+        letter: 'M',
+        iconBg: 'bg-gradient-to-br from-violet-600 to-purple-700',
+        iconText: 'text-white',
+      },
+    ],
+  },
+  {
+    title: 'Coming soon',
+    subtitle: 'On the roadmap',
+    color: 'bg-zinc-400',
+    items: [
+      {
+        id: 'zoom',
+        name: 'Zoom',
+        connectionType: 'coming_soon',
+        benefit: 'Auto-import meeting recordings for transcript + repurposing.',
+        letter: 'Z',
+        iconBg: 'bg-[#2D8CFF]',
+        iconText: 'text-white',
+      },
+    ],
+  },
+]
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default async function IntegrationsPage({
   searchParams,
@@ -181,48 +202,42 @@ export default async function IntegrationsPage({
     } catch { /* ignore */ }
   }
 
-  const allIntegrations = Object.values(INTEGRATIONS).flat()
-  const connectedCount = allIntegrations.filter((i) => connectedIds.has(i.id)).length
+  const allItems = GROUPS.flatMap((g) => g.items)
+  const connectedCount = allItems.filter((i) => connectedIds.has(i.id)).length
+  const totalCount = allItems.filter((i) => i.connectionType !== 'coming_soon').length
+
   const urlError = searchParams.error
   const urlConnected = searchParams.connected
 
   return (
-    <div className="max-w-2xl space-y-8">
+    <div className="max-w-3xl space-y-10">
 
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-semibold">Integrations</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Connect Clipflow to your existing tools. Start with the easiest ones — OAuth is one click.
-        </p>
-        {connectedCount > 0 && (
-          <p className="mt-1.5 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              {connectedCount} connected
-            </span>
-          </p>
-        )}
-      </div>
-
-      {/* Social publishing notice */}
-      <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm">
-        <Send className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+      {/* ── Header ── */}
+      <div className="space-y-4">
         <div>
-          <p className="font-semibold">Social publishing → TikTok, Instagram, YouTube, LinkedIn</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Set up in{' '}
-            <Link href="/settings/ai-keys" className="font-medium text-primary underline-offset-2 hover:underline">
-              API Keys → Publishing
-            </Link>
-            {' '}via Upload-Post. One key, all four platforms, no OAuth needed.
+          <h1 className="text-xl font-bold tracking-tight">Integrations</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Connect Clipflow to the tools you already use. OAuth integrations take one click.
           </p>
+        </div>
+
+        {/* Progress bar */}
+        <div className="flex items-center gap-3">
+          <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-border/60">
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-primary transition-all duration-700"
+              style={{ width: `${Math.round((connectedCount / totalCount) * 100)}%` }}
+            />
+          </div>
+          <span className="shrink-0 text-xs font-semibold tabular-nums text-muted-foreground">
+            {connectedCount} / {totalCount} connected
+          </span>
         </div>
       </div>
 
-      {/* Feedback from OAuth redirect */}
+      {/* ── OAuth feedback ── */}
       {urlError && (
-        <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
+        <div className="flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
           <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white">!</span>
           <div>
             <p className="font-semibold text-destructive">Connection failed</p>
@@ -230,69 +245,112 @@ export default async function IntegrationsPage({
               {urlError === 'session_expired'
                 ? 'Session timed out — click Connect again.'
                 : urlError === 'auth_cancelled'
-                ? 'Sign-in cancelled — try again when ready.'
-                : decodeURIComponent(urlError)}
+                  ? 'Sign-in cancelled — try again when ready.'
+                  : decodeURIComponent(urlError)}
             </p>
           </div>
         </div>
       )}
       {urlConnected && (
-        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 text-sm">
-          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">✓</span>
+        <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-sm">
+          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500">
+            <Check className="h-3 w-3 text-white" />
+          </div>
           <div>
             <p className="font-semibold text-emerald-800">
               {urlConnected.replace(/-/g, ' ')} connected
             </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">Ready to use.</p>
+            <p className="mt-0.5 text-xs text-emerald-700">Ready to use across Clipflow.</p>
           </div>
         </div>
       )}
 
-      {/* Integration sections */}
-      {Object.entries(INTEGRATIONS).map(([groupTitle, items]) => (
-        <section key={groupTitle} className="space-y-2">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {groupTitle}
-          </h2>
+      {/* ── Social publishing notice ── */}
+      <div className="group relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/[0.07] to-background p-5">
+        <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary/5 blur-2xl transition-all duration-500 group-hover:scale-150 group-hover:bg-primary/10" />
+        <div className="relative flex items-start gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+            <Send className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <p className="font-semibold">Social publishing → TikTok, Instagram, YouTube, LinkedIn</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Set up in{' '}
+              <Link href="/settings/ai-keys" className="font-semibold text-primary underline-offset-2 hover:underline">
+                API Keys → Publishing
+              </Link>
+              {' '}via Upload-Post. One key, all four platforms, no OAuth needed.
+            </p>
+          </div>
+        </div>
+      </div>
 
-          <div className="overflow-hidden rounded-xl border border-border/60">
-            {items.map((integration, idx) => {
-              const Icon = integration.icon
+      {/* ── Integration groups ── */}
+      {GROUPS.map((group) => (
+        <section key={group.title} className="space-y-4">
+          {/* Group header */}
+          <div className="flex items-center gap-3">
+            <span className={`h-4 w-1 rounded-full ${group.color}`} />
+            <div>
+              <h2 className="text-sm font-bold">{group.title}</h2>
+              <p className="text-xs text-muted-foreground">{group.subtitle}</p>
+            </div>
+          </div>
+
+          {/* Cards grid */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {group.items.map((integration) => {
               const isConnected = connectedIds.has(integration.id)
-              const isLast = idx === items.length - 1
+              const isComingSoon = integration.connectionType === 'coming_soon'
 
               return (
                 <div
                   key={integration.id}
-                  className={`flex items-center gap-4 px-4 py-3.5 ${!isLast ? 'border-b border-border/50' : ''} ${isConnected ? 'bg-emerald-50/30' : 'bg-card'}`}
+                  className={`group relative flex flex-col overflow-hidden rounded-2xl border p-5 transition-all duration-300 ${
+                    isComingSoon
+                      ? 'border-border/40 bg-muted/20 opacity-60'
+                      : isConnected
+                        ? 'border-emerald-200 bg-gradient-to-br from-emerald-50/60 to-background shadow-sm hover:-translate-y-1.5 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/10'
+                        : 'border-border/50 bg-card hover:-translate-y-1.5 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/8'
+                  }`}
                 >
+                  {/* Shine sweep on hover */}
+                  {!isComingSoon && (
+                    <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                  )}
+
+                  {/* Connected badge */}
+                  {isConnected && (
+                    <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                      Live
+                    </div>
+                  )}
+                  {isComingSoon && (
+                    <div className="absolute right-4 top-4 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold text-zinc-500">
+                      Soon
+                    </div>
+                  )}
+
                   {/* Icon */}
-                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${integration.iconBg}`}>
-                    <Icon className={`h-4 w-4 ${integration.iconColor}`} />
+                  <div
+                    className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-black shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-2 ${integration.iconBg} ${integration.iconText}`}
+                    aria-hidden
+                  >
+                    {integration.letter}
                   </div>
 
-                  {/* Info */}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{integration.name}</span>
-                      {isConnected && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
-                          <Check className="h-2.5 w-2.5" />
-                          Connected
-                        </span>
-                      )}
-                      {integration.connectionType === 'coming_soon' && (
-                        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-500">
-                          Soon
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">{integration.benefit}</p>
+                  {/* Text */}
+                  <div className="flex-1">
+                    <h3 className="text-sm font-bold">{integration.name}</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {integration.benefit}
+                    </p>
                   </div>
 
                   {/* Action */}
-                  {integration.connectionType !== 'coming_soon' && workspaceId && (
-                    <div className="shrink-0">
+                  {!isComingSoon && workspaceId && (
+                    <div className="mt-4">
                       <ConnectDialog
                         integrationId={integration.id}
                         integrationName={integration.name}
@@ -308,6 +366,26 @@ export default async function IntegrationsPage({
           </div>
         </section>
       ))}
+
+      {/* ── Bottom CTA ── */}
+      <div className="flex items-start gap-4 rounded-2xl border border-border/50 bg-muted/30 p-5">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted">
+          <Zap className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold">Missing an integration?</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            We add integrations every sprint.{' '}
+            <a
+              href="mailto:support@clipflow.to?subject=Integration request"
+              className="font-medium text-primary underline-offset-2 hover:underline"
+            >
+              Request one →
+            </a>
+          </p>
+        </div>
+      </div>
+
     </div>
   )
 }
