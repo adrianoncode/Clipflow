@@ -271,7 +271,7 @@ export function ConnectDialog({
           <input type="hidden" name="integration_id" value={integrationId} />
           <button
             type="submit"
-            className="rounded-lg px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"
+            className="w-full rounded-xl border border-destructive/20 py-2 text-xs font-semibold text-destructive transition-all hover:bg-destructive/5"
           >
             Disconnect
           </button>
@@ -281,7 +281,7 @@ export function ConnectDialog({
     return (
       <Link
         href={`/api/integrations/connect?app=${integrationId}&workspace_id=${workspaceId}`}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-md"
       >
         Connect
         <ExternalLink className="h-3 w-3" />
@@ -297,7 +297,7 @@ export function ConnectDialog({
         href={docsUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent"
+        className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-border py-2 text-xs font-semibold text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
       >
         View docs
         <ExternalLink className="h-3 w-3" />
@@ -309,19 +309,19 @@ export function ConnectDialog({
   return (
     <>
       {isConnected ? (
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           <button
             onClick={() => setOpen(true)}
-            className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent"
+            className="flex-1 rounded-xl border border-border py-2 text-xs font-semibold text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
           >
             Edit
           </button>
-          <form action={disconnectAction}>
+          <form action={disconnectAction} className="flex-1">
             <input type="hidden" name="workspace_id" value={workspaceId} />
             <input type="hidden" name="integration_id" value={integrationId} />
             <button
               type="submit"
-              className="rounded-lg px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"
+              className="w-full rounded-xl border border-destructive/20 py-2 text-xs font-semibold text-destructive transition-all hover:bg-destructive/5"
             >
               Disconnect
             </button>
@@ -330,7 +330,7 @@ export function ConnectDialog({
       ) : (
         <button
           onClick={() => setOpen(true)}
-          className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          className="w-full rounded-xl bg-primary py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-md"
         >
           Connect
         </button>
