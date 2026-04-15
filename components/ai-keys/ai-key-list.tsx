@@ -10,6 +10,7 @@ const PROVIDER_LABEL: Record<AiProvider, string> = {
   shotstack: 'Shotstack',
   replicate: 'Replicate',
   elevenlabs: 'ElevenLabs',
+  'upload-post': 'Upload-Post',
 }
 
 function formatDate(iso: string): string {

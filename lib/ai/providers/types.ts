@@ -12,12 +12,16 @@ export type AiProvider =
   | 'shotstack'
   | 'replicate'
   | 'elevenlabs'
+  | 'upload-post'
 
 /** Subset that actually runs LLM inference. */
 export type LlmProvider = 'openai' | 'anthropic' | 'google'
 
 /** Subset that powers media rendering + audio. */
 export type MediaProvider = 'shotstack' | 'replicate' | 'elevenlabs'
+
+/** Subset that handles social media publishing. */
+export type PublishProvider = 'upload-post'
 
 export type ValidateResult =
   | { ok: true }

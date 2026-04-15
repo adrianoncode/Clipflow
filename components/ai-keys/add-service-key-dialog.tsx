@@ -88,25 +88,37 @@ export function AddServiceKeyDialog({
         </div>
 
         {/* Self-serve links */}
-        <div className="grid grid-cols-2 gap-2 border-b border-border/60 bg-muted/20 px-5 py-3">
-          <a
-            href={spec.signupUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-medium text-foreground transition-colors hover:border-primary/30"
-          >
-            1 · Sign up
-            <ExternalLink className="h-3 w-3 text-muted-foreground" />
-          </a>
-          <a
-            href={spec.keyDashboardUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-medium text-foreground transition-colors hover:border-primary/30"
-          >
-            2 · Get your key
-            <ExternalLink className="h-3 w-3 text-muted-foreground" />
-          </a>
+        <div className="border-b border-border/60 bg-muted/20 px-5 py-3 space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <a
+              href={spec.signupUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-medium text-foreground transition-colors hover:border-primary/30"
+            >
+              1 · Sign up
+              <ExternalLink className="h-3 w-3 text-muted-foreground" />
+            </a>
+            <a
+              href={spec.keyDashboardUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-medium text-foreground transition-colors hover:border-primary/30"
+            >
+              {spec.setupNote ? '3 · Get your key' : '2 · Get your key'}
+              <ExternalLink className="h-3 w-3 text-muted-foreground" />
+            </a>
+          </div>
+          {spec.setupNote ? (
+            <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2.5">
+              <p className="mb-1 font-mono text-[9px] uppercase tracking-[0.15em] text-primary/70">
+                2 · Important step
+              </p>
+              <p className="text-[11px] leading-relaxed text-muted-foreground">
+                {spec.setupNote}
+              </p>
+            </div>
+          ) : null}
         </div>
 
         <form action={formAction} className="space-y-4 px-5 py-5">

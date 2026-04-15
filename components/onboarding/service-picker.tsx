@@ -37,6 +37,7 @@ export function OnboardingServicePicker({
 
   const llmServices = SERVICE_DIRECTORY.filter((s) => s.category === 'llm')
   const mediaServices = SERVICE_DIRECTORY.filter((s) => s.category === 'media')
+  const publishServices = SERVICE_DIRECTORY.filter((s) => s.category === 'publish')
 
   const hasAnyLlm = llmServices.some((s) => connected.has(s.provider))
 
@@ -83,11 +84,50 @@ export function OnboardingServicePicker({
             Media stack · Optional
           </h3>
           <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70">
-            unlock rendering
+            unlock rendering &amp; voice
           </span>
         </div>
+        <p className="text-xs text-muted-foreground">
+          Renders finished MP4s (Shotstack), AI avatars (Replicate), and
+          text-to-speech (ElevenLabs). Each has a free tier — you pay the
+          provider directly, nothing extra to us.
+        </p>
         <div className="space-y-2">
           {mediaServices.map((spec) => (
+            <ServiceRow
+              key={spec.provider}
+              spec={spec}
+              isConnected={connected.has(spec.provider)}
+              onClick={() => setActiveSpec(spec)}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Publishing */}
+      <section className="space-y-3">
+        <div className="flex items-baseline justify-between">
+          <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            Publishing · Optional
+          </h3>
+          <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70">
+            auto-post to social
+          </span>
+        </div>
+        <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
+          <p className="text-xs font-medium text-foreground">
+            Without this — you download and post manually.
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            With Upload-Post connected, a <strong>Publish</strong> button
+            appears on every output. One click → TikTok, Instagram Reels,
+            YouTube Shorts, LinkedIn — simultaneously. You create an account at
+            upload-post.com, connect your social platforms there, and paste
+            your API key here. Free tier: 10 posts/mo.
+          </p>
+        </div>
+        <div className="space-y-2">
+          {publishServices.map((spec) => (
             <ServiceRow
               key={spec.provider}
               spec={spec}

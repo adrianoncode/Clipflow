@@ -51,12 +51,12 @@ export function ApiKeysBanner({
         <p className="mt-0.5 text-sm font-semibold">
           {severity === 'critical'
             ? 'Connect an AI provider to start generating content'
-            : `Connect ${missing === 1 ? '1 more service' : `${missing} more services`} to unlock rendering + voice`}
+            : `Connect ${missing === 1 ? '1 more service' : `${missing} more services`} to unlock rendering, voice + auto-publishing`}
         </p>
         <p className="truncate text-xs text-muted-foreground">
           {severity === 'critical'
             ? 'OpenAI, Anthropic, or Google — pick one, each has free credits at signup.'
-            : 'Each provider has a free tier. You only pay when you use them — at cost, no markup from us.'}
+            : 'Shotstack renders video · ElevenLabs adds voice · Upload-Post publishes to TikTok & Instagram.'}
         </p>
       </div>
       <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />

@@ -4,9 +4,16 @@ export interface ServiceSpec {
   provider: AiProvider
   name: string
   /** Category determines which group the card lives in on the page. */
-  category: 'llm' | 'media'
+  category: 'llm' | 'media' | 'publish'
   /** Short one-line value prop. */
   description: string
+  /**
+   * Extra setup context shown in the connect dialog — used when the
+   * service requires steps beyond "sign up → get key" (e.g. Upload-Post
+   * needs users to also connect their social accounts on that platform
+   * before the key is useful).
+   */
+  setupNote?: string
   /** Where the user signs up for this service. */
   signupUrl: string
   /** Where the user fetches/creates their API key after signup. */
@@ -19,6 +26,11 @@ export interface ServiceSpec {
   monogram: string
   /** Hint about what the key format looks like, for the input placeholder. */
   keyFormatHint: string
+  /**
+   * Which social platforms this publishing service supports, shown as
+   * platform pills in the settings card. Only set for category=publish.
+   */
+  publishPlatforms?: string[]
 }
 
 /**
@@ -100,6 +112,24 @@ export const SERVICE_DIRECTORY: ServiceSpec[] = [
     freeTierNote: '10 000 chars/mo on the free tier',
     monogram: 'E',
     keyFormatHint: 'sk_…',
+  },
+
+  // ── Publishing ─────────────────────────────────────────────────
+  {
+    provider: 'upload-post',
+    name: 'Upload-Post',
+    category: 'publish',
+    description:
+      'One API → publish finished videos to TikTok, Instagram Reels, YouTube Shorts and LinkedIn simultaneously.',
+    setupNote:
+      'After signing up, go to your Upload-Post dashboard and connect each social account you want to post to (TikTok, Instagram, YouTube, LinkedIn). Then copy your API key and paste it below. Clipflow uses that key to post on your behalf — we never store your social passwords.',
+    signupUrl: 'https://upload-post.com/register',
+    keyDashboardUrl: 'https://upload-post.com/dashboard/api',
+    costHint: 'From $16/mo at upload-post.com — you pay them directly',
+    freeTierNote: 'Free tier: 10 posts/mo, 2 profiles',
+    monogram: 'U',
+    keyFormatHint: 'up_live_…',
+    publishPlatforms: ['TikTok', 'Instagram', 'YouTube', 'LinkedIn'],
   },
 ]
 

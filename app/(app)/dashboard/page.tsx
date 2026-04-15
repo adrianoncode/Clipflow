@@ -30,6 +30,7 @@ import { PLANS } from '@/lib/billing/plans'
 import { getWorkspaceStats } from '@/lib/dashboard/get-workspace-stats'
 import { getRecyclableContent } from '@/lib/content/get-recyclable-content'
 import { getReferralStats } from '@/lib/referrals/get-stats'
+import { SERVICE_DIRECTORY } from '@/components/ai-keys/service-directory'
 
 export const dynamic = 'force-dynamic'
 
@@ -191,7 +192,7 @@ export default async function DashboardPage() {
       {currentWorkspace ? (
         <ApiKeysBanner
           connectedCount={new Set(aiKeys.map((k) => k.provider)).size}
-          totalCount={6}
+          totalCount={SERVICE_DIRECTORY.length}
           hasLlm={aiKeys.some((k) =>
             ['openai', 'anthropic', 'google'].includes(k.provider),
           )}

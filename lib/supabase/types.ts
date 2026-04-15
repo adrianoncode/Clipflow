@@ -31,6 +31,7 @@ export type AiProvider =
   | 'shotstack'
   | 'replicate'
   | 'elevenlabs'
+  | 'upload-post'
 export type BillingPlan = 'free' | 'solo' | 'team' | 'agency'
 export type ReferralStatus = 'pending' | 'confirmed' | 'blocked'
 export type ScraperFeature =

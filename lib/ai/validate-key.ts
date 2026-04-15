@@ -26,6 +26,7 @@ export async function validateAiKey(
     case 'shotstack':
     case 'replicate':
     case 'elevenlabs':
+    case 'upload-post':
       // Basic shape check: non-empty, no whitespace, at least 20 chars.
       if (!key || /\s/.test(key) || key.length < 20) {
         return {
