@@ -1,23 +1,28 @@
 import 'server-only'
 
+import { resolveServiceKey } from '@/lib/ai/get-service-key'
 import { getDefaultVoice } from '@/lib/voice-clone/get-workspace-voice'
 
 const DEFAULT_VOICE_ID = 'EXAVITQu4vr4xnSDxMaL' // ElevenLabs "Bella" preset voice
 
 /**
- * Generates speech audio from text using ElevenLabs TTS.
- * Uses the workspace's cloned voice if available, otherwise uses a default voice.
- *
- * Returns the audio as a Buffer (MP3 format).
+ * Generates speech audio from text using ElevenLabs TTS. BYOK-aware:
+ * uses the workspace's connected ElevenLabs key if present, otherwise
+ * falls back to the platform key.
  */
 export async function textToSpeech(params: {
   text: string
   workspaceId: string
   voiceId?: string
 }): Promise<{ ok: true; audioBuffer: Buffer; voiceId: string } | { ok: false; error: string }> {
-  const apiKey = process.env.ELEVENLABS_API_KEY
+  const apiKey =
+    (await resolveServiceKey(params.workspaceId, 'elevenlabs')) ??
+    process.env.ELEVENLABS_API_KEY
   if (!apiKey) {
-    return { ok: false, error: 'ElevenLabs API key not configured. Add ELEVENLABS_API_KEY to environment variables.' }
+    return {
+      ok: false,
+      error: 'ElevenLabs key not connected. Add one in Settings → API Keys.',
+    }
   }
 
   // Resolve voice: explicit > workspace default > global default

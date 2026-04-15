@@ -24,9 +24,21 @@ export type ContentStatus = 'uploading' | 'processing' | 'ready' | 'failed'
 export type OutputPlatform = 'tiktok' | 'instagram_reels' | 'youtube_shorts' | 'linkedin'
 export type OutputState = 'draft' | 'review' | 'approved' | 'exported'
 export type OnboardingRoleType = 'solo' | 'team' | 'agency'
-export type AiProvider = 'openai' | 'anthropic' | 'google'
+export type AiProvider =
+  | 'openai'
+  | 'anthropic'
+  | 'google'
+  | 'shotstack'
+  | 'replicate'
+  | 'elevenlabs'
 export type BillingPlan = 'free' | 'solo' | 'team' | 'agency'
 export type ReferralStatus = 'pending' | 'confirmed' | 'blocked'
+export type ScraperFeature =
+  | 'trending_sounds'
+  | 'hashtag_query'
+  | 'competitor_analysis'
+  | 'viral_discovery'
+  | 'comment_mining'
 export type RenderKind =
   | 'burn_captions'
   | 'assemble_broll'
@@ -460,6 +472,39 @@ export type Database = {
           reviewer_name?: string
           reviewer_email?: string | null
           body?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      scraper_usage: {
+        Row: {
+          id: string
+          workspace_id: string
+          feature: ScraperFeature
+          target: string | null
+          cache_hit: boolean
+          cache_key: string | null
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          workspace_id: string
+          feature: ScraperFeature
+          target?: string | null
+          cache_hit?: boolean
+          cache_key?: string | null
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          workspace_id?: string
+          feature?: ScraperFeature
+          target?: string | null
+          cache_hit?: boolean
+          cache_key?: string | null
+          created_by?: string | null
           created_at?: string
         }
         Relationships: []
@@ -906,6 +951,7 @@ export type Database = {
       render_kind: RenderKind
       render_status: RenderStatus
       render_provider: RenderProvider
+      scraper_feature: ScraperFeature
     }
     CompositeTypes: {
       [_ in never]: never

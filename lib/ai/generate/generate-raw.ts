@@ -1,6 +1,7 @@
 import 'server-only'
 
-import type { AiProvider } from '@/lib/ai/providers/types'
+// generate-raw is LLM-only — alias for minimal call-site churn.
+import type { LlmProvider as AiProvider } from '@/lib/ai/providers/types'
 import {
   GENERATION_MAX_TOKENS,
   GENERATION_TEMPERATURE,

@@ -1,17 +1,26 @@
 import 'server-only'
 
+import { resolveServiceKey } from '@/lib/ai/get-service-key'
+
 /**
  * Clones a voice via ElevenLabs Instant Voice Cloning API.
- * Takes an audio sample and returns the created voice ID.
+ * BYOK-aware: uses the workspace's connected key when provided.
  */
 export async function cloneVoice(params: {
   name: string
   audioBuffer: Buffer
   fileName: string
+  workspaceId?: string
 }): Promise<{ ok: true; voiceId: string } | { ok: false; error: string }> {
-  const apiKey = process.env.ELEVENLABS_API_KEY
+  const apiKey =
+    (params.workspaceId
+      ? await resolveServiceKey(params.workspaceId, 'elevenlabs')
+      : null) ?? process.env.ELEVENLABS_API_KEY
   if (!apiKey) {
-    return { ok: false, error: 'ElevenLabs API key not configured. Add ELEVENLABS_API_KEY to environment variables.' }
+    return {
+      ok: false,
+      error: 'ElevenLabs key not connected. Add one in Settings → API Keys.',
+    }
   }
 
   try {
@@ -42,11 +51,19 @@ export async function cloneVoice(params: {
 /**
  * Lists available ElevenLabs voices (for selection).
  */
-export async function listElevenLabsVoices(): Promise<
+export async function listElevenLabsVoices(
+  workspaceId?: string,
+): Promise<
   { ok: true; voices: Array<{ voice_id: string; name: string }> } | { ok: false; error: string }
 > {
-  const apiKey = process.env.ELEVENLABS_API_KEY
-  if (!apiKey) return { ok: false, error: 'ElevenLabs API key not configured.' }
+  const apiKey =
+    (workspaceId ? await resolveServiceKey(workspaceId, 'elevenlabs') : null) ??
+    process.env.ELEVENLABS_API_KEY
+  if (!apiKey)
+    return {
+      ok: false,
+      error: 'ElevenLabs key not connected. Add one in Settings → API Keys.',
+    }
 
   try {
     const res = await fetch('https://api.elevenlabs.io/v1/voices', {

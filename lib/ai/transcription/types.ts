@@ -1,4 +1,6 @@
-import type { AiProvider } from '@/lib/ai/providers/types'
+// Transcription only uses LLM providers (Whisper on OpenAI today).
+// Local alias keeps existing call sites unchanged.
+import type { LlmProvider as AiProvider } from '@/lib/ai/providers/types'
 
 export type TranscriptionErrorCode =
   | 'invalid_key'

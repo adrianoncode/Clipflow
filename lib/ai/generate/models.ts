@@ -1,4 +1,4 @@
-import type { AiProvider } from '@/lib/ai/providers/types'
+import type { LlmProvider } from '@/lib/ai/providers/types'
 
 /**
  * Default model per provider for M4 output generation.
@@ -14,7 +14,7 @@ import type { AiProvider } from '@/lib/ai/providers/types'
  *   curl -H "x-api-key: $KEY" -H "anthropic-version: 2023-06-01" https://api.anthropic.com/v1/models
  *   curl "https://generativelanguage.googleapis.com/v1beta/models?key=$KEY"
  */
-export const DEFAULT_MODELS: Record<AiProvider, string> = {
+export const DEFAULT_MODELS: Record<LlmProvider, string> = {
   openai: 'gpt-4o-mini',
   anthropic: 'claude-haiku-4-5-20251001',
   google: 'gemini-2.0-flash',

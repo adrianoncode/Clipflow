@@ -1,15 +1,24 @@
 import 'server-only'
 
+import { resolveServiceKey } from '@/lib/ai/get-service-key'
+
 // ElevenLabs Dubbing API
 // Docs: https://elevenlabs.io/docs/api-reference/dubbing
 export async function startDubbingJob(params: {
   audioUrl: string  // source audio URL
   targetLanguage: string // e.g. 'es', 'de', 'fr', 'pt', 'ja', 'ko', 'zh'
   sourceLanguage?: string
+  workspaceId?: string
 }): Promise<{ ok: true; dubbingId: string } | { ok: false; error: string }> {
-  const apiKey = process.env.ELEVENLABS_API_KEY
+  const apiKey =
+    (params.workspaceId
+      ? await resolveServiceKey(params.workspaceId, 'elevenlabs')
+      : null) ?? process.env.ELEVENLABS_API_KEY
   if (!apiKey) {
-    return { ok: false, error: 'ElevenLabs API key not configured. Add ELEVENLABS_API_KEY to environment variables.' }
+    return {
+      ok: false,
+      error: 'ElevenLabs key not connected. Add one in Settings → API Keys.',
+    }
   }
 
   try {

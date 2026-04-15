@@ -1,7 +1,22 @@
 import 'server-only'
 
+import { resolveServiceKey } from '@/lib/ai/get-service-key'
+
 const API_URL = process.env.SHOTSTACK_API_URL ?? 'https://api.shotstack.io/edit/v1'
-const API_KEY = process.env.SHOTSTACK_API_KEY
+
+/**
+ * Resolves the Shotstack API key for a render. BYOK-first: if the
+ * workspace has a connected key we use theirs, otherwise we fall back
+ * to the platform key (env var). Returns null when neither is set so
+ * callers can surface a "Connect Shotstack" nudge instead of 500ing.
+ */
+async function getShotstackApiKey(workspaceId?: string | null): Promise<string | null> {
+  if (workspaceId) {
+    const key = await resolveServiceKey(workspaceId, 'shotstack')
+    if (key) return key
+  }
+  return process.env.SHOTSTACK_API_KEY ?? null
+}
 
 export interface ShotstackClip {
   type: 'video' | 'image' | 'title' | 'audio'
@@ -32,6 +47,12 @@ export interface RenderInput {
   resolution?: 'sd' | 'hd' | '1080'
   /** Aspect ratio */
   aspectRatio?: '16:9' | '9:16' | '1:1'
+  /**
+   * Workspace doing the render — lets us pick up the user's BYOK
+   * Shotstack key. Optional for backward compatibility; omitting it
+   * falls back to the platform key.
+   */
+  workspaceId?: string
 }
 
 /**
@@ -41,8 +62,13 @@ export interface RenderInput {
 export async function submitRender(input: RenderInput): Promise<
   { ok: true; renderId: string } | { ok: false; error: string }
 > {
-  if (!API_KEY) {
-    return { ok: false, error: 'Shotstack API key not configured.' }
+  const apiKey = await getShotstackApiKey(input.workspaceId ?? null)
+  if (!apiKey) {
+    return {
+      ok: false,
+      error:
+        'Shotstack key not connected. Add one in Settings → API Keys to render videos.',
+    }
   }
 
   const tracks = []
@@ -129,7 +155,7 @@ export async function submitRender(input: RenderInput): Promise<
     const res = await fetch(`${API_URL}/render`, {
       method: 'POST',
       headers: {
-        'x-api-key': API_KEY,
+        'x-api-key': apiKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
@@ -152,15 +178,27 @@ export async function submitRender(input: RenderInput): Promise<
 
 /**
  * Polls the render status. Returns the video URL when complete.
+ *
+ * `workspaceId` lets us read the user's BYOK key — needed because the
+ * render was submitted against their account. Omitting it falls back
+ * to the platform key for legacy render-ids.
  */
-export async function getRenderStatus(renderId: string): Promise<
+export async function getRenderStatus(
+  renderId: string,
+  workspaceId?: string | null,
+): Promise<
   { status: 'rendering' | 'done' | 'failed'; url?: string; error?: string }
 > {
-  if (!API_KEY) return { status: 'failed', error: 'No API key.' }
+  const apiKey = await getShotstackApiKey(workspaceId ?? null)
+  if (!apiKey)
+    return {
+      status: 'failed',
+      error: 'No Shotstack key — connect one in Settings → API Keys.',
+    }
 
   try {
     const res = await fetch(`${API_URL}/render/${renderId}`, {
-      headers: { 'x-api-key': API_KEY },
+      headers: { 'x-api-key': apiKey },
     })
 
     if (!res.ok) return { status: 'failed', error: `Status check failed (${res.status})` }

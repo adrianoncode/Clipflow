@@ -1,5 +1,7 @@
 import 'server-only'
 
+import { resolveServiceKey } from '@/lib/ai/get-service-key'
+
 export interface ReframeJobResult {
   ok: true
   jobId: string
@@ -12,14 +14,32 @@ export interface ReframeJobError {
   error: string
 }
 
+/**
+ * BYOK-aware Replicate key resolver. If a workspaceId is provided and
+ * the user has connected their own Replicate key, we use theirs;
+ * otherwise we fall back to the platform token.
+ */
+async function getReplicateToken(workspaceId?: string | null): Promise<string | null> {
+  if (workspaceId) {
+    const byok = await resolveServiceKey(workspaceId, 'replicate')
+    if (byok) return byok
+  }
+  return process.env.REPLICATE_API_TOKEN ?? null
+}
+
 // Start a reframing job on Replicate
 // Uses the video-reframing model to crop landscape video to 9:16 portrait
 export async function startReframeJob(
   videoUrl: string,
-  aspectRatio: '9:16' | '1:1' | '4:5' = '9:16'
+  aspectRatio: '9:16' | '1:1' | '4:5' = '9:16',
+  workspaceId?: string,
 ): Promise<ReframeJobResult | ReframeJobError> {
-  const token = process.env.REPLICATE_API_TOKEN
-  if (!token) return { ok: false, error: 'Replicate API token not configured' }
+  const token = await getReplicateToken(workspaceId)
+  if (!token)
+    return {
+      ok: false,
+      error: 'Replicate key not connected. Add one in Settings → API Keys.',
+    }
 
   try {
     // Use Replicate REST API directly (no SDK dependency issues)
@@ -66,10 +86,15 @@ export async function startReframeJob(
 
 // Poll job status
 export async function getReframeJobStatus(
-  jobId: string
+  jobId: string,
+  workspaceId?: string,
 ): Promise<ReframeJobResult | ReframeJobError> {
-  const token = process.env.REPLICATE_API_TOKEN
-  if (!token) return { ok: false, error: 'Replicate API token not configured' }
+  const token = await getReplicateToken(workspaceId)
+  if (!token)
+    return {
+      ok: false,
+      error: 'Replicate key not connected. Add one in Settings → API Keys.',
+    }
 
   try {
     const res = await fetch(`https://api.replicate.com/v1/predictions/${jobId}`, {

@@ -1,7 +1,8 @@
 import 'server-only'
 
 import { generate } from '@/lib/ai/generate/generate'
-import type { AiProvider } from '@/lib/ai/providers/types'
+// LLM-only alias — output generation never uses media-stack providers.
+import type { LlmProvider as AiProvider } from '@/lib/ai/providers/types'
 import { getPromptBuilder } from '@/lib/ai/prompts/get-prompt'
 import { getLanguageInstruction } from '@/lib/ai/prompts/languages'
 import { getActiveBrandVoice, buildBrandVoiceInstruction } from '@/lib/brand-voice/get-active-brand-voice'

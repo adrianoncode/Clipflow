@@ -1,11 +1,11 @@
 import 'server-only'
 
 import { getDecryptedAiKey } from '@/lib/ai/get-decrypted-ai-key'
-import type { AiProvider } from '@/lib/ai/providers/types'
+import type { LlmProvider } from '@/lib/ai/providers/types'
 import { createClient } from '@/lib/supabase/server'
 
 export type PickProviderResult =
-  | { ok: true; provider: AiProvider; apiKey: string; keyId: string }
+  | { ok: true; provider: LlmProvider; apiKey: string; keyId: string }
   | {
       ok: false
       code: 'no_key' | 'decrypt_failed' | 'db_error'
@@ -15,12 +15,11 @@ export type PickProviderResult =
 /**
  * Fixed priority: OpenAI is best-tested (Whisper pipeline depends on
  * it), Anthropic is strong on structured tone, Google is the least-
- * exercised path. M4 picks the first provider the workspace has a key
- * for. A per-workspace override can ship in M6+ without touching this
- * function — add a `workspaces.default_provider` column and read it
- * first before falling back to the priority list.
+ * exercised path. Picks the first LLM provider the workspace has a
+ * key for — media-stack providers (Shotstack/Replicate/ElevenLabs)
+ * are resolved separately via `getServiceKey`.
  */
-const PRIORITY: readonly AiProvider[] = ['openai', 'anthropic', 'google']
+const PRIORITY: readonly LlmProvider[] = ['openai', 'anthropic', 'google']
 
 /**
  * Resolves which BYOK provider to use for content generation in the
@@ -47,8 +46,10 @@ export async function pickGenerationProvider(
     }
   }
 
-  const availableProviders = new Set<AiProvider>(
-    (data ?? []).map((row) => row.provider as AiProvider),
+  // Cast the DB `provider` string (now broader due to BYOK) to the
+  // LLM-only set; Set.has() on non-LLM values simply misses.
+  const availableProviders = new Set<string>(
+    (data ?? []).map((row) => String(row.provider)),
   )
 
   const winner = PRIORITY.find((provider) => availableProviders.has(provider))

@@ -7,6 +7,9 @@ const PROVIDER_LABEL: Record<AiProvider, string> = {
   openai: 'OpenAI',
   anthropic: 'Anthropic',
   google: 'Google',
+  shotstack: 'Shotstack',
+  replicate: 'Replicate',
+  elevenlabs: 'ElevenLabs',
 }
 
 function formatDate(iso: string): string {

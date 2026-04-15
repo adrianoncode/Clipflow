@@ -1,4 +1,7 @@
-import type { AiProvider } from '@/lib/ai/providers/types'
+// generate/* only handles LLM providers; media-stack keys never reach
+// this pipeline. We alias LlmProvider → AiProvider locally so existing
+// call sites keep working without a mass rename.
+import type { LlmProvider as AiProvider } from '@/lib/ai/providers/types'
 
 export type GenerationErrorCode =
   | 'invalid_key'
