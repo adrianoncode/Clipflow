@@ -7,6 +7,7 @@ import { publishToWordPress } from '@/lib/integrations/wordpress'
 import { publishToMedium } from '@/lib/integrations/medium'
 import { publishToBeehiiv } from '@/lib/integrations/beehiiv'
 import { createAirtableRecord } from '@/lib/integrations/airtable'
+import { dispatchComposioActions } from '@/lib/integrations/composio-actions'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -186,6 +187,14 @@ async function _dispatch(
       }).catch(() => {}),
     )
   }
+
+  // ── Composio OAuth integrations (Notion, Sheets, Airtable, LinkedIn) ──
+  tasks.push(
+    dispatchComposioActions(workspaceId, event, payload).catch((err) => {
+      // eslint-disable-next-line no-console
+      console.warn('[dispatch:composio]', err instanceof Error ? err.message : 'failed')
+    }),
+  )
 
   await Promise.allSettled(tasks)
 }
