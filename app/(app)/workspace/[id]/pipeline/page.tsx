@@ -170,6 +170,13 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
       {/* ── Header ── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">
+            <Link href={`/workspace/${workspaceId}`} className="hover:text-foreground transition-colors">Content</Link>
+            {' → '}
+            <span className="font-medium text-foreground">Pipeline</span>
+            {' → '}
+            <Link href={`/workspace/${workspaceId}/schedule`} className="hover:text-foreground transition-colors">Schedule</Link>
+          </p>
           <h1 className="text-xl font-bold tracking-tight">Pipeline</h1>
           <p className="text-sm text-muted-foreground">
             {totalCount === 0

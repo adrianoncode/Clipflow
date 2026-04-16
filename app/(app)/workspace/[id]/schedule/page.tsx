@@ -105,6 +105,13 @@ export default async function SchedulePage({ params }: SchedulePageProps) {
       {/* ── Header ── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">
+            <Link href={`/workspace/${params.id}`} className="hover:text-foreground transition-colors">Content</Link>
+            {' → '}
+            <Link href={`/workspace/${params.id}/pipeline`} className="hover:text-foreground transition-colors">Pipeline</Link>
+            {' → '}
+            <span className="font-medium text-foreground">Schedule</span>
+          </p>
           <h1 className="text-xl font-bold tracking-tight">Schedule</h1>
           <p className="text-sm text-muted-foreground">
             {posts.length === 0

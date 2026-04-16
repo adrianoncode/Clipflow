@@ -104,10 +104,10 @@ function ToolCard({ icon, label, description, href }: ToolCardProps) {
 }
 
 /* ── Tab pill nav (matches workspace-tab-nav style) ── */
-const TABS: { key: Tab; label: string }[] = [
+const TABS: { key: Tab; label: string; badge?: string }[] = [
   { key: 'overview', label: 'Overview' },
   { key: 'generate', label: 'Generate' },
-  { key: 'tools', label: 'AI Tools' },
+  { key: 'tools', label: 'AI Tools', badge: '8' },
 ]
 
 function TabNav({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
@@ -119,7 +119,7 @@ function TabNav({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
           <button
             key={t.key}
             onClick={() => onChange(t.key)}
-            className={`relative rounded-xl px-3.5 py-1.5 text-sm font-medium transition-all duration-150 ${
+            className={`relative flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-sm font-medium transition-all duration-150 ${
               isActive
                 ? 'bg-primary/10 text-primary font-semibold'
                 : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
@@ -132,6 +132,13 @@ function TabNav({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
               />
             )}
             {t.label}
+            {t.badge && (
+              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none ${
+                isActive ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground/60'
+              }`}>
+                {t.badge}
+              </span>
+            )}
           </button>
         )
       })}
@@ -308,21 +315,6 @@ export function ContentDetailView({
           {/* ─── Tab 1: Overview ─── */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              {/* Processing banner */}
-              {item.status === 'processing' && (
-                <div className="flex items-center gap-4 rounded-2xl border border-amber-200/60 bg-gradient-to-r from-amber-50/60 to-background p-5">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
-                    <Clock className="h-5 w-5 animate-pulse" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-foreground">Transcribing your content...</p>
-                    <p className="mt-0.5 text-sm text-muted-foreground">
-                      This usually takes 1-2 minutes. The page refreshes automatically.
-                    </p>
-                  </div>
-                </div>
-              )}
-
               {/* What's Next: Generate outputs CTA */}
               {isReady && !hasExistingOutputs && (
                 <Link

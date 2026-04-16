@@ -62,10 +62,10 @@ export function SetupChecklist({
     {
       id: 'outputs',
       label: 'Generate outputs',
-      description: 'AI creates TikTok, Reels, Shorts & LinkedIn drafts',
+      description: 'Pick a content item and create 4 platform-specific drafts',
       done: outputCount > 0,
       href: `/workspace/${workspaceId}`,
-      cta: 'Generate',
+      cta: 'Pick content',
       icon: Wand2,
     },
     {
