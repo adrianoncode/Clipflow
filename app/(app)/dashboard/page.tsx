@@ -112,7 +112,10 @@ export default async function DashboardPage() {
   const planDef = PLANS[plan ?? 'free']
   const hasLlm = aiKeys.some((k) => ['openai', 'anthropic', 'google'].includes(k.provider))
 
-  const isNewUser = !hasLlm || (stats?.totalContent ?? 0) === 0 || (stats?.totalOutputs ?? 0) === 0
+  // Show setup checklist until user has completed at least the first 2 steps (AI key + content)
+  const showChecklist = !hasLlm || (stats?.totalContent ?? 0) === 0 || (stats?.totalOutputs ?? 0) === 0 || (stats?.approvedOutputs ?? 0) === 0
+  // But always show the full dashboard — never hide features behind onboarding
+  const isNewUser = false
   const pendingReview = stats?.pipelineByState.review ?? 0
   const processing = stats?.recentContent.find((c) => c.status === 'processing')
   const readyContent = stats?.recentContent.find((c) => c.status === 'ready')
@@ -146,66 +149,19 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* ═══ NEW USER: Setup checklist + explore ═════════════════ */}
-      {workspace && isNewUser && (
-        <>
-          <SetupChecklist
-            hasAiKey={hasLlm}
-            contentCount={stats?.totalContent ?? 0}
-            outputCount={stats?.totalOutputs ?? 0}
-            hasApprovedOutput={(stats?.approvedOutputs ?? 0) > 0}
-            workspaceId={workspace.id}
-          />
-
-          {/* ── How it works ──────────────────────────────────────── */}
-          <div className="rounded-2xl border border-border/50 bg-card">
-            <div className="border-b border-border/40 px-5 py-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">How Clipflow works</p>
-            </div>
-            <div className="grid gap-px bg-border/30 sm:grid-cols-3">
-              {[
-                { step: '1', title: 'Import', desc: 'Upload a video, paste a YouTube link, or write text. Clipflow transcribes it automatically.', icon: Upload, color: 'text-violet-600 bg-violet-50' },
-                { step: '2', title: 'Generate', desc: 'AI creates platform-specific drafts for TikTok, Reels, Shorts & LinkedIn in seconds.', icon: Wand2, color: 'text-blue-600 bg-blue-50' },
-                { step: '3', title: 'Publish', desc: 'Review, approve, and schedule your best outputs to post automatically.', icon: Calendar, color: 'text-emerald-600 bg-emerald-50' },
-              ].map((s) => (
-                <div key={s.step} className="flex flex-col items-center gap-3 bg-card p-6 text-center">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${s.color}`}>
-                    <s.icon className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold">{s.title}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{s.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ── Explore features ──────────────────────────────────── */}
-          <div className="space-y-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Explore</p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {[
-                { href: `/workspace/${workspace.id}/ghostwriter`, label: 'Ghostwriter', desc: 'AI writes full scripts', icon: PenLine, color: 'text-pink-600 bg-pink-50 group-hover:bg-pink-100' },
-                { href: `/workspace/${workspace.id}/trends`, label: 'Trends', desc: 'What\u2019s trending now', icon: TrendingUp, color: 'text-cyan-600 bg-cyan-50 group-hover:bg-cyan-100' },
-                { href: `/workspace/${workspace.id}/ideas`, label: 'Ideas & Gaps', desc: 'Content gap analysis', icon: Lightbulb, color: 'text-yellow-600 bg-yellow-50 group-hover:bg-yellow-100' },
-                { href: `/workspace/${workspace.id}/research`, label: 'Research', desc: 'Competitors & creators', icon: Search, color: 'text-indigo-600 bg-indigo-50 group-hover:bg-indigo-100' },
-              ].map((a) => (
-                <Link key={a.href} href={a.href} className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md hover:shadow-primary/[0.05]">
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${a.color}`}><a.icon className="h-4 w-4" /></div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold leading-tight">{a.label}</p>
-                    <p className="text-[11px] text-muted-foreground">{a.desc}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </>
+      {/* ═══ Setup checklist (shown until onboarding complete) ═══ */}
+      {workspace && showChecklist && (
+        <SetupChecklist
+          hasAiKey={hasLlm}
+          contentCount={stats?.totalContent ?? 0}
+          outputCount={stats?.totalOutputs ?? 0}
+          hasApprovedOutput={(stats?.approvedOutputs ?? 0) > 0}
+          workspaceId={workspace.id}
+        />
       )}
 
-      {/* ═══ ACTIVE USER: full dashboard ═════════════════════════ */}
-      {workspace && !isNewUser && (
+      {/* ═══ Full dashboard — always visible ═════════════════════ */}
+      {workspace && (
         <>
           {/* ── Smart Suggestions ──────────────────────────────────── */}
           {suggestions.length > 0 && <SmartSuggestions suggestions={suggestions} />}
