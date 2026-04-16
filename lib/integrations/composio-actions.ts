@@ -63,24 +63,6 @@ export async function dispatchComposioActions(
     )
   }
 
-  // ── Airtable via Composio (OAuth, no API key needed) ──────────────
-  if (connected.has('airtable')) {
-    tasks.push(
-      executeComposioAction(workspaceId, 'AIRTABLE_CREATE_A_RECORD', {
-        fields: {
-          Title: payload.title,
-          Event: eventLabel(event),
-          Platform: payload.platform ?? '',
-          Date: new Date().toISOString(),
-          URL: payload.workspaceUrl ?? '',
-        },
-      }).catch((err) => {
-        // eslint-disable-next-line no-console
-        console.warn('[composio:airtable]', err instanceof Error ? err.message : 'failed')
-      }),
-    )
-  }
-
   // ── LinkedIn: Post when exported ──────────────────────────────────
   if (connected.has('linkedin') && event === 'output.exported' && payload.body) {
     tasks.push(

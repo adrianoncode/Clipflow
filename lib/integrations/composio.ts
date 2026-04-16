@@ -26,8 +26,6 @@ export const COMPOSIO_APP_SLUGS: Record<string, string> = {
   notion:           'NOTION',
   'google-drive':   'GOOGLEDRIVE',
   'google-sheets':  'GOOGLESHEETS',
-  airtable:         'AIRTABLE',
-  youtube:          'YOUTUBE',
   linkedin:         'LINKEDIN',
 }
 
