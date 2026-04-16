@@ -3,26 +3,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Video,
+  FileVideo,
+  Sparkles,
   CheckSquare,
   Send,
   BarChart3,
-  Wand2,
-  PenTool,
-  TrendingUp,
-  Eye,
   Settings as SettingsIcon,
-  CreditCard,
   Plus,
-  LayoutDashboard,
-  Plug,
-  Users2,
-  Layers,
-  Clapperboard,
-  LayoutTemplate,
-  FolderKanban,
-  Lightbulb,
-  Rss,
 } from 'lucide-react'
 
 import { SignoutButton } from '@/components/auth/signout-button'
@@ -35,6 +22,13 @@ import { KeyboardShortcuts } from '@/components/keyboard-shortcuts'
 import { FeedbackWidget } from '@/components/feedback-widget'
 import type { WorkspaceSummary } from '@/lib/auth/get-workspaces'
 import type { BillingPlan } from '@/lib/billing/plans'
+
+interface NavItem {
+  href: string
+  label: string
+  description: string
+  icon: typeof FileVideo
+}
 
 interface AppShellProps {
   user: { id: string; email: string }
@@ -56,225 +50,110 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const pathname = usePathname()
-  const currentWorkspace = workspaces.find((w) => w.id === currentWorkspaceId)
 
   function isActive(href: string): boolean {
     if (href === '/dashboard') return pathname === href
-    if (href === '/settings') return pathname === '/settings'
-    // Workspace root should not light up for every sub-path
+    if (href === '/settings') return pathname.startsWith('/settings')
     if (href === `/workspace/${currentWorkspaceId}`) return pathname === href
     return pathname === href || pathname.startsWith(href + '/')
   }
 
-  const isFree = currentPlan === 'free'
-  // Personal workspaces are single-user by design — hide Members nav to reduce noise.
-  // Upgrade to team/client workspace (or switch workspaces) to get it back.
-  const showMembers = currentWorkspace?.type !== 'personal'
-
-  // ── WORKFLOW — the core loop: import → edit → review → publish ──
-  const workflowItems = [
+  // ── Simplified nav: 4 core items + 2 support items ──
+  const mainNav: NavItem[] = [
     {
       href: `/workspace/${currentWorkspaceId}`,
-      label: 'My Videos',
-      icon: Video,
-      locked: false,
+      label: 'Content',
+      description: 'Your video library',
+      icon: FileVideo,
     },
     {
-      href: `/workspace/${currentWorkspaceId}/studio`,
-      label: 'Studio',
-      icon: Clapperboard,
-      locked: isFree,
+      href: `/workspace/${currentWorkspaceId}/content/new`,
+      label: 'Generate',
+      description: 'Create with AI',
+      icon: Sparkles,
     },
     {
       href: `/workspace/${currentWorkspaceId}/pipeline`,
       label: 'Pipeline',
+      description: 'Review & approve',
       icon: CheckSquare,
-      locked: false,
     },
     {
       href: `/workspace/${currentWorkspaceId}/schedule`,
       label: 'Schedule',
+      description: 'Plan & publish',
       icon: Send,
-      locked: false,
     },
   ]
 
-  // ── WORKSPACE — org-level surfaces ──
-  // Progressive disclosure: Members is hidden on personal workspaces
-  // (single-user by design), visible on team/client workspaces.
-  const workspaceItems = [
+  const bottomNav: NavItem[] = [
     {
-      href: `/workspace/${currentWorkspaceId}/projects`,
-      label: 'Projects',
-      icon: FolderKanban,
-      locked: false,
+      href: '/analytics',
+      label: 'Analytics',
+      description: 'Track performance',
+      icon: BarChart3,
     },
     {
-      href: `/workspace/${currentWorkspaceId}/ideas`,
-      label: 'Ideas',
-      icon: Lightbulb,
-      locked: false,
-    },
-    {
-      href: `/workspace/${currentWorkspaceId}/channels`,
-      label: 'Channels',
-      icon: Rss,
-      locked: false,
-    },
-    ...(showMembers
-      ? [
-          {
-            href: `/workspace/${currentWorkspaceId}/members`,
-            label: 'Members',
-            icon: Users2,
-            locked: false,
-          },
-        ]
-      : []),
-  ]
-
-  // ── AI TOOLS — text / research generation ──
-  const toolItems = [
-    {
-      href: `/workspace/${currentWorkspaceId}/tools`,
-      label: 'All AI Tools',
-      icon: Wand2,
-      locked: false,
-    },
-    {
-      href: `/workspace/${currentWorkspaceId}/ghostwriter`,
-      label: 'Ghostwriter',
-      icon: PenTool,
-      locked: false,
-    },
-    {
-      href: `/workspace/${currentWorkspaceId}/batch`,
-      label: 'Batch Generate',
-      icon: Layers,
-      locked: false,
-    },
-    {
-      href: `/workspace/${currentWorkspaceId}/trends`,
-      label: 'Trends',
-      icon: TrendingUp,
-      locked: isFree,
-    },
-    {
-      href: `/workspace/${currentWorkspaceId}/research`,
-      label: 'Research',
-      icon: Eye,
-      locked: isFree,
-    },
-    {
-      href: `/settings/templates`,
-      label: 'Templates',
-      icon: LayoutTemplate,
-      locked: false,
+      href: '/settings',
+      label: 'Settings',
+      description: 'Account & workspace',
+      icon: SettingsIcon,
     },
   ]
 
-  const bottomItems = [
-    { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-    { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-    { href: '/settings/integrations', label: 'Integrations', icon: Plug },
-    { href: '/settings', label: 'Settings', icon: SettingsIcon },
-    { href: '/billing', label: 'Billing', icon: CreditCard },
-  ]
+  // Mobile: show all 6 items in bottom bar (4 main + 2 in More drawer)
+  const mobileItems = mainNav.slice(0, 4)
 
-  // Mobile primary nav: 4 core workflow actions + "More" drawer
-  const mobileItems = [
-    { href: `/workspace/${currentWorkspaceId}`, label: 'Videos', icon: Video },
-    { href: `/workspace/${currentWorkspaceId}/studio`, label: 'Studio', icon: Clapperboard },
-    { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: CheckSquare },
-    { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Send },
-  ]
+  const mobileMoreItems = bottomNav.map((item) => ({
+    href: item.href,
+    label: item.label,
+    icon: item.icon,
+  }))
 
-  // Mobile "More" drawer — everything else lives here to stay reachable on phones
-  const mobileMoreSections = [
-    { title: 'Workspace', items: workspaceItems },
-    { title: 'AI Tools', items: toolItems },
-    {
-      title: 'Overview',
-      items: bottomItems.map((i) => ({ ...i, locked: false })),
-    },
-  ]
-
-  // "More" is highlighted if the current route is in any of its drawer items
-  const moreActive = mobileMoreSections.some((section) =>
-    section.items.some(
-      (item) =>
-        pathname === item.href ||
-        (item.href !== '/dashboard' &&
-          item.href !== '/settings' &&
-          pathname.startsWith(item.href + '/')),
-    ),
+  const moreActive = mobileMoreItems.some(
+    (item) =>
+      pathname === item.href ||
+      (item.href === '/settings' && pathname.startsWith('/settings')) ||
+      (item.href !== '/settings' && pathname.startsWith(item.href + '/')),
   )
 
-  // Helper to render a single nav section with consistent styling
-  function renderNavSection(
-    title: string,
-    items: { href: string; label: string; icon: typeof Video; locked: boolean }[],
-    opts: { numbered?: boolean } = {},
-  ) {
+  function renderNavItem(item: NavItem) {
+    const active = isActive(item.href)
+    const Icon = item.icon
     return (
-      <div>
-        <p className="px-3 pb-1 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/50">
-          {title}
-        </p>
-        <div className="flex flex-col gap-0.5">
-          {items.map((item, i) => {
-            const active = isActive(item.href)
-            const Icon = item.icon
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`group relative flex items-center gap-2.5 rounded-xl px-3 py-1.5 text-[13px] transition-all duration-150 ${
-                  active
-                    ? 'bg-primary/10 font-semibold text-primary'
-                    : item.locked
-                      ? 'text-muted-foreground/40 hover:bg-accent/40 hover:text-muted-foreground/60'
-                      : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
-                }`}
-              >
-                {active && (
-                  <span
-                    aria-hidden
-                    className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r-full bg-primary"
-                  />
-                )}
-                {opts.numbered ? (
-                  <span
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-colors ${
-                      active
-                        ? 'bg-primary text-primary-foreground'
-                        : item.locked
-                          ? 'bg-border/30 text-muted-foreground/40'
-                          : 'bg-border/50 text-muted-foreground/80 group-hover:bg-primary/15 group-hover:text-primary'
-                    }`}
-                  >
-                    {i + 1}
-                  </span>
-                ) : (
-                  <Icon
-                    className={`h-3.5 w-3.5 shrink-0 transition-colors ${
-                      active
-                        ? 'text-primary'
-                        : 'text-muted-foreground/50 group-hover:text-foreground/70'
-                    }`}
-                  />
-                )}
-                <span className="flex-1 leading-tight">{item.label}</span>
-                {item.locked && (
-                  <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary">
-                    Pro
-                  </span>
-                )}
-              </Link>
-            )
-          })}
+      <Link
+        key={item.href}
+        href={item.href}
+        className={`group relative flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-all duration-150 ${
+          active
+            ? 'bg-primary/10 font-semibold text-primary'
+            : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+        }`}
+      >
+        {active && (
+          <span
+            aria-hidden
+            className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-primary"
+          />
+        )}
+        <Icon
+          className={`h-4 w-4 shrink-0 transition-colors ${
+            active
+              ? 'text-primary'
+              : 'text-muted-foreground/50 group-hover:text-foreground/70'
+          }`}
+        />
+        <div className="flex flex-col">
+          <span className="leading-tight">{item.label}</span>
+          <span
+            className={`text-[10px] leading-tight ${
+              active ? 'text-primary/60' : 'text-muted-foreground/40'
+            }`}
+          >
+            {item.description}
+          </span>
         </div>
-      </div>
+      </Link>
     )
   }
 
@@ -287,7 +166,7 @@ export function AppShell({
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-border/60 bg-white px-4 sm:px-6">
         <div className="flex items-center gap-3">
           <Link
-            href={`/workspace/${currentWorkspaceId}`}
+            href="/dashboard"
             className="font-display text-lg font-semibold tracking-tight text-primary"
           >
             Clipflow
@@ -307,21 +186,22 @@ export function AppShell({
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Sidebar ────────────────────────────────────────────── */}
-        <aside className="hidden w-56 shrink-0 flex-col border-r border-border/60 bg-[#fafafa] sm:flex">
-          <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-3 py-4">
+        <aside className="hidden w-52 shrink-0 flex-col border-r border-border/60 bg-[#fafafa] sm:flex">
+          <div className="flex flex-1 flex-col overflow-y-auto px-2.5 py-4">
 
-            {/* Primary CTA — always visible */}
+            {/* Primary CTA */}
             <Link
               href={`/workspace/${currentWorkspaceId}/content/new`}
-              className="flex items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 active:translate-y-0"
+              className="mb-4 flex items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 active:translate-y-0"
             >
               <Plus className="h-4 w-4" />
               New video
             </Link>
 
-            {renderNavSection('Workflow', workflowItems, { numbered: true })}
-            {renderNavSection('Workspace', workspaceItems)}
-            {renderNavSection('AI Tools', toolItems)}
+            {/* Core navigation */}
+            <nav className="flex flex-col gap-0.5">
+              {mainNav.map(renderNavItem)}
+            </nav>
           </div>
 
           {/* Referral card */}
@@ -335,35 +215,10 @@ export function AppShell({
           )}
 
           {/* Bottom nav */}
-          <div className="border-t border-border/60 px-3 py-3">
-            <div className="flex flex-col gap-0.5">
-              {bottomItems.map((item) => {
-                const active = isActive(item.href)
-                const Icon = item.icon
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`group relative flex items-center gap-2.5 rounded-xl px-3 py-1.5 text-[13px] transition-all duration-150 ${
-                      active
-                        ? 'bg-primary/10 font-semibold text-primary'
-                        : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
-                    }`}
-                  >
-                    {active && (
-                      <span
-                        aria-hidden
-                        className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r-full bg-primary"
-                      />
-                    )}
-                    <Icon
-                      className={`h-3.5 w-3.5 shrink-0 transition-colors ${active ? 'text-primary' : 'text-muted-foreground/50 group-hover:text-foreground/70'}`}
-                    />
-                    {item.label}
-                  </Link>
-                )
-              })}
-            </div>
+          <div className="border-t border-border/60 px-2.5 py-3">
+            <nav className="flex flex-col gap-0.5">
+              {bottomNav.map(renderNavItem)}
+            </nav>
           </div>
         </aside>
 
@@ -389,7 +244,7 @@ export function AppShell({
             </Link>
           )
         })}
-        <MobileMoreMenu active={moreActive} sections={mobileMoreSections} />
+        <MobileMoreMenu active={moreActive} items={mobileMoreItems} />
       </nav>
     </div>
   )

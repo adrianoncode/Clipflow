@@ -1,14 +1,20 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowRight, CalendarClock, CheckCircle2 } from 'lucide-react'
-
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+  ArrowRight,
+  CalendarClock,
+  CheckCircle2,
+  ChevronRight,
+  Film,
+  FileText,
+  Globe,
+  Link2,
+  Rss,
+  Sparkles,
+  Youtube,
+} from 'lucide-react'
+
+import { Badge } from '@/components/ui/badge'
 import { AiCoachPanel } from '@/components/outputs/ai-coach-panel'
 import { SeoPanel } from '@/components/outputs/seo-panel'
 import { ExportAllButton } from '@/components/outputs/export-all-button'
@@ -28,6 +34,7 @@ import { getPlanFeatures } from '@/lib/billing/plans'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { EditorExportPanel } from '@/components/content/editor-export-panel'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
+import type { ContentKind } from '@/lib/supabase/types'
 
 /**
  * `force-dynamic` so we never cache the generated outputs — the route
@@ -46,6 +53,14 @@ export const maxDuration = 300
 
 interface OutputsPageProps {
   params: { id: string; contentId: string }
+}
+
+const KIND_CONFIG: Record<ContentKind, { label: string; icon: typeof Film }> = {
+  video: { label: 'Video', icon: Film },
+  text: { label: 'Text', icon: FileText },
+  youtube: { label: 'YouTube', icon: Youtube },
+  url: { label: 'URL', icon: Link2 },
+  rss: { label: 'RSS', icon: Rss },
 }
 
 export async function generateMetadata({ params }: OutputsPageProps) {
@@ -73,19 +88,46 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
   const planFeatures = getPlanFeatures(plan)
   const hasPublishKey = aiKeys.some((k) => k.provider === 'upload-post')
   const title = item.title ?? 'Untitled'
+  const kindCfg = KIND_CONFIG[item.kind] ?? KIND_CONFIG.text
+  const KindIcon = kindCfg.icon
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <Link
-            href={`/workspace/${params.id}/content/${params.contentId}`}
-            className="text-xs text-muted-foreground underline-offset-4 hover:underline"
-          >
-            ← Back to content
-          </Link>
-          <h1 className="text-2xl font-semibold tracking-tight">Outputs — {title}</h1>
-          <p className="text-xs text-muted-foreground">
+      {/* ── Breadcrumb ── */}
+      <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Link
+          href={`/workspace/${params.id}/content`}
+          className="underline-offset-4 hover:text-foreground hover:underline"
+        >
+          Content
+        </Link>
+        <ChevronRight className="h-3 w-3" />
+        <Link
+          href={`/workspace/${params.id}/content/${params.contentId}`}
+          className="max-w-[180px] truncate underline-offset-4 hover:text-foreground hover:underline"
+        >
+          {title}
+        </Link>
+        <ChevronRight className="h-3 w-3" />
+        <span className="font-medium text-foreground">Outputs</span>
+      </nav>
+
+      {/* ── Page header ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Outputs for: {title}
+            </h1>
+            <Badge
+              variant="secondary"
+              className="gap-1 text-[11px] font-medium"
+            >
+              <KindIcon className="h-3 w-3" />
+              {kindCfg.label}
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground">
             Platform-specific drafts generated from your transcript.
           </p>
         </div>
@@ -98,25 +140,55 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
       </div>
 
       {outputs.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Generate platform drafts</CardTitle>
-            <CardDescription>
-              Clipflow will produce a TikTok, Reels, Shorts, and LinkedIn draft from your
-              transcript.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        /* ── Empty state: Generate form ── */
+        <div className="rounded-2xl border border-border/50 bg-card shadow-sm">
+          <div className="p-6 sm:p-8">
             <GenerateOutputsForm
               workspaceId={params.id}
               contentId={params.contentId}
-              submitLabel="Generate outputs"
+              submitLabel="Generate 4 outputs"
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : (
         <>
+          {/* ── Success banner ── */}
+          <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 px-5 py-3.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-emerald-900">
+                {outputs.length} output{outputs.length !== 1 ? 's' : ''} generated!
+              </p>
+              <p className="text-xs text-emerald-700">
+                Review and edit your drafts below, then move them to the pipeline.
+              </p>
+            </div>
+          </div>
+
           <OutputsGrid outputs={outputs} contentId={params.contentId} workspaceId={params.id} hasPublishKey={hasPublishKey} />
+
+          {/* ── Pipeline CTA ── */}
+          <Link
+            href={`/workspace/${params.id}/pipeline`}
+            className="group flex items-center justify-between rounded-xl border border-violet-200 bg-violet-50/60 px-5 py-4 transition-all hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-600 transition-colors group-hover:bg-violet-200">
+                <ArrowRight className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-violet-900">
+                  Next: Open Pipeline
+                </p>
+                <p className="text-xs text-violet-700">
+                  Review, approve, and schedule your {outputs.length} drafts
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="h-5 w-5 shrink-0 text-violet-400 transition-transform group-hover:translate-x-1 group-hover:text-violet-600" />
+          </Link>
 
           {/* Video Studio — prominent reminder that rendered MP4s are
               the logical next step after text drafts. Sits directly

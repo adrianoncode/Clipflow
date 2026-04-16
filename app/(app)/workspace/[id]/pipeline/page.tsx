@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowRight, CalendarClock, Plus, Inbox } from 'lucide-react'
+import { ArrowRight, CalendarClock, Plus, Inbox, GitBranch } from 'lucide-react'
 
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   PipelineBoard,
   type PipelineStateKey,
@@ -223,24 +224,15 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
 
       {/* ── Empty state ── */}
       {totalCount === 0 ? (
-        <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border bg-muted/20 py-16 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-            <Inbox className="h-6 w-6 text-muted-foreground/40" />
-          </div>
-          <div>
-            <p className="font-semibold text-foreground">No outputs yet</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Import a video, generate outputs, and they&apos;ll appear here.
-            </p>
-          </div>
-          <Link
-            href={`/workspace/${workspaceId}/content/new`}
-            className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-          >
-            <Plus className="h-3 w-3" />
-            Import first video
-          </Link>
-        </div>
+        <EmptyState
+          icon={GitBranch}
+          title="No outputs in your pipeline yet"
+          description="Generate outputs from your content first. They'll appear here as drafts ready for review."
+          actionLabel="Go to Content"
+          actionHref={`/workspace/${workspaceId}`}
+          secondaryLabel="Import new video"
+          secondaryHref={`/workspace/${workspaceId}/content/new`}
+        />
       ) : (
         <PipelineBoard
           workspaceId={workspaceId}

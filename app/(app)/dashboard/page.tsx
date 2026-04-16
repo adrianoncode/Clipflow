@@ -31,6 +31,7 @@ import {
 
 import { Sparkline } from '@/components/dashboard/sparkline'
 import { SmartSuggestions } from '@/components/dashboard/smart-suggestions'
+import { SetupChecklist } from '@/components/dashboard/setup-checklist'
 import { ContentStatusBadge } from '@/components/content/content-status-badge'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getActiveBrandVoice } from '@/lib/brand-voice/get-active-brand-voice'
@@ -204,23 +205,15 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* ── NO LLM KEY — blocker banner ──────────────────────────────── */}
-      {!hasLlm && (
-        <Link
-          href="/settings/ai-keys"
-          className="group flex items-center gap-4 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-background to-background p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-amber-100/50"
-        >
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 shadow-sm">
-            <KeyRound className="h-5 w-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold">Add an AI key to start generating</p>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              OpenAI, Anthropic, or Google — each offers free credits at signup. Takes 1 minute.
-            </p>
-          </div>
-          <ArrowRight className="h-5 w-5 shrink-0 text-amber-600 transition-transform group-hover:translate-x-1" />
-        </Link>
+      {/* ── SETUP CHECKLIST — primary onboarding for new users ──────── */}
+      {workspace && (!hasLlm || isEmpty || totalPipelineOutputs === 0) && (
+        <SetupChecklist
+          hasAiKey={hasLlm}
+          contentCount={stats?.totalContent ?? 0}
+          outputCount={stats?.totalOutputs ?? 0}
+          hasApprovedOutput={(stats?.approvedOutputs ?? 0) > 0}
+          workspaceId={workspace.id}
+        />
       )}
 
       {/* ── SMART NEXT ACTION — contextual based on state ────────────── */}
@@ -502,179 +495,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* ── EMPTY STATE — 4-step workflow ─────────────────────────── */}
-      {isEmpty && hasLlm && workspace && (
-        <div className="overflow-hidden rounded-2xl border border-border/50 bg-card">
-          <div className="border-b border-border/40 px-6 py-4">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              How Clipflow works
-            </p>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              Four steps from raw video to published content.
-            </p>
-          </div>
 
-          <div className="grid grid-cols-2 divide-x divide-y divide-border/40 sm:grid-cols-4 sm:divide-y-0">
-            {[
-              {
-                step: '1',
-                icon: Upload,
-                title: 'Import',
-                desc: 'YouTube link, MP4, transcript, or audio.',
-                color: 'bg-violet-50 text-violet-600',
-              },
-              {
-                step: '2',
-                icon: Wand2,
-                title: 'Generate',
-                desc: 'AI writes TikTok, LinkedIn, Reels & Shorts drafts.',
-                color: 'bg-primary/10 text-primary',
-              },
-              {
-                step: '3',
-                icon: CheckCircle2,
-                title: 'Review',
-                desc: 'Edit, approve, star your favourites.',
-                color: 'bg-emerald-50 text-emerald-600',
-              },
-              {
-                step: '4',
-                icon: Send,
-                title: 'Publish',
-                desc: 'Post to all platforms via Upload-Post.',
-                color: 'bg-blue-50 text-blue-600',
-              },
-            ].map(({ step, icon: Icon, title, desc, color }) => (
-              <div key={step} className="flex flex-col gap-3 p-5">
-                <div className="flex items-center gap-2">
-                  <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${color}`}>
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <span className="font-mono text-[10px] text-muted-foreground/50">
-                    Step {step}
-                  </span>
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">{title}</p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="border-t border-border/40 px-6 py-4">
-            <Link
-              href={`/workspace/${workspace.id}/content/new`}
-              className="group inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/25"
-            >
-              Import your first video
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* ── SETUP CHECKLIST ──────────────────────────────────────── */}
-      {workspace && (() => {
-        const steps = [
-          {
-            id: 'key',
-            label: 'Add AI key',
-            hint: 'OpenAI, Anthropic or Google',
-            done: hasLlm,
-            href: '/settings/ai-keys',
-            icon: KeyRound,
-          },
-          {
-            id: 'brand',
-            label: 'Set brand voice',
-            hint: 'Tone, style, audience',
-            done: !!brandVoice,
-            href: '/settings/brand-voice',
-            icon: Mic,
-          },
-          {
-            id: 'content',
-            label: 'Import content',
-            hint: 'Video, YouTube, transcript',
-            done: (stats?.totalContent ?? 0) > 0,
-            href: `/workspace/${workspace.id}/content/new`,
-            icon: Upload,
-          },
-          {
-            id: 'outputs',
-            label: 'Generate outputs',
-            hint: 'TikTok, LinkedIn, Reels…',
-            done: (stats?.totalOutputs ?? 0) > 0,
-            href: `/workspace/${workspace.id}`,
-            icon: Wand2,
-          },
-        ]
-        const done = steps.filter((s) => s.done).length
-        if (done === steps.length) return null
-
-        const nextIdx = steps.findIndex((s) => !s.done)
-
-        return (
-          <div className="rounded-2xl border border-border/50 bg-card p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-bold">Get started</p>
-                <p className="text-[11px] text-muted-foreground">{done} of {steps.length} complete</p>
-              </div>
-              <div className="flex h-2 w-24 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="rounded-full bg-primary transition-all duration-500"
-                  style={{ width: `${(done / steps.length) * 100}%` }}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-              {steps.map((step, i) => {
-                const isCurrent = i === nextIdx
-                return (
-                  <Link
-                    key={step.id}
-                    href={step.href}
-                    className={`group flex flex-col gap-3 rounded-xl border p-3.5 transition-all ${
-                      step.done
-                        ? 'pointer-events-none border-emerald-200/60 bg-emerald-50/30 opacity-50'
-                        : isCurrent
-                          ? 'border-primary/30 bg-primary/[0.04] hover:border-primary/50 hover:-translate-y-0.5 hover:shadow-md'
-                          : 'border-border/40 bg-muted/10 opacity-40 hover:opacity-60'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div
-                        className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold ${
-                          step.done
-                            ? 'bg-emerald-500 text-white'
-                            : isCurrent
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted text-muted-foreground'
-                        }`}
-                      >
-                        {step.done ? '✓' : i + 1}
-                      </div>
-                      {isCurrent && !step.done && (
-                        <ArrowRight className="h-3.5 w-3.5 text-primary transition-transform group-hover:translate-x-0.5" />
-                      )}
-                    </div>
-                    <div>
-                      <p
-                        className={`text-xs font-bold leading-tight ${step.done ? 'text-muted-foreground line-through' : 'text-foreground'}`}
-                      >
-                        {step.label}
-                      </p>
-                      <p className="mt-0.5 text-[10px] text-muted-foreground">{step.hint}</p>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-        )
-      })()}
 
       {/* ── INTEGRATION STATUS — show what's connected ──────────── */}
       {workspace && !isEmpty && (

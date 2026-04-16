@@ -9,31 +9,23 @@ interface MenuItem {
   href: string
   label: string
   icon: React.ComponentType<{ className?: string }>
-  locked?: boolean
-}
-
-interface MenuSection {
-  title: string
-  items: MenuItem[]
 }
 
 interface MobileMoreMenuProps {
   active: boolean
-  sections: MenuSection[]
+  items: MenuItem[]
 }
 
 /**
- * The 5th mobile bottom-nav slot — tap to open a bottom sheet with all
- * secondary nav items (Workspace, AI Tools, Bottom nav). This replaces
- * "Settings" in the bottom bar because Settings alone is too narrow a
- * choice for mobile users who need access to Projects, Research, Dashboard,
- * etc.
+ * The 5th mobile bottom-nav slot — tap to open a compact bottom sheet
+ * with support nav items (Analytics, Settings). Keeps the mobile bar
+ * focused on the 4 core workflow actions.
  */
-export function MobileMoreMenu({ active, sections }: MobileMoreMenuProps) {
+export function MobileMoreMenu({ active, items }: MobileMoreMenuProps) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
 
-  // Close sheet on route change so nav transitions feel snappy
+  // Close sheet on route change
   useEffect(() => {
     setOpen(false)
   }, [pathname])
@@ -51,7 +43,7 @@ export function MobileMoreMenu({ active, sections }: MobileMoreMenuProps) {
 
   function isActive(href: string): boolean {
     if (href === '/dashboard') return pathname === href
-    if (href === '/settings') return pathname === '/settings'
+    if (href === '/settings') return pathname.startsWith('/settings')
     return pathname === href || pathname.startsWith(href + '/')
   }
 
@@ -86,68 +78,47 @@ export function MobileMoreMenu({ active, sections }: MobileMoreMenuProps) {
           />
 
           {/* Sheet */}
-          <div className="relative z-10 max-h-[85vh] overflow-y-auto rounded-t-3xl border-t border-border/60 bg-background pb-[env(safe-area-inset-bottom)] shadow-2xl animate-in slide-in-from-bottom duration-300">
+          <div className="relative z-10 overflow-y-auto rounded-t-2xl border-t border-border/60 bg-background pb-[env(safe-area-inset-bottom)] shadow-2xl animate-in slide-in-from-bottom duration-300">
             {/* Drag handle + close */}
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border/40 bg-background/95 px-5 py-3 backdrop-blur-sm">
-              <div className="flex flex-col">
-                <div
-                  aria-hidden
-                  className="mx-auto mb-1 h-1 w-10 rounded-full bg-border"
-                />
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  All sections
-                </p>
-              </div>
+            <div className="flex items-center justify-between px-5 py-3">
+              <div
+                aria-hidden
+                className="mx-auto h-1 w-8 rounded-full bg-border"
+              />
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Close"
-                className="flex h-8 w-8 items-center justify-center rounded-xl border border-border/60 bg-muted/40 text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
+                className="absolute right-4 top-3 flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Sections */}
-            <div className="space-y-5 px-4 py-4">
-              {sections.map((section) => (
-                <div key={section.title}>
-                  <p className="mb-2 px-2 font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground/50">
-                    {section.title}
-                  </p>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {section.items.map((item) => {
-                      const activeItem = isActive(item.href)
-                      const Icon = item.icon
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] transition-all duration-150 ${
-                            activeItem
-                              ? 'bg-primary/10 font-semibold text-primary'
-                              : item.locked
-                                ? 'border border-border/40 bg-muted/20 text-muted-foreground/50'
-                                : 'border border-border/50 bg-card text-foreground/75 hover:border-primary/25 hover:bg-primary/[0.04]'
-                          }`}
-                        >
-                          <Icon
-                            className={`h-3.5 w-3.5 shrink-0 ${
-                              activeItem ? 'text-primary' : 'text-muted-foreground/60'
-                            }`}
-                          />
-                          <span className="flex-1 truncate leading-tight">{item.label}</span>
-                          {item.locked && (
-                            <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary">
-                              Pro
-                            </span>
-                          )}
-                        </Link>
-                      )
-                    })}
-                  </div>
-                </div>
-              ))}
+            {/* Items */}
+            <div className="flex flex-col gap-1 px-4 pb-4">
+              {items.map((item) => {
+                const activeItem = isActive(item.href)
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-3 text-[14px] transition-all duration-150 ${
+                      activeItem
+                        ? 'bg-primary/10 font-semibold text-primary'
+                        : 'text-foreground/75 active:bg-accent/60'
+                    }`}
+                  >
+                    <Icon
+                      className={`h-4 w-4 shrink-0 ${
+                        activeItem ? 'text-primary' : 'text-muted-foreground/60'
+                      }`}
+                    />
+                    <span className="leading-tight">{item.label}</span>
+                  </Link>
+                )
+              })}
             </div>
           </div>
         </div>

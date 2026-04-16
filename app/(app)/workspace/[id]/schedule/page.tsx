@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   ArrowRight,
   CalendarClock,
+  CalendarDays,
   CheckCircle2,
   Clock,
   Eye,
@@ -15,6 +16,7 @@ import {
   XCircle,
 } from 'lucide-react'
 
+import { EmptyState } from '@/components/ui/empty-state'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getScheduledPosts } from '@/lib/scheduler/get-scheduled-posts'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
@@ -197,24 +199,15 @@ export default async function SchedulePage({ params }: SchedulePageProps) {
 
       {/* ── Queue ── */}
       {posts.length === 0 ? (
-        <div className="flex flex-col items-center gap-5 rounded-2xl border border-dashed border-border/60 bg-muted/10 py-16 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
-            <Inbox className="h-7 w-7 text-muted-foreground/30" />
-          </div>
-          <div className="space-y-2">
-            <p className="text-lg font-bold text-foreground">No posts scheduled yet</p>
-            <p className="max-w-sm text-sm text-muted-foreground">
-              Approve outputs in the Pipeline, then schedule them for auto-publishing.
-            </p>
-          </div>
-          <Link
-            href={`/workspace/${params.id}/pipeline`}
-            className="group inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md"
-          >
-            Open Pipeline
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </Link>
-        </div>
+        <EmptyState
+          icon={CalendarDays}
+          title="Nothing scheduled yet"
+          description="Approve outputs in the pipeline, then drag them onto the calendar to schedule."
+          actionLabel="Open Pipeline"
+          actionHref={`/workspace/${params.id}/pipeline`}
+          secondaryLabel="View Calendar"
+          secondaryHref={`/workspace/${params.id}/calendar`}
+        />
       ) : (
         <div className="space-y-6">
           {Array.from(groups.entries()).map(([date, items]) => (

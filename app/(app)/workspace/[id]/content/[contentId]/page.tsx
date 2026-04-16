@@ -6,6 +6,7 @@ import { getContentItem } from '@/lib/content/get-content-item'
 import { getSignedUrl } from '@/lib/content/get-signed-url'
 import { hasOutputs } from '@/lib/content/has-outputs'
 import { getProjects } from '@/lib/projects/get-projects'
+import { createClient } from '@/lib/supabase/server'
 
 /**
  * Force the page off the route cache so meta-refresh lands on a fresh
@@ -52,6 +53,18 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
     needsSignedUrl ? getSignedUrl(item.source_url!) : Promise.resolve(null),
   ])
 
+  // Get output count for the "next step" banner
+  let outputCount = 0
+  if (hasExistingOutputs) {
+    const supabase = createClient()
+    const { count } = await supabase
+      .from('outputs')
+      .select('id', { count: 'exact', head: true })
+      .eq('content_id', params.contentId)
+      .eq('workspace_id', params.id)
+    outputCount = count ?? 0
+  }
+
   return (
     <>
       {isPolling ? (
@@ -63,6 +76,7 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
         item={item}
         workspaceId={params.id}
         hasExistingOutputs={hasExistingOutputs}
+        outputCount={outputCount}
         projects={projects}
         signedUrl={signedUrl ?? undefined}
       />

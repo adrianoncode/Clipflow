@@ -16,9 +16,11 @@ import {
   CheckCircle2,
   Clock,
   Check,
+  Upload,
 } from 'lucide-react'
 
 import { BulkActionBar } from '@/components/content/bulk-action-bar'
+import { EmptyState } from '@/components/ui/empty-state'
 import type { ContentItemListRow } from '@/lib/content/get-content-items'
 
 interface Project {
@@ -174,23 +176,15 @@ export function ContentListWithSearch({
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border bg-muted/20 py-16 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-          <Video className="h-6 w-6 text-muted-foreground/40" />
-        </div>
-        <div>
-          <p className="font-semibold text-foreground">No content yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Import a video, YouTube link, or paste a transcript to get started.
-          </p>
-        </div>
-        <Link
-          href={`/workspace/${workspaceId}/ideas`}
-          className="text-[11px] font-semibold text-primary/70 underline-offset-4 transition-colors hover:text-primary hover:underline"
-        >
-          Not sure what to make? Brainstorm ideas →
-        </Link>
-      </div>
+      <EmptyState
+        icon={Upload}
+        title="Import your first content"
+        description="Upload a video, paste a YouTube link, or add text. Clipflow will transcribe it and generate platform-specific outputs."
+        actionLabel="Import content"
+        actionHref={`/workspace/${workspaceId}/content/new`}
+        secondaryLabel="Need ideas? Brainstorm with AI"
+        secondaryHref={`/workspace/${workspaceId}/ideas`}
+      />
     )
   }
 
