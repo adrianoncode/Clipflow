@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { notifyPostPublished } from '@/lib/notifications/triggers'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { publishPost } from '@/lib/scheduler/publish-post'
 import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
@@ -77,6 +78,27 @@ export async function POST(req: NextRequest) {
         platform: post.platform,
         platform_post_id: result.platformPostId,
       })
+
+      // Fire-and-forget notification — resolve workspace owner + content title
+      try {
+        void (async () => {
+          try {
+            const { data: ws } = await supabase
+              .from('workspaces')
+              .select('owner_id')
+              .eq('id', post.workspace_id)
+              .maybeSingle()
+            if (!ws?.owner_id) return
+            const body = outputBodyMap.get(post.output_id) ?? ''
+            notifyPostPublished({
+              userId: ws.owner_id,
+              workspaceId: post.workspace_id,
+              platform: post.platform,
+              contentTitle: body.slice(0, 60) || 'Scheduled post',
+            })
+          } catch {}
+        })()
+      } catch {}
     } else {
       await supabase
         .from('scheduled_posts')

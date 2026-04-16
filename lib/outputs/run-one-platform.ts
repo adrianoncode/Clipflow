@@ -7,6 +7,7 @@ import { getPromptBuilder } from '@/lib/ai/prompts/get-prompt'
 import { getLanguageInstruction } from '@/lib/ai/prompts/languages'
 import { getActiveBrandVoice, buildBrandVoiceInstruction } from '@/lib/brand-voice/get-active-brand-voice'
 import { getActivePersona, buildPersonaInstruction } from '@/lib/personas/get-active-persona'
+import { getWorkspaceTemplates, type OutputTemplate } from '@/lib/templates/get-templates'
 import { insertOutputWithDraftState } from '@/lib/outputs/insert-output'
 import { renderOutputMarkdown } from '@/lib/outputs/render-markdown'
 import type { ContentKind, OutputPlatform } from '@/lib/supabase/types'
@@ -57,7 +58,10 @@ export async function runOnePlatform(
   const persona = await getActivePersona(workspaceId)
   const personaInstruction = buildPersonaInstruction(persona)
 
-  const system = prompt.system + (langInstruction ?? '') + brandVoiceInstruction + personaInstruction
+  // Inject custom output template if one exists for this platform.
+  const templateInstruction = await buildTemplateInstruction(workspaceId, platform)
+
+  const system = prompt.system + (langInstruction ?? '') + brandVoiceInstruction + personaInstruction + templateInstruction
 
   const gen = await generate({ provider, apiKey, model, system, user: prompt.user })
   if (!gen.ok) {
@@ -80,4 +84,48 @@ export async function runOnePlatform(
     return { platform, ok: false, error: insert.error }
   }
   return { platform, ok: true }
+}
+
+// ---------------------------------------------------------------------------
+// Custom output template injection
+// ---------------------------------------------------------------------------
+
+/**
+ * Loads workspace templates and returns an instruction string for the given
+ * platform. Returns empty string when no matching template exists, so the
+ * caller can safely concatenate without a guard.
+ */
+async function buildTemplateInstruction(
+  workspaceId: string,
+  platform: OutputPlatform,
+): Promise<string> {
+  let templates: OutputTemplate[]
+  try {
+    templates = await getWorkspaceTemplates(workspaceId)
+  } catch {
+    return '' // table may not exist yet
+  }
+
+  // Prefer the default template for this platform; fall back to first match.
+  const match =
+    templates.find((t) => t.platform === platform && t.is_default) ??
+    templates.find((t) => t.platform === platform)
+
+  if (!match) return ''
+
+  const parts: string[] = []
+
+  if (match.system_prompt) {
+    parts.push(
+      `\n\n--- Custom template ("${match.name}") ---\n${match.system_prompt}`,
+    )
+  }
+
+  if (match.structure_hint) {
+    parts.push(
+      `\n\nAdditional formatting guidance:\n${match.structure_hint}`,
+    )
+  }
+
+  return parts.join('')
 }

@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendReviewNotification } from '@/lib/email/send-review-notification'
+import { notifyReviewComment } from '@/lib/notifications/triggers'
 
 const submitCommentSchema = z.object({
   review_link_id: z.string().uuid(),
@@ -56,6 +57,27 @@ export async function submitReviewCommentAction(
   })
 
   if (error) return { ok: false, error: error.message }
+
+  // Fire-and-forget in-app notification for workspace owner
+  try {
+    void (async () => {
+      try {
+        const { data: content } = await admin
+          .from('content_items')
+          .select('title')
+          .eq('id', link.content_id)
+          .eq('workspace_id', link.workspace_id)
+          .maybeSingle()
+        notifyReviewComment({
+          userId: link.created_by,
+          workspaceId: link.workspace_id,
+          reviewerName: parsed.data.reviewer_name,
+          contentTitle: content?.title ?? 'Untitled',
+          contentId: link.content_id,
+        })
+      } catch {}
+    })()
+  } catch {}
 
   // --- Fire email notification (non-blocking, errors are logged not thrown) ---
   void (async () => {

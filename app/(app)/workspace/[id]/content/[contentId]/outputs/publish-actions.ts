@@ -1,8 +1,10 @@
 'use server'
 
 import { getUser } from '@/lib/auth/get-user'
+import { notifyPostPublished } from '@/lib/notifications/triggers'
 import { publishVideo, type PublishPlatform } from '@/lib/publish/upload-post'
 import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
+import { dispatchIntegrations } from '@/lib/integrations/dispatch-integrations'
 
 export type PublishOutputState =
   | { ok?: undefined }
@@ -59,6 +61,25 @@ export async function publishOutputAction(
   triggerWebhooks(workspaceId, 'post.published', {
     platforms,
     caption: caption.trim(),
+  })
+
+  // Fire-and-forget notification per platform
+  try {
+    for (const p of platforms) {
+      notifyPostPublished({
+        userId: user.id,
+        workspaceId,
+        platform: p,
+        contentTitle: caption.trim().slice(0, 60),
+      })
+    }
+  } catch {}
+
+  // Fire-and-forget integration dispatch
+  dispatchIntegrations(workspaceId, 'post.published', {
+    title: caption.trim().slice(0, 120),
+    platform: platforms.join(', '),
+    workspaceUrl: `/workspace/${workspaceId}`,
   })
 
   return { ok: true, postedTo: platforms }

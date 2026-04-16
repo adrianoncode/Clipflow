@@ -24,7 +24,9 @@ import { toggleOutputStar } from '@/lib/outputs/star-output'
 import { transitionOutputState } from '@/lib/outputs/transition-output-state'
 import { updateOutput } from '@/lib/outputs/update-output'
 import type { OutputPlatform } from '@/lib/supabase/types'
+import { notifyOutputsGenerated, notifyOutputApproved } from '@/lib/notifications/triggers'
 import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
+import { dispatchIntegrations } from '@/lib/integrations/dispatch-integrations'
 
 // NOTE: `export const maxDuration = 300` lives on the route segment
 // (outputs/page.tsx). Next 14 'use server' modules may only export
@@ -187,6 +189,17 @@ export async function generateOutputsAction(
       platforms: generated,
       failed: failed.map((f) => f.platform),
     })
+
+    // Fire-and-forget notification
+    try {
+      notifyOutputsGenerated({
+        userId,
+        workspaceId,
+        contentTitle: title,
+        contentId,
+        platformCount: generated.length,
+      })
+    } catch {}
   }
 
   return { ok: true, generated, failed }
@@ -278,6 +291,66 @@ export async function transitionOutputStateAction(
       output_id,
       new_state,
     })
+
+    // Fire-and-forget notification — resolve output details in background
+    try {
+      void (async () => {
+        try {
+          const sb = createClient()
+          const { data: out } = await sb
+            .from('outputs')
+            .select('platform, content_id')
+            .eq('id', output_id)
+            .eq('workspace_id', workspace_id)
+            .maybeSingle()
+          if (!out) return
+          const { data: ci } = await sb
+            .from('content_items')
+            .select('title')
+            .eq('id', out.content_id)
+            .eq('workspace_id', workspace_id)
+            .maybeSingle()
+          notifyOutputApproved({
+            userId: user.id,
+            workspaceId: workspace_id,
+            platform: out.platform ?? '',
+            contentTitle: ci?.title ?? 'Untitled',
+            contentId: out.content_id,
+          })
+        } catch {}
+      })()
+    } catch {}
+  }
+
+  // Fire-and-forget integration dispatch for approved / exported
+  if (new_state === 'approved' || new_state === 'exported') {
+    try {
+      void (async () => {
+        try {
+          const sb = createClient()
+          const { data: out } = await sb
+            .from('outputs')
+            .select('platform, body, content_id')
+            .eq('id', output_id)
+            .eq('workspace_id', workspace_id)
+            .maybeSingle()
+          if (!out) return
+          const { data: ci } = await sb
+            .from('content_items')
+            .select('title')
+            .eq('id', out.content_id)
+            .eq('workspace_id', workspace_id)
+            .maybeSingle()
+          const event = new_state === 'approved' ? 'output.approved' as const : 'output.exported' as const
+          dispatchIntegrations(workspace_id, event, {
+            title: ci?.title ?? 'Untitled',
+            body: (out.body as string | null) ?? undefined,
+            platform: out.platform ?? undefined,
+            workspaceUrl: `/workspace/${workspace_id}/content/${out.content_id}/outputs`,
+          })
+        } catch {}
+      })()
+    } catch {}
   }
 
   return { ok: true }
