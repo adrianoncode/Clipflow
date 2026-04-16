@@ -140,6 +140,7 @@ export default async function DashboardPage() {
               outputCount={stats?.totalOutputs ?? 0}
               hasApprovedOutput={(stats?.approvedOutputs ?? 0) > 0}
               workspaceId={workspace.id}
+              firstReadyContentId={readyContent?.id}
             />
           )}
 

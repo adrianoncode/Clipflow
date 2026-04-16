@@ -19,6 +19,8 @@ interface SetupChecklistProps {
   outputCount: number
   hasApprovedOutput: boolean
   workspaceId: string
+  /** ID of the first ready content item (for direct "Generate" link) */
+  firstReadyContentId?: string
 }
 
 const DISMISSED_KEY = 'clipflow.setup-checklist-dismissed'
@@ -29,6 +31,7 @@ export function SetupChecklist({
   outputCount,
   hasApprovedOutput,
   workspaceId,
+  firstReadyContentId,
 }: SetupChecklistProps) {
   const [dismissed, setDismissed] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -64,8 +67,10 @@ export function SetupChecklist({
       label: 'Generate outputs',
       description: 'Pick a content item and create 4 platform-specific drafts',
       done: outputCount > 0,
-      href: `/workspace/${workspaceId}`,
-      cta: 'Pick content',
+      href: firstReadyContentId
+        ? `/workspace/${workspaceId}/content/${firstReadyContentId}/outputs`
+        : `/workspace/${workspaceId}`,
+      cta: firstReadyContentId ? 'Generate' : 'Pick content',
       icon: Wand2,
     },
     {

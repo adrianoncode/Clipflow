@@ -1,8 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { useFormState, useFormStatus } from 'react-dom'
 import { useState } from 'react'
-import { FileText, Globe, Rss, Video, Youtube } from 'lucide-react'
+import { ArrowRight, FileText, Globe, Layers, Rss, Video, Youtube } from 'lucide-react'
 import { batchGenerateAction, type BatchGenerateState } from '@/app/(app)/workspace/[id]/batch/actions'
 
 const initialState: BatchGenerateState = {}
@@ -116,13 +117,23 @@ export function BatchGenerator({ items, workspaceId }: BatchGeneratorProps) {
             </tbody>
           </table>
         </div>
-        <button
-          type="button"
-          onClick={() => window.location.reload()}
-          className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-        >
-          ← Run another batch
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/workspace/${workspaceId}/pipeline`}
+            className="group inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <Layers className="h-4 w-4" />
+            Open Pipeline
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+          >
+            Run another batch
+          </button>
+        </div>
       </div>
     )
   }

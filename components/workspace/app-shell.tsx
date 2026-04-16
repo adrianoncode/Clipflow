@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -18,6 +19,7 @@ import {
   BarChart3,
   Settings as SettingsIcon,
   Plus,
+  MoreHorizontal,
 } from 'lucide-react'
 
 import { SignoutButton } from '@/components/auth/signout-button'
@@ -105,14 +107,20 @@ export function AppShell({
     { href: '/settings', label: 'Settings', icon: SettingsIcon },
   ]
 
-  // Mobile: 5 core items
+  // Mobile: 4 core items + More
   const mobileItems: NavItem[] = [
     { href: `/workspace/${currentWorkspaceId}`, label: 'Content', icon: FileVideo },
     { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Import', icon: Sparkles },
     { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: CheckSquare },
     { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Send },
-    { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   ]
+
+  const mobileMoreItems: NavItem[] = [
+    ...groups.flatMap((g) => g.items).filter((i) => !mobileItems.some((m) => m.href === i.href)),
+    ...bottomItems,
+  ]
+
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false)
 
   function renderItem(item: NavItem) {
     const active = isActive(item.href)
@@ -244,7 +252,55 @@ export function AppShell({
             </Link>
           )
         })}
+        <button
+          type="button"
+          onClick={() => setMobileMoreOpen((v) => !v)}
+          className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-all ${
+            mobileMoreOpen ? 'text-primary' : 'text-muted-foreground active:scale-95'
+          }`}
+        >
+          <MoreHorizontal className="h-4 w-4" />
+          More
+        </button>
       </nav>
+
+      {/* ── Mobile More sheet ─────────────────────────────────────── */}
+      {mobileMoreOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm sm:hidden"
+            onClick={() => setMobileMoreOpen(false)}
+          />
+          <div className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 max-h-[60vh] overflow-y-auto rounded-t-2xl border-t border-border/60 bg-white p-4 shadow-xl sm:hidden">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-bold text-muted-foreground">All features</p>
+              <button
+                type="button"
+                onClick={() => setMobileMoreOpen(false)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Close
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {mobileMoreItems.map((item) => {
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMoreOpen(false)}
+                    className="flex flex-col items-center gap-1.5 rounded-xl p-3 text-center transition-colors hover:bg-accent"
+                  >
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-[11px] font-medium">{item.label}</span>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
