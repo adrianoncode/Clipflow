@@ -2,6 +2,7 @@
 
 import { getUser } from '@/lib/auth/get-user'
 import { publishVideo, type PublishPlatform } from '@/lib/publish/upload-post'
+import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
 
 export type PublishOutputState =
   | { ok?: undefined }
@@ -53,6 +54,12 @@ export async function publishOutputAction(
   })
 
   if (!result.ok) return { ok: false, error: result.error }
+
+  // Fire-and-forget webhook for post.published
+  triggerWebhooks(workspaceId, 'post.published', {
+    platforms,
+    caption: caption.trim(),
+  })
 
   return { ok: true, postedTo: platforms }
 }

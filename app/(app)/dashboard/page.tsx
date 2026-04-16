@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 
 import { Sparkline } from '@/components/dashboard/sparkline'
+import { SmartSuggestions } from '@/components/dashboard/smart-suggestions'
 import { ContentStatusBadge } from '@/components/content/content-status-badge'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getActiveBrandVoice } from '@/lib/brand-voice/get-active-brand-voice'
@@ -39,6 +40,7 @@ import { getWorkspaceUsage } from '@/lib/billing/get-usage'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { PLANS, type BillingPlan } from '@/lib/billing/plans'
 import { getWorkspaceStats } from '@/lib/dashboard/get-workspace-stats'
+import { getSuggestions } from '@/lib/suggestions/get-suggestions'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Dashboard' }
@@ -138,7 +140,7 @@ export default async function DashboardPage() {
   const personal = workspaces.find((w) => w.type === 'personal')
   const workspace = workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal ?? workspaces[0]
 
-  const [aiKeys, stats, usage, plan, brandVoice] =
+  const [aiKeys, stats, usage, plan, brandVoice, suggestions] =
     workspace && user
       ? await Promise.all([
           getAiKeys(workspace.id),
@@ -146,8 +148,9 @@ export default async function DashboardPage() {
           getWorkspaceUsage(workspace.id),
           getWorkspacePlan(workspace.id),
           getActiveBrandVoice(workspace.id),
+          getSuggestions(workspace.id),
         ])
-      : [[], null, null, 'free' as const, null]
+      : [[], null, null, 'free' as const, null, []]
 
   const planDef = PLANS[plan ?? 'free']
   const hasLlm = aiKeys.some((k) => ['openai', 'anthropic', 'google'].includes(k.provider))
@@ -291,6 +294,11 @@ export default async function DashboardPage() {
             </Link>
           )}
         </>
+      )}
+
+      {/* ── SMART SUGGESTIONS ─────────────────────────────────────── */}
+      {workspace && suggestions.length > 0 && (
+        <SmartSuggestions suggestions={suggestions} />
       )}
 
       {/* ── STATS GRID ─────────────────────────────────────────────── */}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { publishPost } from '@/lib/scheduler/publish-post'
+import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
 
 export const dynamic = 'force-dynamic'
 
@@ -68,6 +69,14 @@ export async function POST(req: NextRequest) {
           platform_post_id: result.platformPostId,
         })
         .eq('id', post.id)
+
+      // Fire-and-forget webhook for post.published
+      triggerWebhooks(post.workspace_id, 'post.published', {
+        scheduled_post_id: post.id,
+        output_id: post.output_id,
+        platform: post.platform,
+        platform_post_id: result.platformPostId,
+      })
     } else {
       await supabase
         .from('scheduled_posts')

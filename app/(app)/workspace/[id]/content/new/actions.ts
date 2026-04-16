@@ -26,6 +26,7 @@ import { mimeForExtension, videoStoragePath } from '@/lib/content/storage-paths'
 import { updateContentItem } from '@/lib/content/update-content-item'
 import { createClient } from '@/lib/supabase/server'
 import type { Json } from '@/lib/supabase/types'
+import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
 
 // NOTE: `maxDuration = 300` lives on the route segments that invoke these
 // actions (new/page.tsx and [contentId]/page.tsx). Server Action modules
@@ -217,6 +218,14 @@ async function runTranscription(params: {
 
   revalidatePath(`/workspace/${params.workspaceId}/content/${params.contentId}`)
   revalidatePath(`/workspace/${params.workspaceId}`)
+
+  // Fire-and-forget webhook for content.ready
+  triggerWebhooks(params.workspaceId, 'content.ready', {
+    content_id: params.contentId,
+    kind: 'video',
+    title: 'Transcription complete',
+  })
+
   return { ok: true }
 }
 
@@ -360,6 +369,14 @@ export async function createTextContentAction(
 
   revalidatePath(`/workspace/${parsed.data.workspace_id}`)
   revalidatePath(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
+
+  // Fire-and-forget webhook for content.ready
+  triggerWebhooks(parsed.data.workspace_id, 'content.ready', {
+    content_id: result.id,
+    kind: 'text',
+    title: parsed.data.title ?? 'Untitled',
+  })
+
   redirect(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
 }
 
@@ -409,6 +426,14 @@ export async function createYoutubeContentAction(
   }
 
   revalidatePath(`/workspace/${parsed.data.workspace_id}`)
+
+  // Fire-and-forget webhook for content.ready
+  triggerWebhooks(parsed.data.workspace_id, 'content.ready', {
+    content_id: result.id,
+    kind: 'youtube',
+    title: fetched.title,
+  })
+
   redirect(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
 }
 
@@ -458,6 +483,14 @@ export async function createUrlContentAction(
   }
 
   revalidatePath(`/workspace/${parsed.data.workspace_id}`)
+
+  // Fire-and-forget webhook for content.ready
+  triggerWebhooks(parsed.data.workspace_id, 'content.ready', {
+    content_id: result.id,
+    kind: 'url',
+    title: fetched.title,
+  })
+
   redirect(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
 }
 
@@ -507,5 +540,13 @@ export async function createRssContentAction(
   }
 
   revalidatePath(`/workspace/${parsed.data.workspace_id}`)
+
+  // Fire-and-forget webhook for content.ready
+  triggerWebhooks(parsed.data.workspace_id, 'content.ready', {
+    content_id: result.id,
+    kind: 'rss',
+    title: `${fetched.title} — ${fetched.episodeTitle}`,
+  })
+
   redirect(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
 }

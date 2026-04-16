@@ -705,6 +705,8 @@ export type Database = {
           published_at: string | null
           platform_post_id: string | null
           error_message: string | null
+          metadata: Json
+          stats_fetched_at: string | null
           created_by: string | null
           created_at: string
         }
@@ -719,6 +721,8 @@ export type Database = {
           published_at?: string | null
           platform_post_id?: string | null
           error_message?: string | null
+          metadata?: Json
+          stats_fetched_at?: string | null
           created_by?: string | null
           created_at?: string
         }
@@ -733,6 +737,8 @@ export type Database = {
           published_at?: string | null
           platform_post_id?: string | null
           error_message?: string | null
+          metadata?: Json
+          stats_fetched_at?: string | null
           created_by?: string | null
           created_at?: string
         }

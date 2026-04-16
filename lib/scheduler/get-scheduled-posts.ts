@@ -10,6 +10,7 @@ export interface ScheduledPostRow {
   error_message: string | null
   output_id: string
   platform_post_id: string | null
+  metadata: Record<string, unknown> | null
   outputs: {
     body: string | null
     content_items: { title: string | null } | null
@@ -21,7 +22,7 @@ export async function getScheduledPosts(workspaceId: string): Promise<ScheduledP
 
   const { data: posts } = await supabase
     .from('scheduled_posts')
-    .select('id, platform, scheduled_for, status, published_at, error_message, output_id, platform_post_id')
+    .select('id, platform, scheduled_for, status, published_at, error_message, output_id, platform_post_id, metadata')
     .eq('workspace_id', workspaceId)
     .order('scheduled_for', { ascending: true })
     .limit(50)
@@ -60,6 +61,7 @@ export async function getScheduledPosts(workspaceId: string): Promise<ScheduledP
     error_message: p.error_message,
     output_id: p.output_id,
     platform_post_id: p.platform_post_id,
+    metadata: (p.metadata as Record<string, unknown>) ?? null,
     outputs: outputMap.get(p.output_id) ?? null,
   }))
 }

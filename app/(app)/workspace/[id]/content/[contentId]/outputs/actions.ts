@@ -24,6 +24,7 @@ import { toggleOutputStar } from '@/lib/outputs/star-output'
 import { transitionOutputState } from '@/lib/outputs/transition-output-state'
 import { updateOutput } from '@/lib/outputs/update-output'
 import type { OutputPlatform } from '@/lib/supabase/types'
+import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
 
 // NOTE: `export const maxDuration = 300` lives on the route segment
 // (outputs/page.tsx). Next 14 'use server' modules may only export
@@ -178,6 +179,16 @@ export async function generateOutputsAction(
   revalidatePath(`/workspace/${workspaceId}/content/${contentId}/outputs`)
   revalidatePath(`/workspace/${workspaceId}/content/${contentId}`)
 
+  // Fire-and-forget webhook for output.generated
+  if (generated.length > 0) {
+    triggerWebhooks(workspaceId, 'output.generated', {
+      content_id: contentId,
+      title,
+      platforms: generated,
+      failed: failed.map((f) => f.platform),
+    })
+  }
+
   return { ok: true, generated, failed }
 }
 
@@ -260,6 +271,15 @@ export async function transitionOutputStateAction(
   if (!result.ok) return { ok: false, error: result.error }
 
   revalidatePath(`/workspace/${workspace_id}/content`)
+
+  // Fire-and-forget webhook when output is approved
+  if (new_state === 'approved') {
+    triggerWebhooks(workspace_id, 'output.approved', {
+      output_id,
+      new_state,
+    })
+  }
+
   return { ok: true }
 }
 

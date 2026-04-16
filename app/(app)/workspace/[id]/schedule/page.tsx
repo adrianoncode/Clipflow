@@ -6,8 +6,12 @@ import {
   CalendarClock,
   CheckCircle2,
   Clock,
+  Eye,
+  Heart,
   Inbox,
+  MessageCircle,
   Send,
+  Share2,
   XCircle,
 } from 'lucide-react'
 
@@ -52,6 +56,13 @@ function formatTimeAgo(iso: string): string {
   if (hours < 1) return `in ${Math.round(diff / 60_000)}m`
   if (hours < 24) return `in ${hours}h`
   return `in ${Math.round(hours / 24)}d`
+}
+
+function formatStatNum(n: number | undefined | null): string {
+  if (n === undefined || n === null) return '-'
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`
+  return String(n)
 }
 
 interface SchedulePageProps {
@@ -270,6 +281,44 @@ export default async function SchedulePage({ params }: SchedulePageProps) {
                             {formatTimeAgo(post.scheduled_for)}
                           </p>
                         )}
+                        {post.status === 'published' && post.metadata && typeof post.metadata === 'object' && (() => {
+                          const meta = post.metadata as Record<string, unknown>
+                          const views = typeof meta.views === 'number' ? meta.views : undefined
+                          const likes = typeof meta.likes === 'number' ? meta.likes : undefined
+                          const comments = typeof meta.comments === 'number' ? meta.comments : undefined
+                          const shares = typeof meta.shares === 'number' ? meta.shares : undefined
+                          const engRate = typeof meta.engagement_rate === 'number' ? meta.engagement_rate : undefined
+                          if (views === undefined && likes === undefined) return null
+                          return (
+                            <div className="mt-2 flex flex-wrap items-center gap-3 rounded-lg bg-emerald-50/50 px-2.5 py-1.5 text-[11px] text-emerald-800">
+                              {views !== undefined && (
+                                <span className="inline-flex items-center gap-1">
+                                  <Eye className="h-3 w-3" /> {formatStatNum(views)}
+                                </span>
+                              )}
+                              {likes !== undefined && (
+                                <span className="inline-flex items-center gap-1">
+                                  <Heart className="h-3 w-3" /> {formatStatNum(likes)}
+                                </span>
+                              )}
+                              {comments !== undefined && (
+                                <span className="inline-flex items-center gap-1">
+                                  <MessageCircle className="h-3 w-3" /> {formatStatNum(comments)}
+                                </span>
+                              )}
+                              {shares !== undefined && (
+                                <span className="inline-flex items-center gap-1">
+                                  <Share2 className="h-3 w-3" /> {formatStatNum(shares)}
+                                </span>
+                              )}
+                              {engRate !== undefined && (
+                                <span className="ml-auto font-semibold text-emerald-700">
+                                  {engRate.toFixed(1)}% eng.
+                                </span>
+                              )}
+                            </div>
+                          )
+                        })()}
                       </div>
 
                       {/* Status + actions */}

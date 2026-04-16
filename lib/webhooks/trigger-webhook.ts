@@ -1,5 +1,5 @@
 import 'server-only'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export type WebhookEvent =
   | 'content.ready'
@@ -13,7 +13,7 @@ export async function triggerWebhooks(
   payload: Record<string, unknown>
 ) {
   try {
-    const supabase = createClient()
+    const supabase = createAdminClient()
     const { data: webhooks } = await supabase
       .from('webhooks')
       .select('id, url, events')
