@@ -8,10 +8,15 @@ import {
   CheckCircle2,
   Clapperboard,
   Clock,
+  FileText,
   FolderKanban,
+  Globe,
+  Hash,
   Layers,
   Lightbulb,
+  MessageSquare,
   PenLine,
+  Plug,
   Search,
   Star,
   TrendingDown,
@@ -141,15 +146,62 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* ═══ NEW USER: Setup checklist only ═══════════════════════ */}
+      {/* ═══ NEW USER: Setup checklist + explore ═════════════════ */}
       {workspace && isNewUser && (
-        <SetupChecklist
-          hasAiKey={hasLlm}
-          contentCount={stats?.totalContent ?? 0}
-          outputCount={stats?.totalOutputs ?? 0}
-          hasApprovedOutput={(stats?.approvedOutputs ?? 0) > 0}
-          workspaceId={workspace.id}
-        />
+        <>
+          <SetupChecklist
+            hasAiKey={hasLlm}
+            contentCount={stats?.totalContent ?? 0}
+            outputCount={stats?.totalOutputs ?? 0}
+            hasApprovedOutput={(stats?.approvedOutputs ?? 0) > 0}
+            workspaceId={workspace.id}
+          />
+
+          {/* ── How it works ──────────────────────────────────────── */}
+          <div className="rounded-2xl border border-border/50 bg-card">
+            <div className="border-b border-border/40 px-5 py-3">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">How Clipflow works</p>
+            </div>
+            <div className="grid gap-px bg-border/30 sm:grid-cols-3">
+              {[
+                { step: '1', title: 'Import', desc: 'Upload a video, paste a YouTube link, or write text. Clipflow transcribes it automatically.', icon: Upload, color: 'text-violet-600 bg-violet-50' },
+                { step: '2', title: 'Generate', desc: 'AI creates platform-specific drafts for TikTok, Reels, Shorts & LinkedIn in seconds.', icon: Wand2, color: 'text-blue-600 bg-blue-50' },
+                { step: '3', title: 'Publish', desc: 'Review, approve, and schedule your best outputs to post automatically.', icon: Calendar, color: 'text-emerald-600 bg-emerald-50' },
+              ].map((s) => (
+                <div key={s.step} className="flex flex-col items-center gap-3 bg-card p-6 text-center">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${s.color}`}>
+                    <s.icon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold">{s.title}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{s.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Explore features ──────────────────────────────────── */}
+          <div className="space-y-2">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Explore</p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                { href: `/workspace/${workspace.id}/ghostwriter`, label: 'Ghostwriter', desc: 'AI writes full scripts', icon: PenLine, color: 'text-pink-600 bg-pink-50 group-hover:bg-pink-100' },
+                { href: `/workspace/${workspace.id}/trends`, label: 'Trends', desc: 'What\u2019s trending now', icon: TrendingUp, color: 'text-cyan-600 bg-cyan-50 group-hover:bg-cyan-100' },
+                { href: `/workspace/${workspace.id}/ideas`, label: 'Ideas & Gaps', desc: 'Content gap analysis', icon: Lightbulb, color: 'text-yellow-600 bg-yellow-50 group-hover:bg-yellow-100' },
+                { href: `/workspace/${workspace.id}/research`, label: 'Research', desc: 'Competitors & creators', icon: Search, color: 'text-indigo-600 bg-indigo-50 group-hover:bg-indigo-100' },
+              ].map((a) => (
+                <Link key={a.href} href={a.href} className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md hover:shadow-primary/[0.05]">
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${a.color}`}><a.icon className="h-4 w-4" /></div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold leading-tight">{a.label}</p>
+                    <p className="text-[11px] text-muted-foreground">{a.desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </>
       )}
 
       {/* ═══ ACTIVE USER: full dashboard ═════════════════════════ */}
@@ -314,8 +366,32 @@ export default async function DashboardPage() {
                 { href: `/workspace/${workspace.id}/ideas`, label: 'Ideas & Gaps', desc: 'Content gap analysis', icon: Lightbulb, color: 'text-yellow-600 bg-yellow-50 group-hover:bg-yellow-100' },
                 { href: `/workspace/${workspace.id}/calendar`, label: 'Calendar', desc: 'Drag & drop scheduling', icon: CalendarDays, color: 'text-amber-600 bg-amber-50 group-hover:bg-amber-100' },
                 { href: `/workspace/${workspace.id}/tools`, label: 'Tools', desc: 'Subtitles, dub, reframe', icon: Wrench, color: 'text-gray-600 bg-gray-50 group-hover:bg-gray-100' },
+                { href: `/workspace/${workspace.id}/channels`, label: 'Channels', desc: 'Manage social accounts', icon: Hash, color: 'text-fuchsia-600 bg-fuchsia-50 group-hover:bg-fuchsia-100' },
+                { href: `/workspace/${workspace.id}/competitors`, label: 'Competitors', desc: 'Track rival creators', icon: Globe, color: 'text-red-600 bg-red-50 group-hover:bg-red-100' },
+                { href: `/workspace/${workspace.id}/creators`, label: 'Creators', desc: 'Discover top creators', icon: Star, color: 'text-purple-600 bg-purple-50 group-hover:bg-purple-100' },
                 { href: `/workspace/${workspace.id}/projects`, label: 'Projects', desc: 'Organize by campaign', icon: FolderKanban, color: 'text-teal-600 bg-teal-50 group-hover:bg-teal-100' },
                 { href: `/workspace/${workspace.id}/members`, label: 'Team', desc: 'Members & invites', icon: Users2, color: 'text-slate-600 bg-slate-50 group-hover:bg-slate-100' },
+              ].map((a) => (
+                <Link key={a.href} href={a.href} className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md hover:shadow-primary/[0.05]">
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${a.color}`}><a.icon className="h-4 w-4" /></div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold leading-tight">{a.label}</p>
+                    <p className="text-[11px] text-muted-foreground">{a.desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Connect & Customize ─────────────────────────────── */}
+          <div className="space-y-2">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Connect &amp; Customize</p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                { href: '/settings/integrations', label: 'Integrations', desc: 'Slack, Discord, WordPress', icon: Plug, color: 'text-violet-600 bg-violet-50 group-hover:bg-violet-100' },
+                { href: '/settings/brand-voice', label: 'Brand Voice', desc: 'Tone & style guide', icon: MessageSquare, color: 'text-pink-600 bg-pink-50 group-hover:bg-pink-100' },
+                { href: '/settings/templates', label: 'Templates', desc: 'Custom output formats', icon: FileText, color: 'text-blue-600 bg-blue-50 group-hover:bg-blue-100' },
+                { href: '/settings/webhooks', label: 'Webhooks', desc: 'Event notifications', icon: Globe, color: 'text-emerald-600 bg-emerald-50 group-hover:bg-emerald-100' },
               ].map((a) => (
                 <Link key={a.href} href={a.href} className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md hover:shadow-primary/[0.05]">
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${a.color}`}><a.icon className="h-4 w-4" /></div>
