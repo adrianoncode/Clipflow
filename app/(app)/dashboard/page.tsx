@@ -4,6 +4,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   Calendar,
+  CalendarDays,
   CheckCircle2,
   Clapperboard,
   Clock,
@@ -19,6 +20,7 @@ import {
   Users2,
   Video,
   Wand2,
+  Wrench,
   Zap,
 } from 'lucide-react'
 
@@ -286,7 +288,7 @@ export default async function DashboardPage() {
                 { href: `/workspace/${workspace.id}/content/new`, label: 'Import', desc: 'YouTube, MP4, audio', icon: Upload, color: 'text-violet-600 bg-violet-50 group-hover:bg-violet-100' },
                 { href: `/workspace/${workspace.id}`, label: 'Generate', desc: 'Create new drafts', icon: Wand2, color: 'text-blue-600 bg-blue-50 group-hover:bg-blue-100' },
                 { href: `/workspace/${workspace.id}/pipeline`, label: 'Pipeline', desc: 'Review & approve', icon: Layers, color: 'text-emerald-600 bg-emerald-50 group-hover:bg-emerald-100' },
-                { href: `/workspace/${workspace.id}/calendar`, label: 'Schedule', desc: 'Plan & publish', icon: Calendar, color: 'text-amber-600 bg-amber-50 group-hover:bg-amber-100' },
+                { href: `/workspace/${workspace.id}/schedule`, label: 'Schedule', desc: 'Publish queue', icon: Calendar, color: 'text-amber-600 bg-amber-50 group-hover:bg-amber-100' },
               ].map((a) => (
                 <Link key={a.href} href={a.href} className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md hover:shadow-primary/[0.05]">
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${a.color}`}><a.icon className="h-4 w-4" /></div>
@@ -310,6 +312,8 @@ export default async function DashboardPage() {
                 { href: `/workspace/${workspace.id}/research`, label: 'Research', desc: 'Competitors & creators', icon: Search, color: 'text-indigo-600 bg-indigo-50 group-hover:bg-indigo-100' },
                 { href: `/workspace/${workspace.id}/studio`, label: 'Video Studio', desc: 'Render MP4 videos', icon: Clapperboard, color: 'text-rose-600 bg-rose-50 group-hover:bg-rose-100' },
                 { href: `/workspace/${workspace.id}/ideas`, label: 'Ideas & Gaps', desc: 'Content gap analysis', icon: Lightbulb, color: 'text-yellow-600 bg-yellow-50 group-hover:bg-yellow-100' },
+                { href: `/workspace/${workspace.id}/calendar`, label: 'Calendar', desc: 'Drag & drop scheduling', icon: CalendarDays, color: 'text-amber-600 bg-amber-50 group-hover:bg-amber-100' },
+                { href: `/workspace/${workspace.id}/tools`, label: 'Tools', desc: 'Subtitles, dub, reframe', icon: Wrench, color: 'text-gray-600 bg-gray-50 group-hover:bg-gray-100' },
                 { href: `/workspace/${workspace.id}/projects`, label: 'Projects', desc: 'Organize by campaign', icon: FolderKanban, color: 'text-teal-600 bg-teal-50 group-hover:bg-teal-100' },
                 { href: `/workspace/${workspace.id}/members`, label: 'Team', desc: 'Members & invites', icon: Users2, color: 'text-slate-600 bg-slate-50 group-hover:bg-slate-100' },
               ].map((a) => (
