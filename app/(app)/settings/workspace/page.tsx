@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { Building2 } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
@@ -29,15 +30,25 @@ export default async function WorkspaceSettingsPage({
   const isOwner = workspace.role === 'owner'
 
   return (
-    <div className="max-w-xl space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold">Workspace settings</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Manage <span className="font-medium">{workspace.name}</span>.
-        </p>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-start gap-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100">
+          <Building2 className="h-5 w-5 text-violet-600" />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold tracking-tight">Workspace settings</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            Manage <span className="font-semibold text-foreground">{workspace.name}</span> — rename,
+            change type, or delete.
+          </p>
+        </div>
       </div>
 
-      <WorkspaceSettingsForm workspace={workspace} isOwner={isOwner} />
+      {/* Workspace form card */}
+      <div className="max-w-xl rounded-2xl border border-border/50 bg-card p-6 shadow-sm">
+        <WorkspaceSettingsForm workspace={workspace} isOwner={isOwner} />
+      </div>
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers'
+import { Key } from 'lucide-react'
 
 import { ServiceCard } from '@/components/ai-keys/service-card'
 import { SERVICE_DIRECTORY } from '@/components/ai-keys/service-directory'
@@ -45,14 +46,20 @@ export default async function ApiKeysPage() {
   return (
     <div className="space-y-10">
       {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold">API keys</h1>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          Clipflow runs on BYOK — you bring your own API keys and pay
-          providers directly at cost. We never mark up tokens, rendering or
-          voice. Keys are encrypted at rest with AES-256 and visible only to
-          workspace owners.
-        </p>
+      <div className="space-y-4">
+        <div className="flex items-start gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100">
+            <Key className="h-5 w-5 text-emerald-600" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold tracking-tight">API Keys</h1>
+            <p className="mt-0.5 max-w-2xl text-sm text-muted-foreground">
+              Clipflow runs on BYOK — you bring your own API keys and pay
+              providers directly at cost. We never mark up tokens, rendering or
+              voice. Keys are encrypted at rest with AES-256.
+            </p>
+          </div>
+        </div>
         <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs">
           <span className="font-mono font-bold text-primary">
             {connectedCount}/{totalServices}
@@ -100,7 +107,7 @@ export default async function ApiKeysPage() {
       </div>
 
       {!isOwner ? (
-        <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+        <div className="rounded-2xl border border-dashed border-border/60 bg-muted/20 p-8 text-center text-sm text-muted-foreground">
           Only owners of this workspace can manage API keys.
         </div>
       ) : null}

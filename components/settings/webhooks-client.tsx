@@ -91,7 +91,7 @@ function WebhookItem({ webhook, workspaceId }: { webhook: WebhookRow; workspaceI
               className={[
                 'rounded-full px-1.5 py-0.5 text-[10px] font-medium',
                 webhook.is_active
-                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                  ? 'bg-green-100 text-green-700'
                   : 'bg-muted text-muted-foreground',
               ].join(' ')}
             >
@@ -146,7 +146,7 @@ function WebhookItem({ webhook, workspaceId }: { webhook: WebhookRow; workspaceI
         <p className="text-xs text-destructive">{testState.error}</p>
       )}
       {testState.ok === true && (
-        <p className="text-xs text-green-600 dark:text-green-400">
+        <p className="text-xs text-green-600">
           Test sent — response: {testState.status}
         </p>
       )}
@@ -239,7 +239,7 @@ export function WebhooksClient({ workspaceId, webhooks }: WebhooksClientProps) {
             <p className="text-sm text-destructive">{saveState.error}</p>
           )}
           {saveState.ok === true && (
-            <p className="text-sm text-green-600 dark:text-green-400">
+            <p className="text-sm text-green-600">
               Webhook added successfully.
             </p>
           )}

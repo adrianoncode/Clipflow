@@ -99,7 +99,7 @@ export function NotificationBell({ initialCount }: NotificationBellProps) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="relative flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        className="relative flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
         aria-label={`Notifications${count > 0 ? ` (${count} unread)` : ''}`}
       >
         <Bell className="h-4 w-4" />
@@ -111,7 +111,7 @@ export function NotificationBell({ initialCount }: NotificationBellProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 w-80 rounded-md border bg-popover shadow-md">
+        <div className="absolute right-0 top-full z-50 mt-1.5 w-80 rounded-2xl border border-border/60 bg-popover shadow-xl shadow-black/[0.08]">
           <div className="flex items-center justify-between border-b px-3 py-2">
             <span className="text-sm font-semibold">Notifications</span>
             {notifications.length > 0 && (
@@ -136,7 +136,7 @@ export function NotificationBell({ initialCount }: NotificationBellProps) {
                   <button
                     type="button"
                     onClick={() => void handleClick(n)}
-                    className="w-full px-3 py-3 text-left transition-colors hover:bg-accent"
+                    className="w-full px-3 py-3 text-left transition-colors hover:bg-primary/[0.06]"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-medium leading-snug">{n.title}</p>

@@ -39,14 +39,19 @@ export default async function ReferralsPage() {
   const link = `${baseUrl}/signup?ref=${code}`
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold">Refer friends</h1>
-        <p className="text-sm text-muted-foreground">
-          Give {REFERRAL_DISCOUNT_PERCENT}%, get {REFERRAL_DISCOUNT_PERCENT}%. When someone
-          signs up through your link and starts a paid plan, you both get{' '}
-          {REFERRAL_DISCOUNT_PERCENT}% off — for as long as you stay subscribed.
-        </p>
+    <div className="max-w-2xl space-y-8">
+      <div className="flex items-start gap-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100">
+          <Gift className="h-5 w-5 text-orange-600" />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold tracking-tight">Refer &amp; Earn</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            Give {REFERRAL_DISCOUNT_PERCENT}%, get {REFERRAL_DISCOUNT_PERCENT}%. When someone
+            signs up through your link and starts a paid plan, you both get{' '}
+            {REFERRAL_DISCOUNT_PERCENT}% off — for as long as you stay subscribed.
+          </p>
+        </div>
       </div>
 
       <Card>

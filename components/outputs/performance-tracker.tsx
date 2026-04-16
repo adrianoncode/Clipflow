@@ -139,7 +139,7 @@ export function PerformanceTracker({
                 <p className="text-xs text-destructive">{state.error}</p>
               )}
               {hasSaved && (
-                <p className="text-xs text-emerald-600 dark:text-emerald-400">Saved!</p>
+                <p className="text-xs text-emerald-600">Saved!</p>
               )}
             </div>
           </form>

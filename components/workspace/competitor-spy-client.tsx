@@ -186,7 +186,7 @@ function AnalysisCard({
             <p className="text-xs text-muted-foreground">{hostname}</p>
           )}
         </div>
-        <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+        <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
           Analyzed just now
         </span>
       </div>

@@ -22,10 +22,10 @@ const PLATFORM_COLORS: Record<string, string> = {
 }
 
 const PLATFORM_BG: Record<string, string> = {
-  tiktok: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
-  instagram: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  linkedin: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  youtube: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  tiktok: 'bg-pink-100 text-pink-800',
+  instagram: 'bg-purple-100 text-purple-800',
+  linkedin: 'bg-blue-100 text-blue-800',
+  youtube: 'bg-red-100 text-red-800',
 }
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -264,9 +264,9 @@ export function CalendarClient({ workspaceId, scheduledPosts }: CalendarClientPr
                           className={[
                             'ml-auto rounded px-1.5 py-0.5 text-[10px] font-medium',
                             post.status === 'published'
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                              ? 'bg-green-100 text-green-700'
                               : post.status === 'failed'
-                              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                              ? 'bg-red-100 text-red-700'
                               : 'bg-muted text-muted-foreground',
                           ].join(' ')}
                         >

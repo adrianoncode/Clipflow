@@ -40,7 +40,7 @@ export function NewWorkspaceForm() {
           id="type"
           name="type"
           defaultValue="personal"
-          className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
         >
           <option value="personal">Personal — for your own brand</option>
           <option value="team">Team — collaborate with teammates</option>

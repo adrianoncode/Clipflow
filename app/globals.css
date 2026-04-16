@@ -32,7 +32,7 @@
     --input: 240 6% 92%;
     --ring: 263 70% 50%;
 
-    --radius: 0.625rem;
+    --radius: 0.75rem;
   }
 
   /* The app is light-mode only. We intentionally dropped the `.dark`
@@ -51,6 +51,7 @@
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
   }
 }
 
@@ -62,16 +63,26 @@
   }
 
   .card-hover {
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .card-hover:hover {
-    border-color: hsl(var(--border));
+    border-color: hsl(var(--primary) / 0.25);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.06),
+      0 0 0 0px hsl(var(--primary) / 0);
   }
 
   .tabular-nums {
     font-variant-numeric: tabular-nums;
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 
   /* ===================================================================

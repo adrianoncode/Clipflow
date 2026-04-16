@@ -3,7 +3,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const formMessageVariants = cva(
-  'rounded-md border px-3 py-2 text-sm',
+  'rounded-xl border px-3.5 py-2.5 text-sm',
   {
     variants: {
       variant: {

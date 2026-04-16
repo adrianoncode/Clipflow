@@ -12,16 +12,16 @@ interface ClipFinderProps {
 }
 
 const TYPE_BADGE: Record<BestClip['type'], string> = {
-  hook: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-  insight: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-  story: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-  controversial: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-  funny: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+  hook: 'bg-red-100 text-red-700',
+  insight: 'bg-blue-100 text-blue-700',
+  story: 'bg-amber-100 text-amber-700',
+  controversial: 'bg-purple-100 text-purple-700',
+  funny: 'bg-green-100 text-green-700',
 }
 
 const ENERGY_BADGE: Record<BestClip['energy'], string> = {
-  high: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-  medium: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+  high: 'bg-orange-100 text-orange-700',
+  medium: 'bg-gray-100 text-gray-600',
 }
 
 function SubmitButton() {

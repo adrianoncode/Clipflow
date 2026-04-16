@@ -109,7 +109,7 @@ export function GlobalSearch({ workspaceId }: GlobalSearchProps) {
             if (query.length >= 2) setOpen(true)
           }}
           placeholder="Search… ⌘K"
-          className="h-8 w-full rounded-md border bg-background pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          className="h-8 w-full rounded-xl border border-border/60 bg-muted/30 pl-8 pr-3 text-sm placeholder:text-muted-foreground/50 transition-all focus:border-primary/40 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
         {loading && (
           <Loader2 className="absolute right-2.5 h-3.5 w-3.5 animate-spin text-muted-foreground" />
@@ -117,7 +117,7 @@ export function GlobalSearch({ workspaceId }: GlobalSearchProps) {
       </div>
 
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 w-full min-w-[320px] rounded-md border bg-popover shadow-md">
+        <div className="absolute left-0 top-full z-50 mt-1.5 w-full min-w-[320px] rounded-2xl border border-border/60 bg-popover shadow-xl shadow-black/[0.08] backdrop-blur-sm">
           {results.length === 0 && !loading && query.length >= 2 ? (
             <p className="px-3 py-4 text-center text-sm text-muted-foreground">No results found</p>
           ) : (
@@ -127,7 +127,7 @@ export function GlobalSearch({ workspaceId }: GlobalSearchProps) {
                   <button
                     type="button"
                     onClick={() => handleSelect(result)}
-                    className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                    className="flex w-full items-start gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm transition-colors hover:bg-primary/10 hover:text-foreground"
                   >
                     {result.type === 'content' ? (
                       <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />

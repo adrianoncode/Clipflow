@@ -83,7 +83,7 @@ export function ReferralShare({ link, code }: ReferralShareProps) {
         <button
           type="button"
           onClick={() => copy(code, 'code')}
-          className="rounded-md border bg-background px-2 py-1 font-mono text-xs tracking-wider hover:bg-accent"
+          className="rounded-xl border border-border/60 bg-background px-2.5 py-1 font-mono text-xs tracking-wider transition-all hover:border-primary/30 hover:bg-primary/5"
         >
           {codeState === 'copied' ? 'Copied!' : codeState === 'failed' ? 'Copy failed' : code}
         </button>

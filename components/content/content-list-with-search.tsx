@@ -2,15 +2,35 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { FileText, Globe, Rss, Video, Youtube } from 'lucide-react'
+import {
+  FileText,
+  Globe,
+  Rss,
+  Video,
+  Youtube,
+  Search,
+  ChevronRight,
+  Copy,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Check,
+} from 'lucide-react'
 
-import { ContentStatusBadge } from '@/components/content/content-status-badge'
+import { BulkActionBar } from '@/components/content/bulk-action-bar'
 import type { ContentItemListRow } from '@/lib/content/get-content-items'
+
+interface Project {
+  id: string
+  name: string
+}
 
 interface ContentListWithSearchProps {
   items: ContentItemListRow[]
   workspaceId: string
   duplicateIds?: Set<string>
+  projects?: Project[]
 }
 
 function formatRelative(iso: string): string {
@@ -18,22 +38,97 @@ function formatRelative(iso: string): string {
     const diff = Date.now() - new Date(iso).getTime()
     const minutes = Math.round(diff / 60_000)
     if (minutes < 1) return 'just now'
-    if (minutes < 60) return `${minutes} min ago`
+    if (minutes < 60) return `${minutes}m ago`
     const hours = Math.round(minutes / 60)
-    if (hours < 24) return `${hours} h ago`
+    if (hours < 24) return `${hours}h ago`
     const days = Math.round(hours / 24)
-    if (days < 7) return `${days} d ago`
-    return new Date(iso).toLocaleDateString()
+    if (days < 7) return `${days}d ago`
+    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
   } catch {
     return iso
   }
 }
 
-const STATUS_OPTIONS = ['all', 'ready', 'processing', 'uploading', 'failed'] as const
+const KIND_CONFIG = {
+  video: {
+    Icon: Video,
+    label: 'Video',
+    bg: 'bg-violet-100',
+    text: 'text-violet-600',
+  },
+  youtube: {
+    Icon: Youtube,
+    label: 'YouTube',
+    bg: 'bg-red-100',
+    text: 'text-red-600',
+  },
+  url: {
+    Icon: Globe,
+    label: 'URL',
+    bg: 'bg-blue-100',
+    text: 'text-blue-600',
+  },
+  rss: {
+    Icon: Rss,
+    label: 'RSS',
+    bg: 'bg-orange-100',
+    text: 'text-orange-600',
+  },
+  text: {
+    Icon: FileText,
+    label: 'Text',
+    bg: 'bg-zinc-100',
+    text: 'text-zinc-600',
+  },
+} as const
 
-export function ContentListWithSearch({ items, workspaceId, duplicateIds }: ContentListWithSearchProps) {
+const STATUS_CONFIG = {
+  ready: {
+    icon: CheckCircle2,
+    label: 'Ready',
+    dot: 'bg-emerald-500',
+    text: 'text-emerald-700',
+    bg: 'bg-emerald-50',
+  },
+  processing: {
+    icon: Loader2,
+    label: 'Processing',
+    dot: 'bg-amber-400',
+    text: 'text-amber-700',
+    bg: 'bg-amber-50',
+  },
+  uploading: {
+    icon: Clock,
+    label: 'Uploading',
+    dot: 'bg-blue-400',
+    text: 'text-blue-700',
+    bg: 'bg-blue-50',
+  },
+  failed: {
+    icon: AlertCircle,
+    label: 'Failed',
+    dot: 'bg-red-500',
+    text: 'text-red-700',
+    bg: 'bg-red-50',
+  },
+} as const
+
+const FILTER_TABS = [
+  { value: 'all', label: 'All' },
+  { value: 'ready', label: 'Ready' },
+  { value: 'processing', label: 'Processing' },
+  { value: 'failed', label: 'Failed' },
+] as const
+
+export function ContentListWithSearch({
+  items,
+  workspaceId,
+  duplicateIds,
+  projects = [],
+}: ContentListWithSearchProps) {
   const [query, setQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | string>('all')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [selected, setSelected] = useState<Set<string>>(new Set())
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -44,83 +139,259 @@ export function ContentListWithSearch({ items, workspaceId, duplicateIds }: Cont
     })
   }, [items, query, statusFilter])
 
+  const counts = useMemo(() => {
+    return items.reduce<Record<string, number>>((acc, item) => {
+      acc[item.status] = (acc[item.status] ?? 0) + 1
+      return acc
+    }, {})
+  }, [items])
+
+  function toggleItem(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function toggleAllFiltered() {
+    const filteredIds = filtered.map((i) => i.id)
+    const allSelected = filteredIds.every((id) => selected.has(id))
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (allSelected) {
+        for (const id of filteredIds) next.delete(id)
+      } else {
+        for (const id of filteredIds) next.add(id)
+      }
+      return next
+    })
+  }
+
+  const allFilteredSelected =
+    filtered.length > 0 && filtered.every((i) => selected.has(i.id))
+
   if (items.length === 0) {
     return (
-      <div className="rounded-md border bg-muted/30 p-8 text-center text-sm text-muted-foreground">
-        No content yet. Upload a video or paste a script to get started.
+      <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border bg-muted/20 py-16 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
+          <Video className="h-6 w-6 text-muted-foreground/40" />
+        </div>
+        <div>
+          <p className="font-semibold text-foreground">No content yet</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Import a video, YouTube link, or paste a transcript to get started.
+          </p>
+        </div>
+        <Link
+          href={`/workspace/${workspaceId}/ideas`}
+          className="text-[11px] font-semibold text-primary/70 underline-offset-4 transition-colors hover:text-primary hover:underline"
+        >
+          Not sure what to make? Brainstorm ideas →
+        </Link>
       </div>
     )
   }
 
   return (
-    <div className="space-y-3">
-      {/* Search + filter bar */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by title…"
-          className="flex-1 rounded-md border bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        >
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s === 'all' ? 'All statuses' : s.charAt(0).toUpperCase() + s.slice(1)}
-            </option>
-          ))}
-        </select>
+    <div className="space-y-4">
+      {/* ── Search + Filter bar ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        {/* Search */}
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by title…"
+            className="w-full rounded-xl border border-border/60 bg-background py-2.5 pl-10 pr-4 text-sm placeholder:text-muted-foreground/40 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+
+        {/* Status filter pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto">
+          {FILTER_TABS.map((tab) => {
+            const isActive = statusFilter === tab.value
+            const count = tab.value === 'all' ? items.length : (counts[tab.value] ?? 0)
+            return (
+              <button
+                key={tab.value}
+                onClick={() => setStatusFilter(tab.value)}
+                className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all duration-150 ${
+                  isActive
+                    ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20'
+                    : 'border border-border/60 text-muted-foreground hover:border-border hover:text-foreground'
+                }`}
+              >
+                {tab.label}
+                <span
+                  className={`rounded-full px-1.5 py-px font-mono text-[10px] tabular-nums ${
+                    isActive
+                      ? 'bg-primary-foreground/20 text-primary-foreground'
+                      : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
-      {filtered.length === 0 ? (
-        <p className="py-6 text-center text-sm text-muted-foreground">
-          No results for &ldquo;{query}&rdquo;
-          {statusFilter !== 'all' ? ` with status "${statusFilter}"` : ''}.
-        </p>
-      ) : (
-        <ul className="divide-y rounded-md border">
+      {/* ── Select-all row (only visible when list is populated) ── */}
+      {filtered.length > 0 && (
+        <div className="flex items-center justify-between px-1">
+          <button
+            type="button"
+            onClick={toggleAllFiltered}
+            className="flex items-center gap-2 rounded-lg px-2 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <span
+              className={`flex h-4 w-4 items-center justify-center rounded border transition-colors ${
+                allFilteredSelected
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border/60 bg-background hover:border-primary/40'
+              }`}
+              aria-hidden
+            >
+              {allFilteredSelected && <Check className="h-3 w-3" strokeWidth={3} />}
+            </span>
+            {allFilteredSelected ? 'Deselect all' : 'Select all'}
+          </button>
+          {selected.size > 0 && (
+            <span className="font-mono text-[10px] text-muted-foreground/60">
+              {selected.size} selected
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* ── No results ── */}
+      {filtered.length === 0 && (
+        <div className="py-10 text-center">
+          <p className="text-sm font-medium text-muted-foreground">
+            No results for &ldquo;{query}&rdquo;
+          </p>
+          <button
+            onClick={() => {
+              setQuery('')
+              setStatusFilter('all')
+            }}
+            className="mt-2 text-xs font-semibold text-primary hover:underline"
+          >
+            Clear filters
+          </button>
+        </div>
+      )}
+
+      {/* ── Content list ── */}
+      {filtered.length > 0 && (
+        <div className="space-y-1.5">
           {filtered.map((item) => {
-            const Icon =
-              item.kind === 'video' ? Video
-              : item.kind === 'youtube' ? Youtube
-              : item.kind === 'url' ? Globe
-              : item.kind === 'rss' ? Rss
-              : FileText
+            const kindCfg =
+              KIND_CONFIG[item.kind as keyof typeof KIND_CONFIG] ?? KIND_CONFIG.text
+            const statusCfg = STATUS_CONFIG[item.status as keyof typeof STATUS_CONFIG]
+            const Icon = kindCfg.Icon
+            const isDuplicate = duplicateIds?.has(item.id)
+            const isSelected = selected.has(item.id)
+
             return (
-              <li key={item.id}>
+              <div
+                key={item.id}
+                className={`group relative flex items-center gap-4 rounded-xl border px-4 py-3.5 transition-all duration-150 ${
+                  isSelected
+                    ? 'border-primary/40 bg-primary/[0.04] shadow-sm shadow-primary/[0.08]'
+                    : 'border-border/50 bg-card hover:-translate-y-px hover:border-primary/25 hover:shadow-md hover:shadow-primary/5'
+                }`}
+              >
+                {/* Checkbox */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    toggleItem(item.id)
+                  }}
+                  aria-label={isSelected ? 'Deselect' : 'Select'}
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all ${
+                    isSelected
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border/70 bg-background opacity-60 hover:border-primary/40 hover:opacity-100 group-hover:opacity-100'
+                  }`}
+                >
+                  {isSelected && <Check className="h-3 w-3" strokeWidth={3} />}
+                </button>
+
+                {/* Clickable link area (everything except the checkbox) */}
                 <Link
                   href={`/workspace/${workspaceId}/content/${item.id}`}
-                  className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-accent"
+                  className="flex min-w-0 flex-1 items-center gap-4"
                 >
-                  <Icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                  {/* Kind icon */}
+                  <div
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105 ${kindCfg.bg}`}
+                  >
+                    <Icon className={`h-4 w-4 ${kindCfg.text}`} />
+                  </div>
+
+                  {/* Info */}
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="truncate text-sm font-medium">{item.title ?? 'Untitled'}</span>
-                      {duplicateIds?.has(item.id) && (
-                        <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-sm font-semibold text-foreground">
+                        {item.title ?? 'Untitled'}
+                      </span>
+                      {isDuplicate && (
+                        <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                          <Copy className="h-2.5 w-2.5" />
                           Duplicate
                         </span>
                       )}
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {kindCfg.label}
+                      <span className="mx-1.5 text-muted-foreground/30">·</span>
                       {formatRelative(item.created_at)}
-                    </div>
+                    </p>
                   </div>
-                  <ContentStatusBadge status={item.status} />
+
+                  {/* Status */}
+                  {statusCfg && (
+                    <div
+                      className={`flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusCfg.bg} ${statusCfg.text}`}
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${statusCfg.dot} ${
+                          item.status === 'processing' ? 'animate-pulse' : ''
+                        }`}
+                      />
+                      {statusCfg.label}
+                    </div>
+                  )}
+
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/30 transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-primary/50" />
                 </Link>
-              </li>
+              </div>
             )
           })}
-        </ul>
+        </div>
       )}
 
-      <p className="text-xs text-muted-foreground">
-        {filtered.length} of {items.length} item{items.length === 1 ? '' : 's'}
+      {/* ── Count ── */}
+      <p className="text-xs text-muted-foreground/60">
+        {filtered.length === items.length
+          ? `${items.length} item${items.length === 1 ? '' : 's'}`
+          : `${filtered.length} of ${items.length} items`}
       </p>
+
+      {/* ── Floating bulk action bar ── */}
+      <BulkActionBar
+        workspaceId={workspaceId}
+        selected={selected}
+        onClear={() => setSelected(new Set())}
+        projects={projects}
+      />
     </div>
   )
 }

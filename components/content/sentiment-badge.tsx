@@ -13,16 +13,16 @@ interface SentimentBadgeProps {
 }
 
 const OVERALL_COLORS: Record<string, string> = {
-  positive: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
-  negative: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-  neutral: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-  mixed: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
+  positive: 'bg-emerald-100 text-emerald-800',
+  negative: 'bg-red-100 text-red-800',
+  neutral: 'bg-gray-100 text-gray-800',
+  mixed: 'bg-amber-100 text-amber-800',
 }
 
 const ENERGY_COLORS: Record<string, string> = {
-  high: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-  medium: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  low: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+  high: 'bg-orange-100 text-orange-700',
+  medium: 'bg-blue-100 text-blue-700',
+  low: 'bg-slate-100 text-slate-600',
 }
 
 export function SentimentBadge({ sentiment }: SentimentBadgeProps) {

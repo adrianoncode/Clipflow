@@ -88,12 +88,12 @@ export function OnboardingWizard({ workspaceId, workspaceName }: OnboardingWizar
 
           {inviteState && 'ok' in inviteState && inviteState.ok === true ? (
             <div className="space-y-4">
-              <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-950">
-                <p className="text-sm font-medium text-green-800 dark:text-green-200">
+              <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+                <p className="text-sm font-medium text-green-800">
                   Invite sent!
                 </p>
                 {inviteState.token && (
-                  <p className="mt-1 break-all text-xs text-green-700 dark:text-green-300">
+                  <p className="mt-1 break-all text-xs text-green-700">
                     Share this link:{' '}
                     {typeof window !== 'undefined'
                       ? `${window.location.origin}/invite/${inviteState.token}`

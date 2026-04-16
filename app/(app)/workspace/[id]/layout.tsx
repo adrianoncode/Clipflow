@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
@@ -16,15 +15,13 @@ interface WorkspaceSummary {
   type: WorkspaceType
 }
 
-const workspaceNav = (id: string) => [
-  { href: `/workspace/${id}`, label: 'Content' },
-  { href: `/workspace/${id}/projects`, label: 'Projects' },
-  { href: `/workspace/${id}/schedule`, label: 'Schedule' },
-  { href: `/workspace/${id}/ideas`, label: 'Ideas' },
-  { href: `/workspace/${id}/channels`, label: 'Channels' },
-  { href: `/workspace/${id}/members`, label: 'Members' },
-]
-
+/**
+ * Workspace layout — thin wrapper that guards the workspace exists and
+ * is accessible. The actual navigation lives in the main app shell
+ * sidebar (see `components/workspace/app-shell.tsx`). We intentionally
+ * don't render a secondary nav here to avoid duplicating the sidebar
+ * hierarchy the user already sees.
+ */
 export default async function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {
   const supabase = createClient()
   const { data: workspace, error } = await supabase
@@ -38,24 +35,5 @@ export default async function WorkspaceLayout({ children, params }: WorkspaceLay
     notFound()
   }
 
-  return (
-    <div className="flex min-h-full flex-col">
-      <div className="border-b bg-muted/40 px-4 py-4 sm:px-8">
-        <h2 className="text-lg font-semibold">{workspace.name}</h2>
-        <p className="text-xs uppercase tracking-wide text-muted-foreground">{workspace.type}</p>
-        <nav className="mt-3 flex gap-1">
-          {workspaceNav(params.id).map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      </div>
-      <div className="flex-1">{children}</div>
-    </div>
-  )
+  return <div className="flex min-h-full flex-col">{children}</div>
 }

@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { Mic2 } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
 import { getActiveBrandVoice } from '@/lib/brand-voice/get-active-brand-voice'
@@ -26,7 +27,6 @@ export default async function BrandVoicePage({
   const user = await getUser()
   if (!user) redirect('/login')
 
-  // Allow explicit workspace_id override via ?workspace=...
   const workspaceId =
     searchParams.workspace ?? (await getFirstWorkspaceId(user.id))
 
@@ -35,16 +35,25 @@ export default async function BrandVoicePage({
   const brandVoice = await getActiveBrandVoice(workspaceId)
 
   return (
-    <div className="max-w-xl space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold">Brand Voice</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Define your workspace&apos;s tone, style, and an example hook. Clipflow will inject
-          these guidelines into every AI generation run.
-        </p>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-start gap-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-pink-100">
+          <Mic2 className="h-5 w-5 text-pink-600" />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold tracking-tight">Brand Voice</h1>
+          <p className="mt-0.5 max-w-lg text-sm text-muted-foreground">
+            Define your workspace&apos;s tone, style, and example hooks. Clipflow injects
+            these guidelines into every AI generation — scripts, captions, hooks, everything.
+          </p>
+        </div>
       </div>
 
-      <BrandVoiceForm workspaceId={workspaceId} existing={brandVoice} />
+      {/* Form card */}
+      <div className="max-w-xl rounded-2xl border border-border/50 bg-card p-6 shadow-sm">
+        <BrandVoiceForm workspaceId={workspaceId} existing={brandVoice} />
+      </div>
     </div>
   )
 }

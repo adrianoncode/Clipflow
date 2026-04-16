@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { Bot } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
 import { getPersonas } from '@/lib/personas/get-active-persona'
@@ -22,13 +23,18 @@ export default async function PersonasPage() {
   const personas = await getPersonas(workspaceId)
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-8 p-4 sm:p-8">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">AI Personas</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Create custom AI personas that go beyond brand voice — give the AI a name, backstory,
-          expertise, and writing quirks. Every generated output will adopt the active persona.
-        </p>
+    <div className="max-w-2xl space-y-8">
+      <div className="flex items-start gap-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100">
+          <Bot className="h-5 w-5 text-indigo-600" />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold tracking-tight">AI Personas</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            Create custom AI personas that go beyond brand voice — give the AI a name, backstory,
+            expertise, and writing quirks. Every generated output will adopt the active persona.
+          </p>
+        </div>
       </div>
 
       {/* Existing personas */}

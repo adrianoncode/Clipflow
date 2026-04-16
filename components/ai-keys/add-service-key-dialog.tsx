@@ -68,7 +68,7 @@ export function AddServiceKeyDialog({
       <div className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
         <div className="flex items-start justify-between gap-4 border-b border-border/60 px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-mono text-sm font-bold text-primary ring-1 ring-primary/20">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-mono text-sm font-bold shadow-sm bg-primary text-primary-foreground">
               {spec.monogram}
             </div>
             <div>
@@ -81,7 +81,7 @@ export function AddServiceKeyDialog({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
           >
             <X className="h-4 w-4" />
           </button>
@@ -94,7 +94,7 @@ export function AddServiceKeyDialog({
               href={spec.signupUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-medium text-foreground transition-colors hover:border-primary/30"
+              className="flex items-center justify-between rounded-xl border border-border/60 bg-background px-2.5 py-1.5 text-[11px] font-medium text-foreground transition-all hover:border-primary/30 hover:bg-primary/[0.04]"
             >
               1 · Sign up
               <ExternalLink className="h-3 w-3 text-muted-foreground" />
@@ -103,14 +103,14 @@ export function AddServiceKeyDialog({
               href={spec.keyDashboardUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-medium text-foreground transition-colors hover:border-primary/30"
+              className="flex items-center justify-between rounded-xl border border-border/60 bg-background px-2.5 py-1.5 text-[11px] font-medium text-foreground transition-all hover:border-primary/30 hover:bg-primary/[0.04]"
             >
               {spec.setupNote ? '3 · Get your key' : '2 · Get your key'}
               <ExternalLink className="h-3 w-3 text-muted-foreground" />
             </a>
           </div>
           {spec.setupNote ? (
-            <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2.5">
+            <div className="rounded-xl border border-primary/20 bg-primary/5 px-3.5 py-3">
               <p className="mb-1 font-mono text-[9px] uppercase tracking-[0.15em] text-primary/70">
                 2 · Important step
               </p>

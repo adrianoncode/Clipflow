@@ -28,7 +28,7 @@ export async function transcribeWithWhisper(
   const formData = new FormData()
   formData.append('file', blob, filename)
   formData.append('model', WHISPER_MODEL)
-  formData.append('response_format', 'json')
+  formData.append('response_format', 'verbose_json')
   formData.append('temperature', '0')
 
   let response: Response
@@ -59,7 +59,7 @@ export async function transcribeWithWhisper(
 
   if (response.ok) {
     try {
-      const json = (await response.json()) as { text?: unknown }
+      const json = (await response.json()) as { text?: unknown; duration?: unknown }
       if (typeof json.text !== 'string') {
         return {
           ok: false,
@@ -67,7 +67,11 @@ export async function transcribeWithWhisper(
           message: 'OpenAI returned an unexpected transcription payload.',
         }
       }
-      return { ok: true, text: json.text }
+      return {
+        ok: true,
+        text: json.text,
+        durationSeconds: typeof json.duration === 'number' ? json.duration : undefined,
+      }
     } catch {
       return {
         ok: false,

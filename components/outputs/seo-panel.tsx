@@ -53,7 +53,7 @@ export function SeoPanel({ workspaceId, contentId, initialSeo }: SeoPanelProps) 
             <p className="text-xs text-destructive">{state.error}</p>
           )}
           {state.ok === true && (
-            <p className="text-xs text-emerald-600 dark:text-emerald-400">SEO updated!</p>
+            <p className="text-xs text-emerald-600">SEO updated!</p>
           )}
         </form>
 
@@ -64,7 +64,7 @@ export function SeoPanel({ workspaceId, contentId, initialSeo }: SeoPanelProps) 
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
                 Primary Keyword
               </p>
-              <span className="rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 px-3 py-1 text-sm font-semibold">
+              <span className="rounded-full bg-blue-100 text-blue-800 px-3 py-1 text-sm font-semibold">
                 {seo.primary_keyword}
               </span>
             </div>

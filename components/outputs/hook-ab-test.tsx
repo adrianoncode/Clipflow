@@ -18,9 +18,9 @@ interface HookAbTestProps {
 }
 
 const TRIGGER_COLORS: Record<string, string> = {
-  'Curiosity gap': 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-  'Bold claim/controversy': 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-  'Personal story/vulnerability': 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+  'Curiosity gap': 'bg-blue-100 text-blue-700',
+  'Bold claim/controversy': 'bg-red-100 text-red-700',
+  'Personal story/vulnerability': 'bg-purple-100 text-purple-700',
 }
 
 function triggerColor(trigger: string): string {
@@ -52,7 +52,7 @@ function WinnerButton({ index, outputId, workspaceId, isWinner }: {
 
   if (isWinner) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
         Winner
       </span>
     )
@@ -83,7 +83,7 @@ function VariantCard({ variant, index, outputId, workspaceId }: {
   return (
     <div
       className={`rounded-lg border p-3 space-y-2 transition-colors ${
-        variant.winner ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10' : 'bg-muted/20'
+        variant.winner ? 'border-emerald-500 bg-emerald-50/50' : 'bg-muted/20'
       }`}
     >
       <div className="flex items-start justify-between gap-2">

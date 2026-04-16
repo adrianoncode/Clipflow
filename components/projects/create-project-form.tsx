@@ -51,7 +51,7 @@ export function CreateProjectForm({ workspaceId }: CreateProjectFormProps) {
           type="text"
           required
           placeholder="Q2 Campaign, Client XYZ, Product Launch…"
-          className="w-full rounded-md border bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full rounded-xl border border-border/60 bg-background px-3.5 py-2 text-sm placeholder:text-muted-foreground/50 transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
       </div>
 
@@ -64,7 +64,7 @@ export function CreateProjectForm({ workspaceId }: CreateProjectFormProps) {
           name="description"
           type="text"
           placeholder="A short note about this project"
-          className="w-full rounded-md border bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full rounded-xl border border-border/60 bg-background px-3.5 py-2 text-sm placeholder:text-muted-foreground/50 transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
       </div>
 

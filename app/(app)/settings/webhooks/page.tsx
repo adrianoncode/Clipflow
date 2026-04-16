@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Webhooks' }
 
 import { redirect } from 'next/navigation'
+import { Webhook } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
@@ -28,12 +29,17 @@ export default async function WebhooksPage({
     .order('created_at', { ascending: false })
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold">Webhooks</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Send events to Zapier, Make.com, or any custom endpoint when things happen in Clipflow.
-        </p>
+    <div className="max-w-2xl space-y-8">
+      <div className="flex items-start gap-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100">
+          <Webhook className="h-5 w-5 text-amber-600" />
+        </div>
+        <div>
+          <h1 className="text-lg font-bold tracking-tight">Webhooks</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            Send events to Zapier, Make.com, or any custom endpoint when things happen in Clipflow.
+          </p>
+        </div>
       </div>
 
       <WebhooksClient

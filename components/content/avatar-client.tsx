@@ -142,10 +142,10 @@ export function AvatarClient({
               className={[
                 'rounded-full px-2 py-0.5 text-xs font-medium',
                 currentJob.status === 'completed'
-                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                  ? 'bg-green-100 text-green-700'
                   : currentJob.status === 'failed'
-                  ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                  : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+                  ? 'bg-red-100 text-red-700'
+                  : 'bg-amber-100 text-amber-700',
               ].join(' ')}
             >
               {currentJob.status}

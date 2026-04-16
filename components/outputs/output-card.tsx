@@ -61,10 +61,10 @@ function SectionToggle({ icon, label, sectionKey: _sectionKey, active, onClick }
       type="button"
       title={label}
       onClick={onClick}
-      className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all ${
+      className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-150 ${
         active
           ? 'bg-primary/10 text-primary'
-          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+          : 'text-muted-foreground/50 hover:bg-primary/[0.06] hover:text-primary'
       }`}
     >
       {icon}

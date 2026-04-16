@@ -45,7 +45,7 @@ export function AssignToProjectSelector({
           const form = e.currentTarget.form
           if (form) form.requestSubmit()
         }}
-        className="rounded-md border bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+        className="rounded-xl border border-border/60 bg-background px-2.5 py-1 text-xs transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
       >
         <option value="">None</option>
         {projects.map((p) => (

@@ -71,7 +71,7 @@ export function ReferralSidebarCard({ link, pending, confirmed, currentPlan }: R
         type="button"
         onClick={copy}
         title={link}
-        className="mt-2 flex w-full items-center gap-1.5 rounded-md border bg-background px-2 py-1.5 text-left text-[11px] transition-colors hover:border-primary/40 hover:bg-primary/5"
+        className="mt-2 flex w-full items-center gap-1.5 rounded-xl border border-border/60 bg-background px-2.5 py-1.5 text-left text-[11px] transition-all hover:border-primary/40 hover:bg-primary/5"
       >
         <span className="min-w-0 flex-1 truncate font-mono text-muted-foreground">
           {preview}

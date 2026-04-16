@@ -25,6 +25,7 @@ import { fetchUrlText } from '@/lib/content/fetch-url-text'
 import { mimeForExtension, videoStoragePath } from '@/lib/content/storage-paths'
 import { updateContentItem } from '@/lib/content/update-content-item'
 import { createClient } from '@/lib/supabase/server'
+import type { Json } from '@/lib/supabase/types'
 
 // NOTE: `maxDuration = 300` lives on the route segments that invoke these
 // actions (new/page.tsx and [contentId]/page.tsx). Server Action modules
@@ -187,9 +188,28 @@ async function runTranscription(params: {
     return fail(result.code, result.message)
   }
 
+  // Store duration from Whisper when available — editor exports (EDL,
+  // chapters) use it for real timestamps instead of 300s fallback.
+  let mergedMetadata: { [key: string]: Json | undefined } | undefined
+  if (result.durationSeconds != null) {
+    // Read existing metadata first so we merge instead of overwrite
+    const { data: existing } = await supabase
+      .from('content_items')
+      .select('metadata')
+      .eq('id', params.contentId)
+      .eq('workspace_id', params.workspaceId)
+      .maybeSingle()
+    const prev =
+      existing?.metadata && typeof existing.metadata === 'object' && !Array.isArray(existing.metadata)
+        ? (existing.metadata as Record<string, unknown>)
+        : {}
+    mergedMetadata = { ...prev, duration_seconds: result.durationSeconds }
+  }
+
   const ready = await updateContentItem(params.contentId, params.workspaceId, {
     transcript: result.text,
     status: 'ready',
+    ...(mergedMetadata ? { metadata: mergedMetadata } : {}),
   })
   if (!ready.ok) {
     return fail('provider_error', ready.error)

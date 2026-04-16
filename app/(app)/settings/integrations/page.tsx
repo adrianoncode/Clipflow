@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Send, Zap, Check } from 'lucide-react'
+import { Plug, Send, Zap, Check } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
 import { createClient } from '@/lib/supabase/server'
@@ -210,15 +210,20 @@ export default async function IntegrationsPage({
   const urlConnected = searchParams.connected
 
   return (
-    <div className="max-w-3xl space-y-10">
+    <div className="space-y-10">
 
       {/* ── Header ── */}
       <div className="space-y-4">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight">Integrations</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Connect Clipflow to the tools you already use. OAuth integrations take one click.
-          </p>
+        <div className="flex items-start gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100">
+            <Plug className="h-5 w-5 text-violet-600" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold tracking-tight">Integrations</h1>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Connect Clipflow to the tools you already use. OAuth integrations take one click.
+            </p>
+          </div>
         </div>
 
         {/* Progress bar */}
@@ -311,7 +316,7 @@ export default async function IntegrationsPage({
                       ? 'border-border/40 bg-muted/20 opacity-60'
                       : isConnected
                         ? 'border-emerald-200 bg-gradient-to-br from-emerald-50/60 to-background shadow-sm hover:-translate-y-1.5 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/10'
-                        : 'border-border/50 bg-card hover:-translate-y-1.5 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/8'
+                        : 'border-border/50 bg-card hover:-translate-y-1.5 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/[0.08]'
                   }`}
                 >
                   {/* Shine sweep on hover */}

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+import { ArrowRight, CalendarClock, CheckCircle2 } from 'lucide-react'
 
 import {
   Card,
@@ -25,6 +26,7 @@ import { getReviewCommentsForContent } from '@/lib/review/get-review-comments-fo
 import { listRenders } from '@/lib/video/renders/list-renders'
 import { getPlanFeatures } from '@/lib/billing/plans'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
+import { EditorExportPanel } from '@/components/content/editor-export-panel'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 
 /**
@@ -151,6 +153,64 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
             links={reviewLinks}
           />
           <ReviewCommentsPanel comments={reviewComments} />
+
+          {/* ── Editor Export — CapCut, Premiere etc. ── */}
+          <EditorExportPanel
+            contentId={params.contentId}
+            contentTitle={title}
+            transcript={item.transcript ?? ''}
+            srt={((item.metadata as Record<string, unknown> | null)?.srt as string) ?? null}
+            vtt={((item.metadata as Record<string, unknown> | null)?.vtt as string) ?? null}
+            clips={((item.metadata as Record<string, unknown> | null)?.best_clips as Array<{
+              quote: string
+              reason: string
+              position_pct: number
+              type: string
+              estimated_duration: string
+            }>) ?? null}
+            estimatedDurationSec={((item.metadata as Record<string, unknown> | null)?.duration_seconds as number) ?? null}
+          />
+
+          {/* ── Next Steps — bridge to Pipeline & Schedule ── */}
+          <div className="rounded-2xl border border-border/50 bg-card">
+            <div className="border-b border-border/40 px-5 py-3">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Next steps
+              </p>
+            </div>
+            <div className="grid gap-2 p-4 sm:grid-cols-2">
+              <Link
+                href={`/workspace/${params.id}/pipeline`}
+                className="group flex items-center gap-3 rounded-xl border border-border/40 bg-background p-4 transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 transition-colors group-hover:bg-emerald-100">
+                  <CheckCircle2 className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">Review &amp; approve</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Move drafts through the pipeline
+                  </p>
+                </div>
+                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground/30 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+              </Link>
+              <Link
+                href={`/workspace/${params.id}/schedule`}
+                className="group flex items-center gap-3 rounded-xl border border-border/40 bg-background p-4 transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-100">
+                  <CalendarClock className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">Schedule publishing</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {hasPublishKey ? 'Auto-publish via Upload-Post' : 'Connect Upload-Post to publish'}
+                  </p>
+                </div>
+                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground/30 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+              </Link>
+            </div>
+          </div>
         </>
       )}
     </div>

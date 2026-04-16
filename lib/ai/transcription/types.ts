@@ -20,5 +20,5 @@ export interface TranscribeInput {
 }
 
 export type TranscribeResult =
-  | { ok: true; text: string }
+  | { ok: true; text: string; durationSeconds?: number }
   | { ok: false; code: TranscriptionErrorCode; message: string }

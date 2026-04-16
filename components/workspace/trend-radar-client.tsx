@@ -247,8 +247,8 @@ function TrendCard({
           <span
             className={`shrink-0 rounded-full px-1.5 py-0.5 text-xs font-semibold ${
               score >= 70
-                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-amber-100 text-amber-700'
             }`}
           >
             {score}

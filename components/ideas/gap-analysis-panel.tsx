@@ -17,8 +17,8 @@ function SubmitButton({ hasGaps }: { hasGaps: boolean }) {
 }
 
 const URGENCY_COLORS = {
-  high: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  medium: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  high: 'bg-red-100 text-red-700',
+  medium: 'bg-yellow-100 text-yellow-700',
   low: 'bg-muted text-muted-foreground',
 }
 

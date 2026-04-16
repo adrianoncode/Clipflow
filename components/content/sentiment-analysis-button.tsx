@@ -48,7 +48,7 @@ export function SentimentAnalysisButton({
           <p className="text-xs text-destructive">{state.error}</p>
         )}
         {state.ok === true && (
-          <p className="text-xs text-emerald-600 dark:text-emerald-400">Sentiment updated!</p>
+          <p className="text-xs text-emerald-600">Sentiment updated!</p>
         )}
       </form>
       {currentSentiment && <SentimentBadge sentiment={currentSentiment} />}

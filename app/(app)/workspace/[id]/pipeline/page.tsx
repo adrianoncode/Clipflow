@@ -1,21 +1,19 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+import { ArrowRight, CalendarClock, Plus, Inbox } from 'lucide-react'
 
+import {
+  PipelineBoard,
+  type PipelineStateKey,
+  type PipelineOutputItem,
+  type PipelineColumn,
+} from '@/components/pipeline/pipeline-board'
 import { getUser } from '@/lib/auth/get-user'
 import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Pipeline' }
 
-type PipelineState = 'draft' | 'review' | 'approved' | 'exported'
-
-interface PipelineOutput {
-  id: string
-  platform: string
-  created_at: string
-  contentTitle: string | null
-  state: PipelineState
-}
 
 const PLATFORM_LABELS: Record<string, string> = {
   tiktok: 'TikTok',
@@ -25,40 +23,35 @@ const PLATFORM_LABELS: Record<string, string> = {
 }
 
 const PLATFORM_BADGE_COLORS: Record<string, string> = {
-  tiktok: 'bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-400',
-  instagram_reels: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400',
-  youtube_shorts: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
-  linkedin: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+  tiktok: 'bg-pink-100 text-pink-700',
+  instagram_reels: 'bg-purple-100 text-purple-700',
+  youtube_shorts: 'bg-red-100 text-red-700',
+  linkedin: 'bg-blue-100 text-blue-700',
 }
 
-const COLUMN_CONFIG: {
-  state: PipelineState
-  label: string
-  headerClass: string
-  dotClass: string
-}[] = [
+const COLUMN_CONFIG: PipelineColumn[] = [
   {
     state: 'draft',
     label: 'Draft',
-    headerClass: 'border-zinc-300 dark:border-zinc-600',
+    accentClass: 'from-zinc-500/60',
     dotClass: 'bg-zinc-400',
   },
   {
     state: 'review',
-    label: 'Review',
-    headerClass: 'border-amber-400',
+    label: 'In Review',
+    accentClass: 'from-amber-400',
     dotClass: 'bg-amber-400',
   },
   {
     state: 'approved',
     label: 'Approved',
-    headerClass: 'border-green-500',
-    dotClass: 'bg-green-500',
+    accentClass: 'from-emerald-500',
+    dotClass: 'bg-emerald-500',
   },
   {
     state: 'exported',
     label: 'Exported',
-    headerClass: 'border-blue-500',
+    accentClass: 'from-blue-500',
     dotClass: 'bg-blue-500',
   },
 ]
@@ -73,10 +66,17 @@ function formatRelative(iso: string): string {
     if (hours < 24) return `${hours}h ago`
     const days = Math.round(hours / 24)
     if (days < 7) return `${days}d ago`
-    return new Date(iso).toLocaleDateString()
+    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
   } catch {
     return iso
   }
+}
+
+function bodySnippet(body: string | null | undefined): string | null {
+  if (!body) return null
+  const clean = body.replace(/\s+/g, ' ').trim()
+  if (clean.length === 0) return null
+  return clean.length > 120 ? clean.slice(0, 120).trimEnd() + '…' : clean
 }
 
 interface PipelinePageProps {
@@ -89,7 +89,7 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
   const user = await getUser()
   if (!user) redirect('/login')
 
-  const supabase = await createClient()
+  const supabase = createClient()
 
   // Verify workspace membership
   const { data: membership } = await supabase
@@ -101,26 +101,24 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
 
   if (!membership) notFound()
 
-  // Fetch outputs with content title
   const { data: outputs } = await supabase
     .from('outputs')
-    .select('id, platform, created_at, content_id, content_items(title)')
+    .select('id, platform, created_at, content_id, body, content_items(title)')
     .eq('workspace_id', workspaceId)
     .order('created_at', { ascending: false })
-    .limit(100)
+    .limit(200)
 
   const outputIds = (outputs ?? []).map((o) => o.id)
 
-  // Fetch all output_states for these outputs
-  const { data: states } = outputIds.length > 0
-    ? await supabase
-        .from('output_states')
-        .select('output_id, state, created_at')
-        .in('output_id', outputIds)
-        .order('created_at', { ascending: false })
-    : { data: [] }
+  const { data: states } =
+    outputIds.length > 0
+      ? await supabase
+          .from('output_states')
+          .select('output_id, state, created_at')
+          .in('output_id', outputIds)
+          .order('created_at', { ascending: false })
+      : { data: [] }
 
-  // Find latest state per output_id
   const latestStateByOutput = new Map<string, string>()
   for (const row of states ?? []) {
     if (!latestStateByOutput.has(row.output_id)) {
@@ -128,25 +126,29 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
     }
   }
 
-  // Build enriched output list
-  const enriched: PipelineOutput[] = (outputs ?? []).map((o) => {
-    const contentItem = (o.content_items as unknown) as { title: string | null } | null
+  const enriched: PipelineOutputItem[] = (outputs ?? []).map((o) => {
+    const contentItem = o.content_items as unknown as { title: string | null } | null
     const rawState = latestStateByOutput.get(o.id) ?? 'draft'
-    const state: PipelineState =
+    const state: PipelineStateKey =
       rawState === 'review' || rawState === 'approved' || rawState === 'exported'
-        ? (rawState as PipelineState)
+        ? (rawState as PipelineStateKey)
         : 'draft'
     return {
       id: o.id,
       platform: o.platform,
-      created_at: o.created_at,
+      platformLabel: PLATFORM_LABELS[o.platform] ?? o.platform,
+      platformBadgeClass:
+        PLATFORM_BADGE_COLORS[o.platform] ?? 'bg-muted text-muted-foreground',
+      contentId: o.content_id,
       contentTitle: contentItem?.title ?? null,
+      bodyPreview: bodySnippet(o.body),
       state,
+      createdAt: o.created_at,
+      formattedDate: formatRelative(o.created_at),
     }
   })
 
-  // Group by state
-  const grouped: Record<PipelineState, PipelineOutput[]> = {
+  const grouped: Record<PipelineStateKey, PipelineOutputItem[]> = {
     draft: [],
     review: [],
     approved: [],
@@ -156,81 +158,95 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
     grouped[output.state].push(output)
   }
 
+  const totalCount = enriched.length
+
+  const approvedCount = grouped.approved.length
+  const exportedCount = grouped.exported.length
+  const reviewCount = grouped.review.length
+
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-8">
-      {/* Header */}
-      <div className="space-y-1">
-        <Link
-          href="/dashboard"
-          className="text-xs text-muted-foreground underline-offset-4 hover:underline"
-        >
-          ← Back to dashboard
-        </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">Content Pipeline</h1>
-        <p className="text-sm text-muted-foreground">
-          All outputs grouped by their current state.
-        </p>
+    <div className="mx-auto w-full max-w-[1400px] space-y-6 p-4 sm:p-8">
+      {/* ── Header ── */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-xl font-bold tracking-tight">Pipeline</h1>
+          <p className="text-sm text-muted-foreground">
+            {totalCount === 0
+              ? 'Generated outputs show up here — move them through the review flow.'
+              : `${totalCount} output${totalCount === 1 ? '' : 's'} · ${reviewCount} in review · ${approvedCount} approved`}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {approvedCount > 0 && (
+            <Link
+              href={`/workspace/${workspaceId}/schedule`}
+              className="group inline-flex shrink-0 items-center gap-2 rounded-xl border border-emerald-200/60 bg-emerald-50/50 px-4 py-2 text-sm font-semibold text-emerald-700 transition-all hover:-translate-y-px hover:bg-emerald-100 hover:shadow-md"
+            >
+              <CalendarClock className="h-4 w-4" />
+              Schedule {approvedCount}
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          )}
+          <Link
+            href={`/workspace/${workspaceId}/content/new`}
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25"
+          >
+            <Plus className="h-4 w-4" />
+            New video
+          </Link>
+        </div>
       </div>
 
-      {/* Kanban board */}
-      {enriched.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="text-sm text-muted-foreground">No outputs yet.</p>
+      {/* ── Workflow flow strip ── */}
+      {totalCount > 0 && (
+        <div className="flex items-center gap-1 rounded-xl border border-border/40 bg-card p-2">
+          {([
+            { state: 'draft' as const, label: 'Draft', count: grouped.draft.length, dot: 'bg-zinc-400' },
+            { state: 'review' as const, label: 'Review', count: reviewCount, dot: 'bg-amber-400' },
+            { state: 'approved' as const, label: 'Approved', count: approvedCount, dot: 'bg-emerald-400' },
+            { state: 'exported' as const, label: 'Published', count: exportedCount, dot: 'bg-blue-500' },
+          ] as const).map((step, i) => (
+            <div key={step.state} className="flex flex-1 items-center gap-1.5">
+              {i > 0 && <div className="h-px w-3 bg-border/60 sm:w-6" />}
+              <div className="flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5">
+                <span className={`h-2 w-2 shrink-0 rounded-full ${step.dot}`} />
+                <span className="hidden text-[11px] font-semibold sm:inline">{step.label}</span>
+                <span className="font-mono text-[11px] font-bold tabular-nums text-muted-foreground">
+                  {step.count}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Empty state ── */}
+      {totalCount === 0 ? (
+        <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border bg-muted/20 py-16 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
+            <Inbox className="h-6 w-6 text-muted-foreground/40" />
+          </div>
+          <div>
+            <p className="font-semibold text-foreground">No outputs yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Import a video, generate outputs, and they&apos;ll appear here.
+            </p>
+          </div>
           <Link
-            href={`/workspace/${workspaceId}`}
-            className="mt-3 inline-block text-xs text-primary underline-offset-4 hover:underline"
+            href={`/workspace/${workspaceId}/content/new`}
+            className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
           >
-            Go to workspace to create content →
+            <Plus className="h-3 w-3" />
+            Import first video
           </Link>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {COLUMN_CONFIG.map((col) => {
-            const items = grouped[col.state]
-            return (
-              <div key={col.state} className="flex flex-col gap-3">
-                {/* Column header */}
-                <div className={`flex items-center gap-2 border-b-2 pb-2 ${col.headerClass}`}>
-                  <span className={`h-2 w-2 rounded-full ${col.dotClass}`} />
-                  <span className="text-sm font-semibold">{col.label}</span>
-                  <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                    {items.length}
-                  </span>
-                </div>
-
-                {/* Cards */}
-                {items.length === 0 ? (
-                  <div className="rounded-lg border border-dashed p-4 text-center">
-                    <p className="text-xs text-muted-foreground">None</p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    {items.map((output) => (
-                      <div
-                        key={output.id}
-                        className="rounded-lg border bg-card p-3 shadow-sm transition-shadow hover:shadow"
-                      >
-                        <p className="truncate text-sm font-medium">
-                          {output.contentTitle ?? 'Untitled'}
-                        </p>
-                        <div className="mt-2 flex items-center justify-between gap-2">
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${PLATFORM_BADGE_COLORS[output.platform] ?? 'bg-muted text-muted-foreground'}`}
-                          >
-                            {PLATFORM_LABELS[output.platform] ?? output.platform}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {formatRelative(output.created_at)}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
+        <PipelineBoard
+          workspaceId={workspaceId}
+          columns={COLUMN_CONFIG}
+          grouped={grouped}
+        />
       )}
     </div>
   )

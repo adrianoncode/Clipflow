@@ -31,6 +31,7 @@ import { NewsletterPanel } from '@/components/content/newsletter-panel'
 import { ClipFinder } from '@/components/content/clip-finder'
 import type { SentimentResult, BestClip } from '@/app/(app)/workspace/[id]/content/[contentId]/actions'
 import { DeleteContentButton } from '@/components/content/delete-content-button'
+import { EditorExportPanel } from '@/components/content/editor-export-panel'
 import { RenameContentForm } from '@/components/content/rename-content-form'
 import type { ContentItemRow } from '@/lib/content/get-content-item'
 import type { ProjectRow } from '@/lib/projects/get-projects'
@@ -308,6 +309,27 @@ export function ContentDetailView({
             contentId={item.id}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             initialClips={((item.metadata as any)?.best_clips as BestClip[]) ?? null}
+          />
+
+          {/* ── Editor Export — CapCut, Premiere, DaVinci, Final Cut ── */}
+          <EditorExportPanel
+            contentId={item.id}
+            contentTitle={title}
+            transcript={item.transcript ?? ''}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            srt={((item.metadata as any)?.srt as string) ?? null}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            vtt={((item.metadata as any)?.vtt as string) ?? null}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            clips={((item.metadata as any)?.best_clips as Array<{
+              quote: string
+              reason: string
+              position_pct: number
+              type: string
+              estimated_duration: string
+            }>) ?? null}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            estimatedDurationSec={((item.metadata as any)?.duration_seconds as number) ?? null}
           />
         </div>
       ) : null}

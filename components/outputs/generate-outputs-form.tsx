@@ -58,7 +58,7 @@ export function GenerateOutputsForm({
           id="target_language"
           name="target_language"
           defaultValue="en"
-          className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring sm:w-56"
+          className="w-full rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:w-56"
         >
           {OUTPUT_LANGUAGES.map((lang) => (
             <option key={lang.code} value={lang.code}>

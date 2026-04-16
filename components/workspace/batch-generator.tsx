@@ -83,8 +83,8 @@ export function BatchGenerator({ items, workspaceId }: BatchGeneratorProps) {
   if (state && state.ok === true) {
     return (
       <div className="space-y-4">
-        <div className="rounded-md bg-green-50 border border-green-200 px-4 py-3 dark:bg-green-950/20 dark:border-green-800">
-          <p className="text-sm font-medium text-green-800 dark:text-green-300">
+        <div className="rounded-md bg-green-50 border border-green-200 px-4 py-3">
+          <p className="text-sm font-medium text-green-800">
             Batch generation complete
           </p>
         </div>
@@ -102,11 +102,11 @@ export function BatchGenerator({ items, workspaceId }: BatchGeneratorProps) {
                 <tr key={r.contentId}>
                   <td className="px-4 py-2 truncate max-w-xs">{r.title}</td>
                   <td className="px-4 py-2 text-center">
-                    <span className="text-green-700 dark:text-green-400 font-medium">{r.generated}</span>
+                    <span className="text-green-700 font-medium">{r.generated}</span>
                   </td>
                   <td className="px-4 py-2 text-center">
                     {r.failed > 0 ? (
-                      <span className="text-amber-700 dark:text-amber-400 font-medium">{r.failed}</span>
+                      <span className="text-amber-700 font-medium">{r.failed}</span>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
@@ -145,7 +145,7 @@ export function BatchGenerator({ items, workspaceId }: BatchGeneratorProps) {
           <span className="text-xs text-muted-foreground">
             {selected.size} item{selected.size !== 1 ? 's' : ''} selected
             {selected.size === MAX && (
-              <span className="ml-1 text-amber-600 dark:text-amber-400">(max)</span>
+              <span className="ml-1 text-amber-600">(max)</span>
             )}
           </span>
         </div>
@@ -189,7 +189,7 @@ export function BatchGenerator({ items, workspaceId }: BatchGeneratorProps) {
                     Has outputs
                   </span>
                 ) : (
-                  <span className="shrink-0 text-xs text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/20">
+                  <span className="shrink-0 text-xs text-amber-700 px-2 py-0.5 rounded-full bg-amber-50">
                     No outputs yet
                   </span>
                 )}

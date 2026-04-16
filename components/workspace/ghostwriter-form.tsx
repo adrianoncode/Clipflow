@@ -121,7 +121,7 @@ export function GhostwriterForm({ workspaceId }: GhostwriterFormProps) {
           minLength={10}
           maxLength={500}
           placeholder="e.g. 5 morning habits that changed my life"
-          className="w-full rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+          className="w-full rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm placeholder:text-muted-foreground/50 transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
         />
       </div>
 
@@ -134,7 +134,7 @@ export function GhostwriterForm({ workspaceId }: GhostwriterFormProps) {
           id="tone"
           name="tone"
           defaultValue="casual"
-          className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring sm:w-64"
+          className="w-full rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:w-64"
         >
           <option value="casual">Casual</option>
           <option value="professional">Professional</option>

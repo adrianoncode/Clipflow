@@ -1,63 +1,78 @@
 import 'server-only'
 
+/**
+ * ──────────────────────────────────────────────────────────────────────
+ *  Direct-OAuth publishing — INTENTIONALLY NOT IMPLEMENTED
+ * ──────────────────────────────────────────────────────────────────────
+ *
+ *  Clipflow's supported publishing path is **Upload-Post BYOK** — see
+ *  `lib/publish/upload-post.ts`. Upload-Post handles the per-platform
+ *  OAuth (TikTok Content Posting v2, Meta Graph, LinkedIn Share v2) and
+ *  exposes a single `/post` endpoint that fans out to all connected
+ *  accounts.
+ *
+ *  We deliberately DO NOT maintain our own TikTok/Meta/LinkedIn app
+ *  registrations because:
+ *    1. Each platform requires a separate app review process (weeks)
+ *    2. Token refresh and rate-limit handling differ per platform
+ *    3. Upload-Post already does this at $16/mo — cheaper than building
+ *
+ *  These functions remain as typed stubs so the scheduled-publish cron
+ *  job compiles; they always return `ok: false` so no scheduled post
+ *  can silently appear as "published" without actually being sent.
+ *
+ *  If you want to support direct OAuth in the future, replace each stub
+ *  with a real implementation — don't reintroduce fake success IDs.
+ */
+
 export interface PublishResult {
   ok: boolean
   platformPostId?: string
   error?: string
 }
 
+const NOT_IMPLEMENTED: PublishResult = {
+  ok: false,
+  error:
+    'Direct publishing not supported — connect Upload-Post under Settings → API Keys → Publishing to schedule posts.',
+}
+
 export async function publishToTikTok(
-  accessToken: string,
-  caption: string,
-  videoUrl?: string,
+  _accessToken: string,
+  _caption: string,
+  _videoUrl?: string,
 ): Promise<PublishResult> {
-  // TODO: Implement TikTok Content Posting API v2
-  // Docs: https://developers.tiktok.com/doc/content-posting-api-get-started
-  // Requires: TikTok Developer App + user OAuth
-  if (!accessToken) return { ok: false, error: 'TikTok not connected' }
-  // Stub: simulate success
-  void caption
-  void videoUrl
-  return { ok: true, platformPostId: `tiktok_stub_${Date.now()}` }
+  return NOT_IMPLEMENTED
 }
 
 export async function publishToInstagram(
-  accessToken: string,
-  caption: string,
-  imageUrl?: string,
+  _accessToken: string,
+  _caption: string,
+  _imageUrl?: string,
 ): Promise<PublishResult> {
-  // TODO: Implement Meta Graph API for Instagram
-  // Docs: https://developers.facebook.com/docs/instagram-api/guides/content-publishing
-  if (!accessToken) return { ok: false, error: 'Instagram not connected' }
-  void caption
-  void imageUrl
-  return { ok: true, platformPostId: `ig_stub_${Date.now()}` }
+  return NOT_IMPLEMENTED
 }
 
 export async function publishToLinkedIn(
-  accessToken: string,
-  text: string,
+  _accessToken: string,
+  _text: string,
 ): Promise<PublishResult> {
-  // TODO: Implement LinkedIn Share API v2
-  // Docs: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/ugc-post-api
-  if (!accessToken) return { ok: false, error: 'LinkedIn not connected' }
-  void text
-  return { ok: true, platformPostId: `li_stub_${Date.now()}` }
+  return NOT_IMPLEMENTED
 }
 
 export async function publishPost(
   platform: string,
-  accessToken: string,
-  content: string,
-  mediaUrl?: string,
+  _accessToken: string,
+  _content: string,
+  _mediaUrl?: string,
 ): Promise<PublishResult> {
   switch (platform) {
     case 'tiktok':
-      return publishToTikTok(accessToken, content, mediaUrl)
     case 'instagram':
-      return publishToInstagram(accessToken, content, mediaUrl)
     case 'linkedin':
-      return publishToLinkedIn(accessToken, content)
+    case 'youtube':
+    case 'youtube_shorts':
+      return NOT_IMPLEMENTED
     default:
       return { ok: false, error: `Unknown platform: ${platform}` }
   }

@@ -107,7 +107,7 @@ export function ConnectPlatformCard({
                 placeholder={`@your${label.toLowerCase()}handle`}
                 defaultValue={connectedAccount?.platform_username ?? ''}
                 required
-                className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border border-border/60 bg-background px-3.5 py-2 text-sm transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
@@ -118,7 +118,7 @@ export function ConnectPlatformCard({
                 type="password"
                 placeholder="Paste your access token"
                 required
-                className="w-full rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border border-border/60 bg-background px-3.5 py-2 text-sm transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
 

@@ -12,7 +12,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+      className="rounded-xl bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-md disabled:opacity-50"
     >
       {pending ? 'Scheduling…' : 'Schedule post'}
     </button>
@@ -46,7 +46,7 @@ export function SchedulePostButton({ outputId, workspaceId, platform }: Schedule
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+        className="flex items-center gap-1 rounded-xl border border-border/60 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
       >
         <span>&#x1F4C5;</span> Schedule
       </button>
@@ -54,7 +54,7 @@ export function SchedulePostButton({ outputId, workspaceId, platform }: Schedule
   }
 
   return (
-    <form action={formAction} className="w-full space-y-2 rounded-md border bg-muted/30 p-3">
+    <form action={formAction} className="w-full space-y-2 rounded-2xl border border-border/60 bg-muted/20 p-3">
       <input type="hidden" name="workspace_id" value={workspaceId} />
       <input type="hidden" name="output_id" value={outputId} />
       <input type="hidden" name="platform" value={platform} />
@@ -66,7 +66,7 @@ export function SchedulePostButton({ outputId, workspaceId, platform }: Schedule
           type="datetime-local"
           required
           min={new Date().toISOString().slice(0, 16)}
-          className="w-full rounded-md border bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full rounded-xl border border-border/60 bg-background px-2.5 py-1.5 text-xs transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
       </div>
 

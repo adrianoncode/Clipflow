@@ -36,7 +36,7 @@ function ViralMeter({ value }: { value: number }) {
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">Viral probability</span>
-        <span className={`font-bold ${value >= 70 ? 'text-emerald-600 dark:text-emerald-400' : value >= 40 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}`}>
+        <span className={`font-bold ${value >= 70 ? 'text-emerald-600' : value >= 40 ? 'text-amber-600' : 'text-red-600'}`}>
           {value}% — {label}
         </span>
       </div>

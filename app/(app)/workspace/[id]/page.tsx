@@ -1,11 +1,20 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import {
+  AlertCircle,
+  CheckCircle2,
+  ChevronRight,
+  Clapperboard,
+  Loader2,
+  Plus,
+  Wand2,
+} from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
 import { ContentListWithSearch } from '@/components/content/content-list-with-search'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getContentItems } from '@/lib/content/get-content-items'
 import { findDuplicateIds } from '@/lib/content/find-duplicates'
+import { getProjects } from '@/lib/projects/get-projects'
 
 interface WorkspaceHomePageProps {
   params: { id: string }
@@ -14,42 +23,146 @@ interface WorkspaceHomePageProps {
 export default async function WorkspaceHomePage({ params }: WorkspaceHomePageProps) {
   const workspaces = await getWorkspaces()
   const workspace = workspaces.find((w) => w.id === params.id)
-  if (!workspace) {
-    notFound()
-  }
+  if (!workspace) notFound()
 
-  const items = await getContentItems(params.id, { limit: 50 })
+  const [items, projects] = await Promise.all([
+    getContentItems(params.id, { limit: 50 }),
+    getProjects(params.id),
+  ])
   const canCreate = workspace.role === 'owner' || workspace.role === 'editor'
-  const atLimit = items.length === 50
   const duplicateIds = findDuplicateIds(items)
+  const projectOptions = projects.map((p) => ({ id: p.id, name: p.name }))
+
+  // Quick stats
+  const readyCount = items.filter((i) => i.status === 'ready').length
+  const processingCount = items.filter(
+    (i) => i.status === 'processing' || i.status === 'uploading',
+  ).length
+  const failedCount = items.filter((i) => i.status === 'failed').length
+
+  // Find first ready item without outputs for a CTA
+  const firstReady = items.find((i) => i.status === 'ready')
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Content</h1>
+
+      {/* ── Header ── */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-xl font-bold tracking-tight">My Videos</h1>
           <p className="text-sm text-muted-foreground">
-            Everything in <span className="font-medium">{workspace.name}</span>.
+            {items.length === 0
+              ? 'Import your first video to get started.'
+              : `${items.length} item${items.length === 1 ? '' : 's'} in ${workspace.name}`}
           </p>
-          {workspace.role === 'owner' ? (
-            <Link
-              href={`/workspace/${params.id}/settings/limits`}
-              className="mt-1 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
-            >
-              View usage &amp; limits
-            </Link>
-          ) : null}
         </div>
-        {canCreate ? (
-          <Button asChild>
-            <Link href={`/workspace/${params.id}/content/new`}>New content</Link>
-          </Button>
-        ) : null}
+
+        {canCreate && (
+          <Link
+            href={`/workspace/${params.id}/content/new`}
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25"
+          >
+            <Plus className="h-4 w-4" />
+            Import video
+          </Link>
+        )}
       </div>
-      {atLimit ? (
-        <p className="text-xs text-muted-foreground">Showing the 50 most recent items.</p>
-      ) : null}
-      <ContentListWithSearch items={items} workspaceId={params.id} duplicateIds={duplicateIds} />
+
+      {/* ── Status stats strip ── */}
+      {items.length > 0 && (
+        <div className="grid grid-cols-3 gap-3">
+          <div className="flex items-center gap-3 rounded-xl border border-emerald-200/50 bg-emerald-50/30 px-4 py-3 transition-all hover:shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            </div>
+            <div>
+              <p className="font-mono text-xl font-bold tabular-nums leading-none">{readyCount}</p>
+              <p className="text-[11px] font-medium text-emerald-700/70">Ready</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 rounded-xl border border-amber-200/50 bg-amber-50/30 px-4 py-3 transition-all hover:shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100">
+              <Loader2 className={`h-4 w-4 text-amber-600 ${processingCount > 0 ? 'animate-spin' : ''}`} />
+            </div>
+            <div>
+              <p className="font-mono text-xl font-bold tabular-nums leading-none">{processingCount}</p>
+              <p className="text-[11px] font-medium text-amber-700/70">Processing</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 rounded-xl border border-red-200/50 bg-red-50/30 px-4 py-3 transition-all hover:shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-100">
+              <AlertCircle className="h-4 w-4 text-red-500" />
+            </div>
+            <div>
+              <p className="font-mono text-xl font-bold tabular-nums leading-none">{failedCount}</p>
+              <p className="text-[11px] font-medium text-red-600/70">Failed</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Workflow shortcuts — show when user has ready content ── */}
+      {readyCount > 0 && (
+        <div className="grid gap-3 sm:grid-cols-3">
+          {firstReady && (
+            <Link
+              href={`/workspace/${params.id}/content/${firstReady.id}/outputs`}
+              className="group flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/[0.04] p-3.5 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md hover:shadow-primary/[0.06]"
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
+                <Wand2 className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-primary">Generate outputs</p>
+                <p className="truncate text-[10px] text-muted-foreground">
+                  {firstReady.title ?? 'Untitled'}
+                </p>
+              </div>
+              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-primary/40 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          )}
+          <Link
+            href={`/workspace/${params.id}/pipeline`}
+            className="group flex items-center gap-3 rounded-xl border border-border/50 bg-card p-3.5 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md"
+          >
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 transition-colors group-hover:bg-emerald-100">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold">Review pipeline</p>
+              <p className="text-[10px] text-muted-foreground">Approve &amp; publish</p>
+            </div>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/30 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <Link
+            href={`/workspace/${params.id}/studio`}
+            className="group flex items-center gap-3 rounded-xl border border-border/50 bg-card p-3.5 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md"
+          >
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-pink-50 text-pink-600 transition-colors group-hover:bg-pink-100">
+              <Clapperboard className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold">Video Studio</p>
+              <p className="text-[10px] text-muted-foreground">Render MP4s</p>
+            </div>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/30 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+      )}
+
+      {/* ── Content list ── */}
+      <ContentListWithSearch
+        items={items}
+        workspaceId={params.id}
+        duplicateIds={duplicateIds}
+        projects={projectOptions}
+      />
+
+      {items.length === 50 && (
+        <p className="text-center text-xs text-muted-foreground/60">
+          Showing 50 most recent — older items not shown
+        </p>
+      )}
     </div>
   )
 }

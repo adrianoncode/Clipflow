@@ -147,7 +147,7 @@ export function SubtitlesClient({
               : 'Generate subtitles'}
           </Button>
           {isEstimated && hasSubtitles && (
-            <p className="text-xs text-amber-600 dark:text-amber-400">
+            <p className="text-xs text-amber-600">
               Timestamps are estimated — word-level timestamps require an uploaded video file.
             </p>
           )}

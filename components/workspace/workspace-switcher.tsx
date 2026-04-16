@@ -20,7 +20,7 @@ export function WorkspaceSwitcher({ workspaces, currentWorkspaceId }: WorkspaceS
   if (workspaces.length <= 1) {
     const only = workspaces[0]
     return (
-      <span className="rounded-md border bg-muted/40 px-3 py-1.5 text-sm">
+      <span className="rounded-xl border border-border/60 bg-muted/30 px-3 py-1.5 text-sm font-medium">
         {only?.name ?? 'No workspace'}
       </span>
     )
@@ -35,7 +35,7 @@ export function WorkspaceSwitcher({ workspaces, currentWorkspaceId }: WorkspaceS
         document.cookie = `${CURRENT_WORKSPACE_COOKIE}=${encodeURIComponent(next)}; path=/; max-age=${ONE_YEAR_SECONDS}; samesite=lax`
         startTransition(() => router.refresh())
       }}
-      className="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      className="h-9 rounded-xl border border-border/60 bg-background px-3 text-sm font-medium transition-all focus-visible:outline-none focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/20 disabled:opacity-60"
     >
       {workspaces.map((workspace) => (
         <option key={workspace.id} value={workspace.id}>

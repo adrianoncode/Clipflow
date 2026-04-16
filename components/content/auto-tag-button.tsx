@@ -41,7 +41,7 @@ export function AutoTagButton({ workspaceId, contentId, currentTags }: AutoTagBu
           <p className="text-xs text-destructive">{state.error}</p>
         )}
         {state.ok === true && (
-          <p className="text-xs text-emerald-600 dark:text-emerald-400">Tags updated!</p>
+          <p className="text-xs text-emerald-600">Tags updated!</p>
         )}
       </form>
       {displayTags.length > 0 && (
