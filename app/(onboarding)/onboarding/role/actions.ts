@@ -24,7 +24,7 @@ export async function selectRoleAction(
   cookies().set(ONBOARDING_ROLE_COOKIE, parsed.data.role, {
     httpOnly: true,
     sameSite: 'lax',
-    maxAge: 60 * 30, // 30 minutes
+    maxAge: 60 * 60 * 24, // 24 hours — user may pause onboarding
     path: '/',
   })
 

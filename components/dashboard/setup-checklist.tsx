@@ -23,7 +23,7 @@ interface SetupChecklistProps {
   firstReadyContentId?: string
 }
 
-const DISMISSED_KEY = 'clipflow.setup-checklist-dismissed'
+const DISMISSED_COOKIE = 'clipflow.setup-checklist-dismissed'
 
 export function SetupChecklist({
   hasAiKey,
@@ -38,9 +38,10 @@ export function SetupChecklist({
 
   useEffect(() => {
     setMounted(true)
-    if (typeof window !== 'undefined') {
-      setDismissed(localStorage.getItem(DISMISSED_KEY) === 'true')
-    }
+    // Check both cookie and localStorage for backward compat
+    const cookieDismissed = document.cookie.includes(`${DISMISSED_COOKIE}=true`)
+    const localDismissed = localStorage.getItem(DISMISSED_COOKIE) === 'true'
+    setDismissed(cookieDismissed || localDismissed)
   }, [])
 
   const steps = [
@@ -110,7 +111,8 @@ export function SetupChecklist({
           </div>
           <button
             onClick={() => {
-              localStorage.setItem(DISMISSED_KEY, 'true')
+              document.cookie = `${DISMISSED_COOKIE}=true; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`
+              localStorage.setItem(DISMISSED_COOKIE, 'true')
               setDismissed(true)
             }}
             className="shrink-0 rounded-lg p-2 text-muted-foreground/50 transition-colors hover:bg-muted hover:text-muted-foreground"

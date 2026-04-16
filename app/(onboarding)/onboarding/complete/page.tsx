@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import {
-  AlertCircle,
   ArrowRight,
   Check,
   KeyRound,
@@ -168,27 +167,26 @@ export default async function OnboardingCompletePage() {
         })}
       </div>
 
-      {/* ── No-key warning ── */}
+      {/* ── Key reminder (soft nudge, not a warning) ── */}
       {!hasAiKey && currentWorkspace && (
         <Link
           href="/settings/ai-keys"
-          className="group flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50/50 p-4 transition-all hover:-translate-y-px hover:border-amber-300 hover:shadow-md"
+          className="group flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/[0.04] p-4 transition-all hover:-translate-y-px hover:border-primary/30 hover:shadow-md"
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100">
-            <AlertCircle className="h-4 w-4 text-amber-700" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+            <KeyRound className="h-4 w-4 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-amber-900">
-              Add an AI key before importing
+            <p className="text-sm font-bold text-foreground">
+              Quick setup: connect an AI provider
             </p>
-            <p className="mt-0.5 text-xs text-amber-800/80">
-              Without OpenAI / Anthropic / Google, Clipflow can&apos;t generate drafts.
-              Each has free credits at signup — takes a minute.
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              OpenAI, Anthropic, or Google — each offers free credits. Takes under a minute. You can also do this later from Settings.
             </p>
           </div>
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-xl bg-amber-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-transform group-hover:translate-x-0.5">
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-xl bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground shadow-sm transition-transform group-hover:translate-x-0.5">
             <KeyRound className="h-3 w-3" />
-            Add key
+            Connect
           </span>
         </Link>
       )}
@@ -214,7 +212,7 @@ export default async function OnboardingCompletePage() {
             className="group inline-flex h-12 items-center gap-2 rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30"
           >
             <KeyRound className="h-4 w-4" />
-            Add an AI key first
+            Connect AI provider
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
         )}
