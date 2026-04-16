@@ -7,6 +7,14 @@ import {
   Sparkles,
   CheckSquare,
   Send,
+  CalendarDays,
+  PenLine,
+  Zap,
+  Clapperboard,
+  TrendingUp,
+  Search,
+  Lightbulb,
+  Plug,
   BarChart3,
   Settings as SettingsIcon,
   Plus,
@@ -25,8 +33,12 @@ import type { BillingPlan } from '@/lib/billing/plans'
 interface NavItem {
   href: string
   label: string
-  description: string
   icon: typeof FileVideo
+}
+
+interface NavGroup {
+  label: string
+  items: NavItem[]
 }
 
 interface AppShellProps {
@@ -52,74 +64,64 @@ export function AppShell({
 
   function isActive(href: string): boolean {
     if (href === '/dashboard') return pathname === href
-    if (href === '/settings') return pathname.startsWith('/settings')
+    if (href === '/settings') return pathname.startsWith('/settings') && !pathname.startsWith('/settings/integrations')
+    if (href === '/settings/integrations') return pathname.startsWith('/settings/integrations')
     if (href === `/workspace/${currentWorkspaceId}`) return pathname === href
     return pathname === href || pathname.startsWith(href + '/')
   }
 
-  // ── Simplified nav: 4 core items + 2 support items ──
-  const mainNav: NavItem[] = [
+  const groups: NavGroup[] = [
     {
-      href: `/workspace/${currentWorkspaceId}`,
-      label: 'Content',
-      description: 'Your video library',
-      icon: FileVideo,
+      label: 'Workflow',
+      items: [
+        { href: `/workspace/${currentWorkspaceId}`, label: 'Content', icon: FileVideo },
+        { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Import', icon: Sparkles },
+        { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: CheckSquare },
+        { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Send },
+        { href: `/workspace/${currentWorkspaceId}/calendar`, label: 'Calendar', icon: CalendarDays },
+      ],
     },
     {
-      href: `/workspace/${currentWorkspaceId}/content/new`,
-      label: 'Generate',
-      description: 'Create with AI',
-      icon: Sparkles,
+      label: 'Create',
+      items: [
+        { href: `/workspace/${currentWorkspaceId}/ghostwriter`, label: 'Ghostwriter', icon: PenLine },
+        { href: `/workspace/${currentWorkspaceId}/batch`, label: 'Batch', icon: Zap },
+        { href: `/workspace/${currentWorkspaceId}/studio`, label: 'Studio', icon: Clapperboard },
+      ],
     },
     {
-      href: `/workspace/${currentWorkspaceId}/pipeline`,
-      label: 'Pipeline',
-      description: 'Review & approve',
-      icon: CheckSquare,
-    },
-    {
-      href: `/workspace/${currentWorkspaceId}/schedule`,
-      label: 'Schedule',
-      description: 'Plan & publish',
-      icon: Send,
-    },
-  ]
-
-  const bottomNav: NavItem[] = [
-    {
-      href: '/analytics',
-      label: 'Analytics',
-      description: 'Track performance',
-      icon: BarChart3,
-    },
-    {
-      href: '/settings',
-      label: 'Settings',
-      description: 'Account & workspace',
-      icon: SettingsIcon,
+      label: 'Discover',
+      items: [
+        { href: `/workspace/${currentWorkspaceId}/trends`, label: 'Trends', icon: TrendingUp },
+        { href: `/workspace/${currentWorkspaceId}/research`, label: 'Research', icon: Search },
+        { href: `/workspace/${currentWorkspaceId}/ideas`, label: 'Ideas', icon: Lightbulb },
+      ],
     },
   ]
 
-  // Mobile: 5 direct items (Content, Generate, Pipeline, Schedule, Analytics)
-  // Settings accessible via gear icon in the header
+  const bottomItems: NavItem[] = [
+    { href: '/settings/integrations', label: 'Integrations', icon: Plug },
+    { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+    { href: '/settings', label: 'Settings', icon: SettingsIcon },
+  ]
+
+  // Mobile: 5 core items
   const mobileItems: NavItem[] = [
-    ...mainNav.slice(0, 4),
-    {
-      href: '/analytics',
-      label: 'Analytics',
-      description: 'Track performance',
-      icon: BarChart3,
-    },
+    { href: `/workspace/${currentWorkspaceId}`, label: 'Content', icon: FileVideo },
+    { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Import', icon: Sparkles },
+    { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: CheckSquare },
+    { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Send },
+    { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   ]
 
-  function renderNavItem(item: NavItem) {
+  function renderItem(item: NavItem) {
     const active = isActive(item.href)
     const Icon = item.icon
     return (
       <Link
         key={item.href}
         href={item.href}
-        className={`group relative flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-all duration-150 ${
+        className={`group relative flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] transition-all duration-150 ${
           active
             ? 'bg-primary/10 font-semibold text-primary'
             : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
@@ -128,26 +130,15 @@ export function AppShell({
         {active && (
           <span
             aria-hidden
-            className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-primary"
+            className="absolute left-0 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-r-full bg-primary"
           />
         )}
         <Icon
-          className={`h-4 w-4 shrink-0 transition-colors ${
-            active
-              ? 'text-primary'
-              : 'text-muted-foreground/50 group-hover:text-foreground/70'
+          className={`h-[15px] w-[15px] shrink-0 ${
+            active ? 'text-primary' : 'text-muted-foreground/50 group-hover:text-foreground/70'
           }`}
         />
-        <div className="flex flex-col">
-          <span className="leading-tight">{item.label}</span>
-          <span
-            className={`text-[10px] leading-tight ${
-              active ? 'text-primary/60' : 'text-muted-foreground/40'
-            }`}
-          >
-            {item.description}
-          </span>
-        </div>
+        <span className="leading-none">{item.label}</span>
       </Link>
     )
   }
@@ -157,7 +148,7 @@ export function AppShell({
       <KeyboardShortcuts workspaceId={currentWorkspaceId} />
       <FeedbackWidget />
 
-      {/* ── Header ─────────────────────────────────────────────── */}
+      {/* ── Header ──────────────────────────────────────────────── */}
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-border/60 bg-white px-4 sm:px-6">
         <div className="flex items-center gap-3">
           <Link
@@ -187,23 +178,30 @@ export function AppShell({
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* ── Sidebar ────────────────────────────────────────────── */}
-        <aside className="hidden w-52 shrink-0 flex-col border-r border-border/60 bg-[#fafafa] sm:flex">
-          <div className="flex flex-1 flex-col overflow-y-auto px-2.5 py-4">
+        {/* ── Sidebar ───────────────────────────────────────────── */}
+        <aside className="hidden w-48 shrink-0 flex-col border-r border-border/60 bg-[#fafafa] sm:flex">
+          <div className="flex flex-1 flex-col overflow-y-auto px-2 py-3">
 
             {/* Primary CTA */}
             <Link
               href={`/workspace/${currentWorkspaceId}/content/new`}
-              className="mb-4 flex items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 active:translate-y-0"
+              className="mb-3 flex items-center justify-center gap-2 rounded-lg bg-primary py-2 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md active:translate-y-0"
             >
               <Plus className="h-4 w-4" />
               New video
             </Link>
 
-            {/* Core navigation */}
-            <nav className="flex flex-col gap-0.5">
-              {mainNav.map(renderNavItem)}
-            </nav>
+            {/* Grouped navigation */}
+            {groups.map((group, gi) => (
+              <div key={group.label} className={gi > 0 ? 'mt-4' : ''}>
+                <p className="mb-1 px-2.5 font-mono text-[9px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/40">
+                  {group.label}
+                </p>
+                <nav className="flex flex-col gap-px">
+                  {group.items.map(renderItem)}
+                </nav>
+              </div>
+            ))}
           </div>
 
           {/* Referral card */}
@@ -217,18 +215,18 @@ export function AppShell({
           )}
 
           {/* Bottom nav */}
-          <div className="border-t border-border/60 px-2.5 py-3">
-            <nav className="flex flex-col gap-0.5">
-              {bottomNav.map(renderNavItem)}
+          <div className="border-t border-border/60 px-2 py-2">
+            <nav className="flex flex-col gap-px">
+              {bottomItems.map(renderItem)}
             </nav>
           </div>
         </aside>
 
-        {/* ── Main content ────────────────────────────────────────── */}
+        {/* ── Main content ───────────────────────────────────────── */}
         <main className="flex-1 overflow-y-auto pb-16 sm:pb-0">{children}</main>
       </div>
 
-      {/* ── Mobile bottom nav ──────────────────────────────────────── */}
+      {/* ── Mobile bottom nav ────────────────────────────────────── */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-border/60 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg sm:hidden">
         {mobileItems.map((item) => {
           const active = isActive(item.href)
