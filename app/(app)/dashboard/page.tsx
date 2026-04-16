@@ -5,12 +5,18 @@ import {
   ArrowUpRight,
   Calendar,
   CheckCircle2,
+  Clapperboard,
   Clock,
+  FolderKanban,
   Layers,
+  Lightbulb,
+  PenLine,
+  Search,
   Star,
   TrendingDown,
   TrendingUp,
   Upload,
+  Users2,
   Video,
   Wand2,
   Zap,
@@ -273,21 +279,49 @@ export default async function DashboardPage() {
           )}
 
           {/* ── Quick Actions grid ─────────────────────────────────── */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              { href: `/workspace/${workspace.id}/content/new`, label: 'Import', desc: 'YouTube, MP4, audio', icon: Upload, color: 'text-violet-600 bg-violet-50 group-hover:bg-violet-100' },
-              { href: `/workspace/${workspace.id}`, label: 'Generate', desc: 'Create new drafts', icon: Wand2, color: 'text-blue-600 bg-blue-50 group-hover:bg-blue-100' },
-              { href: `/workspace/${workspace.id}/pipeline`, label: 'Pipeline', desc: 'Review & approve', icon: Layers, color: 'text-emerald-600 bg-emerald-50 group-hover:bg-emerald-100' },
-              { href: `/workspace/${workspace.id}/calendar`, label: 'Schedule', desc: 'Plan & publish', icon: Calendar, color: 'text-amber-600 bg-amber-50 group-hover:bg-amber-100' },
-            ].map((a) => (
-              <Link key={a.href} href={a.href} className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md hover:shadow-primary/[0.05]">
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${a.color}`}><a.icon className="h-4 w-4" /></div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold leading-tight">{a.label}</p>
-                  <p className="text-[11px] text-muted-foreground">{a.desc}</p>
-                </div>
-              </Link>
-            ))}
+          <div className="space-y-2">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Quick actions</p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                { href: `/workspace/${workspace.id}/content/new`, label: 'Import', desc: 'YouTube, MP4, audio', icon: Upload, color: 'text-violet-600 bg-violet-50 group-hover:bg-violet-100' },
+                { href: `/workspace/${workspace.id}`, label: 'Generate', desc: 'Create new drafts', icon: Wand2, color: 'text-blue-600 bg-blue-50 group-hover:bg-blue-100' },
+                { href: `/workspace/${workspace.id}/pipeline`, label: 'Pipeline', desc: 'Review & approve', icon: Layers, color: 'text-emerald-600 bg-emerald-50 group-hover:bg-emerald-100' },
+                { href: `/workspace/${workspace.id}/calendar`, label: 'Schedule', desc: 'Plan & publish', icon: Calendar, color: 'text-amber-600 bg-amber-50 group-hover:bg-amber-100' },
+              ].map((a) => (
+                <Link key={a.href} href={a.href} className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md hover:shadow-primary/[0.05]">
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${a.color}`}><a.icon className="h-4 w-4" /></div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold leading-tight">{a.label}</p>
+                    <p className="text-[11px] text-muted-foreground">{a.desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* ── AI Tools grid ─────────────────────────────────────── */}
+          <div className="space-y-2">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">AI Tools</p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                { href: `/workspace/${workspace.id}/ghostwriter`, label: 'Ghostwriter', desc: 'AI writes full scripts', icon: PenLine, color: 'text-pink-600 bg-pink-50 group-hover:bg-pink-100' },
+                { href: `/workspace/${workspace.id}/batch`, label: 'Batch Generate', desc: 'Bulk output creation', icon: Zap, color: 'text-orange-600 bg-orange-50 group-hover:bg-orange-100' },
+                { href: `/workspace/${workspace.id}/trends`, label: 'Trends', desc: 'What\u2019s trending now', icon: TrendingUp, color: 'text-cyan-600 bg-cyan-50 group-hover:bg-cyan-100' },
+                { href: `/workspace/${workspace.id}/research`, label: 'Research', desc: 'Competitors & creators', icon: Search, color: 'text-indigo-600 bg-indigo-50 group-hover:bg-indigo-100' },
+                { href: `/workspace/${workspace.id}/studio`, label: 'Video Studio', desc: 'Render MP4 videos', icon: Clapperboard, color: 'text-rose-600 bg-rose-50 group-hover:bg-rose-100' },
+                { href: `/workspace/${workspace.id}/ideas`, label: 'Ideas & Gaps', desc: 'Content gap analysis', icon: Lightbulb, color: 'text-yellow-600 bg-yellow-50 group-hover:bg-yellow-100' },
+                { href: `/workspace/${workspace.id}/projects`, label: 'Projects', desc: 'Organize by campaign', icon: FolderKanban, color: 'text-teal-600 bg-teal-50 group-hover:bg-teal-100' },
+                { href: `/workspace/${workspace.id}/members`, label: 'Team', desc: 'Members & invites', icon: Users2, color: 'text-slate-600 bg-slate-50 group-hover:bg-slate-100' },
+              ].map((a) => (
+                <Link key={a.href} href={a.href} className="group flex items-center gap-3 rounded-2xl border border-border/50 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md hover:shadow-primary/[0.05]">
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${a.color}`}><a.icon className="h-4 w-4" /></div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold leading-tight">{a.label}</p>
+                    <p className="text-[11px] text-muted-foreground">{a.desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
 
           {/* ── Monthly usage ──────────────────────────────────────── */}
