@@ -18,7 +18,7 @@ export async function listRenders(params: {
   const supabase = createClient()
   const query = supabase
     .from('renders')
-    .select('*')
+    .select('id, workspace_id, content_id, kind, provider, provider_render_id, status, url, error, metadata, created_at, updated_at')
     .eq('workspace_id', params.workspaceId)
     .order('created_at', { ascending: false })
     .limit(params.limit ?? 25)

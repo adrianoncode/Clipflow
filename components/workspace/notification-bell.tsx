@@ -8,6 +8,7 @@ import type { NotificationRow } from '@/lib/notifications/get-notifications'
 
 interface NotificationBellProps {
   initialCount: number
+  workspaceId?: string
 }
 
 function timeAgo(dateString: string): string {
@@ -21,7 +22,7 @@ function timeAgo(dateString: string): string {
   return `${days}d ago`
 }
 
-export function NotificationBell({ initialCount }: NotificationBellProps) {
+export function NotificationBell({ initialCount, workspaceId }: NotificationBellProps) {
   const [notifications, setNotifications] = useState<NotificationRow[]>([])
   const [count, setCount] = useState(initialCount)
   const [open, setOpen] = useState(false)
@@ -30,7 +31,8 @@ export function NotificationBell({ initialCount }: NotificationBellProps) {
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const res = await fetch('/api/notifications')
+      const params = workspaceId ? `?workspace_id=${workspaceId}` : ''
+      const res = await fetch(`/api/notifications${params}`)
       if (res.ok) {
         const data = await res.json() as NotificationRow[]
         setNotifications(data)
@@ -39,7 +41,7 @@ export function NotificationBell({ initialCount }: NotificationBellProps) {
     } catch {
       // non-critical
     }
-  }, [])
+  }, [workspaceId])
 
   // Poll every 30 seconds
   useEffect(() => {

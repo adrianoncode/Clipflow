@@ -74,8 +74,8 @@ export async function notifyPostPublished(params: {
   contentTitle: string
 }): Promise<void> {
   const platformLabels: Record<string, string> = {
-    tiktok: 'TikTok', instagram: 'Instagram',
-    linkedin: 'LinkedIn', youtube: 'YouTube',
+    tiktok: 'TikTok', instagram: 'Instagram', instagram_reels: 'Instagram Reels',
+    linkedin: 'LinkedIn', youtube: 'YouTube', youtube_shorts: 'YouTube Shorts',
   }
   await createNotification({
     userId: params.userId,

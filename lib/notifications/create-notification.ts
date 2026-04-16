@@ -11,7 +11,7 @@ export async function createNotification(params: {
 }) {
   try {
     const supabase = createClient()
-    await supabase.from('notifications').insert({
+    const { error } = await supabase.from('notifications').insert({
       user_id: params.userId,
       workspace_id: params.workspaceId,
       type: params.type,
@@ -19,7 +19,16 @@ export async function createNotification(params: {
       body: params.body,
       link: params.link,
     })
-  } catch {
-    // notifications are non-critical, never throw
+
+    if (error) {
+      // eslint-disable-next-line no-console
+      console.warn(`[createNotification] DB error for ${params.type}:`, error.message)
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      '[createNotification] Unexpected error:',
+      err instanceof Error ? err.message : 'unknown',
+    )
   }
 }

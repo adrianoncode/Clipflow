@@ -173,7 +173,7 @@ export function AppShell({
           </div>
         </div>
         <div className="flex items-center gap-1.5">
-          <NotificationBell initialCount={0} />
+          <NotificationBell initialCount={0} workspaceId={currentWorkspaceId} />
           <Link
             href="/settings"
             className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:hidden"

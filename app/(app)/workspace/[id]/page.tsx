@@ -18,15 +18,21 @@ import { getProjects } from '@/lib/projects/get-projects'
 
 interface WorkspaceHomePageProps {
   params: { id: string }
+  searchParams: { page?: string }
 }
 
-export default async function WorkspaceHomePage({ params }: WorkspaceHomePageProps) {
+const PAGE_SIZE = 50
+
+export default async function WorkspaceHomePage({ params, searchParams }: WorkspaceHomePageProps) {
   const workspaces = await getWorkspaces()
   const workspace = workspaces.find((w) => w.id === params.id)
   if (!workspace) notFound()
 
+  const page = Math.max(1, parseInt(searchParams.page ?? '1', 10) || 1)
+  const offset = (page - 1) * PAGE_SIZE
+
   const [items, projects] = await Promise.all([
-    getContentItems(params.id, { limit: 50 }),
+    getContentItems(params.id, { limit: PAGE_SIZE, offset }),
     getProjects(params.id),
   ])
   const canCreate = workspace.role === 'owner' || workspace.role === 'editor'
@@ -158,10 +164,29 @@ export default async function WorkspaceHomePage({ params }: WorkspaceHomePagePro
         projects={projectOptions}
       />
 
-      {items.length === 50 && (
-        <p className="text-center text-xs text-muted-foreground/60">
-          Showing 50 most recent — older items not shown
-        </p>
+      {/* ── Pagination ── */}
+      {(items.length === PAGE_SIZE || page > 1) && (
+        <div className="flex items-center justify-center gap-3">
+          {page > 1 && (
+            <Link
+              href={`/workspace/${params.id}?page=${page - 1}`}
+              className="rounded-xl border border-border/50 px-4 py-2 text-xs font-semibold text-muted-foreground transition-all hover:-translate-y-px hover:border-primary/20 hover:text-foreground hover:shadow-sm"
+            >
+              ← Previous
+            </Link>
+          )}
+          <span className="text-xs tabular-nums text-muted-foreground/60">
+            Page {page}
+          </span>
+          {items.length === PAGE_SIZE && (
+            <Link
+              href={`/workspace/${params.id}?page=${page + 1}`}
+              className="rounded-xl border border-border/50 px-4 py-2 text-xs font-semibold text-muted-foreground transition-all hover:-translate-y-px hover:border-primary/20 hover:text-foreground hover:shadow-sm"
+            >
+              Next →
+            </Link>
+          )}
+        </div>
       )}
     </div>
   )

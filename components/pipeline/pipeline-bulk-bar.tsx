@@ -51,12 +51,12 @@ export function PipelineBulkBar({ workspaceId, selected, onClear }: PipelineBulk
       setActiveAction(null)
 
       if (result.ok === true) {
+        const hasPartialFailure = result.failed && result.failed > 0
         setBanner({
-          kind: 'success',
-          text:
-            result.failed && result.failed > 0
-              ? `${successVerb} ${result.count} · ${result.failed} failed`
-              : `${successVerb} ${result.count} ${result.count === 1 ? 'draft' : 'drafts'}`,
+          kind: hasPartialFailure ? 'error' : 'success',
+          text: hasPartialFailure
+            ? `${successVerb} ${result.count}, but ${result.failed} failed${result.firstError ? `: ${result.firstError}` : ''}`
+            : `${successVerb} ${result.count} ${result.count === 1 ? 'draft' : 'drafts'}`,
         })
         onClear()
         router.refresh()

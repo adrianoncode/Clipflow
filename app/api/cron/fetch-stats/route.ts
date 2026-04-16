@@ -201,10 +201,23 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  const fetchedCount = results.filter((r) => r.ok).length
+  const failedCount = results.filter((r) => !r.ok).length
+
+  // Log warning if majority of fetches failed
+  if (failedCount > 0 && failedCount >= fetchedCount) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[fetch-stats] High failure rate: ${failedCount}/${results.length} failed.`,
+      results.filter((r) => !r.ok).map((r) => `${r.id}: ${r.error}`).join('; '),
+    )
+  }
+
   return NextResponse.json({
     ok: true,
-    fetched: results.filter((r) => r.ok).length,
-    failed: results.filter((r) => !r.ok).length,
+    fetched: fetchedCount,
+    failed: failedCount,
+    total: results.length,
     results,
   })
 }
