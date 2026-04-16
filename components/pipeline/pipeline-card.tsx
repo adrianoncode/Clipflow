@@ -171,7 +171,7 @@ export function PipelineCard({
             {contentTitle ?? 'Untitled'}
           </p>
           {bodyPreview && (
-            <p className="line-clamp-2 text-[11px] leading-relaxed text-muted-foreground/80">
+            <p className="line-clamp-2 text-[11px] text-muted-foreground">
               {bodyPreview}
             </p>
           )}

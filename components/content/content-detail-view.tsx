@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -11,9 +14,9 @@ import {
   Scissors,
   Play,
   Wand2,
+  BarChart3,
+  Tag,
 } from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -49,6 +52,8 @@ interface ContentDetailViewProps {
   signedUrl?: string
 }
 
+type Tab = 'overview' | 'generate' | 'tools'
+
 function formatDate(iso: string): string {
   try {
     return new Date(iso).toLocaleString()
@@ -77,20 +82,108 @@ function readErrorMessage(metadata: ContentItemRow['metadata']): string {
 interface ToolCardProps {
   icon: React.ReactNode
   label: string
+  description: string
   href: string
 }
 
-function ToolCard({ icon, label, href }: ToolCardProps) {
+function ToolCard({ icon, label, description, href }: ToolCardProps) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-2.5 rounded-xl border border-border/50 bg-card p-3 text-sm font-medium transition-all card-hover hover:text-foreground text-muted-foreground"
+      className="flex flex-col gap-2 rounded-xl border border-border/50 bg-card p-4 transition-all card-hover hover:text-foreground text-muted-foreground"
     >
-      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted">
-        {icon}
-      </span>
-      {label}
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+          {icon}
+        </span>
+        <span className="text-sm font-semibold text-foreground">{label}</span>
+      </div>
+      <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
     </Link>
+  )
+}
+
+/* ── Tab pill nav (matches workspace-tab-nav style) ── */
+const TABS: { key: Tab; label: string }[] = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'generate', label: 'Generate' },
+  { key: 'tools', label: 'AI Tools' },
+]
+
+function TabNav({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
+  return (
+    <nav className="flex items-center gap-1">
+      {TABS.map((t) => {
+        const isActive = t.key === active
+        return (
+          <button
+            key={t.key}
+            onClick={() => onChange(t.key)}
+            className={`relative rounded-xl px-3.5 py-1.5 text-sm font-medium transition-all duration-150 ${
+              isActive
+                ? 'bg-primary/10 text-primary font-semibold'
+                : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+            }`}
+          >
+            {isActive && (
+              <span
+                aria-hidden
+                className="absolute bottom-0 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-primary"
+              />
+            )}
+            {t.label}
+          </button>
+        )
+      })}
+    </nav>
+  )
+}
+
+/* ── Collapsible transcript (first 500 chars preview) ── */
+function CollapsibleTranscript({
+  text,
+  workspaceId,
+  contentId,
+}: {
+  text: string
+  workspaceId: string
+  contentId: string
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const needsCollapse = text.length > 500
+
+  if (!needsCollapse || expanded) {
+    return (
+      <div className="space-y-2">
+        <TranscriptView text={text} workspaceId={workspaceId} contentId={contentId} />
+        {needsCollapse && expanded && (
+          <button
+            onClick={() => setExpanded(false)}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            Collapse transcript
+          </button>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        Transcript
+      </h2>
+      <div className="relative rounded-md border bg-muted/30 p-4 text-sm leading-relaxed">
+        <p className="whitespace-pre-wrap break-words">{text.slice(0, 500)}...</p>
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-muted/30 to-transparent rounded-b-md" />
+      </div>
+      <button
+        onClick={() => setExpanded(true)}
+        className="text-xs font-medium text-primary hover:underline"
+      >
+        Show full transcript
+      </button>
+    </div>
   )
 }
 
@@ -102,10 +195,30 @@ export function ContentDetailView({
   projects = [],
   signedUrl,
 }: ContentDetailViewProps) {
+  const [activeTab, setActiveTab] = useState<Tab>('overview')
   const title = item.title ?? 'Untitled'
+  const isReady = item.status === 'ready'
+  const hasTranscript = isReady && !!item.transcript
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const meta = item.metadata as any
+  const currentTags =
+    meta && typeof meta === 'object' && !Array.isArray(meta) && Array.isArray(meta.tags)
+      ? (meta.tags as string[])
+      : []
+  const initialSentiment: SentimentResult | null =
+    meta && typeof meta === 'object' && !Array.isArray(meta) && 'sentiment' in meta
+      ? meta.sentiment
+      : null
+  const initialShowNotes = meta?.show_notes ?? null
+  const initialNewsletter = meta?.newsletter ?? null
+  const initialClips: BestClip[] | null = meta?.best_clips ?? null
+
+  const wordCount = item.transcript ? item.transcript.split(/\s+/).filter(Boolean).length : 0
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 p-4 sm:p-8">
+      {/* ── Header (always visible) ── */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <Link
@@ -137,72 +250,12 @@ export function ContentDetailView({
         <ContentStatusBadge status={item.status} />
       </div>
 
+      {/* ── Video player (always visible) ── */}
       {signedUrl ? (
-        <VideoPlayer
-          signedUrl={signedUrl}
-          title={item.title ?? undefined}
-        />
+        <VideoPlayer signedUrl={signedUrl} title={item.title ?? undefined} />
       ) : null}
 
-      {/* ── Next Step Banner ── */}
-      {item.status === 'processing' && (
-        <div className="flex items-center gap-4 rounded-2xl border border-amber-200/60 bg-gradient-to-r from-amber-50/60 to-background p-5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
-            <Clock className="h-5 w-5 animate-pulse" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold text-foreground">Transcribing your content...</p>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              This usually takes 1-2 minutes. The page refreshes automatically.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {item.status === 'ready' && !hasExistingOutputs && (
-        <Link
-          href={`/workspace/${workspaceId}/content/${item.id}/outputs`}
-          className="group flex items-center gap-4 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/[0.06] via-background to-background p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10"
-        >
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm shadow-primary/10">
-            <Wand2 className="h-5 w-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold text-foreground">Ready! Generate outputs for 4 platforms</p>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              Create TikTok, Reels, Shorts &amp; LinkedIn drafts in one pass.
-            </p>
-          </div>
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all group-hover:shadow-md">
-            Generate
-            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-          </span>
-        </Link>
-      )}
-
-      {item.status === 'ready' && hasExistingOutputs && outputCount > 0 && (
-        <Link
-          href={`/workspace/${workspaceId}/pipeline`}
-          className="group flex items-center gap-4 rounded-2xl border border-emerald-200/60 bg-gradient-to-r from-emerald-50/50 to-background p-5 transition-all hover:-translate-y-0.5 hover:shadow-md"
-        >
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
-            <Layers className="h-5 w-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold text-foreground">
-              You have {outputCount} output{outputCount !== 1 ? 's' : ''}
-            </p>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              Review them in the Pipeline to approve and publish.
-            </p>
-          </div>
-          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-emerald-700 transition-transform group-hover:translate-x-0.5">
-            Pipeline
-            <ArrowRight className="h-3.5 w-3.5" />
-          </span>
-        </Link>
-      )}
-
+      {/* ── Status banners for non-ready states (always visible) ── */}
       {item.status === 'uploading' || item.status === 'processing' ? (
         <Card className="border-border/50">
           <CardHeader>
@@ -236,169 +289,6 @@ export function ContentDetailView({
         </Card>
       ) : null}
 
-      {item.status === 'ready' && item.transcript ? (
-        <div className="space-y-6">
-          <TranscriptView
-            text={item.transcript}
-            workspaceId={workspaceId}
-            contentId={item.id}
-          />
-
-          {/* Primary action */}
-          <Button asChild className="rounded-xl shadow-lg shadow-primary/20">
-            <Link href={`/workspace/${workspaceId}/content/${item.id}/outputs`}>
-              {hasExistingOutputs ? 'View outputs' : 'Generate outputs'}
-            </Link>
-          </Button>
-
-          {hasExistingOutputs ? (
-            <p className="text-xs text-muted-foreground">
-              Drafts already generated -- click to review or regenerate.
-            </p>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              Produces TikTok, Reels, Shorts, and LinkedIn drafts in one pass.
-            </p>
-          )}
-
-          {/* One-click Studio shortcut for video/youtube items */}
-          {(item.kind === 'video' || item.kind === 'youtube') && (
-            <Link
-              href={`/workspace/${workspaceId}/studio?content_id=${item.id}`}
-              className="group flex w-full items-center justify-between rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/[0.06] to-background px-5 py-4 transition-all hover:border-primary/50 hover:bg-primary/[0.08] hover:shadow-sm"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
-                  <Play className="h-4 w-4 fill-current text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Render in Video Studio</p>
-                  <p className="text-xs text-muted-foreground">
-                    AI captions + reframe → ready-to-post MP4 in ~60 s
-                  </p>
-                </div>
-              </div>
-              <Clapperboard className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary/60" />
-            </Link>
-          )}
-
-          {/* Video Studio — was "AI Tools" but that hid the fact that
-              these tools actually produce rendered MP4s, not more text. */}
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                Video Studio
-              </h3>
-              <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
-                Renders MP4s
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              <ToolCard
-                icon={<Clapperboard className="h-4 w-4 text-muted-foreground" />}
-                label="B-Roll"
-                href={`/workspace/${workspaceId}/content/${item.id}/broll`}
-              />
-              <ToolCard
-                icon={<MessageSquare className="h-4 w-4 text-muted-foreground" />}
-                label="Subtitles"
-                href={`/workspace/${workspaceId}/content/${item.id}/subtitles`}
-              />
-              {item.kind === 'video' ? (
-                <ToolCard
-                  icon={<Move className="h-4 w-4 text-muted-foreground" />}
-                  label="Reframe"
-                  href={`/workspace/${workspaceId}/content/${item.id}/reframe`}
-                />
-              ) : null}
-              <ToolCard
-                icon={<Sparkles className="h-4 w-4 text-muted-foreground" />}
-                label="AI Avatar"
-                href={`/workspace/${workspaceId}/content/${item.id}/avatar`}
-              />
-              {item.kind === 'video' ? (
-                <ToolCard
-                  icon={<Globe className="h-4 w-4 text-muted-foreground" />}
-                  label="Auto-Dub"
-                  href={`/workspace/${workspaceId}/content/${item.id}/dub`}
-                />
-              ) : null}
-              <ToolCard
-                icon={<Scissors className="h-4 w-4 text-muted-foreground" />}
-                label="Clip Finder"
-                href={`/workspace/${workspaceId}/content/${item.id}`}
-              />
-            </div>
-          </div>
-
-          <FollowUpTopicsDialog workspaceId={workspaceId} contentId={item.id} />
-          <AutoTagButton
-            workspaceId={workspaceId}
-            contentId={item.id}
-            currentTags={
-              item.metadata &&
-              typeof item.metadata === 'object' &&
-              !Array.isArray(item.metadata) &&
-              'tags' in item.metadata &&
-              Array.isArray((item.metadata as Record<string, unknown>).tags)
-                ? ((item.metadata as Record<string, unknown>).tags as string[])
-                : []
-            }
-          />
-          <SentimentAnalysisButton
-            workspaceId={workspaceId}
-            contentId={item.id}
-            initialSentiment={
-              (item.metadata &&
-              typeof item.metadata === 'object' &&
-              !Array.isArray(item.metadata) &&
-              'sentiment' in item.metadata
-                ? (item.metadata as Record<string, unknown>).sentiment
-                : null) as SentimentResult | null
-            }
-          />
-          <ShowNotesPanel
-            workspaceId={workspaceId}
-            contentId={item.id}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            initialShowNotes={((item.metadata as any)?.show_notes) ?? null}
-          />
-          <NewsletterPanel
-            workspaceId={workspaceId}
-            contentId={item.id}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            initialNewsletter={((item.metadata as any)?.newsletter) ?? null}
-          />
-          <ClipFinder
-            workspaceId={workspaceId}
-            contentId={item.id}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            initialClips={((item.metadata as any)?.best_clips as BestClip[]) ?? null}
-          />
-
-          {/* ── Editor Export — CapCut, Premiere, DaVinci, Final Cut ── */}
-          <EditorExportPanel
-            contentId={item.id}
-            contentTitle={title}
-            transcript={item.transcript ?? ''}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            srt={((item.metadata as any)?.srt as string) ?? null}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            vtt={((item.metadata as any)?.vtt as string) ?? null}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            clips={((item.metadata as any)?.best_clips as Array<{
-              quote: string
-              reason: string
-              position_pct: number
-              type: string
-              estimated_duration: string
-            }>) ?? null}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            estimatedDurationSec={((item.metadata as any)?.duration_seconds as number) ?? null}
-          />
-        </div>
-      ) : null}
-
       {item.status === 'ready' && !item.transcript ? (
         <Card className="border-border/50">
           <CardHeader>
@@ -410,6 +300,342 @@ export function ContentDetailView({
         </Card>
       ) : null}
 
+      {/* ── Tab nav (only show when transcript is ready) ── */}
+      {hasTranscript && (
+        <>
+          <TabNav active={activeTab} onChange={setActiveTab} />
+
+          {/* ─── Tab 1: Overview ─── */}
+          {activeTab === 'overview' && (
+            <div className="space-y-6">
+              {/* Processing banner */}
+              {item.status === 'processing' && (
+                <div className="flex items-center gap-4 rounded-2xl border border-amber-200/60 bg-gradient-to-r from-amber-50/60 to-background p-5">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+                    <Clock className="h-5 w-5 animate-pulse" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-foreground">Transcribing your content...</p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      This usually takes 1-2 minutes. The page refreshes automatically.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* What's Next: Generate outputs CTA */}
+              {isReady && !hasExistingOutputs && (
+                <Link
+                  href={`/workspace/${workspaceId}/content/${item.id}/outputs`}
+                  className="group flex items-center gap-4 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/[0.06] via-background to-background p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10"
+                >
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm shadow-primary/10">
+                    <Wand2 className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-foreground">Ready! Generate outputs for 4 platforms</p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      Create TikTok, Reels, Shorts &amp; LinkedIn drafts in one pass.
+                    </p>
+                  </div>
+                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all group-hover:shadow-md">
+                    Generate
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+              )}
+
+              {/* What's Next: Pipeline link */}
+              {isReady && hasExistingOutputs && outputCount > 0 && (
+                <Link
+                  href={`/workspace/${workspaceId}/pipeline`}
+                  className="group flex items-center gap-4 rounded-2xl border border-emerald-200/60 bg-gradient-to-r from-emerald-50/50 to-background p-5 transition-all hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+                    <Layers className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-foreground">
+                      You have {outputCount} output{outputCount !== 1 ? 's' : ''}
+                    </p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      Review them in the Pipeline to approve and publish.
+                    </p>
+                  </div>
+                  <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-emerald-700 transition-transform group-hover:translate-x-0.5">
+                    Pipeline
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
+                </Link>
+              )}
+
+              {/* Collapsible Transcript */}
+              <CollapsibleTranscript
+                text={item.transcript!}
+                workspaceId={workspaceId}
+                contentId={item.id}
+              />
+
+              {/* Basic metadata */}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="rounded-xl border border-border/50 bg-card p-3">
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Type</p>
+                  <p className="mt-0.5 text-sm font-semibold text-foreground">
+                    {item.kind === 'video' ? 'Video / Audio'
+                      : item.kind === 'youtube' ? 'YouTube'
+                      : item.kind === 'url' ? 'Website'
+                      : 'Text'}
+                  </p>
+                </div>
+                {meta?.duration_seconds ? (
+                  <div className="rounded-xl border border-border/50 bg-card p-3">
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Duration</p>
+                    <p className="mt-0.5 text-sm font-semibold text-foreground">
+                      {Math.floor(meta.duration_seconds / 60)}m {Math.round(meta.duration_seconds % 60)}s
+                    </p>
+                  </div>
+                ) : null}
+                <div className="rounded-xl border border-border/50 bg-card p-3">
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Words</p>
+                  <p className="mt-0.5 text-sm font-semibold text-foreground">
+                    {wordCount.toLocaleString()}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border/50 bg-card p-3">
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Created</p>
+                  <p className="mt-0.5 text-sm font-semibold text-foreground">
+                    {new Date(item.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Output count badge */}
+              {hasExistingOutputs && outputCount > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                    <Layers className="h-3 w-3" />
+                    {outputCount} output{outputCount !== 1 ? 's' : ''} generated
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ─── Tab 2: Generate ─── */}
+          {activeTab === 'generate' && (
+            <div className="space-y-6">
+              {/* Primary CTA */}
+              <Link
+                href={`/workspace/${workspaceId}/content/${item.id}/outputs`}
+                className="group flex items-center gap-4 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/[0.06] via-background to-background p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10"
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm shadow-primary/10">
+                  <Wand2 className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-foreground">
+                    {hasExistingOutputs ? 'View & regenerate outputs' : 'Generate outputs for 4 platforms'}
+                  </p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    {hasExistingOutputs
+                      ? 'Review your existing drafts or regenerate new ones.'
+                      : 'Create TikTok, Reels, Shorts & LinkedIn drafts in one pass.'}
+                  </p>
+                </div>
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all group-hover:shadow-md">
+                  {hasExistingOutputs ? 'View' : 'Generate'}
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </Link>
+
+              {/* Output summary */}
+              {hasExistingOutputs && outputCount > 0 && (
+                <Card className="border-border/50">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Output Summary</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-3">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                        <Layers className="h-3 w-3" />
+                        {outputCount} output{outputCount !== 1 ? 's' : ''}
+                      </span>
+                      <Link
+                        href={`/workspace/${workspaceId}/pipeline`}
+                        className="text-xs font-medium text-primary hover:underline"
+                      >
+                        Open Pipeline →
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Show Notes */}
+              <ShowNotesPanel
+                workspaceId={workspaceId}
+                contentId={item.id}
+                initialShowNotes={initialShowNotes}
+              />
+
+              {/* Newsletter */}
+              <NewsletterPanel
+                workspaceId={workspaceId}
+                contentId={item.id}
+                initialNewsletter={initialNewsletter}
+              />
+
+              {/* Follow-up Topics */}
+              <FollowUpTopicsDialog workspaceId={workspaceId} contentId={item.id} />
+
+              {/* Editor Export */}
+              <EditorExportPanel
+                contentId={item.id}
+                contentTitle={title}
+                transcript={item.transcript ?? ''}
+                srt={(meta?.srt as string) ?? null}
+                vtt={(meta?.vtt as string) ?? null}
+                clips={(meta?.best_clips as Array<{
+                  quote: string
+                  reason: string
+                  position_pct: number
+                  type: string
+                  estimated_duration: string
+                }>) ?? null}
+                estimatedDurationSec={(meta?.duration_seconds as number) ?? null}
+              />
+            </div>
+          )}
+
+          {/* ─── Tab 3: AI Tools ─── */}
+          {activeTab === 'tools' && (
+            <div className="space-y-6">
+              {/* Studio shortcut (top) */}
+              {(item.kind === 'video' || item.kind === 'youtube') && (
+                <Link
+                  href={`/workspace/${workspaceId}/studio?content_id=${item.id}`}
+                  className="group flex w-full items-center justify-between rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/[0.06] to-background px-5 py-4 transition-all hover:border-primary/50 hover:bg-primary/[0.08] hover:shadow-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
+                      <Play className="h-4 w-4 fill-current text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">Render in Video Studio</p>
+                      <p className="text-xs text-muted-foreground">
+                        AI captions + reframe → ready-to-post MP4 in ~60 s
+                      </p>
+                    </div>
+                  </div>
+                  <Clapperboard className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary/60" />
+                </Link>
+              )}
+
+              {/* Video tools section */}
+              <div className="space-y-3">
+                <h3 className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Video Tools
+                </h3>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <ToolCard
+                    icon={<MessageSquare className="h-4 w-4 text-muted-foreground" />}
+                    label="Subtitles"
+                    description="Burn stylized captions into your video for social platforms."
+                    href={`/workspace/${workspaceId}/content/${item.id}/subtitles`}
+                  />
+                  <ToolCard
+                    icon={<Clapperboard className="h-4 w-4 text-muted-foreground" />}
+                    label="B-Roll"
+                    description="Auto-generate contextual B-Roll clips with AI."
+                    href={`/workspace/${workspaceId}/content/${item.id}/broll`}
+                  />
+                  <ToolCard
+                    icon={<Sparkles className="h-4 w-4 text-muted-foreground" />}
+                    label="AI Avatar"
+                    description="Generate a talking-head avatar from your transcript."
+                    href={`/workspace/${workspaceId}/content/${item.id}/avatar`}
+                  />
+                  {item.kind === 'video' ? (
+                    <ToolCard
+                      icon={<Move className="h-4 w-4 text-muted-foreground" />}
+                      label="Reframe"
+                      description="Smart-crop horizontal video to vertical 9:16 format."
+                      href={`/workspace/${workspaceId}/content/${item.id}/reframe`}
+                    />
+                  ) : null}
+                  {item.kind === 'video' ? (
+                    <ToolCard
+                      icon={<Globe className="h-4 w-4 text-muted-foreground" />}
+                      label="Auto-Dub"
+                      description="Translate and dub your video into other languages."
+                      href={`/workspace/${workspaceId}/content/${item.id}/dub`}
+                    />
+                  ) : null}
+                </div>
+              </div>
+
+              {/* Analysis tools section */}
+              <div className="space-y-3">
+                <h3 className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Analysis
+                </h3>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border border-border/50 bg-card p-4">
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                        <Scissors className="h-4 w-4 text-muted-foreground" />
+                      </span>
+                      <span className="text-sm font-semibold text-foreground">Clip Finder</span>
+                    </div>
+                    <p className="text-xs leading-relaxed text-muted-foreground mb-3">
+                      AI finds the most engaging clips from your content.
+                    </p>
+                    <ClipFinder
+                      workspaceId={workspaceId}
+                      contentId={item.id}
+                      initialClips={initialClips}
+                    />
+                  </div>
+                  <div className="rounded-xl border border-border/50 bg-card p-4">
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                        <Tag className="h-4 w-4 text-muted-foreground" />
+                      </span>
+                      <span className="text-sm font-semibold text-foreground">Auto-Tag</span>
+                    </div>
+                    <p className="text-xs leading-relaxed text-muted-foreground mb-3">
+                      Automatically tag content with relevant topics and categories.
+                    </p>
+                    <AutoTagButton
+                      workspaceId={workspaceId}
+                      contentId={item.id}
+                      currentTags={currentTags}
+                    />
+                  </div>
+                  <div className="rounded-xl border border-border/50 bg-card p-4">
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                      </span>
+                      <span className="text-sm font-semibold text-foreground">Sentiment</span>
+                    </div>
+                    <p className="text-xs leading-relaxed text-muted-foreground mb-3">
+                      Analyze the emotional tone and sentiment of your content.
+                    </p>
+                    <SentimentAnalysisButton
+                      workspaceId={workspaceId}
+                      contentId={item.id}
+                      initialSentiment={initialSentiment}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── Delete (always visible) ── */}
       <div className="border-t border-border/50 pt-4">
         <DeleteContentButton workspaceId={workspaceId} contentId={item.id} />
       </div>

@@ -17,7 +17,6 @@ import { WorkspaceSwitcher } from '@/components/workspace/workspace-switcher'
 import { GlobalSearch } from '@/components/workspace/global-search'
 import { NotificationBell } from '@/components/workspace/notification-bell'
 import { ReferralSidebarCard } from '@/components/workspace/referral-sidebar-card'
-import { MobileMoreMenu } from '@/components/workspace/mobile-more-menu'
 import { KeyboardShortcuts } from '@/components/keyboard-shortcuts'
 import { FeedbackWidget } from '@/components/feedback-widget'
 import type { WorkspaceSummary } from '@/lib/auth/get-workspaces'
@@ -101,21 +100,17 @@ export function AppShell({
     },
   ]
 
-  // Mobile: show all 6 items in bottom bar (4 main + 2 in More drawer)
-  const mobileItems = mainNav.slice(0, 4)
-
-  const mobileMoreItems = bottomNav.map((item) => ({
-    href: item.href,
-    label: item.label,
-    icon: item.icon,
-  }))
-
-  const moreActive = mobileMoreItems.some(
-    (item) =>
-      pathname === item.href ||
-      (item.href === '/settings' && pathname.startsWith('/settings')) ||
-      (item.href !== '/settings' && pathname.startsWith(item.href + '/')),
-  )
+  // Mobile: 5 direct items (Content, Generate, Pipeline, Schedule, Analytics)
+  // Settings accessible via gear icon in the header
+  const mobileItems: NavItem[] = [
+    ...mainNav.slice(0, 4),
+    {
+      href: '/analytics',
+      label: 'Analytics',
+      description: 'Track performance',
+      icon: BarChart3,
+    },
+  ]
 
   function renderNavItem(item: NavItem) {
     const active = isActive(item.href)
@@ -179,6 +174,13 @@ export function AppShell({
         </div>
         <div className="flex items-center gap-1.5">
           <NotificationBell initialCount={0} />
+          <Link
+            href="/settings"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:hidden"
+            aria-label="Settings"
+          >
+            <SettingsIcon className="h-4 w-4" />
+          </Link>
           <span aria-hidden className="mx-1 hidden h-4 w-px bg-border/70 sm:block" />
           <SignoutButton />
         </div>
@@ -244,7 +246,6 @@ export function AppShell({
             </Link>
           )
         })}
-        <MobileMoreMenu active={moreActive} items={mobileMoreItems} />
       </nav>
     </div>
   )
