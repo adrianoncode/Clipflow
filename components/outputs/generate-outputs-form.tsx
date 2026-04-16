@@ -238,7 +238,7 @@ export function GenerateOutputsForm({
         <SubmitButton label={submitLabel} />
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Clock className="h-3.5 w-3.5" />
-          <span>Takes 15-60 seconds. You'll get 4 ready-to-post drafts.</span>
+          <span>Takes 15-60 seconds. You&apos;ll get 4 ready-to-post drafts.</span>
         </div>
       </div>
     </form>

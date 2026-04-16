@@ -148,7 +148,7 @@ export function SetupChecklist({
         <div className="relative space-y-1">
           {steps.map((step, i) => {
             const isCurrent = i === currentStepIndex
-            const isFuture = !step.done && !isCurrent
+            const _isFuture = !step.done && !isCurrent
             const StepIcon = step.icon
 
             return (

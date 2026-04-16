@@ -8,10 +8,8 @@ import {
   Clock,
   FileText,
   Globe,
-  KeyRound,
   Layers,
   Lock,
-  Mic,
   Rss,
   Send,
   Star,
@@ -141,7 +139,7 @@ export default async function DashboardPage() {
   const personal = workspaces.find((w) => w.type === 'personal')
   const workspace = workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal ?? workspaces[0]
 
-  const [aiKeys, stats, usage, plan, brandVoice, suggestions] =
+  const [aiKeys, stats, usage, plan, _brandVoice, suggestions] =
     workspace && user
       ? await Promise.all([
           getAiKeys(workspace.id),

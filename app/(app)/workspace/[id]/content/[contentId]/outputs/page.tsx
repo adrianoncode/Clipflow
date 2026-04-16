@@ -7,7 +7,6 @@ import {
   ChevronRight,
   Film,
   FileText,
-  Globe,
   Link2,
   Rss,
   Sparkles,

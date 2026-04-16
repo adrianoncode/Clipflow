@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowRight, CalendarClock, Plus, Inbox, GitBranch } from 'lucide-react'
+import { ArrowRight, CalendarClock, Plus, GitBranch } from 'lucide-react'
 
 import { EmptyState } from '@/components/ui/empty-state'
 import {
