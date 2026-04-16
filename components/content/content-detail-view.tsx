@@ -5,7 +5,6 @@ import Link from 'next/link'
 import {
   ArrowRight,
   Clapperboard,
-  Clock,
   Layers,
   MessageSquare,
   Move,
