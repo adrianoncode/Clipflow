@@ -88,34 +88,19 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
 
   if (!membership) notFound()
 
+  // Single query using the denormalized `current_state` column populated
+  // by the trigger on output_states insert. Replaces the previous 2-query
+  // pattern that fetched every state transition and scanned in JS.
   const { data: outputs } = await supabase
     .from('outputs')
-    .select('id, platform, created_at, content_id, body, content_items(title)')
+    .select('id, platform, created_at, content_id, body, current_state, content_items(title)')
     .eq('workspace_id', workspaceId)
     .order('created_at', { ascending: false })
     .limit(200)
 
-  const outputIds = (outputs ?? []).map((o) => o.id)
-
-  const { data: states } =
-    outputIds.length > 0
-      ? await supabase
-          .from('output_states')
-          .select('output_id, state, created_at')
-          .in('output_id', outputIds)
-          .order('created_at', { ascending: false })
-      : { data: [] }
-
-  const latestStateByOutput = new Map<string, string>()
-  for (const row of states ?? []) {
-    if (!latestStateByOutput.has(row.output_id)) {
-      latestStateByOutput.set(row.output_id, row.state)
-    }
-  }
-
   const enriched: PipelineOutputItem[] = (outputs ?? []).map((o) => {
     const contentItem = o.content_items as unknown as { title: string | null } | null
-    const rawState = latestStateByOutput.get(o.id) ?? 'draft'
+    const rawState = o.current_state ?? 'draft'
     const state: PipelineStateKey =
       rawState === 'review' || rawState === 'approved' || rawState === 'exported'
         ? (rawState as PipelineStateKey)

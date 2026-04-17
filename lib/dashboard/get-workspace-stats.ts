@@ -49,99 +49,79 @@ export async function getWorkspaceStats(workspaceId: string): Promise<WorkspaceS
     starredResult,
     approvedResult,
     recentResult,
-    platformResult,
+    // All outputs in one fetch — platform + current_state from the
+    // denormalized column. Replaces 2 separate queries (platform grouping
+    // + full output_states scan in JS).
+    allOutputsResult,
     contentThisMonthResult,
     outputsThisMonthResult,
     contentLastMonthResult,
     outputsLastMonthResult,
-    allStatesResult,
     contentSparkResult,
     outputsSparkResult,
   ] = await Promise.all([
-    // Total content items
     supabase
       .from('content_items')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId),
-
-    // Total outputs
     supabase
       .from('outputs')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId),
-
-    // Starred outputs
     supabase
       .from('outputs')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId)
       .eq('is_starred', true),
-
-    // Approved outputs (via output_states)
+    // Approved outputs count now comes from outputs.current_state — no
+    // more scanning the full output_states audit log.
     supabase
-      .from('output_states')
+      .from('outputs')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId)
-      .eq('state', 'approved'),
-
-    // 8 most recent content items
+      .eq('current_state', 'approved'),
     supabase
       .from('content_items')
       .select('id, title, status, kind, created_at')
       .eq('workspace_id', workspaceId)
       .order('created_at', { ascending: false })
       .limit(8),
-
-    // Outputs grouped by platform (fetch all, group in JS)
+    // Single fetch of (platform, current_state) — serves both the platform
+    // breakdown AND the pipeline-by-state aggregation below. Capped at 5k
+    // for safety on very large workspaces; counts still come from the
+    // `count: 'exact'` queries above.
     supabase
       .from('outputs')
-      .select('platform')
-      .eq('workspace_id', workspaceId),
-
-    // Content items this month
+      .select('platform, current_state')
+      .eq('workspace_id', workspaceId)
+      .limit(5000),
     supabase
       .from('content_items')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId)
       .gte('created_at', startOfThisMonth),
-
-    // Outputs this month
     supabase
       .from('outputs')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId)
       .gte('created_at', startOfThisMonth),
-
-    // Content items last month
     supabase
       .from('content_items')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId)
       .gte('created_at', startOfLastMonth)
       .lt('created_at', endOfLastMonth),
-
-    // Outputs last month
     supabase
       .from('outputs')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId)
       .gte('created_at', startOfLastMonth)
       .lt('created_at', endOfLastMonth),
-
-    // All output_states for pipeline grouping
-    supabase
-      .from('output_states')
-      .select('output_id, state, created_at')
-      .eq('workspace_id', workspaceId)
-      .order('created_at', { ascending: false }),
-
-    // 7-day sparkline data — created_at timestamps for each content/output
     supabase
       .from('content_items')
       .select('created_at')
       .eq('workspace_id', workspaceId)
       .gte('created_at', sparklineStartIso),
-
     supabase
       .from('outputs')
       .select('created_at')
@@ -166,27 +146,18 @@ export async function getWorkspaceStats(workspaceId: string): Promise<WorkspaceS
     return buckets
   }
 
-  // Platform breakdown
+  // Platform + state breakdowns both derived from the single allOutputsResult
+  // fetch — no more "scan all output_states history in JS" pattern.
   const platformCounts: Record<string, number> = {}
-  for (const row of platformResult.data ?? []) {
-    platformCounts[row.platform] = (platformCounts[row.platform] ?? 0) + 1
-  }
-
-  // Pipeline by state: take the latest state per output_id
-  const latestStateByOutput = new Map<string, string>()
-  for (const row of allStatesResult.data ?? []) {
-    if (!latestStateByOutput.has(row.output_id)) {
-      latestStateByOutput.set(row.output_id, row.state)
-    }
-  }
-
   const pipelineByState: Record<PipelineState, number> = {
     draft: 0,
     review: 0,
     approved: 0,
     exported: 0,
   }
-  for (const state of latestStateByOutput.values()) {
+  for (const row of allOutputsResult.data ?? []) {
+    platformCounts[row.platform] = (platformCounts[row.platform] ?? 0) + 1
+    const state = row.current_state
     if (state === 'draft' || state === 'review' || state === 'approved' || state === 'exported') {
       pipelineByState[state as PipelineState]++
     }
