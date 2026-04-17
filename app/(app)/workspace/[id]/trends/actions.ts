@@ -10,6 +10,7 @@ import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { getUser } from '@/lib/auth/get-user'
 import { fetchGoogleTrends } from '@/lib/trends/fetch-google-trends'
 import { createClient } from '@/lib/supabase/server'
+import { checkWorkspaceRateLimit } from '@/lib/rate-limit-helper'
 
 const analyzeTrendsSchema = z.object({
   workspaceId: z.string().min(1),
@@ -38,6 +39,9 @@ export async function analyzeTrendsAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  const rl = await checkWorkspaceRateLimit(workspaceId, 'research')
+  if (!rl.ok) return { ok: false, error: rl.error }
 
   const trends = await fetchGoogleTrends(geo === 'Global' ? 'US' : geo)
   if (trends.length === 0) {

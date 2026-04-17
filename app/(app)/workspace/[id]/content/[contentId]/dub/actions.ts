@@ -7,6 +7,7 @@ import { getUser } from '@/lib/auth/get-user'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { startDubbingJob } from '@/lib/dubbing/translate-and-dub'
 import { checkRenderQuota } from '@/lib/billing/check-feature'
+import { checkWorkspaceRateLimit } from '@/lib/rate-limit-helper'
 
 const dubbingSchema = z.object({
   workspace_id: z.string().uuid(),
@@ -42,6 +43,9 @@ export async function startDubbingAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  const rl = await checkWorkspaceRateLimit(parsed.data.workspace_id, 'videoJob')
+  if (!rl.ok) return { ok: false, error: rl.error }
 
   const item = await getContentItem(parsed.data.content_id, parsed.data.workspace_id)
   if (!item) {

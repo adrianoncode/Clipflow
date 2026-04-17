@@ -8,6 +8,7 @@ import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { getUser } from '@/lib/auth/get-user'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { createClient } from '@/lib/supabase/server'
+import { checkWorkspaceRateLimit } from '@/lib/rate-limit-helper'
 
 import { buildContentDnaPrompt } from '@/lib/ai/prompts/content-dna'
 import { buildViralHooksPrompt } from '@/lib/ai/prompts/viral-hooks'
@@ -20,10 +21,16 @@ import { buildCollabFinderPrompt } from '@/lib/ai/prompts/collab-finder'
 
 type ActionResult = { ok?: undefined } | { ok: true; data: unknown } | { ok: false; error: string }
 
-/** Shared helper: validate workspace + get AI provider */
+/** Shared helper: validate workspace + rate limit + get AI provider. */
 async function setup(workspaceId: string) {
   const user = await getUser()
   if (!user) redirect('/login')
+  // All 8 tools in this file are AI-tool generations — share the
+  // `generation` preset (20/min per workspace) so a user can chain
+  // tools without hitting the limit in normal use, but a stuck retry
+  // loop gets clamped.
+  const rl = await checkWorkspaceRateLimit(workspaceId, 'generation')
+  if (!rl.ok) return { ok: false as const, error: rl.error }
   const provider = await pickGenerationProvider(workspaceId)
   if (!provider.ok) return { ok: false as const, error: provider.message }
   return { ok: true as const, user, provider }

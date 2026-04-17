@@ -10,6 +10,7 @@ import { generateRaw } from '@/lib/ai/generate/generate-raw'
 import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { DEFAULT_MODELS } from '@/lib/ai/generate/models'
 import type { CaptionStyle } from '@/lib/video/shotstack-render'
+import { checkWorkspaceRateLimit } from '@/lib/rate-limit-helper'
 
 // ── Studio Render ─────────────────────────────────────────────────────────────
 
@@ -49,6 +50,12 @@ export async function studioRenderAction(
 
   const gate = await checkRenderQuota(parsed.data.workspace_id, 'video_render')
   if (!gate.ok) return { ok: false, error: gate.message ?? 'Render quota reached — upgrade your plan.' }
+
+  // Short-window rate limit on top of the monthly plan quota — prevents
+  // a user from burning their whole monthly render allowance in 30 seconds
+  // due to a stuck loop or abuse.
+  const rl = await checkWorkspaceRateLimit(parsed.data.workspace_id, 'videoRender')
+  if (!rl.ok) return { ok: false, error: rl.error }
 
   const result = await makeVideoPipeline({
     workspaceId: parsed.data.workspace_id,

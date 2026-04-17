@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { getUser } from '@/lib/auth/get-user'
 import { searchPexelsVideos, searchPexelsPhotos } from '@/lib/broll/search-pexels'
 import type { PexelsVideo, PexelsPhoto } from '@/lib/broll/search-pexels'
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 const searchSchema = z.object({
   query: z.string().trim().min(1, 'Search query is required.').max(200),
@@ -32,6 +33,17 @@ export async function searchBrollAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  // B-Roll search hits Pexels — rate-limit per user since it's pre-content
+  // (no workspace context yet). Uses mediaJob bucket.
+  const rlResult = await checkRateLimit(
+    `broll:user:${user.id}`,
+    RATE_LIMITS.mediaJob.limit,
+    RATE_LIMITS.mediaJob.windowMs,
+  )
+  if (!rlResult.ok) {
+    return { ok: false, error: 'Rate limit reached. Please wait and try again.' }
+  }
 
   const { query, type } = parsed.data
 

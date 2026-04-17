@@ -7,6 +7,7 @@ import { generate } from '@/lib/ai/generate/generate'
 import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { getUser } from '@/lib/auth/get-user'
 import { createClient } from '@/lib/supabase/server'
+import { checkWorkspaceRateLimit } from '@/lib/rate-limit-helper'
 
 const lengthMap = {
   short: '30-60 seconds',
@@ -52,6 +53,9 @@ export async function ghostwriteAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  const rl = await checkWorkspaceRateLimit(parsed.data.workspaceId, 'generation')
+  if (!rl.ok) return { ok: false, error: rl.error }
 
   const pick = await pickGenerationProvider(parsed.data.workspaceId)
   if (!pick.ok) {

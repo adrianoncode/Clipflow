@@ -8,6 +8,7 @@ import { getContentItem } from '@/lib/content/get-content-item'
 import { getSignedUrl } from '@/lib/content/get-signed-url'
 import { startReframeJob } from '@/lib/reframe/reframe-video'
 import { createClient } from '@/lib/supabase/server'
+import { checkWorkspaceRateLimit } from '@/lib/rate-limit-helper'
 
 const reframeSchema = z.object({
   workspaceId: z.string().uuid(),
@@ -37,6 +38,9 @@ export async function startReframeAction(
   if (!user) redirect('/login')
 
   const { workspaceId, contentId, aspectRatio } = parsed.data
+
+  const rl = await checkWorkspaceRateLimit(workspaceId, 'videoJob')
+  if (!rl.ok) return { ok: false, error: rl.error }
 
   const item = await getContentItem(contentId, workspaceId)
   if (!item) return { ok: false, error: 'Content item not found.' }

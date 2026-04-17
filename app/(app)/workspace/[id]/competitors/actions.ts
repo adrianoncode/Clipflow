@@ -8,6 +8,7 @@ import { DEFAULT_MODELS } from '@/lib/ai/generate/models'
 import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { getUser } from '@/lib/auth/get-user'
 import { fetchUrlText } from '@/lib/content/fetch-url-text'
+import { checkWorkspaceRateLimit } from '@/lib/rate-limit-helper'
 
 const analyzeCompetitorSchema = z.object({
   workspaceId: z.string().min(1),
@@ -33,6 +34,9 @@ export async function analyzeCompetitorAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  const rl = await checkWorkspaceRateLimit(workspaceId, 'research')
+  if (!rl.ok) return { ok: false, error: rl.error }
 
   const fetched = await fetchUrlText(competitorUrl)
   if (!fetched.ok) {

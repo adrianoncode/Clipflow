@@ -7,6 +7,7 @@ import { searchYouTubeCreators } from '@/lib/creators/search-youtube'
 import { lookupCreator, searchTikTok, type Platform } from '@/lib/creators/scrapecreators'
 import { scrapeTikTokProfile } from '@/lib/creators/scrape-tiktok'
 import { scrapeInstagramProfile } from '@/lib/creators/scrape-instagram'
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 type SearchResult =
   | { ok?: undefined }
@@ -26,6 +27,17 @@ export async function searchCreatorsAction(
   const platform = formData.get('platform')?.toString() ?? 'youtube'
 
   if (!query) return { ok: false, error: 'Enter a search term or username.' }
+
+  // Creators searches hit external scrapers (ScrapeCreators) + YouTube API —
+  // rate-limit per user since this is not strictly workspace-scoped.
+  const rlResult = await checkRateLimit(
+    `creators:user:${user.id}`,
+    RATE_LIMITS.research.limit,
+    RATE_LIMITS.research.windowMs,
+  )
+  if (!rlResult.ok) {
+    return { ok: false, error: 'Search rate limit reached. Please wait and try again.' }
+  }
 
   // YouTube: always official API
   if (platform === 'youtube') {
