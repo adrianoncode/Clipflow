@@ -8,7 +8,7 @@ import {
   type GenerateAbHookVariantsState,
   type AbHookVariant,
   type SetHookWinnerState,
-} from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
+} from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/ai-actions'
 import { Button } from '@/components/ui/button'
 
 interface HookAbTestProps {

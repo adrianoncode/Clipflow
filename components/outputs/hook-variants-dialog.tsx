@@ -5,7 +5,7 @@ import { useFormState, useFormStatus } from 'react-dom'
 
 import { Button } from '@/components/ui/button'
 import { FormMessage } from '@/components/ui/form-message'
-import { generateHookVariantsAction, type HookVariantsState } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
+import { generateHookVariantsAction, type HookVariantsState } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/ai-actions'
 
 const STYLE_LABELS: Record<string, string> = {
   story: '📖 Story',

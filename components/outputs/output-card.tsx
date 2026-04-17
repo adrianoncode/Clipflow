@@ -21,7 +21,7 @@ import { EngagementPredictor } from '@/components/outputs/engagement-predictor'
 import { SchedulePostButton } from '@/components/scheduler/schedule-post-button'
 import type { OutputRow } from '@/lib/content/get-outputs'
 import type { OutputPlatform } from '@/lib/supabase/types'
-import type { AbHookVariant, EngagementPrediction } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
+import type { AbHookVariant, EngagementPrediction } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/ai-actions'
 import { PLATFORM_LONG_LABELS as PLATFORM_LABELS } from '@/lib/platforms'
 
 // Maps OutputPlatform to the platform key used by the social scheduler

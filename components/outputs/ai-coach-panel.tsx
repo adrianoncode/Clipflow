@@ -4,7 +4,7 @@ import { useFormState } from 'react-dom'
 import { useFormStatus } from 'react-dom'
 import { Sparkles } from 'lucide-react'
 
-import { getAiCoachFeedbackAction } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
+import { getAiCoachFeedbackAction } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/ai-actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 

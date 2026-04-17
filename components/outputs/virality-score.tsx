@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 import { Flame, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
 
-import { getViralityScoreAction } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
-import type { GetViralityScoreState, ViralityResult } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
+import { getViralityScoreAction } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/ai-actions'
+import type { GetViralityScoreState, ViralityResult } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/ai-actions'
 import { Button } from '@/components/ui/button'
 
 interface ViralityScoreProps {

@@ -7,7 +7,7 @@ import {
   predictEngagementAction,
   type PredictEngagementState,
   type EngagementPrediction,
-} from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
+} from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/ai-actions'
 import { Button } from '@/components/ui/button'
 
 interface EngagementPredictorProps {
