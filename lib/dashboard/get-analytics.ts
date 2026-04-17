@@ -27,6 +27,35 @@ export interface PlatformCoverage {
   none: number
 }
 
+export interface PublishedPost {
+  id: string
+  platform: string
+  status: string
+  scheduled_for: string
+  published_at: string | null
+  contentTitle: string | null
+  views: number | null
+  likes: number | null
+  comments: number | null
+  shares: number | null
+  engagementRate: number | null
+  url: string | null
+}
+
+export interface EngagementTotals {
+  totalViews: number
+  totalLikes: number
+  totalComments: number
+  totalShares: number
+  avgEngagementRate: number | null
+}
+
+export interface PublishingStats {
+  scheduled: number
+  published: number
+  failed: number
+}
+
 export interface AnalyticsData {
   // Timeline
   contentByMonth: Array<{ month: string; count: number }>
@@ -45,19 +74,25 @@ export interface AnalyticsData {
   totalStarred: number
   totalApproved: number
 
-  // ── New: Funnel, velocity, health ───────────────────────────────
-  /** Stage-by-stage funnel with conversion rates. */
+  // ── Funnel, velocity, health ───────────────────────────────────
   funnel: FunnelStage[]
-  /** Content items created this week (rolling 7d) and delta vs previous 7d. */
   velocityContent: { thisWeek: number; lastWeek: number; deltaPct: number | null }
-  /** Outputs generated this week and delta. */
   velocityOutputs: { thisWeek: number; lastWeek: number; deltaPct: number | null }
-  /** % of generated outputs that reached `approved` (among those that moved past draft). */
   approvalRate: number
-  /** Draft/review outputs older than 7 days — need attention. */
   stuckDrafts: StuckDraft[]
-  /** Platform coverage snapshot. */
   platformCoverage: PlatformCoverage
+
+  // ── Engagement & publishing ────────────────────────────────────
+  /** Real engagement data from published posts (via Upload-Post). */
+  engagement: EngagementTotals
+  /** Top posts by views with engagement stats. */
+  topPublished: PublishedPost[]
+  /** Per-platform engagement breakdown. */
+  engagementByPlatform: Record<string, EngagementTotals>
+  /** Scheduling funnel: scheduled → published → failed. */
+  publishingStats: PublishingStats
+  /** Whether workspace has an Upload-Post key connected. */
+  hasPublishKey: boolean
 }
 
 const SUPPORTED_PLATFORMS = ['tiktok', 'instagram_reels', 'youtube_shorts', 'linkedin'] as const
@@ -292,6 +327,115 @@ export async function getAnalytics(workspaceId: string): Promise<AnalyticsData> 
     else partial++
   }
 
+  // ── Engagement & publishing data ────────────────────────────────
+  const [scheduledPostsResult, publishKeyResult] = await Promise.all([
+    supabase
+      .from('scheduled_posts')
+      .select('id, platform, status, scheduled_for, published_at, metadata, output_id')
+      .eq('workspace_id', workspaceId),
+    supabase
+      .from('ai_keys')
+      .select('id')
+      .eq('workspace_id', workspaceId)
+      .eq('provider', 'upload-post')
+      .limit(1),
+  ])
+
+  const scheduledPosts = scheduledPostsResult.data ?? []
+  const hasPublishKey = (publishKeyResult.data ?? []).length > 0
+
+  // Publishing stats
+  const publishingStats: PublishingStats = { scheduled: 0, published: 0, failed: 0 }
+  for (const post of scheduledPosts) {
+    if (post.status === 'published') publishingStats.published++
+    else if (post.status === 'failed') publishingStats.failed++
+    else publishingStats.scheduled++
+  }
+
+  // Get content titles for published posts
+  const outputIds = scheduledPosts.map(p => p.output_id).filter(Boolean)
+  const { data: outputsForPosts } = outputIds.length > 0
+    ? await supabase
+        .from('outputs')
+        .select('id, content_id')
+        .in('id', outputIds)
+    : { data: [] as Array<{ id: string; content_id: string }> }
+  const contentIdForOutput = new Map((outputsForPosts ?? []).map(o => [o.id, o.content_id]))
+
+  // Engagement aggregation
+  let totalViews = 0
+  let totalLikes = 0
+  let totalComments = 0
+  let totalShares = 0
+  const engagementRates: number[] = []
+  const platformEngagement: Record<string, { views: number; likes: number; comments: number; shares: number; rates: number[] }> = {}
+
+  const publishedWithStats: PublishedPost[] = []
+
+  for (const post of scheduledPosts) {
+    if (post.status !== 'published') continue
+    const meta = post.metadata as Record<string, unknown> | null
+    if (!meta) continue
+
+    const views = typeof meta.views === 'number' ? meta.views : null
+    const likes = typeof meta.likes === 'number' ? meta.likes : null
+    const comments = typeof meta.comments === 'number' ? meta.comments : null
+    const shares = typeof meta.shares === 'number' ? meta.shares : null
+    const engRate = typeof meta.engagement_rate === 'number' ? meta.engagement_rate : null
+    const url = typeof meta.url === 'string' ? meta.url : null
+
+    if (views !== null) totalViews += views
+    if (likes !== null) totalLikes += likes
+    if (comments !== null) totalComments += comments
+    if (shares !== null) totalShares += shares
+    if (engRate !== null) engagementRates.push(engRate)
+
+    // Per-platform
+    if (!platformEngagement[post.platform]) {
+      platformEngagement[post.platform] = { views: 0, likes: 0, comments: 0, shares: 0, rates: [] }
+    }
+    const pe = platformEngagement[post.platform]!
+    if (views !== null) pe.views += views
+    if (likes !== null) pe.likes += likes
+    if (comments !== null) pe.comments += comments
+    if (shares !== null) pe.shares += shares
+    if (engRate !== null) pe.rates.push(engRate)
+
+    const contentId = contentIdForOutput.get(post.output_id)
+    publishedWithStats.push({
+      id: post.id,
+      platform: post.platform,
+      status: post.status,
+      scheduled_for: post.scheduled_for,
+      published_at: post.published_at,
+      contentTitle: contentId ? (contentTitleById.get(contentId) ?? null) : null,
+      views, likes, comments, shares,
+      engagementRate: engRate,
+      url,
+    })
+  }
+
+  // Sort by views DESC, take top 10
+  publishedWithStats.sort((a, b) => (b.views ?? 0) - (a.views ?? 0))
+  const topPublished = publishedWithStats.slice(0, 10)
+
+  const avgEngagementRate = engagementRates.length > 0
+    ? Math.round((engagementRates.reduce((a, b) => a + b, 0) / engagementRates.length) * 100) / 100
+    : null
+
+  const engagementByPlatform: Record<string, EngagementTotals> = {}
+  for (const [platform, data] of Object.entries(platformEngagement)) {
+    engagementByPlatform[platform] = {
+      totalViews: data.views,
+      totalLikes: data.likes,
+      totalComments: data.comments,
+      totalShares: data.shares,
+      avgEngagementRate: data.rates.length > 0
+        ? Math.round((data.rates.reduce((a, b) => a + b, 0) / data.rates.length) * 100) / 100
+        : null,
+    }
+  }
+
   return {
     contentByMonth: months.map((m) => ({ month: m, count: contentByMonthMap[m] ?? 0 })),
     outputsByMonth: months.map((m) => ({ month: m, count: outputsByMonthMap[m] ?? 0 })),
@@ -317,5 +461,17 @@ export async function getAnalytics(workspaceId: string): Promise<AnalyticsData> 
     approvalRate,
     stuckDrafts: topStuck,
     platformCoverage: { full, partial, none },
+
+    engagement: {
+      totalViews,
+      totalLikes,
+      totalComments,
+      totalShares,
+      avgEngagementRate,
+    },
+    topPublished,
+    engagementByPlatform,
+    publishingStats,
+    hasPublishKey,
   }
 }

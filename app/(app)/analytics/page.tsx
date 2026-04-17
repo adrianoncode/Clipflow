@@ -5,10 +5,17 @@ import {
   ArrowDown,
   ArrowRight,
   ArrowUp,
+  BarChart3,
   CheckCircle2,
+  Eye,
+  Heart,
   Layers,
+  MessageCircle,
+  Send,
+  Share2,
   Sparkles,
   Star,
+  TrendingUp,
   Upload,
 } from 'lucide-react'
 
@@ -23,14 +30,18 @@ const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
 const PLATFORM_LABELS: Record<string, string> = {
   tiktok: 'TikTok',
   instagram_reels: 'Reels',
+  instagram: 'Instagram',
   youtube_shorts: 'Shorts',
+  youtube: 'YouTube',
   linkedin: 'LinkedIn',
 }
 
 const PLATFORM_COLOR: Record<string, string> = {
   tiktok: 'bg-pink-500',
   instagram_reels: 'bg-purple-500',
+  instagram: 'bg-purple-500',
   youtube_shorts: 'bg-red-500',
+  youtube: 'bg-red-500',
   linkedin: 'bg-blue-500',
 }
 
@@ -38,14 +49,14 @@ const STATE_COLOR: Record<string, string> = {
   draft: 'bg-zinc-400',
   review: 'bg-amber-400',
   approved: 'bg-emerald-500',
-  exported: 'bg-blue-500',
+  exported: 'bg-violet-500',
 }
 
 const STATE_LABEL: Record<string, string> = {
   draft: 'Draft',
   review: 'Review',
   approved: 'Approved',
-  exported: 'Exported',
+  exported: 'Published',
 }
 
 function shortMonth(yyyyMm: string): string {
@@ -56,6 +67,13 @@ function shortMonth(yyyyMm: string): string {
   } catch {
     return yyyyMm
   }
+}
+
+function formatNum(n: number | null | undefined): string {
+  if (n === null || n === undefined) return '-'
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`
+  return String(n)
 }
 
 /** Compact bar chart used for timeline views. */
@@ -142,6 +160,9 @@ export default async function AnalyticsPage() {
     analytics.platformCoverage.none
   const funnelMax = Math.max(...analytics.funnel.map((s) => s.count), 1)
 
+  const hasEngagement = analytics.engagement.totalViews > 0 || analytics.engagement.totalLikes > 0
+  const totalPublished = analytics.publishingStats.published
+
   // Approval rate zone
   const approvalZone =
     analytics.approvalRate >= 70
@@ -158,11 +179,11 @@ export default async function AnalyticsPage() {
         <p className="mt-0.5 text-sm text-muted-foreground">{currentWorkspace.name}</p>
       </div>
 
-      {/* ── Velocity row — 4 KPI cards with week-over-week deltas ── */}
+      {/* ── Velocity row — KPI cards with week-over-week deltas ── */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           icon={Upload}
-          label="Videos imported"
+          label="Content imported"
           value={analytics.velocityContent.thisWeek}
           helper="this week"
           delta={analytics.velocityContent.deltaPct}
@@ -180,20 +201,164 @@ export default async function AnalyticsPage() {
           icon={CheckCircle2}
           label="Approval rate"
           value={`${analytics.approvalRate}%`}
-          helper={`${approvalZone.label} · outputs reviewed`}
+          helper={`${approvalZone.label} · drafts reviewed`}
           badge={approvalZone}
           tint="emerald"
         />
         <KpiCard
-          icon={Star}
-          label="Starred"
-          value={analytics.totalStarred}
-          helper={`of ${analytics.totalOutputs} total`}
+          icon={Send}
+          label="Published"
+          value={totalPublished}
+          helper={`${analytics.publishingStats.scheduled} scheduled · ${analytics.publishingStats.failed} failed`}
           tint="amber"
         />
       </div>
 
-      {/* ── Funnel section ── */}
+      {/* ── Engagement stats (only when data exists) ── */}
+      {hasEngagement && (
+        <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+          <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-3.5 w-3.5 text-primary" />
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Real engagement
+              </p>
+            </div>
+            <span className="font-mono text-[10px] text-muted-foreground/60">
+              From your published posts
+            </span>
+          </div>
+
+          {/* Engagement KPI row */}
+          <div className="grid grid-cols-2 divide-x divide-border/40 sm:grid-cols-5">
+            <EngagementStat icon={Eye} label="Views" value={analytics.engagement.totalViews} />
+            <EngagementStat icon={Heart} label="Likes" value={analytics.engagement.totalLikes} />
+            <EngagementStat icon={MessageCircle} label="Comments" value={analytics.engagement.totalComments} />
+            <EngagementStat icon={Share2} label="Shares" value={analytics.engagement.totalShares} />
+            <div className="col-span-2 flex flex-col items-center justify-center gap-1 border-t border-border/40 p-4 sm:col-span-1 sm:border-t-0">
+              <span className="font-mono text-2xl font-semibold tabular-nums">
+                {analytics.engagement.avgEngagementRate !== null
+                  ? `${analytics.engagement.avgEngagementRate}%`
+                  : '-'}
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
+                Avg. engagement
+              </span>
+            </div>
+          </div>
+
+          {/* Per-platform engagement breakdown */}
+          {Object.keys(analytics.engagementByPlatform).length > 0 && (
+            <div className="border-t border-border/40">
+              <div className="grid gap-0 divide-y divide-border/30 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+                {Object.entries(analytics.engagementByPlatform).map(([platform, data]) => (
+                  <div key={platform} className="p-4">
+                    <div className="mb-2 flex items-center gap-2">
+                      <span
+                        className={`inline-block h-2 w-2 rounded-full ${
+                          PLATFORM_COLOR[platform] ?? 'bg-gray-500'
+                        }`}
+                      />
+                      <span className="text-xs font-bold">
+                        {PLATFORM_LABELS[platform] ?? platform}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                      <MicroStat icon={Eye} value={data.totalViews} />
+                      <MicroStat icon={Heart} value={data.totalLikes} />
+                      <MicroStat icon={MessageCircle} value={data.totalComments} />
+                      <MicroStat icon={Share2} value={data.totalShares} />
+                    </div>
+                    {data.avgEngagementRate !== null && (
+                      <p className="mt-1.5 font-mono text-[10px] text-muted-foreground/60">
+                        {data.avgEngagementRate}% engagement
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── Top published posts (when engagement data exists) ── */}
+      {analytics.topPublished.length > 0 && analytics.topPublished.some(p => p.views !== null) && (
+        <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
+          <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-3.5 w-3.5 text-primary" />
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Top published posts
+              </p>
+            </div>
+            <span className="font-mono text-[10px] text-muted-foreground/60">
+              By views
+            </span>
+          </div>
+          <ul className="divide-y divide-border/40">
+            {analytics.topPublished
+              .filter(p => p.views !== null)
+              .slice(0, 8)
+              .map((post, i) => (
+              <li
+                key={post.id}
+                className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/20"
+              >
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-muted font-mono text-[10px] font-bold text-muted-foreground">
+                  {i + 1}
+                </span>
+                <span
+                  className={`inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white ${
+                    PLATFORM_COLOR[post.platform] ?? 'bg-gray-500'
+                  }`}
+                >
+                  {PLATFORM_LABELS[post.platform] ?? post.platform}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">
+                    {post.contentTitle ?? 'Untitled'}
+                  </p>
+                  {post.published_at && (
+                    <p className="text-[10px] text-muted-foreground/60">
+                      Published {new Date(post.published_at).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+                <div className="flex shrink-0 items-center gap-3 text-[11px] tabular-nums text-muted-foreground">
+                  {post.views !== null && (
+                    <span className="inline-flex items-center gap-0.5">
+                      <Eye className="h-3 w-3" /> {formatNum(post.views)}
+                    </span>
+                  )}
+                  {post.likes !== null && (
+                    <span className="inline-flex items-center gap-0.5">
+                      <Heart className="h-3 w-3" /> {formatNum(post.likes)}
+                    </span>
+                  )}
+                  {post.comments !== null && (
+                    <span className="inline-flex items-center gap-0.5">
+                      <MessageCircle className="h-3 w-3" /> {formatNum(post.comments)}
+                    </span>
+                  )}
+                </div>
+                {post.url && (
+                  <a
+                    href={post.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 text-[10px] font-medium text-primary hover:underline"
+                  >
+                    View
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* ── Conversion funnel ── */}
       <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
         <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -217,7 +382,7 @@ export default async function AnalyticsPage() {
                     {i + 1}
                   </span>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">
-                    {stage.label}
+                    {stage.key === 'exported' ? 'Published' : stage.label}
                   </span>
                 </div>
                 <div className="flex items-baseline justify-between gap-2">
@@ -374,7 +539,7 @@ export default async function AnalyticsPage() {
         </section>
       </div>
 
-      {/* ── Platform + pipeline breakdown row ── */}
+      {/* ── Platform + draft state breakdown row ── */}
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="border-b border-border/50 px-5 py-3">
@@ -383,7 +548,9 @@ export default async function AnalyticsPage() {
             </p>
           </div>
           <div className="space-y-3 p-5">
-            {Object.keys(PLATFORM_LABELS).map((platform) => {
+            {Object.keys(PLATFORM_LABELS)
+              .filter((p) => (analytics.platformBreakdown[p] ?? 0) > 0 || ['tiktok', 'instagram_reels', 'youtube_shorts', 'linkedin'].includes(p))
+              .map((platform) => {
               const count = analytics.platformBreakdown[platform] ?? 0
               const pct = Math.round((count / maxPlatform) * 100)
               return (
@@ -408,7 +575,7 @@ export default async function AnalyticsPage() {
               )
             })}
             {Object.values(analytics.platformBreakdown).every((v) => v === 0) && (
-              <p className="text-xs text-muted-foreground">No outputs yet.</p>
+              <p className="text-xs text-muted-foreground">No drafts yet.</p>
             )}
           </div>
         </section>
@@ -416,7 +583,7 @@ export default async function AnalyticsPage() {
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="border-b border-border/50 px-5 py-3">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Pipeline state
+              Draft status
             </p>
           </div>
           <div className="space-y-3 p-5">
@@ -448,12 +615,12 @@ export default async function AnalyticsPage() {
         </section>
       </div>
 
-      {/* ── Top content ── */}
+      {/* ── Top content by stars ── */}
       {analytics.topContent.length > 0 && (
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="border-b border-border/50 px-5 py-3">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Top performing content
+              Top content by stars
             </p>
           </div>
           <ul className="divide-y divide-border/40">
@@ -484,17 +651,16 @@ export default async function AnalyticsPage() {
         </section>
       )}
 
-      {/* ── Footer note about engagement data ── */}
-      {analytics.totalContent > 0 && (
+      {/* ── Connect CTA (only when no engagement data yet) ── */}
+      {!hasEngagement && analytics.totalContent > 0 && (
         <div className="flex items-start gap-3 rounded-2xl border border-dashed border-border/60 bg-muted/20 p-4">
           <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/50" />
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-foreground">
-              Want engagement data (views, likes, comments)?
+              Want to see real engagement data here?
             </p>
             <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
-              Connect Upload-Post or add a YouTube Data API key in Settings to pull real
-              performance stats for your published posts.
+              Connect Upload-Post in AI Connections to publish posts and track views, likes, comments, and shares for each platform.
             </p>
           </div>
           <Link
@@ -561,6 +727,43 @@ function KpiCard({
         <p className="mt-0.5 text-[11px] text-muted-foreground/70">{helper}</p>
       </div>
     </div>
+  )
+}
+
+function EngagementStat({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  value: number
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1 p-4">
+      <Icon className="h-4 w-4 text-muted-foreground/60" />
+      <span className="font-mono text-2xl font-semibold tabular-nums">
+        {formatNum(value)}
+      </span>
+      <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
+        {label}
+      </span>
+    </div>
+  )
+}
+
+function MicroStat({
+  icon: Icon,
+  value,
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  value: number
+}) {
+  return (
+    <span className="inline-flex items-center gap-1 text-[11px] tabular-nums text-muted-foreground">
+      <Icon className="h-3 w-3" />
+      {formatNum(value)}
+    </span>
   )
 }
 
