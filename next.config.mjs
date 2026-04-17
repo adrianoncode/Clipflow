@@ -1,5 +1,3 @@
-import { withSentryConfig } from '@sentry/nextjs'
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -25,15 +23,13 @@ const nextConfig = {
   },
 }
 
-// Wrap in Sentry config — adds source-map upload + route tracing.
-// withSentryConfig is a no-op when SENTRY_* env vars are unset, so
-// deploys without Sentry credentials build normally.
-export default withSentryConfig(nextConfig, {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  silent: !process.env.CI,
-  widenClientFileUpload: true,
-  hideSourceMaps: true,
-  disableLogger: true,
-  automaticVercelMonitors: false,
-})
+// NOTE: `withSentryConfig` from @sentry/nextjs 10+ is incompatible with
+// Next 14.2 — the webpack plugin races with Next's build-trace collection
+// and leaves pages-manifest.json missing. Runtime Sentry (via
+// instrumentation.ts + app/global-error.tsx + sentry.*.config.ts) still
+// fires on every error and forwards to the DSN — we just lose
+// source-map upload at build time, which isn't critical for v1.
+//
+// Revisit once we upgrade to Next 15 (where Sentry SDK 10 is fully
+// supported via instrumentation-client.ts).
+export default nextConfig
