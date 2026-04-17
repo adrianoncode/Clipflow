@@ -33,6 +33,7 @@ export const getContentItem = cache(
       )
       .eq('id', id)
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .maybeSingle()
 
     if (error) {

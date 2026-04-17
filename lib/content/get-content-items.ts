@@ -41,6 +41,7 @@ export const getContentItems = cache(
       .from('content_items')
       .select('id, kind, status, title, source_url, created_at')
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -70,6 +71,7 @@ export const getContentItemsPaginated = cache(
       .from('content_items')
       .select('id, kind, status, title, source_url, created_at', { count: 'exact' })
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 

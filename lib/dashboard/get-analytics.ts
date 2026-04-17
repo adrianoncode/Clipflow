@@ -137,6 +137,7 @@ export async function getAnalytics(workspaceId: string): Promise<AnalyticsData> 
       .from('content_items')
       .select('id, title, created_at')
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .gte('created_at', sixMonthsAgo.toISOString()),
     // Fetch outputs WITH current_state (denormalized column populated by
     // trigger). Replaces the previous "fetch all output_states + scan in
@@ -145,6 +146,7 @@ export async function getAnalytics(workspaceId: string): Promise<AnalyticsData> 
       .from('outputs')
       .select('id, platform, content_id, is_starred, current_state, created_at')
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(5000),
     // Only pull recent state transitions — needed for stuck-draft
@@ -155,20 +157,27 @@ export async function getAnalytics(workspaceId: string): Promise<AnalyticsData> 
       .eq('workspace_id', workspaceId)
       .gte('created_at', sixtyDaysAgo.toISOString())
       .order('created_at', { ascending: false }),
-    supabase.from('content_items').select('id, title').eq('workspace_id', workspaceId),
+    supabase
+      .from('content_items')
+      .select('id, title')
+      .eq('workspace_id', workspaceId)
+      .is('deleted_at', null),
     supabase
       .from('content_items')
       .select('id', { count: 'exact', head: true })
-      .eq('workspace_id', workspaceId),
-    supabase
-      .from('outputs')
-      .select('id', { count: 'exact', head: true })
-      .eq('workspace_id', workspaceId),
+      .eq('workspace_id', workspaceId)
+      .is('deleted_at', null),
     supabase
       .from('outputs')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId)
-      .eq('is_starred', true),
+      .is('deleted_at', null),
+    supabase
+      .from('outputs')
+      .select('id', { count: 'exact', head: true })
+      .eq('workspace_id', workspaceId)
+      .eq('is_starred', true)
+      .is('deleted_at', null),
     supabase
       .from('scheduled_posts')
       .select('id, platform, status, scheduled_for, published_at, metadata, output_id')

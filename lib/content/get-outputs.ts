@@ -35,6 +35,7 @@ export const getOutputs = cache(
       .select('id, content_id, workspace_id, platform, body, metadata, created_at, updated_at')
       .eq('content_id', contentId)
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
 
     if (outputsError) {
       // eslint-disable-next-line no-console

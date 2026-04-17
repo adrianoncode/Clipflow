@@ -4,8 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { ok, fail, type ActionResult } from '@/lib/actions/result'
 
 /**
- * Deletes a single output row by id, scoped to the workspace.
- * CASCADE ON DELETE takes out the associated output_states rows automatically.
+ * Soft-delete a single output row. Sets `deleted_at` — the nightly
+ * reaper cron hard-deletes rows older than 30 days.
  * Used by per-platform regenerate (M5) — not the "regenerate all" flow,
  * which uses deleteOutputsForContent.
  */
@@ -17,9 +17,10 @@ export async function deleteSingleOutput(
 
   const { error } = await supabase
     .from('outputs')
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq('id', outputId)
     .eq('workspace_id', workspaceId)
+    .is('deleted_at', null)
 
   if (error) {
     // eslint-disable-next-line no-console

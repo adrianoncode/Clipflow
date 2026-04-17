@@ -309,6 +309,7 @@ export type Database = {
           transcript: string | null
           metadata: Json
           created_by: string
+          deleted_at: string | null
           created_at: string
           updated_at: string
         }
@@ -323,6 +324,7 @@ export type Database = {
           transcript?: string | null
           metadata?: Json
           created_by: string
+          deleted_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -337,6 +339,7 @@ export type Database = {
           transcript?: string | null
           metadata?: Json
           created_by?: string
+          deleted_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -353,6 +356,7 @@ export type Database = {
           is_starred: boolean
           scheduled_for: string | null
           current_state: string
+          deleted_at: string | null
           created_at: string
           updated_at: string
         }
@@ -366,6 +370,7 @@ export type Database = {
           is_starred?: boolean
           scheduled_for?: string | null
           current_state?: string
+          deleted_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -379,6 +384,7 @@ export type Database = {
           is_starred?: boolean
           scheduled_for?: string | null
           current_state?: string
+          deleted_at?: string | null
           created_at?: string
           updated_at?: string
         }

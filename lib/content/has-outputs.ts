@@ -15,6 +15,7 @@ export const hasOutputs = cache(
       .select('id')
       .eq('content_id', contentId)
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .limit(1)
 
     if (error) {

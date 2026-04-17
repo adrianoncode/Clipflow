@@ -63,27 +63,32 @@ export async function getWorkspaceStats(workspaceId: string): Promise<WorkspaceS
     supabase
       .from('content_items')
       .select('id', { count: 'exact', head: true })
-      .eq('workspace_id', workspaceId),
-    supabase
-      .from('outputs')
-      .select('id', { count: 'exact', head: true })
-      .eq('workspace_id', workspaceId),
+      .eq('workspace_id', workspaceId)
+      .is('deleted_at', null),
     supabase
       .from('outputs')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId)
-      .eq('is_starred', true),
+      .is('deleted_at', null),
+    supabase
+      .from('outputs')
+      .select('id', { count: 'exact', head: true })
+      .eq('workspace_id', workspaceId)
+      .eq('is_starred', true)
+      .is('deleted_at', null),
     // Approved outputs count now comes from outputs.current_state — no
     // more scanning the full output_states audit log.
     supabase
       .from('outputs')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId)
-      .eq('current_state', 'approved'),
+      .eq('current_state', 'approved')
+      .is('deleted_at', null),
     supabase
       .from('content_items')
       .select('id, title, status, kind, created_at')
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(8),
     // Single fetch of (platform, current_state) — serves both the platform
@@ -94,38 +99,45 @@ export async function getWorkspaceStats(workspaceId: string): Promise<WorkspaceS
       .from('outputs')
       .select('platform, current_state')
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .limit(5000),
     supabase
       .from('content_items')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .gte('created_at', startOfThisMonth),
     supabase
       .from('outputs')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .gte('created_at', startOfThisMonth),
     supabase
       .from('content_items')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .gte('created_at', startOfLastMonth)
       .lt('created_at', endOfLastMonth),
     supabase
       .from('outputs')
       .select('id', { count: 'exact', head: true })
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .gte('created_at', startOfLastMonth)
       .lt('created_at', endOfLastMonth),
     supabase
       .from('content_items')
       .select('created_at')
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .gte('created_at', sparklineStartIso),
     supabase
       .from('outputs')
       .select('created_at')
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .gte('created_at', sparklineStartIso),
   ])
 
