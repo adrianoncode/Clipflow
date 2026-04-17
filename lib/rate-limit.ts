@@ -71,4 +71,43 @@ export const RATE_LIMITS = {
   contentCreate: { limit: 10, windowMs: 60_000 },
   /** API routes: 30 per minute per user */
   api: { limit: 30, windowMs: 60_000 },
+
+  // ── Auth (pre-login, keyed by IP + email) ─────────────────────────
+  /** Password login: 5 attempts per 15 min per IP or email */
+  login: { limit: 5, windowMs: 15 * 60_000 },
+  /** Magic-link requests: 3 per 10 min per email (prevents email bombing) */
+  magicLink: { limit: 3, windowMs: 10 * 60_000 },
+  /** Signup: 3 per hour per IP (prevents signup spam) */
+  signup: { limit: 3, windowMs: 60 * 60_000 },
+  /** Password reset: 3 per hour per email */
+  passwordReset: { limit: 3, windowMs: 60 * 60_000 },
+
+  // ── Video / media pipelines (per workspace) ───────────────────────
+  /** Transcription: 10 per hour per workspace */
+  transcription: { limit: 10, windowMs: 60 * 60_000 },
+  /** Video rendering (Shotstack): 10 per hour per workspace */
+  videoRender: { limit: 10, windowMs: 60 * 60_000 },
+  /** Reframe / dub / avatar jobs: 10 per hour per workspace */
+  videoJob: { limit: 10, windowMs: 60 * 60_000 },
+  /** Voice clone + TTS: 20 per hour per workspace */
+  voiceJob: { limit: 20, windowMs: 60 * 60_000 },
+  /** B-Roll / captions: 30 per hour per workspace */
+  mediaJob: { limit: 30, windowMs: 60 * 60_000 },
+  /** Research / scrape: 30 per hour per workspace */
+  research: { limit: 30, windowMs: 60 * 60_000 },
 } as const
+
+/**
+ * Extract a stable client IP from Next.js request headers.
+ * Uses x-forwarded-for (Vercel sets this) with cf-connecting-ip
+ * fallback. Returns 'unknown' for missing headers so calls never throw.
+ *
+ * Caller must obtain headers via `headers()` from `next/headers`:
+ *   import { headers } from 'next/headers'
+ *   const ip = extractClientIp(headers())
+ */
+export function extractClientIp(h: { get: (k: string) => string | null }): string {
+  const forwarded = h.get('x-forwarded-for')
+  if (forwarded) return forwarded.split(',')[0]!.trim()
+  return h.get('cf-connecting-ip') ?? h.get('x-real-ip') ?? 'unknown'
+}

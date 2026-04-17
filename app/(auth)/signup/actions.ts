@@ -1,6 +1,6 @@
 'use server'
 
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
@@ -9,6 +9,7 @@ import { clientEnv } from '@/lib/env'
 import { createClient } from '@/lib/supabase/server'
 import { REFERRAL_COOKIE, REFERRAL_SOURCE_COOKIE } from '@/lib/referrals/constants'
 import { trackSignupReferral } from '@/lib/referrals/track-signup'
+import { checkRateLimit, extractClientIp, RATE_LIMITS } from '@/lib/rate-limit'
 
 const signupSchema = z.object({
   email: z.string().email('Please enter a valid email address.'),
@@ -29,6 +30,17 @@ export async function signupAction(_prev: SignupState, formData: FormData): Prom
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  // Cap per-IP signup attempts to stop spam / abuse accounts.
+  const ip = extractClientIp(headers())
+  const rateCheck = await checkRateLimit(
+    `signup:ip:${ip}`,
+    RATE_LIMITS.signup.limit,
+    RATE_LIMITS.signup.windowMs,
+  )
+  if (!rateCheck.ok) {
+    return { error: 'Too many signup attempts from your IP. Please try again later.' }
   }
 
   const supabase = createClient()

@@ -50,6 +50,34 @@ export async function sendPasswordResetAction(
 }
 
 /**
+ * Revoke all of the current user's sessions across every device.
+ * Useful after suspected password compromise — the admin Supabase API
+ * invalidates every refresh token for this user. The caller's current
+ * session also gets signed out (so they have to log in again).
+ */
+export async function signOutAllSessionsAction(
+  _prev: ProfileState,
+  _formData: FormData,
+): Promise<ProfileState> {
+  const user = await getUser()
+  if (!user) return { ok: false, error: 'Not authenticated.' }
+
+  const admin = createAdminClient()
+  // scope: 'global' signs out every session for this user (all devices + tabs).
+  const { error } = await admin.auth.admin.signOut(user.id, 'global')
+  if (error) {
+    return { ok: false, error: 'Could not sign out of all sessions.' }
+  }
+
+  // Also clear the current session's cookies locally so the redirect
+  // actually goes to /login without a stale cookie.
+  const supabase = createClient()
+  await supabase.auth.signOut()
+
+  redirect('/login?logged_out_everywhere=true')
+}
+
+/**
  * Permanently deletes the user's account and all associated data.
  * Cascades through: workspaces, content, outputs, subscriptions, profiles.
  * GDPR "right to be forgotten" compliance.

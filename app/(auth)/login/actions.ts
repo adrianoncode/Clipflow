@@ -1,10 +1,12 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit, extractClientIp, RATE_LIMITS } from '@/lib/rate-limit'
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address.'),
@@ -25,6 +27,21 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  // Rate-limit on both the IP and the email — an attacker rotating IPs
+  // still gets stopped on the target email, and an attacker enumerating
+  // emails still gets stopped on the source IP.
+  const ip = extractClientIp(headers())
+  const emailKey = parsed.data.email.toLowerCase()
+  const [ipCheck, emailCheck] = await Promise.all([
+    checkRateLimit(`login:ip:${ip}`, RATE_LIMITS.login.limit, RATE_LIMITS.login.windowMs),
+    checkRateLimit(`login:email:${emailKey}`, RATE_LIMITS.login.limit, RATE_LIMITS.login.windowMs),
+  ])
+  if (!ipCheck.ok || !emailCheck.ok) {
+    return {
+      error: 'Too many login attempts. Please wait 15 minutes and try again.',
+    }
   }
 
   const supabase = createClient()
