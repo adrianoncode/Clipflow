@@ -11,24 +11,10 @@ import {
 } from '@/components/pipeline/pipeline-board'
 import { getUser } from '@/lib/auth/get-user'
 import { createClient } from '@/lib/supabase/server'
+import { PLATFORM_LABELS, PLATFORM_SOFT_COLORS as PLATFORM_BADGE_COLORS } from '@/lib/platforms'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Pipeline' }
-
-
-const PLATFORM_LABELS: Record<string, string> = {
-  tiktok: 'TikTok',
-  instagram_reels: 'Reels',
-  youtube_shorts: 'Shorts',
-  linkedin: 'LinkedIn',
-}
-
-const PLATFORM_BADGE_COLORS: Record<string, string> = {
-  tiktok: 'bg-pink-100 text-pink-700',
-  instagram_reels: 'bg-purple-100 text-purple-700',
-  youtube_shorts: 'bg-red-100 text-red-700',
-  linkedin: 'bg-blue-100 text-blue-700',
-}
 
 const COLUMN_CONFIG: PipelineColumn[] = [
   {

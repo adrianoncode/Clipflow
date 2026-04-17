@@ -21,29 +21,12 @@ import {
 
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getAnalytics } from '@/lib/dashboard/get-analytics'
+import { PLATFORM_LABELS, PLATFORM_DOT_COLORS as PLATFORM_COLOR } from '@/lib/platforms'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Analytics' }
 
 const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
-
-const PLATFORM_LABELS: Record<string, string> = {
-  tiktok: 'TikTok',
-  instagram_reels: 'Reels',
-  instagram: 'Instagram',
-  youtube_shorts: 'Shorts',
-  youtube: 'YouTube',
-  linkedin: 'LinkedIn',
-}
-
-const PLATFORM_COLOR: Record<string, string> = {
-  tiktok: 'bg-pink-500',
-  instagram_reels: 'bg-purple-500',
-  instagram: 'bg-purple-500',
-  youtube_shorts: 'bg-red-500',
-  youtube: 'bg-red-500',
-  linkedin: 'bg-blue-500',
-}
 
 const STATE_COLOR: Record<string, string> = {
   draft: 'bg-zinc-400',

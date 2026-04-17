@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getReviewPageData } from '@/lib/review/get-review-page-data'
 import { ReviewCommentForm } from '@/components/review/review-comment-form'
 import { ReviewOutputCard } from '@/components/review/review-output-card'
+import { PLATFORM_LONG_LABELS as PLATFORM_LABELS } from '@/lib/platforms'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,13 +13,6 @@ interface ReviewPageProps {
 
 export async function generateMetadata({ params: _params }: ReviewPageProps) {
   return { title: 'Review Drafts — Clipflow' }
-}
-
-const PLATFORM_LABELS: Record<string, string> = {
-  tiktok: 'TikTok',
-  instagram_reels: 'Instagram Reels',
-  youtube_shorts: 'YouTube Shorts',
-  linkedin: 'LinkedIn',
 }
 
 export default async function ReviewPage({ params }: ReviewPageProps) {

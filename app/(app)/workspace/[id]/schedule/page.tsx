@@ -27,27 +27,10 @@ import {
   quickScheduleAction,
   reschedulePostAction,
 } from '@/app/(app)/workspace/[id]/schedule/scheduler-actions'
+import { PLATFORM_LABELS, PLATFORM_SOFT_COLORS as PLATFORM_BADGE } from '@/lib/platforms'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Schedule' }
-
-const PLATFORM_LABELS: Record<string, string> = {
-  tiktok: 'TikTok',
-  instagram: 'Instagram',
-  instagram_reels: 'Instagram',
-  linkedin: 'LinkedIn',
-  youtube: 'YouTube',
-  youtube_shorts: 'YouTube',
-}
-
-const PLATFORM_BADGE: Record<string, string> = {
-  tiktok: 'bg-pink-100 text-pink-700',
-  instagram: 'bg-purple-100 text-purple-700',
-  instagram_reels: 'bg-purple-100 text-purple-700',
-  linkedin: 'bg-blue-100 text-blue-700',
-  youtube: 'bg-red-100 text-red-700',
-  youtube_shorts: 'bg-red-100 text-red-700',
-}
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; Icon: typeof CheckCircle2 }> = {
   scheduled: { label: 'Scheduled', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200/60', Icon: Clock },

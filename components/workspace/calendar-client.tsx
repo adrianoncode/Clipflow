@@ -4,6 +4,12 @@ import Link from 'next/link'
 import { useState, useTransition, useCallback } from 'react'
 import { Eye, Heart, MessageCircle, Share2 } from 'lucide-react'
 
+import {
+  PLATFORM_LABELS,
+  PLATFORM_SOLID_COLORS as PLATFORM_COLORS,
+  PLATFORM_SOFT_COLORS as PLATFORM_BG,
+} from '@/lib/platforms'
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface ScheduledPost {
@@ -37,33 +43,6 @@ interface CalendarClientProps {
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────
-
-const PLATFORM_COLORS: Record<string, string> = {
-  tiktok: 'bg-pink-500 text-white',
-  instagram: 'bg-purple-500 text-white',
-  instagram_reels: 'bg-purple-500 text-white',
-  linkedin: 'bg-blue-600 text-white',
-  youtube: 'bg-red-500 text-white',
-  youtube_shorts: 'bg-red-500 text-white',
-}
-
-const PLATFORM_BG: Record<string, string> = {
-  tiktok: 'bg-pink-100 text-pink-800',
-  instagram: 'bg-purple-100 text-purple-800',
-  instagram_reels: 'bg-purple-100 text-purple-800',
-  linkedin: 'bg-blue-100 text-blue-800',
-  youtube: 'bg-red-100 text-red-800',
-  youtube_shorts: 'bg-red-100 text-red-800',
-}
-
-const PLATFORM_LABELS: Record<string, string> = {
-  tiktok: 'TikTok',
-  instagram: 'Instagram',
-  instagram_reels: 'Reels',
-  linkedin: 'LinkedIn',
-  youtube: 'YouTube',
-  youtube_shorts: 'Shorts',
-}
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 

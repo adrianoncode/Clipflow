@@ -22,13 +22,7 @@ import { SchedulePostButton } from '@/components/scheduler/schedule-post-button'
 import type { OutputRow } from '@/lib/content/get-outputs'
 import type { OutputPlatform } from '@/lib/supabase/types'
 import type { AbHookVariant, EngagementPrediction } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
-
-const PLATFORM_LABELS: Record<OutputPlatform, string> = {
-  tiktok: 'TikTok',
-  instagram_reels: 'Instagram Reels',
-  youtube_shorts: 'YouTube Shorts',
-  linkedin: 'LinkedIn',
-}
+import { PLATFORM_LONG_LABELS as PLATFORM_LABELS } from '@/lib/platforms'
 
 // Maps OutputPlatform to the platform key used by the social scheduler
 const SCHEDULER_PLATFORM: Record<OutputPlatform, string> = {

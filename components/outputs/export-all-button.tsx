@@ -2,17 +2,11 @@
 
 import { Button } from '@/components/ui/button'
 import type { OutputRow } from '@/lib/content/get-outputs'
+import { PLATFORM_LONG_LABELS as PLATFORM_LABELS } from '@/lib/platforms'
 
 interface ExportAllButtonProps {
   outputs: OutputRow[]
   contentTitle: string
-}
-
-const PLATFORM_LABELS: Record<string, string> = {
-  tiktok: 'TikTok',
-  instagram_reels: 'Instagram Reels',
-  youtube_shorts: 'YouTube Shorts',
-  linkedin: 'LinkedIn',
 }
 
 export function ExportAllButton({ outputs, contentTitle }: ExportAllButtonProps) {

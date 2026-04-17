@@ -9,20 +9,9 @@ import { FormMessage } from '@/components/ui/form-message'
 import { OutputCard } from '@/components/outputs/output-card'
 import type { OutputRow } from '@/lib/content/get-outputs'
 import type { OutputPlatform } from '@/lib/supabase/types'
+import { OUTPUT_PLATFORMS, PLATFORM_LONG_LABELS as PLATFORM_LABELS } from '@/lib/platforms'
 
-const PLATFORM_ORDER: readonly OutputPlatform[] = [
-  'tiktok',
-  'instagram_reels',
-  'youtube_shorts',
-  'linkedin',
-]
-
-const PLATFORM_LABELS: Record<OutputPlatform, string> = {
-  tiktok: 'TikTok',
-  instagram_reels: 'Instagram Reels',
-  youtube_shorts: 'YouTube Shorts',
-  linkedin: 'LinkedIn',
-}
+const PLATFORM_ORDER: readonly OutputPlatform[] = OUTPUT_PLATFORMS
 
 interface OutputsGridProps {
   outputs: OutputRow[]

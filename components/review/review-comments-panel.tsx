@@ -1,11 +1,5 @@
 import type { InternalReviewComment } from '@/lib/review/get-review-comments-for-content'
-
-const PLATFORM_LABELS: Record<string, string> = {
-  tiktok: 'TikTok',
-  instagram_reels: 'Instagram Reels',
-  youtube_shorts: 'YouTube Shorts',
-  linkedin: 'LinkedIn',
-}
+import { PLATFORM_LONG_LABELS as PLATFORM_LABELS } from '@/lib/platforms'
 
 function formatDate(iso: string): string {
   try {

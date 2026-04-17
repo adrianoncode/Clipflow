@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
+import { OUTPUT_PLATFORMS, PLATFORM_LONG_LABELS } from '@/lib/platforms'
 
 export interface Suggestion {
   id: string
@@ -26,14 +27,8 @@ const PRIORITY_ORDER: Record<Suggestion['priority'], number> = {
   low: 2,
 }
 
-const PLATFORM_LABELS: Record<string, string> = {
-  tiktok: 'TikTok',
-  instagram_reels: 'Instagram Reels',
-  youtube_shorts: 'YouTube Shorts',
-  linkedin: 'LinkedIn',
-}
-
-const ALL_PLATFORMS = ['tiktok', 'instagram_reels', 'youtube_shorts', 'linkedin']
+const PLATFORM_LABELS = PLATFORM_LONG_LABELS
+const ALL_PLATFORMS = OUTPUT_PLATFORMS
 
 export async function getSuggestions(workspaceId: string): Promise<Suggestion[]> {
   const supabase = await createClient()
