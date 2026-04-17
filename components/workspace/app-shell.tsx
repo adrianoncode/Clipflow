@@ -199,7 +199,7 @@ export function AppShell({
               className="mb-3 flex items-center justify-center gap-2 rounded-lg bg-primary py-2 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md active:translate-y-0"
             >
               <Plus className="h-4 w-4" />
-              New video
+              New content
             </Link>
 
             {/* Grouped navigation */}

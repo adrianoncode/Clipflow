@@ -29,6 +29,22 @@ export interface PipelineColumn {
   dotClass: string
 }
 
+/** Per-column hint explaining what the user should DO here */
+const COLUMN_HINTS: Record<PipelineStateKey, string> = {
+  draft: 'Select drafts → click Approve below',
+  review: 'Review these, then approve the best ones',
+  approved: 'Ready to publish — go to Schedule',
+  exported: 'Done — posted or exported',
+}
+
+/** Per-column empty state hint */
+const COLUMN_EMPTY: Record<PipelineStateKey, string> = {
+  draft: 'New AI drafts will appear here',
+  review: 'Move drafts here for team review',
+  approved: 'Approve drafts to move them here',
+  exported: 'Published outputs show up here',
+}
+
 interface PipelineBoardProps {
   workspaceId: string
   columns: PipelineColumn[]
@@ -144,16 +160,22 @@ export function PipelineBoard({ workspaceId, columns, grouped }: PipelineBoardPr
                     {items.length}
                   </span>
                 </div>
+                {/* Action hint */}
+                <p className="mt-1.5 text-[10px] text-muted-foreground/60">
+                  {COLUMN_HINTS[col.state]}
+                </p>
                 <div
-                  className={`mt-2 h-0.5 w-full rounded-full bg-gradient-to-r to-transparent ${col.accentClass}`}
+                  className={`mt-1.5 h-0.5 w-full rounded-full bg-gradient-to-r to-transparent ${col.accentClass}`}
                   aria-hidden
                 />
               </div>
 
               {/* Cards */}
               {items.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-border/50 bg-transparent p-6 text-center">
-                  <p className="text-[11px] text-muted-foreground/50">—</p>
+                <div className="rounded-xl border border-dashed border-border/50 bg-transparent px-4 py-5 text-center">
+                  <p className="text-[11px] text-muted-foreground/50">
+                    {COLUMN_EMPTY[col.state]}
+                  </p>
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">

@@ -269,6 +269,17 @@ export function CalendarClient({
         </div>
       )}
 
+      {/* How-to hint for first-time users */}
+      {unscheduledOutputs.length > 0 && scheduledPosts.length === 0 && (
+        <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/[0.04] px-4 py-3">
+          <span className="text-lg">👆</span>
+          <p className="text-xs text-muted-foreground">
+            <span className="font-semibold text-foreground">How to schedule: </span>
+            Grab an approved output from the left panel and drag it onto any date in the calendar. It will be scheduled for 10:00 AM — you can reschedule by dragging it to another date.
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col gap-6 xl:flex-row">
         {/* ── Unscheduled sidebar ─────────────────────────────────────── */}
         <div className="w-full shrink-0 xl:w-64">

@@ -201,7 +201,7 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
             className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25"
           >
             <Plus className="h-4 w-4" />
-            New video
+            Import
           </Link>
         </div>
       </div>
@@ -237,7 +237,7 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
           description="Generate outputs from your content first. They'll appear here as drafts ready for review."
           actionLabel="Go to Content"
           actionHref={`/workspace/${workspaceId}`}
-          secondaryLabel="Import new video"
+          secondaryLabel="Import content"
           secondaryHref={`/workspace/${workspaceId}/content/new`}
         />
       ) : (
