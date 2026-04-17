@@ -30,19 +30,19 @@ const TABS: {
     key: 'video',
     label: 'Video',
     icon: Video,
-    description: 'Upload an MP4, MOV, or other video file from your device.',
+    description: 'Upload a video file from your device.',
   },
   {
     key: 'audio',
     label: 'Audio',
     icon: Mic,
-    description: 'Record audio in your browser — auto-transcribed with Whisper.',
+    description: 'Record audio in your browser — auto-transcribed instantly.',
   },
   {
     key: 'link',
     label: 'Link',
     icon: Link2,
-    description: 'Paste a YouTube URL, website, or podcast RSS feed.',
+    description: 'Paste a YouTube URL, website, or podcast link.',
   },
   {
     key: 'text',
@@ -55,7 +55,7 @@ const TABS: {
 const LINK_MODES: { key: LinkMode; label: string; icon: typeof Youtube }[] = [
   { key: 'youtube', label: 'YouTube', icon: Youtube },
   { key: 'url', label: 'Website', icon: Globe },
-  { key: 'rss', label: 'Podcast RSS', icon: Rss },
+  { key: 'rss', label: 'Podcast', icon: Rss },
 ]
 
 export function NewContentTabs({ workspaceId, hasOpenAiKey }: NewContentTabsProps) {

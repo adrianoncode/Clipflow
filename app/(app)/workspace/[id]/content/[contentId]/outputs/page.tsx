@@ -189,58 +189,71 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
             <ArrowRight className="h-5 w-5 shrink-0 text-violet-400 transition-transform group-hover:translate-x-1 group-hover:text-violet-600" />
           </Link>
 
-          {/* Video Studio — prominent reminder that rendered MP4s are
-              the logical next step after text drafts. Sits directly
-              below the drafts so "only scripts come out" is impossible
-              to conclude. */}
-          <VideoStudioPanel
-            workspaceId={params.id}
-            contentId={params.contentId}
-            isVideo={item.kind === 'video'}
-            renderCount={renders.length}
-            trendingSoundsEnabled={planFeatures.trendingSounds}
-          />
+          {/* ── AI Tools & Advanced panels (collapsible) ── */}
+          <details className="group rounded-2xl border border-border/50 bg-card" open={false}>
+            <summary className="flex cursor-pointer items-center justify-between px-5 py-4 text-sm font-semibold [&::-webkit-details-marker]:hidden">
+              <span className="flex items-center gap-2">
+                <span className="transition-transform group-open:rotate-90">▶</span>
+                AI Tools & Advanced
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+                  {6 + (renders.length > 0 ? 1 : 0) + (reviewComments.length > 0 ? 1 : 0)}
+                </span>
+              </span>
+              <span className="text-xs font-normal text-muted-foreground">
+                Video Studio, AI Coach, SEO, Reviews & more
+              </span>
+            </summary>
+            <div className="space-y-4 border-t border-border/40 p-4">
+              {/* Video Studio — prominent reminder */}
+              <VideoStudioPanel
+                workspaceId={params.id}
+                contentId={params.contentId}
+                isVideo={item.kind === 'video'}
+                renderCount={renders.length}
+                trendingSoundsEnabled={planFeatures.trendingSounds}
+              />
 
-          {/* Persisted render history — only renders when there's at
-              least one render. Live-polls in-progress rows. */}
-          <RenderHistoryPanel initialRenders={renders} />
+              {/* Render history */}
+              <RenderHistoryPanel initialRenders={renders} />
 
-          <AiCoachPanel
-            workspaceId={params.id}
-            outputBodies={outputs
-              .map((o) => `[${o.platform}]\n${o.body ?? ''}`)
-              .join('\n\n---\n\n')}
-          />
-          <SeoPanel
-            workspaceId={params.id}
-            contentId={params.contentId}
-            initialSeo={
-              ((outputs[0]?.metadata as Record<string, unknown> | null)?.seo as null | { primary_keyword: string; secondary_keywords: string[]; seo_title: string; meta_description: string; hashtag_strategy: string }) ?? null
-            }
-          />
-          <ReviewLinkPanel
-            workspaceId={params.id}
-            contentId={params.contentId}
-            links={reviewLinks}
-          />
-          <ReviewCommentsPanel comments={reviewComments} />
+              <AiCoachPanel
+                workspaceId={params.id}
+                outputBodies={outputs
+                  .map((o) => `[${o.platform}]\n${o.body ?? ''}`)
+                  .join('\n\n---\n\n')}
+              />
+              <SeoPanel
+                workspaceId={params.id}
+                contentId={params.contentId}
+                initialSeo={
+                  ((outputs[0]?.metadata as Record<string, unknown> | null)?.seo as null | { primary_keyword: string; secondary_keywords: string[]; seo_title: string; meta_description: string; hashtag_strategy: string }) ?? null
+                }
+              />
+              <ReviewLinkPanel
+                workspaceId={params.id}
+                contentId={params.contentId}
+                links={reviewLinks}
+              />
+              <ReviewCommentsPanel comments={reviewComments} />
 
-          {/* ── Editor Export — CapCut, Premiere etc. ── */}
-          <EditorExportPanel
-            contentId={params.contentId}
-            contentTitle={title}
-            transcript={item.transcript ?? ''}
-            srt={((item.metadata as Record<string, unknown> | null)?.srt as string) ?? null}
-            vtt={((item.metadata as Record<string, unknown> | null)?.vtt as string) ?? null}
-            clips={((item.metadata as Record<string, unknown> | null)?.best_clips as Array<{
-              quote: string
-              reason: string
-              position_pct: number
-              type: string
-              estimated_duration: string
-            }>) ?? null}
-            estimatedDurationSec={((item.metadata as Record<string, unknown> | null)?.duration_seconds as number) ?? null}
-          />
+              {/* Editor Export — CapCut, Premiere etc. */}
+              <EditorExportPanel
+                contentId={params.contentId}
+                contentTitle={title}
+                transcript={item.transcript ?? ''}
+                srt={((item.metadata as Record<string, unknown> | null)?.srt as string) ?? null}
+                vtt={((item.metadata as Record<string, unknown> | null)?.vtt as string) ?? null}
+                clips={((item.metadata as Record<string, unknown> | null)?.best_clips as Array<{
+                  quote: string
+                  reason: string
+                  position_pct: number
+                  type: string
+                  estimated_duration: string
+                }>) ?? null}
+                estimatedDurationSec={((item.metadata as Record<string, unknown> | null)?.duration_seconds as number) ?? null}
+              />
+            </div>
+          </details>
 
           {/* ── Next Steps — bridge to Pipeline & Schedule ── */}
           <div className="rounded-2xl border border-border/50 bg-card">

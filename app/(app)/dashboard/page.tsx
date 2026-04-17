@@ -172,7 +172,7 @@ export default async function DashboardPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-semibold">{pendingReview} draft{pendingReview !== 1 ? 's' : ''} waiting for review</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">Approve, edit, or star your best outputs.</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Review and pick your favorites.</p>
               </div>
               <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20">
                 Review <ArrowRight className="h-3.5 w-3.5" />
@@ -202,7 +202,7 @@ export default async function DashboardPage() {
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {[
                 { key: 'content', label: 'Videos', value: stats.totalContent, thisMonth: stats.contentThisMonth, lastMonth: stats.contentLastMonth, icon: Video, spark: stats.contentByDay, href: `/workspace/${workspace.id}`, color: 'text-violet-600 bg-violet-50' },
-                { key: 'outputs', label: 'Drafts', value: stats.totalOutputs, thisMonth: stats.outputsThisMonth, lastMonth: stats.outputsLastMonth, icon: Layers, spark: stats.outputsByDay, href: `/workspace/${workspace.id}/pipeline`, color: 'text-blue-600 bg-blue-50' },
+                { key: 'outputs', label: 'AI Drafts', value: stats.totalOutputs, thisMonth: stats.outputsThisMonth, lastMonth: stats.outputsLastMonth, icon: Layers, spark: stats.outputsByDay, href: `/workspace/${workspace.id}/pipeline`, color: 'text-blue-600 bg-blue-50' },
                 { key: 'approved', label: 'Approved', value: stats.approvedOutputs, thisMonth: 0, lastMonth: 0, icon: CheckCircle2, spark: null, href: `/workspace/${workspace.id}/pipeline`, color: 'text-emerald-600 bg-emerald-50' },
                 { key: 'starred', label: 'Starred', value: stats.starredOutputs, thisMonth: 0, lastMonth: 0, icon: Star, spark: null, href: `/workspace/${workspace.id}/pipeline`, color: 'text-amber-600 bg-amber-50' },
               ].map((m) => (
@@ -331,7 +331,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold">Drafts</span>
+                      <span className="text-[11px] font-semibold">AI Drafts</span>
                       <span className="font-mono text-[10px] font-bold tabular-nums text-muted-foreground">
                         {usage.outputsThisMonth}{planDef.limits.outputsPerMonth !== -1 ? ` / ${planDef.limits.outputsPerMonth}` : ' / \u221e'}
                       </span>

@@ -48,7 +48,7 @@ export async function initiateComposioConnection(
   const appSlug = COMPOSIO_APP_SLUGS[integrationId]
   if (!appSlug) return { error: `Unknown integration: ${integrationId}` }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://clipflow-gjjc.vercel.app'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://clipflow.to'
   const redirectUri = `${appUrl}/api/integrations/callback`
 
   try {

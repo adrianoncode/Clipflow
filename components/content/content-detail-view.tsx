@@ -36,6 +36,7 @@ import { ShowNotesPanel } from '@/components/content/show-notes-panel'
 import { NewsletterPanel } from '@/components/content/newsletter-panel'
 import { ClipFinder } from '@/components/content/clip-finder'
 import type { SentimentResult, BestClip } from '@/app/(app)/workspace/[id]/content/[contentId]/actions'
+import { AutoGenerateTrigger } from '@/components/content/auto-generate-trigger'
 import { DeleteContentButton } from '@/components/content/delete-content-button'
 import { EditorExportPanel } from '@/components/content/editor-export-panel'
 import { RenameContentForm } from '@/components/content/rename-content-form'
@@ -305,6 +306,14 @@ export function ContentDetailView({
           </CardHeader>
         </Card>
       ) : null}
+
+      {/* ── Auto-generate trigger (fires once when content becomes ready) ── */}
+      <AutoGenerateTrigger
+        workspaceId={workspaceId}
+        contentId={item.id}
+        isReady={isReady}
+        hasOutputs={hasExistingOutputs}
+      />
 
       {/* ── Tab nav (only show when transcript is ready) ── */}
       {hasTranscript && (

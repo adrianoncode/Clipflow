@@ -149,7 +149,7 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
             </div>
             <div className="min-w-0">
               <p className="text-xs font-bold">Video Studio</p>
-              <p className="text-[10px] text-muted-foreground">Render MP4s</p>
+              <p className="text-[10px] text-muted-foreground">Create video clips</p>
             </div>
             <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/30 transition-transform group-hover:translate-x-0.5" />
           </Link>

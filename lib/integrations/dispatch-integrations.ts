@@ -188,7 +188,7 @@ async function _dispatch(
     )
   }
 
-  // ── Composio OAuth integrations (Notion, Sheets, Airtable, LinkedIn) ──
+  // ── Composio OAuth integrations (Notion, Sheets, LinkedIn) ─────────
   tasks.push(
     dispatchComposioActions(workspaceId, event, payload).catch((err) => {
       // eslint-disable-next-line no-console

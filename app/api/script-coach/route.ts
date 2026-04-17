@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   }
 
   // Rate limit: 10 coach requests per minute per user
-  const rl = checkRateLimit(`coach:${user.id}`, RATE_LIMITS.scriptCoach.limit, RATE_LIMITS.scriptCoach.windowMs)
+  const rl = await checkRateLimit(`coach:${user.id}`, RATE_LIMITS.scriptCoach.limit, RATE_LIMITS.scriptCoach.windowMs)
   if (!rl.ok) {
     return NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 })
   }

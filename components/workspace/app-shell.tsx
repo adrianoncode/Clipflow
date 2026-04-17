@@ -77,7 +77,7 @@ export function AppShell({
       label: 'Workflow',
       items: [
         { href: `/workspace/${currentWorkspaceId}`, label: 'Content', icon: FileVideo },
-        { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Import', icon: Sparkles },
+        { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Add content', icon: Sparkles },
         { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: CheckSquare },
         { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Send },
         { href: `/workspace/${currentWorkspaceId}/calendar`, label: 'Calendar', icon: CalendarDays },
@@ -110,7 +110,7 @@ export function AppShell({
   // Mobile: 4 core items + More
   const mobileItems: NavItem[] = [
     { href: `/workspace/${currentWorkspaceId}`, label: 'Content', icon: FileVideo },
-    { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Import', icon: Sparkles },
+    { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Add content', icon: Sparkles },
     { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: CheckSquare },
     { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Send },
   ]

@@ -98,7 +98,7 @@ console.log('\n━━━━━━━━━━━━━━━━━━━━━�
 console.log('\nNext steps:')
 console.log('1. Copy the lines above into Vercel env vars')
 console.log('2. In Stripe Dashboard → Developers → Webhooks:')
-console.log('   Add endpoint: https://clipflow-gjjc.vercel.app/api/stripe/webhook')
+console.log('   Add endpoint: https://clipflow.to/api/stripe/webhook')
 console.log('   Events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted')
 console.log('   Copy the "Signing secret" → add to Vercel as STRIPE_WEBHOOK_SECRET')
 console.log('3. Add your STRIPE_SECRET_KEY to Vercel env vars')

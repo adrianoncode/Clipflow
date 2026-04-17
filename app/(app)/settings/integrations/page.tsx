@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Plug, Send, Zap, Check } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
+import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { createClient } from '@/lib/supabase/server'
 import { ConnectDialog } from '@/components/integrations/connect-dialog'
 
@@ -19,6 +20,8 @@ interface IntegrationDef {
   name: string
   connectionType: ConnectionType
   benefit: string
+  /** Short trigger description shown when connected */
+  trigger?: string
   /** Brand letter / symbol shown in the icon square */
   letter: string
   /** Tailwind bg class for the icon */
@@ -31,15 +34,16 @@ interface IntegrationDef {
 
 const GROUPS: { title: string; subtitle: string; color: string; items: IntegrationDef[] }[] = [
   {
-    title: 'One-click OAuth',
-    subtitle: 'Connect in seconds — no keys to copy',
+    title: 'Quick connect',
+    subtitle: 'Sign in with your account — done in seconds',
     color: 'bg-violet-500',
     items: [
       {
         id: 'notion',
         name: 'Notion',
         connectionType: 'oauth',
-        benefit: 'Sync AI outputs straight into any Notion database.',
+        benefit: 'Send your generated content and ideas straight to Notion.',
+        trigger: 'Fires when you approve or export content',
         letter: 'N',
         iconBg: 'bg-zinc-900',
         iconText: 'text-white',
@@ -48,7 +52,8 @@ const GROUPS: { title: string; subtitle: string; color: string; items: Integrati
         id: 'google-drive',
         name: 'Google Drive',
         connectionType: 'oauth',
-        benefit: 'Import source videos and docs from Drive.',
+        benefit: 'Import videos and documents directly from Drive.',
+        trigger: 'Use when importing new content',
         letter: 'G',
         iconBg: 'bg-gradient-to-br from-blue-500 via-green-500 to-yellow-400',
         iconText: 'text-white',
@@ -57,7 +62,8 @@ const GROUPS: { title: string; subtitle: string; color: string; items: Integrati
         id: 'google-sheets',
         name: 'Google Sheets',
         connectionType: 'oauth',
-        benefit: 'Export analytics and content calendar to a Sheet.',
+        benefit: 'Export your content schedule and metrics to Sheets.',
+        trigger: 'Adds a row when you approve or export content',
         letter: 'S',
         iconBg: 'bg-emerald-600',
         iconText: 'text-white',
@@ -66,7 +72,8 @@ const GROUPS: { title: string; subtitle: string; color: string; items: Integrati
         id: 'linkedin',
         name: 'LinkedIn',
         connectionType: 'oauth',
-        benefit: 'Auto-publish exported LinkedIn outputs directly.',
+        benefit: 'Share your generated posts to LinkedIn automatically.',
+        trigger: 'Posts when you export LinkedIn content',
         letter: 'in',
         iconBg: 'bg-[#0A66C2]',
         iconText: 'text-white',
@@ -75,14 +82,15 @@ const GROUPS: { title: string; subtitle: string; color: string; items: Integrati
   },
   {
     title: 'Notifications',
-    subtitle: 'Get pinged when renders and outputs are ready',
+    subtitle: 'Get alerts when your videos and content are ready',
     color: 'bg-indigo-500',
     items: [
       {
         id: 'slack',
         name: 'Slack',
         connectionType: 'webhook',
-        benefit: 'Post render-complete and output-ready alerts to any channel.',
+        benefit: 'Get Slack notifications when your content is ready.',
+        trigger: 'Notifies on approve, export & publish',
         letter: '#',
         iconBg: 'bg-[#4A154B]',
         iconText: 'text-white',
@@ -91,7 +99,8 @@ const GROUPS: { title: string; subtitle: string; color: string; items: Integrati
         id: 'discord',
         name: 'Discord',
         connectionType: 'webhook',
-        benefit: 'Announce new content drops to your Discord server.',
+        benefit: 'Notify your team on Discord when new content is ready.',
+        trigger: 'Notifies on approve, export & publish',
         letter: '◈',
         iconBg: 'bg-[#5865F2]',
         iconText: 'text-white',
@@ -99,15 +108,16 @@ const GROUPS: { title: string; subtitle: string; color: string; items: Integrati
     ],
   },
   {
-    title: 'Publishing',
-    subtitle: 'Push finished content straight to your platforms',
+    title: 'Publishing & tracking',
+    subtitle: 'Send content to your blog, newsletter, or project tracker',
     color: 'bg-orange-500',
     items: [
       {
         id: 'airtable',
         name: 'Airtable',
         connectionType: 'api_key',
-        benefit: 'Keep your content calendar in Airtable in sync.',
+        benefit: 'Automatically log every approved piece to your Airtable base.',
+        trigger: 'Adds a row on approve, export & publish',
         letter: 'A',
         iconBg: 'bg-gradient-to-br from-cyan-400 to-teal-500',
         iconText: 'text-white',
@@ -116,7 +126,8 @@ const GROUPS: { title: string; subtitle: string; color: string; items: Integrati
         id: 'beehiiv',
         name: 'Beehiiv',
         connectionType: 'api_key',
-        benefit: 'Push newsletter drafts directly into your Beehiiv publication.',
+        benefit: 'Send article drafts straight to your Beehiiv newsletter.',
+        trigger: 'Creates a draft when you export content',
         letter: 'B',
         iconBg: 'bg-gradient-to-br from-orange-400 to-red-500',
         iconText: 'text-white',
@@ -125,7 +136,8 @@ const GROUPS: { title: string; subtitle: string; color: string; items: Integrati
         id: 'wordpress',
         name: 'WordPress',
         connectionType: 'api_key',
-        benefit: 'Auto-publish blog posts from AI outputs to your WP site.',
+        benefit: 'Create blog post drafts on your WordPress site automatically.',
+        trigger: 'Creates a draft when you export content',
         letter: 'W',
         iconBg: 'bg-[#21759B]',
         iconText: 'text-white',
@@ -134,7 +146,8 @@ const GROUPS: { title: string; subtitle: string; color: string; items: Integrati
         id: 'medium',
         name: 'Medium',
         connectionType: 'api_key',
-        benefit: 'One-click publish polished articles to Medium.',
+        benefit: 'Publish article drafts directly to your Medium account.',
+        trigger: 'Creates a draft when you export content',
         letter: 'M',
         iconBg: 'bg-zinc-900',
         iconText: 'text-white',
@@ -143,14 +156,14 @@ const GROUPS: { title: string; subtitle: string; color: string; items: Integrati
   },
   {
     title: 'Automation',
-    subtitle: 'Wire Clipflow into any workflow',
+    subtitle: 'Connect Clipflow with your favorite automation tools',
     color: 'bg-amber-500',
     items: [
       {
         id: 'zapier',
         name: 'Zapier',
         connectionType: 'managed',
-        benefit: 'Trigger any Zap when renders or outputs are ready.',
+        benefit: 'Automate anything — trigger a Zap when content is ready.',
         letter: 'Z',
         iconBg: 'bg-[#FF4A00]',
         iconText: 'text-white',
@@ -159,7 +172,7 @@ const GROUPS: { title: string; subtitle: string; color: string; items: Integrati
         id: 'make',
         name: 'Make',
         connectionType: 'managed',
-        benefit: 'Trigger Make scenarios from Clipflow events.',
+        benefit: 'Build custom automations when content is approved or published.',
         letter: 'M',
         iconBg: 'bg-gradient-to-br from-violet-600 to-purple-700',
         iconText: 'text-white',
@@ -175,7 +188,7 @@ const GROUPS: { title: string; subtitle: string; color: string; items: Integrati
         id: 'zoom',
         name: 'Zoom',
         connectionType: 'coming_soon',
-        benefit: 'Auto-import meeting recordings for transcript + repurposing.',
+        benefit: 'Auto-import meeting recordings and repurpose them into content.',
         letter: 'Z',
         iconBg: 'bg-[#2D8CFF]',
         iconText: 'text-white',
@@ -194,7 +207,11 @@ export default async function IntegrationsPage({
   const user = await getUser()
   if (!user) redirect('/login')
 
-  const workspaceId = cookies().get(WORKSPACE_COOKIE)?.value ?? ''
+  const [workspaces] = await Promise.all([getWorkspaces()])
+  const cookieWorkspaceId = cookies().get(WORKSPACE_COOKIE)?.value
+  const personal = workspaces.find((w) => w.type === 'personal') ?? workspaces[0]
+  const currentWorkspace = workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal
+  const workspaceId = currentWorkspace?.id ?? ''
 
   let connectedIds = new Set<string>()
   if (workspaceId) {
@@ -230,7 +247,7 @@ export default async function IntegrationsPage({
           <div>
             <h1 className="text-lg font-bold tracking-tight">Integrations</h1>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Connect Clipflow to the tools you already use. OAuth integrations take one click.
+              Connect Clipflow to the tools you already use. Most take just one click.
             </p>
           </div>
         </div>
@@ -257,10 +274,14 @@ export default async function IntegrationsPage({
             <p className="font-semibold text-destructive">Connection failed</p>
             <p className="mt-0.5 text-xs text-muted-foreground">
               {urlError === 'session_expired'
-                ? 'Session timed out — click Connect again.'
+                ? 'Took too long — click Connect to try again.'
                 : urlError === 'auth_cancelled'
-                  ? 'Sign-in cancelled — try again when ready.'
-                  : decodeURIComponent(urlError)}
+                  ? 'Sign-in was cancelled — try again when ready.'
+                  : urlError === 'missing_params'
+                    ? 'Something went wrong. Please refresh and try again.'
+                    : urlError === 'not_oauth'
+                      ? 'This integration uses a different setup — check below.'
+                      : decodeURIComponent(urlError)}
             </p>
           </div>
         </div>
@@ -272,9 +293,11 @@ export default async function IntegrationsPage({
           </div>
           <div>
             <p className="font-semibold text-emerald-800">
-              {urlConnected.replace(/-/g, ' ')} connected
+              {urlConnected.replace(/-/g, ' ')} connected!
             </p>
-            <p className="mt-0.5 text-xs text-emerald-700">Ready to use across Clipflow.</p>
+            <p className="mt-0.5 text-xs text-emerald-700">
+              This will activate automatically when you approve, export, or publish content.
+            </p>
           </div>
         </div>
       )}
@@ -287,13 +310,13 @@ export default async function IntegrationsPage({
             <Send className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <p className="font-semibold">Social publishing → TikTok, Instagram, YouTube, LinkedIn</p>
+            <p className="font-semibold">Publish to TikTok, Instagram, YouTube & LinkedIn</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Set up in{' '}
+              Social platforms use a separate setup.{' '}
               <Link href="/settings/ai-keys" className="font-semibold text-primary underline-offset-2 hover:underline">
-                API Keys → Publishing
+                Set up publishing →
               </Link>
-              {' '}via Upload-Post. One key, all four platforms, no OAuth needed.
+              {' '}One key covers all four platforms.
             </p>
           </div>
         </div>
@@ -360,6 +383,11 @@ export default async function IntegrationsPage({
                     <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                       {integration.benefit}
                     </p>
+                    {isConnected && integration.trigger && (
+                      <p className="mt-1.5 rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-medium text-emerald-700">
+                        {integration.trigger}
+                      </p>
+                    )}
                   </div>
 
                   {/* Action */}

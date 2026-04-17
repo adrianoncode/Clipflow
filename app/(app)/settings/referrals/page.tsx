@@ -35,7 +35,7 @@ export default async function ReferralsPage() {
     )
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://clipflow.io'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://clipflow.to'
   const link = `${baseUrl}/signup?ref=${code}`
 
   return (

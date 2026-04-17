@@ -27,7 +27,7 @@ export async function sendReferralConversionEmail(
     return
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://clipflow.io'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://clipflow.to'
   const referralsUrl = `${baseUrl}/settings/referrals`
   const greeting = params.toName ? `Hi ${params.toName},` : 'Hi,'
   const subject = `🎉 ${params.refereeDisplay} signed up — you're saving ${REFERRAL_DISCOUNT_PERCENT}%`

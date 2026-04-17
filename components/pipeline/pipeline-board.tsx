@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Check } from 'lucide-react'
 
 import { PipelineCard } from '@/components/pipeline/pipeline-card'
 import { PipelineBulkBar } from '@/components/pipeline/pipeline-bulk-bar'
@@ -46,16 +47,95 @@ export function PipelineBoard({ workspaceId, columns, grouped }: PipelineBoardPr
     })
   }
 
+  function toggleColumn(state: PipelineStateKey) {
+    const items = grouped[state]
+    if (items.length === 0) return
+    const columnIds = items.map((i) => i.id)
+    const allSelected = columnIds.every((id) => selected.has(id))
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (allSelected) {
+        columnIds.forEach((id) => next.delete(id))
+      } else {
+        columnIds.forEach((id) => next.add(id))
+      }
+      return next
+    })
+  }
+
+  function selectAll() {
+    const allIds = Object.values(grouped).flatMap((items) => items.map((i) => i.id))
+    setSelected(new Set(allIds))
+  }
+
+  const totalItems = Object.values(grouped).reduce((sum, items) => sum + items.length, 0)
+
   return (
     <>
+      {/* Quick select bar — only show when there are items and nothing selected yet */}
+      {totalItems > 0 && selected.size === 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={selectAll}
+            className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-card px-3 py-1.5 text-[11px] font-semibold text-muted-foreground transition-all hover:border-primary/30 hover:text-primary"
+          >
+            <Check className="h-3 w-3" />
+            Select all ({totalItems})
+          </button>
+          {(['draft', 'review', 'approved'] as const).map((state) => {
+            const count = grouped[state].length
+            if (count === 0) return null
+            const labels: Record<string, string> = {
+              draft: 'All drafts',
+              review: 'All in review',
+              approved: 'All approved',
+            }
+            return (
+              <button
+                key={state}
+                type="button"
+                onClick={() => toggleColumn(state)}
+                className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-card px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition-all hover:border-primary/30 hover:text-primary"
+              >
+                {labels[state]} ({count})
+              </button>
+            )
+          })}
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {columns.map((col) => {
           const items = grouped[col.state]
+          const columnIds = items.map((i) => i.id)
+          const allColumnSelected = items.length > 0 && columnIds.every((id) => selected.has(id))
+          const someColumnSelected = items.length > 0 && columnIds.some((id) => selected.has(id))
+
           return (
             <div key={col.state} className="flex flex-col gap-3">
-              {/* Column header */}
+              {/* Column header with select-all checkbox */}
               <div className="rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5">
                 <div className="flex items-center gap-2">
+                  {items.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => toggleColumn(col.state)}
+                      aria-label={allColumnSelected ? `Deselect all ${col.label}` : `Select all ${col.label}`}
+                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-all ${
+                        allColumnSelected
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : someColumnSelected
+                            ? 'border-primary/50 bg-primary/20'
+                            : 'border-border/70 bg-background hover:border-primary/40'
+                      }`}
+                    >
+                      {allColumnSelected && <Check className="h-3 w-3" strokeWidth={3} />}
+                      {someColumnSelected && !allColumnSelected && (
+                        <span className="h-1.5 w-1.5 rounded-sm bg-primary" />
+                      )}
+                    </button>
+                  )}
                   <span className={`h-2 w-2 rounded-full ${col.dotClass}`} />
                   <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">
                     {col.label}

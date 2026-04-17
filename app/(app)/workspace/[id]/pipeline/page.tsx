@@ -39,7 +39,7 @@ const COLUMN_CONFIG: PipelineColumn[] = [
   },
   {
     state: 'review',
-    label: 'In Review',
+    label: 'Ready to review',
     accentClass: 'from-amber-400',
     dotClass: 'bg-amber-400',
   },
@@ -180,7 +180,7 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
           <h1 className="text-xl font-bold tracking-tight">Pipeline</h1>
           <p className="text-sm text-muted-foreground">
             {totalCount === 0
-              ? 'Generated outputs show up here — move them through the review flow.'
+              ? 'Your AI-generated drafts appear here. Review them and approve the ones you like.'
               : `${totalCount} output${totalCount === 1 ? '' : 's'} · ${reviewCount} in review · ${approvedCount} approved`}
           </p>
         </div>

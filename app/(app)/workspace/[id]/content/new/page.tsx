@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { NewContentTabs } from '@/components/content/new-content-tabs'
+import { SmartImportBox } from '@/components/content/smart-import-box'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 
@@ -50,20 +51,33 @@ export default async function NewContentPage({ params }: NewContentPageProps) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl p-4 sm:p-8">
+    <div className="mx-auto w-full max-w-2xl space-y-4 p-4 sm:p-8">
+      {/* Smart Import — paste anything, Clipflow figures it out */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle className="text-2xl">New content</CardTitle>
           <CardDescription>
-            Upload a video or paste a script — we&apos;ll store it in{' '}
-            <span className="font-medium">{workspace.name}</span> and get it ready for
-            repurposing.
+            Paste a YouTube link, website URL, or your script — Clipflow detects the
+            format and starts processing automatically.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <NewContentTabs workspaceId={params.id} hasOpenAiKey={hasOpenAiKey} />
+          <SmartImportBox workspaceId={params.id} hasOpenAiKey={hasOpenAiKey} />
         </CardContent>
       </Card>
+
+      {/* Advanced options — full tab UI for upload, audio recording, RSS etc. */}
+      <details className="group">
+        <summary className="flex cursor-pointer items-center gap-2 px-1 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
+          <span className="transition-transform group-open:rotate-90">▶</span>
+          More options (video upload, audio recording, podcast RSS)
+        </summary>
+        <Card className="mt-2">
+          <CardContent className="pt-6">
+            <NewContentTabs workspaceId={params.id} hasOpenAiKey={hasOpenAiKey} />
+          </CardContent>
+        </Card>
+      </details>
     </div>
   )
 }

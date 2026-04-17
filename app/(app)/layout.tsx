@@ -45,7 +45,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const currentWorkspace =
     workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://clipflow.io'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://clipflow.to'
   const referralLink = referralCode ? `${baseUrl}/signup?ref=${referralCode}` : null
 
   // Know the plan so the referral card can tailor its wording — free users

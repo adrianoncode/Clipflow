@@ -43,9 +43,12 @@ export async function getSubscription(workspaceId: string): Promise<Subscription
 
 /**
  * Admin email(s) that always get agency-tier access, regardless of Stripe.
- * Used for the founder's own testing. Remove when Stripe billing is live.
+ * Set via ADMIN_EMAILS env var (comma-separated). Empty = no overrides.
  */
-const ADMIN_EMAILS = ['adrianberisha680@gmail.com']
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
+  .split(',')
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean)
 
 /**
  * Returns just the plan name for a workspace — cheap shortcut when you
@@ -71,7 +74,7 @@ export async function getWorkspacePlan(workspaceId: string): Promise<BillingPlan
           .eq('id', ws.owner_id)
           .maybeSingle()
 
-        if (profile?.email && ADMIN_EMAILS.includes(profile.email)) {
+        if (profile?.email && ADMIN_EMAILS.includes(profile.email.toLowerCase())) {
           return 'agency'
         }
       }

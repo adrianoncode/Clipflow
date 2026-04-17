@@ -19,7 +19,7 @@ export async function fetchRssFeed(url: string): Promise<RssFetchResult> {
   let res: Response
   try {
     res = await fetch(url, {
-      headers: { 'User-Agent': 'Clipflow/1.0 (+https://clipflow.io)' },
+      headers: { 'User-Agent': 'Clipflow/1.0 (+https://clipflow.to)' },
       next: { revalidate: 0 },
     })
   } catch {

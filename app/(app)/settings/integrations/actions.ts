@@ -25,7 +25,7 @@ export async function saveIntegrationAction(
   const workspaceId = formData.get('workspace_id')?.toString() ?? ''
   const integrationId = formData.get('integration_id')?.toString() ?? ''
 
-  if (!workspaceId || !integrationId) return { ok: false, error: 'Missing data.' }
+  if (!workspaceId || !integrationId) return { ok: false, error: 'Something went wrong. Please refresh and try again.' }
 
   // Collect all config fields (any field starting with "config_")
   const config: Record<string, string> = {}
@@ -36,7 +36,7 @@ export async function saveIntegrationAction(
   }
 
   if (Object.keys(config).length === 0) {
-    return { ok: false, error: 'Please fill in the required fields.' }
+    return { ok: false, error: 'Please fill in all the fields above, then try again.' }
   }
 
   const supabase = createClient()
@@ -64,10 +64,71 @@ export async function saveIntegrationAction(
     })
     .eq('id', workspaceId)
 
-  if (error) return { ok: false, error: error.message }
+  if (error) return { ok: false, error: 'Something went wrong while saving. Please try again.' }
 
   revalidatePath('/settings/integrations')
   return { ok: true }
+}
+
+/**
+ * Sends a test message to a webhook integration (Slack / Discord).
+ */
+export async function testWebhookAction(
+  _prev: ConnectState,
+  formData: FormData,
+): Promise<ConnectState> {
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const workspaceId = formData.get('workspace_id')?.toString() ?? ''
+  const integrationId = formData.get('integration_id')?.toString() ?? ''
+
+  if (!workspaceId || !integrationId) return { ok: false, error: 'Something went wrong.' }
+
+  const supabase = createClient()
+  const { data: ws } = await supabase
+    .from('workspaces')
+    .select('branding')
+    .eq('id', workspaceId)
+    .single()
+
+  const branding = (ws?.branding ?? {}) as Record<string, unknown>
+  const integrations = (branding.integrations ?? {}) as Record<string, Record<string, string>>
+  const config = integrations?.[integrationId]
+  const webhookUrl = config?.webhook_url
+
+  if (!webhookUrl) return { ok: false, error: 'No webhook URL found. Please connect first.' }
+
+  try {
+    const testMessage = '✅ Clipflow test — your integration is working!'
+
+    if (integrationId === 'slack') {
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: testMessage }),
+      })
+      if (!res.ok) return { ok: false, error: 'Slack rejected the message. Check your notification link.' }
+    } else if (integrationId === 'discord') {
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: testMessage,
+          embeds: [{
+            title: 'Clipflow — Test',
+            description: testMessage,
+            color: 0x7c3aed,
+          }],
+        }),
+      })
+      if (!res.ok) return { ok: false, error: 'Discord rejected the message. Check your notification link.' }
+    }
+
+    return { ok: true }
+  } catch {
+    return { ok: false, error: 'Could not reach the service. Check the link and try again.' }
+  }
 }
 
 /**

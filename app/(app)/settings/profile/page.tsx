@@ -1,7 +1,8 @@
-import { User, Shield } from 'lucide-react'
+import { User, Shield, Trash2 } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
 import { ProfileForm } from '@/components/settings/profile-form'
+import { DeleteAccountSection } from '@/components/settings/delete-account'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,6 +40,9 @@ export default async function ProfileSettingsPage() {
           in plain text. Two-factor authentication support is coming soon.
         </p>
       </div>
+
+      {/* Danger zone */}
+      <DeleteAccountSection />
     </div>
   )
 }

@@ -1,9 +1,5 @@
-/**
- * Simple in-memory rate limiter.
- * For production, replace with Redis (Upstash) for multi-instance support.
- */
-
-const store = new Map<string, { count: number; resetAt: number }>()
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
 
 export interface RateLimitResult {
   ok: boolean
@@ -12,38 +8,55 @@ export interface RateLimitResult {
 }
 
 /**
+ * Upstash Redis-backed rate limiter.
+ * Works across multiple Vercel serverless instances.
+ *
+ * Falls back to a permissive no-op if UPSTASH_REDIS_REST_URL is not set
+ * (local dev without Redis), so the app never breaks.
+ */
+const redis =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      })
+    : null
+
+function createLimiter(limit: number, windowSec: number) {
+  if (!redis) return null
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(limit, `${windowSec} s`),
+    analytics: true,
+    prefix: 'clipflow:rl',
+  })
+}
+
+/**
  * Check if a key has exceeded the rate limit.
  * @param key - Unique identifier (e.g. userId, userId:action)
  * @param limit - Max requests per window
  * @param windowMs - Time window in milliseconds (default: 60s)
  */
-export function checkRateLimit(
+export async function checkRateLimit(
   key: string,
   limit: number,
   windowMs: number = 60_000,
-): RateLimitResult {
-  const now = Date.now()
-  const entry = store.get(key)
+): Promise<RateLimitResult> {
+  const windowSec = Math.max(1, Math.round(windowMs / 1000))
+  const limiter = createLimiter(limit, windowSec)
 
-  // Clean up expired entries periodically
-  if (store.size > 10000) {
-    for (const [k, v] of store) {
-      if (v.resetAt < now) store.delete(k)
-    }
+  // No Redis configured → allow all (local dev)
+  if (!limiter) {
+    return { ok: true, remaining: limit, resetAt: Date.now() + windowMs }
   }
 
-  if (!entry || entry.resetAt < now) {
-    // New window
-    store.set(key, { count: 1, resetAt: now + windowMs })
-    return { ok: true, remaining: limit - 1, resetAt: now + windowMs }
+  const result = await limiter.limit(key)
+  return {
+    ok: result.success,
+    remaining: result.remaining,
+    resetAt: result.reset,
   }
-
-  if (entry.count >= limit) {
-    return { ok: false, remaining: 0, resetAt: entry.resetAt }
-  }
-
-  entry.count++
-  return { ok: true, remaining: limit - entry.count, resetAt: entry.resetAt }
 }
 
 /**

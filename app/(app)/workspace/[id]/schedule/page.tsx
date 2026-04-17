@@ -115,7 +115,7 @@ export default async function SchedulePage({ params }: SchedulePageProps) {
           <h1 className="text-xl font-bold tracking-tight">Schedule</h1>
           <p className="text-sm text-muted-foreground">
             {posts.length === 0
-              ? 'Queue approved outputs to publish automatically.'
+              ? 'Schedule your approved content to go live automatically.'
               : `${upcomingCount} upcoming · ${publishedCount} published · ${posts.length} total`}
           </p>
         </div>
@@ -170,7 +170,7 @@ export default async function SchedulePage({ params }: SchedulePageProps) {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-emerald-800">
-              Upload-Post connected
+              Auto-publish connected
             </p>
             <p className="text-[11px] text-emerald-700/70">
               Auto-publishing to TikTok, Reels, Shorts &amp; LinkedIn.
@@ -189,9 +189,9 @@ export default async function SchedulePage({ params }: SchedulePageProps) {
             <Send className="h-4 w-4 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold">Connect Upload-Post to auto-publish</p>
+            <p className="text-sm font-semibold">Connect auto-publishing</p>
             <p className="text-[11px] text-muted-foreground">
-              One API key → TikTok, Reels, Shorts &amp; LinkedIn. Posts stay queued until connected.
+              Publish directly to TikTok, Reels, Shorts &amp; LinkedIn. Posts stay queued until connected.
             </p>
           </div>
           <Link
