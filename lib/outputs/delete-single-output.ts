@@ -1,8 +1,7 @@
 import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
-
-export type DeleteSingleOutputResult = { ok: true } | { ok: false; error: string }
+import { ok, fail, type ActionResult } from '@/lib/actions/result'
 
 /**
  * Deletes a single output row by id, scoped to the workspace.
@@ -13,7 +12,7 @@ export type DeleteSingleOutputResult = { ok: true } | { ok: false; error: string
 export async function deleteSingleOutput(
   outputId: string,
   workspaceId: string,
-): Promise<DeleteSingleOutputResult> {
+): Promise<ActionResult> {
   const supabase = createClient()
 
   const { error } = await supabase
@@ -25,8 +24,8 @@ export async function deleteSingleOutput(
   if (error) {
     // eslint-disable-next-line no-console
     console.error('[deleteSingleOutput]', error.message)
-    return { ok: false, error: 'Could not delete output.' }
+    return fail('Could not delete output.', 'db_error')
   }
 
-  return { ok: true }
+  return ok()
 }
