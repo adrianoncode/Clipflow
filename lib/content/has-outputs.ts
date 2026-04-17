@@ -1,6 +1,7 @@
 import { cache } from 'react'
 
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 
 /**
  * Returns true if the content item has at least one output row.
@@ -19,8 +20,7 @@ export const hasOutputs = cache(
       .limit(1)
 
     if (error) {
-      // eslint-disable-next-line no-console
-      console.error('[hasOutputs]', error.message)
+      log.error('hasOutputs failed', error, { workspaceId, contentId })
       return false
     }
 

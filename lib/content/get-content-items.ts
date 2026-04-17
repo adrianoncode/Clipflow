@@ -1,6 +1,7 @@
 import { cache } from 'react'
 
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 import type { ContentKind, ContentStatus } from '@/lib/supabase/types'
 
 export interface ContentItemListRow {
@@ -46,8 +47,7 @@ export const getContentItems = cache(
       .range(offset, offset + limit - 1)
 
     if (error) {
-      // eslint-disable-next-line no-console
-      console.error('[getContentItems]', error.message)
+      log.error('getContentItems failed', error, { workspaceId })
       return []
     }
 
@@ -76,8 +76,7 @@ export const getContentItemsPaginated = cache(
       .range(offset, offset + limit - 1)
 
     if (error) {
-      // eslint-disable-next-line no-console
-      console.error('[getContentItemsPaginated]', error.message)
+      log.error('getContentItemsPaginated failed', error, { workspaceId, offset, limit })
       return { items: [], total: 0, hasMore: false }
     }
 

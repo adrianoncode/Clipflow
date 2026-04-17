@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
 import { ok, fail, type ActionResult } from '@/lib/actions/result'
+import { log } from '@/lib/log'
 
 /**
  * Soft-delete a single output row. Sets `deleted_at` — the nightly
@@ -23,8 +24,7 @@ export async function deleteSingleOutput(
     .is('deleted_at', null)
 
   if (error) {
-    // eslint-disable-next-line no-console
-    console.error('[deleteSingleOutput]', error.message)
+    log.error('deleteSingleOutput failed', error, { workspaceId, outputId })
     return fail('Could not delete output.', 'db_error')
   }
 

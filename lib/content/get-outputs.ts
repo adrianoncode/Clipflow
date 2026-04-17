@@ -1,6 +1,7 @@
 import { cache } from 'react'
 
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 import type { Json, OutputPlatform, OutputState } from '@/lib/supabase/types'
 
 export interface OutputRow {
@@ -38,8 +39,7 @@ export const getOutputs = cache(
       .is('deleted_at', null)
 
     if (outputsError) {
-      // eslint-disable-next-line no-console
-      console.error('[getOutputs.outputs]', outputsError.message)
+      log.error('getOutputs.outputs failed', outputsError, { workspaceId, contentId })
       return []
     }
 
@@ -54,8 +54,7 @@ export const getOutputs = cache(
       .order('created_at', { ascending: false })
 
     if (statesError) {
-      // eslint-disable-next-line no-console
-      console.error('[getOutputs.states]', statesError.message)
+      log.error('getOutputs.states failed', statesError, { workspaceId, contentId })
     }
 
     const latestByOutput = new Map<string, OutputState>()

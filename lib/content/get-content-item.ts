@@ -1,6 +1,7 @@
 import { cache } from 'react'
 
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 import type { ContentKind, ContentStatus, Json } from '@/lib/supabase/types'
 
 export interface ContentItemRow {
@@ -37,8 +38,7 @@ export const getContentItem = cache(
       .maybeSingle()
 
     if (error) {
-      // eslint-disable-next-line no-console
-      console.error('[getContentItem]', error.message)
+      log.error('getContentItem failed', error, { workspaceId, contentId: id })
       return null
     }
 
