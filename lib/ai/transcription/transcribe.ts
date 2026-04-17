@@ -24,7 +24,7 @@ export async function transcribe(input: TranscribeInput): Promise<TranscribeResu
         ok: false,
         code: 'unsupported_provider',
         message:
-          'Transcription is only supported via OpenAI right now. Add an OpenAI key in Settings.',
+          'Transcription is only supported via OpenAI right now. Connect an OpenAI key in Settings → AI Connections.',
       }
   }
 }

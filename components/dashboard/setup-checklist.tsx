@@ -47,17 +47,17 @@ export function SetupChecklist({
   const steps = [
     {
       id: 'ai-key',
-      label: 'Add an AI key',
-      description: 'OpenAI, Anthropic, or Google — takes 1 minute',
+      label: 'Connect your AI (free)',
+      description: 'Pick OpenAI, Anthropic, or Google — all have free credits',
       done: hasAiKey,
       href: '/settings/ai-keys',
-      cta: 'Set up',
+      cta: 'Connect',
       icon: KeyRound,
     },
     {
       id: 'content',
       label: 'Import your first content',
-      description: 'Upload a video, paste a YouTube link, or add text',
+      description: 'Paste a YouTube link, website URL, or type your script',
       done: contentCount > 0,
       href: `/workspace/${workspaceId}/content/new`,
       cta: 'Import',
@@ -65,8 +65,8 @@ export function SetupChecklist({
     },
     {
       id: 'outputs',
-      label: 'Generate outputs',
-      description: 'Pick a content item and create 4 platform-specific drafts',
+      label: 'Generate drafts',
+      description: 'Clipflow creates TikTok, Reels, Shorts & LinkedIn posts for you',
       done: outputCount > 0,
       href: firstReadyContentId
         ? `/workspace/${workspaceId}/content/${firstReadyContentId}/outputs`
@@ -77,10 +77,10 @@ export function SetupChecklist({
     {
       id: 'review',
       label: 'Review & publish',
-      description: 'Approve your best outputs and schedule them',
+      description: 'Approve your best drafts and schedule them to go live',
       done: hasApprovedOutput,
       href: `/workspace/${workspaceId}/pipeline`,
-      cta: 'Open Pipeline',
+      cta: 'Review drafts',
       icon: CheckCircle2,
     },
   ]

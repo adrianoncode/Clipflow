@@ -177,7 +177,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
           <p className="text-xs text-muted-foreground">
             <Link href={`/workspace/${params.id}`} className="hover:text-foreground transition-colors">Content</Link>
             {' → '}
-            <Link href={`/workspace/${params.id}/pipeline`} className="hover:text-foreground transition-colors">Pipeline</Link>
+            <Link href={`/workspace/${params.id}/pipeline`} className="hover:text-foreground transition-colors">Drafts</Link>
             {' → '}
             <span className="font-medium text-foreground">Schedule</span>
           </p>
@@ -293,8 +293,8 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
         <EmptyState
           icon={CalendarDays}
           title="Nothing scheduled yet"
-          description="Approve outputs in the pipeline, then drag them onto the calendar to schedule."
-          actionLabel="Open Pipeline"
+          description="Approve your drafts first, then drag them onto the calendar to schedule."
+          actionLabel="Review drafts"
           actionHref={`/workspace/${params.id}/pipeline`}
           secondaryLabel="View Calendar"
           secondaryHref={`/workspace/${params.id}/schedule?view=calendar`}

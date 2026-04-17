@@ -92,7 +92,7 @@ export function PublishPanel({
       <div className="mt-2 rounded-xl border border-dashed border-border bg-muted/30 p-4">
         <p className="text-sm font-semibold">Upload-Post not connected</p>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          Connect an Upload-Post API key to publish directly to TikTok,
+          Connect Upload-Post to publish directly to TikTok,
           Instagram, YouTube, and LinkedIn from here. You bring your own
           account — free tier covers 10 posts/mo.
         </p>

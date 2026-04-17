@@ -21,7 +21,7 @@ const accountGroup = [
 ]
 
 const aiGroup = [
-  { href: '/settings/ai-keys', label: 'API Keys', icon: Key },
+  { href: '/settings/ai-keys', label: 'AI Connections', icon: Key },
   { href: '/settings/brand-voice', label: 'Brand Voice', icon: Mic2 },
   { href: '/settings/personas', label: 'Personas', icon: Bot },
   { href: '/settings/templates', label: 'Templates', icon: LayoutTemplate },

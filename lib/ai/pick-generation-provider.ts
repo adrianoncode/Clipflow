@@ -57,7 +57,7 @@ export async function pickGenerationProvider(
     return {
       ok: false,
       code: 'no_key',
-      message: 'No AI key saved for this workspace. Add one in Settings → AI Keys.',
+      message: 'No AI connected yet. Add one in Settings → AI Connections.',
     }
   }
 

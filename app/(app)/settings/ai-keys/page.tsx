@@ -16,7 +16,7 @@ import type { AiProvider } from '@/lib/ai/providers/types'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 
 export const metadata = {
-  title: 'API keys',
+  title: 'AI Connections',
 }
 
 const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
@@ -113,10 +113,10 @@ export default async function ApiKeysPage() {
             <Key className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight">API Keys</h1>
+            <h1 className="text-lg font-bold tracking-tight">AI Connections</h1>
             <p className="mt-0.5 max-w-2xl text-sm text-muted-foreground">
-              Connect your own API keys — you pay providers directly at cost,
-              no markup. Keys are encrypted with AES-256.
+              Connect the AI services you want to use — you pay them directly
+              at cost, no markup from Clipflow. All credentials are encrypted.
             </p>
           </div>
         </div>
@@ -210,9 +210,9 @@ export default async function ApiKeysPage() {
               Connect an AI provider to start generating
             </p>
             <p className="mt-0.5 text-xs text-amber-700">
-              Without at least one AI key (OpenAI, Anthropic, or Google), Clipflow
-              can&apos;t generate scripts, captions, or any AI content. Pick whichever
-              you already have — all three work the same inside Clipflow.
+              Without at least one connection (OpenAI, Anthropic, or Google),
+              Clipflow can&apos;t generate anything. Pick whichever you already
+              have — all three work the same. Most have free credits at signup.
             </p>
           </div>
         </div>
@@ -399,7 +399,7 @@ export default async function ApiKeysPage() {
       <details className="group rounded-xl border border-border/50 bg-card">
         <summary className="flex cursor-pointer items-center gap-2 px-5 py-3.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
           <span className="transition-transform group-open:rotate-90">▶</span>
-          New to API keys? How to get started in 2 minutes
+          New here? How to connect in 2 minutes
         </summary>
         <div className="border-t border-border/40 p-5">
           <div className="grid gap-4 sm:grid-cols-3">
@@ -411,8 +411,8 @@ export default async function ApiKeysPage() {
               },
               {
                 step: '2',
-                title: 'Get your API key',
-                body: 'Click "Sign up" → create account → find "API Keys" in their dashboard → copy.',
+                title: 'Copy your key',
+                body: 'Click "Sign up" → create account → find "API Keys" in their dashboard → copy it.',
               },
               {
                 step: '3',

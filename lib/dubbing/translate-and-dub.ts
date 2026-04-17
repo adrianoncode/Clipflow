@@ -17,7 +17,7 @@ export async function startDubbingJob(params: {
   if (!apiKey) {
     return {
       ok: false,
-      error: 'ElevenLabs key not connected. Add one in Settings → API Keys.',
+      error: 'ElevenLabs key not connected. Add one in Settings → AI Connections.',
     }
   }
 

@@ -124,7 +124,7 @@ export function ServiceCard({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-0.5 text-[10px] font-medium text-muted-foreground/60 transition-colors hover:text-primary"
             >
-              Get API key
+              Get your key
               <ExternalLink className="h-2.5 w-2.5" />
             </a>
           </div>

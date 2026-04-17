@@ -171,8 +171,8 @@ export default async function DashboardPage() {
                 <CheckCircle2 className="h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-semibold">{pendingReview} draft{pendingReview !== 1 ? 's' : ''} waiting for review</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">Review and pick your favorites.</p>
+                <p className="font-semibold">{pendingReview} draft{pendingReview !== 1 ? 's' : ''} ready to review</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Pick your favorites and approve them.</p>
               </div>
               <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20">
                 Review <ArrowRight className="h-3.5 w-3.5" />
@@ -226,7 +226,7 @@ export default async function DashboardPage() {
             <div className="rounded-2xl border border-border/50 bg-card">
               <div className="flex items-center justify-between border-b border-border/40 px-5 py-3">
                 <div className="flex items-center gap-2">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Pipeline</p>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Drafts</p>
                   <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] font-bold tabular-nums text-muted-foreground">{totalPipeline}</span>
                 </div>
                 <Link href={`/workspace/${workspace.id}/pipeline`} className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/10">
@@ -271,7 +271,7 @@ export default async function DashboardPage() {
             {[
               { href: `/workspace/${workspace.id}/content/new`, label: 'Import', desc: 'YouTube, MP4, text', icon: Upload, gradient: 'from-violet-500/10 to-violet-500/[0.02]', border: 'border-violet-200/60', iconBg: 'bg-violet-100 text-violet-600' },
               { href: `/workspace/${workspace.id}`, label: 'Generate', desc: 'AI-powered drafts', icon: Wand2, gradient: 'from-blue-500/10 to-blue-500/[0.02]', border: 'border-blue-200/60', iconBg: 'bg-blue-100 text-blue-600' },
-              { href: `/workspace/${workspace.id}/pipeline`, label: 'Pipeline', desc: 'Review & approve', icon: Layers, gradient: 'from-emerald-500/10 to-emerald-500/[0.02]', border: 'border-emerald-200/60', iconBg: 'bg-emerald-100 text-emerald-600' },
+              { href: `/workspace/${workspace.id}/pipeline`, label: 'Drafts', desc: 'Review & approve', icon: Layers, gradient: 'from-emerald-500/10 to-emerald-500/[0.02]', border: 'border-emerald-200/60', iconBg: 'bg-emerald-100 text-emerald-600' },
               { href: `/workspace/${workspace.id}/schedule`, label: 'Schedule', desc: 'Plan & publish', icon: Calendar, gradient: 'from-amber-500/10 to-amber-500/[0.02]', border: 'border-amber-200/60', iconBg: 'bg-amber-100 text-amber-600' },
             ].map((a) => (
               <Link

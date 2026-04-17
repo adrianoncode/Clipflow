@@ -96,7 +96,7 @@ export async function submitRender(input: RenderInput): Promise<
     return {
       ok: false,
       error:
-        'Shotstack key not connected. Add one in Settings → API Keys to render videos.',
+        'Shotstack key not connected. Add one in Settings → AI Connections to render videos.',
     }
   }
 
@@ -253,7 +253,7 @@ export async function getRenderStatus(
   if (!apiKey)
     return {
       status: 'failed',
-      error: 'No Shotstack key — connect one in Settings → API Keys.',
+      error: 'No Shotstack key — connect one in Settings → AI Connections.',
     }
 
   try {

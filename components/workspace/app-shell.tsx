@@ -84,7 +84,7 @@ export function AppShell({
       items: [
         { href: `/workspace/${currentWorkspaceId}`, label: 'Content', icon: FileVideo },
         { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Import', icon: Sparkles },
-        { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: CheckSquare },
+        { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Drafts', icon: CheckSquare },
         { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Send },
       ],
     },
@@ -114,7 +114,7 @@ export function AppShell({
   const mobileItems: NavItem[] = [
     { href: `/workspace/${currentWorkspaceId}`, label: 'Content', icon: FileVideo },
     { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Import', icon: Sparkles },
-    { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: CheckSquare },
+    { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Drafts', icon: CheckSquare },
     { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Send },
   ]
 

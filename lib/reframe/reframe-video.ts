@@ -38,7 +38,7 @@ export async function startReframeJob(
   if (!token)
     return {
       ok: false,
-      error: 'Replicate key not connected. Add one in Settings → API Keys.',
+      error: 'Replicate key not connected. Add one in Settings → AI Connections.',
     }
 
   try {
@@ -93,7 +93,7 @@ export async function getReframeJobStatus(
   if (!token)
     return {
       ok: false,
-      error: 'Replicate key not connected. Add one in Settings → API Keys.',
+      error: 'Replicate key not connected. Add one in Settings → AI Connections.',
     }
 
   try {

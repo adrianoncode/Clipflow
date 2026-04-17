@@ -217,7 +217,7 @@ export function GenerateOutputsForm({
             <>
               {' '}
               <Link href="/settings/ai-keys" className="underline">
-                Add an API key
+                Connect your AI
               </Link>
               .
             </>

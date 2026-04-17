@@ -122,7 +122,7 @@ export async function getSuggestions(workspaceId: string): Promise<Suggestion[]>
         priority: 'high',
         title: `No new content in ${daysSince} days`,
         description:
-          'Consistency is key for audience growth. Import a video or paste a YouTube link to keep your pipeline flowing.',
+          'Consistency is key for audience growth. Import a video or paste a YouTube link to keep creating.',
         actionLabel: 'Add content',
         actionHref: `/workspace/${workspaceId}/content/new`,
         icon: 'CalendarX2',
@@ -207,8 +207,8 @@ export async function getSuggestions(workspaceId: string): Promise<Suggestion[]>
       priority: 'medium',
       title: `${stuckCount} draft${stuckCount !== 1 ? 's' : ''} sitting for over a week`,
       description:
-        'Old drafts clutter your pipeline. Review them, approve the good ones, or discard the rest.',
-      actionLabel: 'Open pipeline',
+        'You have old drafts sitting around. Review them, approve the good ones, or discard the rest.',
+      actionLabel: 'Review drafts',
       actionHref: `/workspace/${workspaceId}/pipeline`,
       icon: 'Timer',
     })

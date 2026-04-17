@@ -173,15 +173,15 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
           <p className="text-xs text-muted-foreground">
             <Link href={`/workspace/${workspaceId}`} className="hover:text-foreground transition-colors">Content</Link>
             {' → '}
-            <span className="font-medium text-foreground">Pipeline</span>
+            <span className="font-medium text-foreground">Drafts</span>
             {' → '}
             <Link href={`/workspace/${workspaceId}/schedule`} className="hover:text-foreground transition-colors">Schedule</Link>
           </p>
-          <h1 className="text-xl font-bold tracking-tight">Pipeline</h1>
+          <h1 className="text-xl font-bold tracking-tight">Drafts</h1>
           <p className="text-sm text-muted-foreground">
             {totalCount === 0
               ? 'Your AI-generated drafts appear here. Review them and approve the ones you like.'
-              : `${totalCount} output${totalCount === 1 ? '' : 's'} · ${reviewCount} in review · ${approvedCount} approved`}
+              : `${totalCount} draft${totalCount === 1 ? '' : 's'} · ${reviewCount} in review · ${approvedCount} approved`}
           </p>
         </div>
 
@@ -234,7 +234,7 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
         <EmptyState
           icon={GitBranch}
           title="No outputs in your pipeline yet"
-          description="Generate outputs from your content first. They'll appear here as drafts ready for review."
+          description="Generate outputs from your content first. They'll appear here ready for you to review and approve."
           actionLabel="Go to Content"
           actionHref={`/workspace/${workspaceId}`}
           secondaryLabel="Import content"

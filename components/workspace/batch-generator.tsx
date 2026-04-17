@@ -123,7 +123,7 @@ export function BatchGenerator({ items, workspaceId }: BatchGeneratorProps) {
             className="group inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md"
           >
             <Layers className="h-4 w-4" />
-            Open Pipeline
+            Review drafts
             <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </Link>
           <button

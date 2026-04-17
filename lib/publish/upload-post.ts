@@ -45,7 +45,7 @@ export async function publishVideo(
     return {
       ok: false,
       error:
-        'No Upload-Post API key connected. Go to Settings → API Keys → Publishing to connect one.',
+        'Upload-Post not connected. Go to Settings → AI Connections → Publishing to connect it.',
       code: 'missing_key',
     }
   }

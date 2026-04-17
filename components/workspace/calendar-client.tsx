@@ -295,7 +295,7 @@ export function CalendarClient({
 
             {unscheduledOutputs.length === 0 ? (
               <p className="text-xs text-muted-foreground">
-                No approved outputs waiting. Approve outputs in the Pipeline to schedule them.
+                No approved drafts waiting. Approve drafts first, then drag them here to schedule.
               </p>
             ) : (
               <ul className="space-y-2 max-h-[480px] overflow-y-auto pr-1">

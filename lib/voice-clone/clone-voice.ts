@@ -19,7 +19,7 @@ export async function cloneVoice(params: {
   if (!apiKey) {
     return {
       ok: false,
-      error: 'ElevenLabs key not connected. Add one in Settings → API Keys.',
+      error: 'ElevenLabs key not connected. Add one in Settings → AI Connections.',
     }
   }
 
@@ -62,7 +62,7 @@ export async function listElevenLabsVoices(
   if (!apiKey)
     return {
       ok: false,
-      error: 'ElevenLabs key not connected. Add one in Settings → API Keys.',
+      error: 'ElevenLabs key not connected. Add one in Settings → AI Connections.',
     }
 
   try {

@@ -34,7 +34,7 @@ export interface PublishResult {
 const NOT_IMPLEMENTED: PublishResult = {
   ok: false,
   error:
-    'Direct publishing not supported — connect Upload-Post under Settings → API Keys → Publishing to schedule posts.',
+    'Direct publishing not supported — connect Upload-Post under Settings → AI Connections → Publishing to schedule posts.',
 }
 
 export async function publishToTikTok(

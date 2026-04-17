@@ -56,7 +56,7 @@ export function RegenerateButton({ workspaceId, contentId }: RegenerateButtonPro
             <>
               {' '}
               <Link href="/settings/ai-keys" className="underline">
-                Add an API key
+                Connect your AI
               </Link>
               .
             </>

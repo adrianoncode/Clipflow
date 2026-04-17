@@ -73,7 +73,7 @@ export function AddServiceKeyDialog({
             </div>
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-                Connect API key
+                Connect service
               </p>
               <h3 className="text-base font-semibold">{spec.name}</h3>
             </div>
@@ -133,7 +133,7 @@ export function AddServiceKeyDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="api_key">API key</Label>
+            <Label htmlFor="api_key">Your key</Label>
             <Input
               id="api_key"
               name="api_key"
@@ -145,8 +145,8 @@ export function AddServiceKeyDialog({
               autoFocus
             />
             <p className="text-xs text-muted-foreground">
-              We test the key once before saving. Encrypted at rest with
-              AES-256.
+              We test the connection before saving. Your key is encrypted
+              and never shared.
             </p>
           </div>
 

@@ -113,7 +113,7 @@ export function AutoGenerateTrigger({
               4 drafts generated!
             </p>
             <p className="mt-0.5 text-xs text-emerald-700">
-              Head to the Pipeline to review, approve, and schedule your drafts.
+              Review your drafts, approve the best ones, and schedule them to go live.
             </p>
           </div>
         </div>

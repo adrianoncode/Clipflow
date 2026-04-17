@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 const STEPS = [
   { n: 1, label: 'Role' },
   { n: 2, label: 'Workspace' },
-  { n: 3, label: 'AI key' },
+  { n: 3, label: 'Connect AI' },
   { n: 4, label: 'Launch' },
 ] as const
 
