@@ -8,13 +8,10 @@ import {
   Sparkles,
   CheckSquare,
   Send,
-  CalendarDays,
   PenLine,
   Zap,
   Clapperboard,
-  TrendingUp,
   Search,
-  Lightbulb,
   Plug,
   BarChart3,
   Settings as SettingsIcon,
@@ -69,6 +66,15 @@ export function AppShell({
     if (href === '/settings') return pathname.startsWith('/settings') && !pathname.startsWith('/settings/integrations')
     if (href === '/settings/integrations') return pathname.startsWith('/settings/integrations')
     if (href === `/workspace/${currentWorkspaceId}`) return pathname === href
+    // Schedule also matches /calendar (legacy route)
+    if (href === `/workspace/${currentWorkspaceId}/schedule`) {
+      return pathname === href || pathname.startsWith(href + '/') || pathname === `/workspace/${currentWorkspaceId}/calendar`
+    }
+    // Discover hub also matches legacy /trends, /research, /ideas
+    if (href === `/workspace/${currentWorkspaceId}/discover`) {
+      const wsBase = `/workspace/${currentWorkspaceId}`
+      return pathname === href || pathname.startsWith(href + '/') || pathname === `${wsBase}/trends` || pathname === `${wsBase}/research` || pathname === `${wsBase}/ideas`
+    }
     return pathname === href || pathname.startsWith(href + '/')
   }
 
@@ -77,10 +83,9 @@ export function AppShell({
       label: 'Workflow',
       items: [
         { href: `/workspace/${currentWorkspaceId}`, label: 'Content', icon: FileVideo },
-        { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Add content', icon: Sparkles },
+        { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Import', icon: Sparkles },
         { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: CheckSquare },
         { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Send },
-        { href: `/workspace/${currentWorkspaceId}/calendar`, label: 'Calendar', icon: CalendarDays },
       ],
     },
     {
@@ -94,9 +99,7 @@ export function AppShell({
     {
       label: 'Discover',
       items: [
-        { href: `/workspace/${currentWorkspaceId}/trends`, label: 'Trends', icon: TrendingUp },
-        { href: `/workspace/${currentWorkspaceId}/research`, label: 'Research', icon: Search },
-        { href: `/workspace/${currentWorkspaceId}/ideas`, label: 'Ideas', icon: Lightbulb },
+        { href: `/workspace/${currentWorkspaceId}/discover`, label: 'Discover', icon: Search },
       ],
     },
   ]
@@ -110,7 +113,7 @@ export function AppShell({
   // Mobile: 4 core items + More
   const mobileItems: NavItem[] = [
     { href: `/workspace/${currentWorkspaceId}`, label: 'Content', icon: FileVideo },
-    { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Add content', icon: Sparkles },
+    { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Import', icon: Sparkles },
     { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: CheckSquare },
     { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Send },
   ]

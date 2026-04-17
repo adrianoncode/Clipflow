@@ -301,7 +301,7 @@ export default async function DashboardPage() {
                   { href: '/settings/integrations', label: 'Integrations', icon: Plug, color: 'text-violet-500' },
                   { href: '/settings/brand-voice', label: 'Brand Voice', icon: MessageSquare, color: 'text-pink-500' },
                   { href: '/settings/templates', label: 'Templates', icon: FileText, color: 'text-blue-500' },
-                  { href: `/workspace/${workspace.id}/calendar`, label: 'Calendar', icon: Calendar, color: 'text-amber-500' },
+                  { href: `/workspace/${workspace.id}/schedule?view=calendar`, label: 'Calendar', icon: Calendar, color: 'text-amber-500' },
                 ].map((a) => (
                   <Link key={a.href} href={a.href} className="flex items-center gap-2.5 bg-card px-3.5 py-3 transition-colors hover:bg-primary/[0.04]">
                     <a.icon className={`h-3.5 w-3.5 shrink-0 ${a.color}`} />

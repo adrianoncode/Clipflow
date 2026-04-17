@@ -1,14 +1,14 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import {
   AlertTriangle,
   ArrowRight,
-  CalendarClock,
   CalendarDays,
   CheckCircle2,
   Clock,
   Eye,
   Heart,
+  List,
   MessageCircle,
   Send,
   Share2,
@@ -16,10 +16,17 @@ import {
 } from 'lucide-react'
 
 import { EmptyState } from '@/components/ui/empty-state'
+import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getScheduledPosts } from '@/lib/scheduler/get-scheduled-posts'
+import { getUnscheduledOutputs } from '@/lib/scheduler/get-unscheduled-outputs'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { CancelPostButton } from '@/components/scheduler/cancel-post-button'
+import { CalendarClient } from '@/components/workspace/calendar-client'
+import {
+  quickScheduleAction,
+  reschedulePostAction,
+} from '@/app/(app)/workspace/[id]/schedule/scheduler-actions'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Schedule' }
@@ -43,7 +50,7 @@ const PLATFORM_BADGE: Record<string, string> = {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; Icon: typeof CheckCircle2 }> = {
-  scheduled: { label: 'Scheduled', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200/60', Icon: CalendarClock },
+  scheduled: { label: 'Scheduled', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200/60', Icon: Clock },
   publishing: { label: 'Publishing', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200/60', Icon: Send },
   published: { label: 'Published', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200/60', Icon: CheckCircle2 },
   failed: { label: 'Failed', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200/60', Icon: AlertTriangle },
@@ -68,19 +75,81 @@ function formatStatNum(n: number | undefined | null): string {
 
 interface SchedulePageProps {
   params: { id: string }
+  searchParams: { view?: string }
 }
 
-export default async function SchedulePage({ params }: SchedulePageProps) {
+export default async function SchedulePage({ params, searchParams }: SchedulePageProps) {
+  const user = await getUser()
+  if (!user) redirect('/login')
+
   const workspaces = await getWorkspaces()
   const workspace = workspaces.find((w) => w.id === params.id)
   if (!workspace) notFound()
 
-  const [posts, aiKeys] = await Promise.all([
+  const isCalendarView = searchParams.view === 'calendar'
+
+  const [posts, aiKeys, unscheduledOutputs] = await Promise.all([
     getScheduledPosts(params.id),
     getAiKeys(params.id),
+    isCalendarView ? getUnscheduledOutputs(params.id) : Promise.resolve([]),
   ])
 
   const hasUploadPostKey = aiKeys.some((k) => k.provider === 'upload-post')
+
+  // Calendar view — server actions
+  async function handleQuickSchedule(fd: FormData) {
+    'use server'
+    return quickScheduleAction({ ok: undefined }, fd)
+  }
+
+  async function handleReschedule(fd: FormData) {
+    'use server'
+    return reschedulePostAction({ ok: undefined }, fd)
+  }
+
+  // ── Calendar View ──
+  if (isCalendarView) {
+    return (
+      <div className="flex min-h-full flex-col">
+        {/* View toggle */}
+        <div className="border-b border-border/60 bg-background px-4 py-2 sm:px-8">
+          <div className="mx-auto flex max-w-5xl items-center justify-between">
+            <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-0.5">
+              <Link
+                href={`/workspace/${params.id}/schedule`}
+                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <List className="h-3.5 w-3.5" />
+                List
+              </Link>
+              <span className="flex items-center gap-1.5 rounded-md bg-background px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm">
+                <CalendarDays className="h-3.5 w-3.5" />
+                Calendar
+              </span>
+            </div>
+            <Link
+              href={`/workspace/${params.id}/pipeline`}
+              className="group inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-primary"
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Pipeline
+              <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        </div>
+
+        <CalendarClient
+          workspaceId={params.id}
+          scheduledPosts={posts}
+          unscheduledOutputs={unscheduledOutputs}
+          quickScheduleAction={handleQuickSchedule}
+          reschedulePostAction={handleReschedule}
+        />
+      </div>
+    )
+  }
+
+  // ── List View (default) ──
 
   // Group by date string
   type PostRow = (typeof posts)[number]
@@ -119,14 +188,30 @@ export default async function SchedulePage({ params }: SchedulePageProps) {
               : `${upcomingCount} upcoming · ${publishedCount} published · ${posts.length} total`}
           </p>
         </div>
-        <Link
-          href={`/workspace/${params.id}/pipeline`}
-          className="group inline-flex shrink-0 items-center gap-2 rounded-xl border border-primary/20 bg-primary/[0.04] px-4 py-2.5 text-sm font-semibold text-primary transition-all hover:-translate-y-0.5 hover:bg-primary/10 hover:shadow-md"
-        >
-          <CheckCircle2 className="h-4 w-4" />
-          View Pipeline
-          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-        </Link>
+        <div className="flex items-center gap-2">
+          {/* View toggle */}
+          <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-0.5">
+            <span className="flex items-center gap-1.5 rounded-md bg-background px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm">
+              <List className="h-3.5 w-3.5" />
+              List
+            </span>
+            <Link
+              href={`/workspace/${params.id}/schedule?view=calendar`}
+              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <CalendarDays className="h-3.5 w-3.5" />
+              Calendar
+            </Link>
+          </div>
+          <Link
+            href={`/workspace/${params.id}/pipeline`}
+            className="group inline-flex shrink-0 items-center gap-2 rounded-xl border border-primary/20 bg-primary/[0.04] px-4 py-2.5 text-sm font-semibold text-primary transition-all hover:-translate-y-0.5 hover:bg-primary/10 hover:shadow-md"
+          >
+            <CheckCircle2 className="h-4 w-4" />
+            View Pipeline
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </div>
       </div>
 
       {/* ── Stats strip ── */}
@@ -212,7 +297,7 @@ export default async function SchedulePage({ params }: SchedulePageProps) {
           actionLabel="Open Pipeline"
           actionHref={`/workspace/${params.id}/pipeline`}
           secondaryLabel="View Calendar"
-          secondaryHref={`/workspace/${params.id}/calendar`}
+          secondaryHref={`/workspace/${params.id}/schedule?view=calendar`}
         />
       ) : (
         <div className="space-y-6">

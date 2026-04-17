@@ -207,7 +207,6 @@ export async function POST(req: NextRequest) {
   const affectedWorkspaces = new Set(duePosts.map((p) => p.workspace_id))
   for (const wsId of affectedWorkspaces) {
     revalidatePath(`/workspace/${wsId}/schedule`)
-    revalidatePath(`/workspace/${wsId}/calendar`)
   }
 
   return NextResponse.json({
