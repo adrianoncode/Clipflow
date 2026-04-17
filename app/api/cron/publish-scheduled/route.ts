@@ -6,6 +6,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { decrypt } from '@/lib/crypto/encryption'
 import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
 import { verifyCronSecret } from '@/lib/security/verify-cron-secret'
+import { pingHealthcheck } from '@/lib/monitoring/ping-healthcheck'
+import { log } from '@/lib/log'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,6 +28,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const hcUrl = process.env.HEALTHCHECK_PUBLISH_SCHEDULED_URL
+  await pingHealthcheck(hcUrl, 'start')
+
   const supabase = createAdminClient()
 
   // Find posts due for publishing (scheduled_for <= now, status = 'scheduled')
@@ -38,6 +43,7 @@ export async function POST(req: NextRequest) {
     .limit(10)
 
   if (!duePosts?.length) {
+    await pingHealthcheck(hcUrl, 'success', { published: 0, due: 0 })
     return NextResponse.json({ ok: true, published: 0 })
   }
 
@@ -160,8 +166,10 @@ export async function POST(req: NextRequest) {
           .update(updateData)
           .eq('id', post.id)
         if (retryError) {
-          // eslint-disable-next-line no-console
-          console.error(`[publish-cron] DB update failed after publish for post ${post.id}:`, retryError.message)
+          log.error('publish-cron db update failed after publish', retryError, {
+            postId: post.id,
+            platform: post.platform,
+          })
         }
       }
 
@@ -210,10 +218,23 @@ export async function POST(req: NextRequest) {
     revalidatePath(`/workspace/${wsId}/schedule`)
   }
 
+  const publishedCount = results.filter((r) => r.ok).length
+  const failedCount = results.filter((r) => !r.ok).length
+
+  // Ping healthcheck — mark as failed only if every post failed. Partial
+  // failures still count as a healthy run (the cron itself worked).
+  if (duePosts.length > 0 && publishedCount === 0 && failedCount > 0) {
+    await pingHealthcheck(hcUrl, 'fail', { failed: failedCount })
+  } else {
+    await pingHealthcheck(hcUrl, 'success', { published: publishedCount, failed: failedCount })
+  }
+
+  log.info('publish-scheduled done', { published: publishedCount, failed: failedCount })
+
   return NextResponse.json({
     ok: true,
-    published: results.filter((r) => r.ok).length,
-    failed: results.filter((r) => !r.ok).length,
+    published: publishedCount,
+    failed: failedCount,
     results,
   })
 }

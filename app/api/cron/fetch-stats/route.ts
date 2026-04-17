@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { decrypt } from '@/lib/crypto/encryption'
 import { verifyCronSecret } from '@/lib/security/verify-cron-secret'
+import { pingHealthcheck } from '@/lib/monitoring/ping-healthcheck'
+import { log } from '@/lib/log'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,6 +30,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const hcUrl = process.env.HEALTHCHECK_FETCH_STATS_URL
+  await pingHealthcheck(hcUrl, 'start')
+
   const supabase = createAdminClient()
 
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -44,6 +49,8 @@ export async function GET(req: NextRequest) {
     .limit(20)
 
   if (queryError) {
+    log.error('fetch-stats query failed', queryError)
+    await pingHealthcheck(hcUrl, 'fail', { error: queryError.message })
     return NextResponse.json(
       { error: 'Query failed', detail: queryError.message },
       { status: 500 },
@@ -51,6 +58,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (!posts?.length) {
+    await pingHealthcheck(hcUrl, 'success', { fetched: 0 })
     return NextResponse.json({ ok: true, fetched: 0, message: 'No posts need stats refresh.' })
   }
 
@@ -205,13 +213,21 @@ export async function GET(req: NextRequest) {
   const fetchedCount = results.filter((r) => r.ok).length
   const failedCount = results.filter((r) => !r.ok).length
 
-  // Log warning if majority of fetches failed
+  // Log warning + fail-ping if majority of fetches failed — likely an
+  // Upload-Post outage or expired key across workspaces.
   if (failedCount > 0 && failedCount >= fetchedCount) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      `[fetch-stats] High failure rate: ${failedCount}/${results.length} failed.`,
-      results.filter((r) => !r.ok).map((r) => `${r.id}: ${r.error}`).join('; '),
-    )
+    log.warn('fetch-stats high failure rate', {
+      failed: failedCount,
+      total: results.length,
+      sampleErrors: results
+        .filter((r) => !r.ok)
+        .slice(0, 3)
+        .map((r) => ({ id: r.id, error: r.error })),
+    })
+    await pingHealthcheck(hcUrl, 'fail', { failed: failedCount, total: results.length })
+  } else {
+    log.info('fetch-stats done', { fetched: fetchedCount, failed: failedCount })
+    await pingHealthcheck(hcUrl, 'success', { fetched: fetchedCount, failed: failedCount })
   }
 
   return NextResponse.json({
