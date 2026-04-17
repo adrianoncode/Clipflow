@@ -987,6 +987,9 @@ function Footer() {
       links: [
         ['/privacy', 'Privacy'],
         ['/terms', 'Terms'],
+        ['/cookies', 'Cookies'],
+        ['/dmca', 'DMCA'],
+        ['/imprint', 'Imprint'],
       ],
     },
   ]
