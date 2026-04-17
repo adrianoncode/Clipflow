@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { verifyCronSecret } from '@/lib/security/verify-cron-secret'
 
 /**
  * Cron endpoint — reaps content_items stuck in 'processing' for more than
@@ -12,12 +13,12 @@ import { createAdminClient } from '@/lib/supabase/admin'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: Request) {
-  const secret = process.env.CRON_SECRET
-  if (secret) {
-    const auth = req.headers.get('authorization')
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  // Fail closed: if CRON_SECRET is unset or short, this endpoint is
+  // unauthorized. Previously a missing env var made it fully public.
+  const auth = req.headers.get('authorization') ?? ''
+  const provided = auth.startsWith('Bearer ') ? auth.slice(7) : null
+  if (!verifyCronSecret(provided)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const admin = createAdminClient()

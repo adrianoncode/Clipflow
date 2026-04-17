@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { parse } from 'node-html-parser'
+import { isPublicUrl } from '@/lib/security/is-public-url'
 
 export type FetchUrlTextResult =
   | { ok: true; text: string; title: string }
@@ -21,16 +22,38 @@ const SKIP_TAGS = new Set([
  * and return an empty shell on first fetch.
  */
 export async function fetchUrlText(url: string): Promise<FetchUrlTextResult> {
+  // SSRF guard — reject loopback, private IPs, cloud metadata endpoints,
+  // non-http(s) schemes. Blocks user-supplied URLs from hitting internal
+  // services or the AWS/GCP/Azure metadata IMDS.
+  const check = await isPublicUrl(url)
+  if (!check.ok) return { ok: false, error: check.reason }
+
   let res: Response
   try {
-    res = await fetch(url, {
+    res = await fetch(check.url.toString(), {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (compatible; Clipflow/1.0; +https://clipflow.app)',
         Accept: 'text/html,application/xhtml+xml',
       },
       signal: AbortSignal.timeout(15_000),
+      redirect: 'manual',
     })
+    // If the server redirects, re-validate the target against the SSRF guard.
+    if (res.status >= 300 && res.status < 400) {
+      const loc = res.headers.get('location')
+      if (!loc) return { ok: false, error: 'Redirect without location header.' }
+      const redirected = await isPublicUrl(new URL(loc, check.url).toString())
+      if (!redirected.ok) return { ok: false, error: redirected.reason }
+      res = await fetch(redirected.url.toString(), {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; Clipflow/1.0)',
+          Accept: 'text/html,application/xhtml+xml',
+        },
+        signal: AbortSignal.timeout(15_000),
+        redirect: 'manual',
+      })
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     return { ok: false, error: `Could not reach URL: ${msg}` }

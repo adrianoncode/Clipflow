@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { updateRender } from '@/lib/video/renders/update-render'
+import { verifyEnvSecret } from '@/lib/security/verify-cron-secret'
 
 /**
  * POST /api/webhooks/shotstack
@@ -25,13 +26,13 @@ import { updateRender } from '@/lib/video/renders/update-render'
  */
 export async function POST(request: Request): Promise<NextResponse> {
   // ── Secret verification ──────────────────────────────────────────────────
-  const expectedSecret = process.env.SHOTSTACK_WEBHOOK_SECRET
-  if (expectedSecret) {
-    const { searchParams } = new URL(request.url)
-    const provided = searchParams.get('secret')
-    if (provided !== expectedSecret) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  // Fail closed: if SHOTSTACK_WEBHOOK_SECRET is unset, the endpoint is
+  // unauthorized. Previously a missing env var let anyone POST fake
+  // render-completion callbacks.
+  const { searchParams } = new URL(request.url)
+  const provided = searchParams.get('secret')
+  if (!verifyEnvSecret('SHOTSTACK_WEBHOOK_SECRET', provided)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   // ── Parse payload ────────────────────────────────────────────────────────

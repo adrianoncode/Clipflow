@@ -1,5 +1,6 @@
 import 'server-only'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isPublicUrl } from '@/lib/security/is-public-url'
 
 export type WebhookEvent =
   | 'content.ready'
@@ -33,11 +34,23 @@ export async function triggerWebhooks(
         })
 
         try {
-          const res = await fetch(webhook.url, {
+          // SSRF guard — user-defined webhook URLs must not target private
+          // or internal hosts. Mark the attempt as failed in that case so
+          // the UI shows it's misconfigured.
+          const check = await isPublicUrl(webhook.url)
+          if (!check.ok) {
+            await supabase
+              .from('webhooks')
+              .update({ last_triggered_at: new Date().toISOString(), last_status: 0 })
+              .eq('id', webhook.id)
+            return
+          }
+          const res = await fetch(check.url.toString(), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body,
             signal: AbortSignal.timeout(10_000),
+            redirect: 'manual',
           })
           await supabase
             .from('webhooks')

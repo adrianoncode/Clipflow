@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { ALGORITHM_FEED_SOURCES } from './sources'
+import { isPublicUrl } from '@/lib/security/is-public-url'
 
 export interface RawFeedItem {
   source: string
@@ -20,7 +21,11 @@ export async function fetchAlgorithmUpdates(): Promise<RawFeedItem[]> {
 
   for (const source of ALGORITHM_FEED_SOURCES) {
     try {
-      const res = await fetch(source.url, { cache: 'no-store', signal: AbortSignal.timeout(10000) })
+      // SSRF guard — our own feed sources are trusted, but we still
+      // validate in case an admin later adds a user-supplied source.
+      const check = await isPublicUrl(source.url)
+      if (!check.ok) continue
+      const res = await fetch(check.url.toString(), { cache: 'no-store', signal: AbortSignal.timeout(10000) })
       if (!res.ok) continue
 
       const xml = await res.text()

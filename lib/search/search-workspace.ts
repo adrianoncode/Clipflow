@@ -1,5 +1,6 @@
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
+import { escapePostgrestIlikeValue } from '@/lib/security/postgrest-escape'
 
 export interface SearchResult {
   type: 'content' | 'output'
@@ -15,20 +16,25 @@ export interface SearchResult {
 export async function searchWorkspace(workspaceId: string, query: string): Promise<SearchResult[]> {
   if (!query.trim() || query.length < 2) return []
   const supabase = createClient()
-  const q = query.toLowerCase()
+  // Escape user input — PostgREST treats `, ( ) . : *` as filter-syntax
+  // delimiters. Without escaping, an attacker can inject extra filter
+  // clauses inside `.or()` and bypass the workspace scope on matching rows.
+  const q = escapePostgrestIlikeValue(query.toLowerCase())
+  if (!q) return []
+  const wildcard = `%${q}%`
 
   const [contentRes, outputRes] = await Promise.all([
     supabase
       .from('content_items')
       .select('id, title, status, kind, created_at, transcript')
       .eq('workspace_id', workspaceId)
-      .or(`title.ilike.%${q}%,transcript.ilike.%${q}%`)
+      .or(`title.ilike.${wildcard},transcript.ilike.${wildcard}`)
       .limit(10),
     supabase
       .from('outputs')
       .select('id, platform, body, created_at, content_id')
       .eq('workspace_id', workspaceId)
-      .ilike('body', `%${q}%`)
+      .ilike('body', wildcard)
       .limit(10),
   ])
 

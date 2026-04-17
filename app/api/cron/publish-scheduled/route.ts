@@ -5,6 +5,7 @@ import { notifyPostPublished } from '@/lib/notifications/triggers'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { decrypt } from '@/lib/crypto/encryption'
 import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
+import { verifyCronSecret } from '@/lib/security/verify-cron-secret'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,7 +22,7 @@ const UPLOAD_POST_API = 'https://upload-post.com/api/v1'
  */
 export async function POST(req: NextRequest) {
   const secret = req.headers.get('x-cron-secret') ?? req.nextUrl.searchParams.get('secret')
-  if (secret !== process.env.CRON_SECRET) {
+  if (!verifyCronSecret(secret)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

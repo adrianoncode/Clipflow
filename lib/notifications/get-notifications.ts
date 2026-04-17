@@ -30,7 +30,12 @@ export async function getUnreadNotifications(
     .limit(20)
 
   if (workspaceId) {
-    // Show notifications for this workspace + global ones (null workspace_id)
+    // Show notifications for this workspace + global ones (null workspace_id).
+    // Validate workspaceId is a UUID before interpolating into the `.or()`
+    // filter string — defense-in-depth against PostgREST filter injection.
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(workspaceId)) {
+      return []
+    }
     query = query.or(`workspace_id.eq.${workspaceId},workspace_id.is.null`)
   }
 

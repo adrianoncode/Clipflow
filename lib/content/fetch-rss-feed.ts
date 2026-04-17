@@ -1,4 +1,5 @@
 import 'server-only'
+import { isPublicUrl } from '@/lib/security/is-public-url'
 
 export type RssFetchResult =
   | {
@@ -16,11 +17,16 @@ export type RssFetchResult =
  * If an audio enclosure URL is found it is returned for optional transcription.
  */
 export async function fetchRssFeed(url: string): Promise<RssFetchResult> {
+  // SSRF guard — block loopback, private IPs, cloud metadata endpoints.
+  const check = await isPublicUrl(url)
+  if (!check.ok) return { ok: false, error: check.reason }
+
   let res: Response
   try {
-    res = await fetch(url, {
+    res = await fetch(check.url.toString(), {
       headers: { 'User-Agent': 'Clipflow/1.0 (+https://clipflow.to)' },
       next: { revalidate: 0 },
+      signal: AbortSignal.timeout(15_000),
     })
   } catch {
     return { ok: false, error: 'Could not fetch the RSS feed. Check the URL and try again.' }
