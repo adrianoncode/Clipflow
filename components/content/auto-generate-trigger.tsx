@@ -113,7 +113,7 @@ export function AutoGenerateTrigger({
               4 drafts generated!
             </p>
             <p className="mt-0.5 text-xs text-emerald-700">
-              Scroll down to review your TikTok, Reels, Shorts & LinkedIn content.
+              Head to the Pipeline to review, approve, and schedule your drafts.
             </p>
           </div>
         </div>

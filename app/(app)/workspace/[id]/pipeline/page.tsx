@@ -51,7 +51,7 @@ const COLUMN_CONFIG: PipelineColumn[] = [
   },
   {
     state: 'exported',
-    label: 'Exported',
+    label: 'Published',
     accentClass: 'from-blue-500',
     dotClass: 'bg-blue-500',
   },

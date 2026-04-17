@@ -12,7 +12,7 @@ const MAP: Record<
   draft: { label: 'Draft', variant: 'secondary' },
   review: { label: 'In review', variant: 'outline' },
   approved: { label: 'Approved', variant: 'default' },
-  exported: { label: 'Exported', variant: 'default' },
+  exported: { label: 'Published', variant: 'default' },
 }
 
 export function OutputStateBadge({ state }: OutputStateBadgeProps) {

@@ -32,9 +32,9 @@ interface PipelineCardProps {
 const STATE_ORDER: OutputState[] = ['draft', 'review', 'approved', 'exported']
 
 const NEXT_STATE_LABELS: Record<OutputState, string | null> = {
-  draft: 'Send to review',
+  draft: 'Move to review',
   review: 'Approve',
-  approved: 'Mark exported',
+  approved: 'Mark as published',
   exported: null,
 }
 
@@ -42,7 +42,7 @@ const PREV_STATE_LABELS: Record<OutputState, string | null> = {
   draft: null,
   review: 'Back to draft',
   approved: 'Back to review',
-  exported: 'Un-export',
+  exported: 'Undo',
 }
 
 function nextState(state: OutputState): OutputState | null {

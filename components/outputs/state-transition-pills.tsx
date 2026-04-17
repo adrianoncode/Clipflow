@@ -20,7 +20,7 @@ const STATE_LABELS: Record<OutputState, string> = {
   draft: 'Draft',
   review: 'In Review',
   approved: 'Approved',
-  exported: 'Exported',
+  exported: 'Published',
 }
 
 const ALLOWED_TRANSITIONS: Record<OutputState, OutputState[]> = {

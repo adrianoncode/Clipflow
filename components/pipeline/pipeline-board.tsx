@@ -31,18 +31,18 @@ export interface PipelineColumn {
 
 /** Per-column hint explaining what the user should DO here */
 const COLUMN_HINTS: Record<PipelineStateKey, string> = {
-  draft: 'Select drafts → click Approve below',
-  review: 'Review these, then approve the best ones',
-  approved: 'Ready to publish — go to Schedule',
-  exported: 'Done — posted or exported',
+  draft: 'Click "Move to review" on each card, or select + bulk approve',
+  review: 'Review these, then click "Approve" on the best ones',
+  approved: 'Ready to publish — go to Schedule to pick a date',
+  exported: 'Done — these have been published or scheduled',
 }
 
 /** Per-column empty state hint */
 const COLUMN_EMPTY: Record<PipelineStateKey, string> = {
-  draft: 'New AI drafts will appear here',
-  review: 'Move drafts here for team review',
-  approved: 'Approve drafts to move them here',
-  exported: 'Published outputs show up here',
+  draft: 'New AI drafts will appear here after generating',
+  review: 'Move drafts here when ready for review',
+  approved: 'Approve your best drafts to move them here',
+  exported: 'Published content will show up here',
 }
 
 interface PipelineBoardProps {
