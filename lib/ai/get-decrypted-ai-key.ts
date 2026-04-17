@@ -3,6 +3,7 @@ import 'server-only'
 import { decrypt } from '@/lib/crypto/encryption'
 import { createClient } from '@/lib/supabase/server'
 import type { AiProvider } from '@/lib/ai/providers/types'
+import { log } from '@/lib/log'
 
 export type DecryptedKeyResult =
   | { ok: true; plaintext: string; keyId: string }
@@ -34,8 +35,7 @@ export async function getDecryptedAiKey(
     .maybeSingle()
 
   if (error) {
-    // eslint-disable-next-line no-console
-    console.error('[getDecryptedAiKey]', error.message)
+    log.error('getDecryptedAiKey failed', error)
     return {
       ok: false,
       code: 'db_error',

@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { RenderStatus } from '@/lib/supabase/types'
+import { log } from '@/lib/log'
 
 /**
  * Flips a rendering row to `done` or `failed`. Admin client because the
@@ -27,6 +28,6 @@ export async function updateRender(params: {
     .eq('provider_render_id', params.providerRenderId)
 
   if (error) {
-    console.error('[updateRender]', error.message)
+    log.error('updateRender failed', error)
   }
 }

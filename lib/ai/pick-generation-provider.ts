@@ -3,6 +3,7 @@ import 'server-only'
 import { getDecryptedAiKey } from '@/lib/ai/get-decrypted-ai-key'
 import type { LlmProvider } from '@/lib/ai/providers/types'
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 
 export type PickProviderResult =
   | { ok: true; provider: LlmProvider; apiKey: string; keyId: string }
@@ -37,8 +38,7 @@ export async function pickGenerationProvider(
     .eq('workspace_id', workspaceId)
 
   if (error) {
-    // eslint-disable-next-line no-console
-    console.error('[pickGenerationProvider]', error.message)
+    log.error('pickGenerationProvider failed', error)
     return {
       ok: false,
       code: 'db_error',

@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { ScraperFeature } from '@/lib/supabase/types'
+import { log } from '@/lib/log'
 
 /**
  * Writes one row to `scraper_usage`. Called from every scraper-backed
@@ -29,7 +30,7 @@ export async function logScraperUsage(params: {
       created_by: params.createdBy ?? null,
     })
     if (error) {
-      console.error('[logScraperUsage]', error.message)
+      log.error('logScraperUsage failed', error)
     }
   } catch (err) {
     console.error('[logScraperUsage] unexpected:', err)

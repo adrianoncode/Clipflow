@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendReferralWelcomeEmail } from '@/lib/email/send-referral-welcome'
 import { lookupReferrerUserId } from './lookup-referrer'
 import { isDisposableEmail } from './is-disposable-email'
+import { log } from '@/lib/log'
 
 /**
  * Called right after a new user's profile exists. Creates a referral row if:
@@ -60,7 +61,7 @@ export async function trackSignupReferral(params: {
       })
     }
   } catch (err) {
-    console.error('[trackSignupReferral]', err)
+    log.error('trackSignupReferral failed', err)
   }
 }
 

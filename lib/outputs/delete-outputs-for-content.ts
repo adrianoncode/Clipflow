@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 
 export type DeleteOutputsResult =
   | { ok: true }
@@ -29,8 +30,7 @@ export async function deleteOutputsForContent(
     .eq('workspace_id', workspaceId)
 
   if (error) {
-    // eslint-disable-next-line no-console
-    console.error('[deleteOutputsForContent]', error.message)
+    log.error('deleteOutputsForContent failed', error)
     return { ok: false, error: 'Could not clear previous outputs.' }
   }
 

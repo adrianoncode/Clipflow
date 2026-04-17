@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import type { ContentKind, ContentStatus } from '@/lib/supabase/types'
+import { log } from '@/lib/log'
 
 export interface ProjectDetail {
   id: string
@@ -46,7 +47,7 @@ export async function getProjectContentItems(
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('[getProjectContentItems]', error.message)
+    log.error('getProjectContentItems failed', error)
     return []
   }
   return (data ?? []) as ProjectContentItem[]

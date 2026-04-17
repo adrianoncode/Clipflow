@@ -2,6 +2,7 @@ import { cache } from 'react'
 
 import { createClient } from '@/lib/supabase/server'
 import type { AiProvider } from '@/lib/ai/providers/types'
+import { log } from '@/lib/log'
 
 export interface AiKeySummary {
   id: string
@@ -29,8 +30,7 @@ export const getAiKeys = cache(
       .order('created_at', { ascending: false })
 
     if (error) {
-      // eslint-disable-next-line no-console
-      console.error('[getAiKeys]', error.message)
+      log.error('getAiKeys failed', error)
       return []
     }
 

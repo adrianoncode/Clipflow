@@ -5,6 +5,7 @@ import { validateAiKey } from '@/lib/ai/validate-key'
 import type { AiProvider, ValidateResult } from '@/lib/ai/providers/types'
 import { encrypt } from '@/lib/crypto/encryption'
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 
 export type InsertAiKeyInput = {
   workspaceId: string
@@ -58,8 +59,7 @@ export async function insertAiKey(
     .single()
 
   if (error || !data) {
-    // eslint-disable-next-line no-console
-    console.error('[insertAiKey]', error?.message ?? 'unknown error')
+    log.error('insertAiKey failed', error?.message ?? 'unknown error')
     return { ok: false, error: 'Could not save the key. Please try again.' }
   }
 

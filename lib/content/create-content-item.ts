@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
 import type { ContentKind, ContentStatus, Json } from '@/lib/supabase/types'
+import { log } from '@/lib/log'
 
 export interface CreateContentItemInput {
   workspaceId: string
@@ -45,8 +46,7 @@ export async function createContentItem(
     .single()
 
   if (error || !data) {
-    // eslint-disable-next-line no-console
-    console.error('[createContentItem]', error?.message ?? 'unknown error')
+    log.error('createContentItem failed', error?.message ?? 'unknown error')
     return { ok: false, error: 'Could not create content item.' }
   }
 

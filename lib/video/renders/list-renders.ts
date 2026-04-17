@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
 import type { RenderRow } from '@/lib/video/renders/types'
+import { log } from '@/lib/log'
 
 export type { RenderRow } from '@/lib/video/renders/types'
 export { formatRenderKind } from '@/lib/video/renders/types'
@@ -28,7 +29,7 @@ export async function listRenders(params: {
     : await query
 
   if (error) {
-    console.error('[listRenders]', error.message)
+    log.error('listRenders failed', error)
     return []
   }
   return (data ?? []) as RenderRow[]

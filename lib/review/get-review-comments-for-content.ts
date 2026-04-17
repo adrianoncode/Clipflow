@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 
 export interface InternalReviewComment {
   id: string
@@ -48,7 +49,7 @@ export async function getReviewCommentsForContent(
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('[getReviewCommentsForContent]', error.message)
+    log.error('getReviewCommentsForContent failed', error)
     return []
   }
 

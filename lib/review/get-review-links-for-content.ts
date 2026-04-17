@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 
 export interface ReviewLinkRow {
   id: string
@@ -28,7 +29,7 @@ export async function getReviewLinksForContent(
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('[getReviewLinksForContent]', error.message)
+    log.error('getReviewLinksForContent failed', error)
     return []
   }
   return data ?? []

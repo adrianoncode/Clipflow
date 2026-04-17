@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
 import type { RenderKind, RenderProvider } from '@/lib/supabase/types'
+import { log } from '@/lib/log'
 
 export interface InsertRenderParams {
   workspaceId: string
@@ -39,7 +40,7 @@ export async function insertRender(params: InsertRenderParams): Promise<string |
       .single()
 
     if (error) {
-      console.error('[insertRender]', error.message)
+      log.error('insertRender failed', error)
       return null
     }
     return (data as { id: string } | null)?.id ?? null

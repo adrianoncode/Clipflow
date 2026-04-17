@@ -2,6 +2,7 @@ import { cache } from 'react'
 
 import { createClient } from '@/lib/supabase/server'
 import type { WorkspaceRole, WorkspaceType } from '@/lib/supabase/types'
+import { log } from '@/lib/log'
 
 export interface WorkspaceSummary {
   id: string
@@ -34,8 +35,7 @@ export const getWorkspaces = cache(async (): Promise<WorkspaceSummary[]> => {
     .returns<WorkspaceMemberJoinRow[]>()
 
   if (error) {
-    // eslint-disable-next-line no-console
-    console.error('[getWorkspaces]', error.message)
+    log.error('getWorkspaces failed', error)
     return []
   }
 

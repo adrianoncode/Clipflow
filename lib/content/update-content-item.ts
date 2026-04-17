@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
 import type { ContentStatus, Json } from '@/lib/supabase/types'
+import { log } from '@/lib/log'
 
 export interface UpdateContentItemPatch {
   status?: ContentStatus
@@ -42,8 +43,7 @@ export async function updateContentItem(
   const { data, error } = await query.select('id').maybeSingle()
 
   if (error) {
-    // eslint-disable-next-line no-console
-    console.error('[updateContentItem]', error.message)
+    log.error('updateContentItem failed', error)
     return { ok: false, error: 'Could not update content item.' }
   }
 

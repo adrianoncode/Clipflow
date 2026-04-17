@@ -3,6 +3,7 @@ import 'server-only'
 import type { PromptOutput } from '@/lib/ai/generate/types'
 import { createClient } from '@/lib/supabase/server'
 import type { Json } from '@/lib/supabase/types'
+import { log } from '@/lib/log'
 
 export interface UpdateOutputInput {
   outputId: string
@@ -33,8 +34,7 @@ export async function updateOutput(input: UpdateOutputInput): Promise<UpdateOutp
     .eq('workspace_id', input.workspaceId)
 
   if (error) {
-    // eslint-disable-next-line no-console
-    console.error('[updateOutput]', error.message)
+    log.error('updateOutput failed', error)
     return { ok: false, error: 'Could not save changes.' }
   }
 

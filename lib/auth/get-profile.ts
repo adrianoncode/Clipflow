@@ -1,6 +1,7 @@
 import { cache } from 'react'
 
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 
 export interface Profile {
   id: string
@@ -27,8 +28,7 @@ export const getProfile = cache(async (): Promise<Profile | null> => {
     .maybeSingle()
 
   if (error) {
-    // eslint-disable-next-line no-console
-    console.error('[getProfile]', error.message)
+    log.error('getProfile failed', error)
     return null
   }
 

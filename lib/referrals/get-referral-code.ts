@@ -3,6 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 
 /**
  * Returns the logged-in user's referral code. RLS lets the user read their
@@ -16,7 +17,7 @@ export const getOwnReferralCode = cache(async (): Promise<string | null> => {
     .maybeSingle()
 
   if (error) {
-    console.error('[getOwnReferralCode]', error.message)
+    log.error('getOwnReferralCode failed', error)
     return null
   }
   return (data?.referral_code as string | null) ?? null

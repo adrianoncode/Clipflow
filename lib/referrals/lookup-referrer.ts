@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeReferralCode } from './normalize-code'
+import { log } from '@/lib/log'
 
 /**
  * Resolves a referral code to the referrer's user id, bypassing RLS
@@ -22,7 +23,7 @@ export async function lookupReferrerUserId(rawCode: string | null | undefined): 
     .maybeSingle()
 
   if (error) {
-    console.error('[lookupReferrerUserId]', error.message)
+    log.error('lookupReferrerUserId failed', error)
     return null
   }
   return (data?.id as string | undefined) ?? null

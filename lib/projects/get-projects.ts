@@ -1,6 +1,7 @@
 import { cache } from 'react'
 
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 
 export interface ProjectRow {
   id: string
@@ -25,7 +26,7 @@ export const getProjects = cache(
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('[getProjects]', error.message)
+      log.error('getProjects failed', error)
       return []
     }
 

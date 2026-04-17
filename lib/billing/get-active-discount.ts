@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { stripe } from '@/lib/stripe/client'
+import { log } from '@/lib/log'
 
 export interface ActiveDiscount {
   percentOff: number | null
@@ -69,7 +70,7 @@ export async function getActiveStripeDiscount(
       isReferral: referralCouponId !== '' && coupon.id === referralCouponId,
     }
   } catch (err) {
-    console.error('[getActiveStripeDiscount]', err)
+    log.error('getActiveStripeDiscount failed', err)
     return null
   }
 }
