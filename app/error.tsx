@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { AlertTriangle, RotateCcw, Home } from 'lucide-react'
 import Link from 'next/link'
+import * as Sentry from '@sentry/nextjs'
 
 export default function GlobalError({
   error,
@@ -12,6 +13,9 @@ export default function GlobalError({
   reset: () => void
 }) {
   useEffect(() => {
+    // Report to Sentry and log. Sentry no-ops when DSN is unset,
+    // so local dev still just prints to the console.
+    Sentry.captureException(error)
     console.error(error)
   }, [error])
 
