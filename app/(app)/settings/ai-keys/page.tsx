@@ -1,9 +1,18 @@
 import { cookies } from 'next/headers'
-import { Key } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowRight,
+  Check,
+  Key,
+  Lock,
+  Sparkles,
+  Zap,
+} from 'lucide-react'
 
 import { ServiceCard } from '@/components/ai-keys/service-card'
 import { SERVICE_DIRECTORY } from '@/components/ai-keys/service-directory'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
+import type { AiProvider } from '@/lib/ai/providers/types'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 
 export const metadata = {
@@ -11,6 +20,50 @@ export const metadata = {
 }
 
 const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
+
+/**
+ * Feature unlock map — shows what each key category enables.
+ * Displayed at the top so users immediately understand the "why".
+ */
+const UNLOCK_MAP = [
+  {
+    category: 'llm' as const,
+    label: 'AI Provider',
+    required: true,
+    features: [
+      'Generate scripts & hooks',
+      'Captions & hashtags',
+      'SEO descriptions',
+      'Transcription',
+      'AI Coach tips',
+      'Ghostwriter',
+    ],
+  },
+  {
+    category: 'media' as const,
+    label: 'Media Stack',
+    required: false,
+    features: [
+      'Export as MP4 video',
+      'AI talking-head avatars',
+      'Voice cloning & TTS',
+      'Auto-dubbing',
+      'Smart reframing',
+    ],
+  },
+  {
+    category: 'publish' as const,
+    label: 'Publishing',
+    required: false,
+    features: [
+      'One-click post to TikTok',
+      'Auto-publish to Instagram',
+      'YouTube Shorts upload',
+      'LinkedIn auto-post',
+      'Scheduled publishing',
+    ],
+  },
+]
 
 export default async function ApiKeysPage() {
   const workspaces = await getWorkspaces()
@@ -40,71 +93,130 @@ export default async function ApiKeysPage() {
     return acc
   }, {})
 
-  const connectedCount = new Set(keys.map((k) => k.provider)).size
-  const totalServices = SERVICE_DIRECTORY.length
+  const connectedProviderSet = new Set(keys.map((k) => k.provider))
+  const hasLlm = llmServices.some((s) => connectedProviderSet.has(s.provider))
+  const hasMedia = mediaServices.some((s) => connectedProviderSet.has(s.provider))
+  const hasPublish = publishServices.some((s) => connectedProviderSet.has(s.provider))
+
+  const categoryStatus = {
+    llm: hasLlm,
+    media: hasMedia,
+    publish: hasPublish,
+  }
 
   return (
-    <div className="space-y-10">
-      {/* Header */}
-      <div className="space-y-4">
+    <div className="space-y-8">
+      {/* ── Header ── */}
+      <div className="space-y-3">
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100">
-            <Key className="h-5 w-5 text-emerald-600" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+            <Key className="h-5 w-5 text-primary" />
           </div>
           <div>
             <h1 className="text-lg font-bold tracking-tight">API Keys</h1>
             <p className="mt-0.5 max-w-2xl text-sm text-muted-foreground">
-              Clipflow runs on BYOK — you bring your own API keys and pay
-              providers directly at cost. We never mark up tokens, rendering or
-              voice. Keys are encrypted at rest with AES-256.
+              Connect your own API keys — you pay providers directly at cost,
+              no markup. Keys are encrypted with AES-256.
             </p>
           </div>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs">
-          <span className="font-mono font-bold text-primary">
-            {connectedCount}/{totalServices}
-          </span>
-          <span className="text-muted-foreground">services connected</span>
+      </div>
+
+      {/* ── Feature Unlock Map — the "what do I need" overview ── */}
+      <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+        <div className="border-b border-border/40 px-5 py-3">
+          <p className="text-sm font-semibold">What each key unlocks</p>
+          <p className="text-xs text-muted-foreground">
+            See exactly which features you get with each connection
+          </p>
+        </div>
+        <div className="grid divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0 divide-border/40">
+          {UNLOCK_MAP.map((group) => {
+            const isActive = categoryStatus[group.category]
+            return (
+              <div
+                key={group.category}
+                className={`relative p-5 transition-colors ${
+                  isActive ? 'bg-emerald-50/40' : ''
+                }`}
+              >
+                {/* Status badge */}
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-xs font-bold ${
+                        group.required && !isActive
+                          ? 'text-amber-600'
+                          : isActive
+                            ? 'text-emerald-600'
+                            : 'text-muted-foreground'
+                      }`}
+                    >
+                      {group.label}
+                    </span>
+                    {group.required && (
+                      <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700">
+                        Required
+                      </span>
+                    )}
+                  </div>
+                  {isActive ? (
+                    <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600">
+                      <Check className="h-3 w-3" />
+                      Active
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground/60">
+                      <Lock className="h-3 w-3" />
+                      Locked
+                    </span>
+                  )}
+                </div>
+
+                {/* Feature list */}
+                <ul className="space-y-1.5">
+                  {group.features.map((feature) => (
+                    <li
+                      key={feature}
+                      className={`flex items-center gap-2 text-xs ${
+                        isActive
+                          ? 'text-foreground'
+                          : 'text-muted-foreground/60'
+                      }`}
+                    >
+                      {isActive ? (
+                        <Check className="h-3 w-3 shrink-0 text-emerald-500" />
+                      ) : (
+                        <Lock className="h-3 w-3 shrink-0 text-muted-foreground/30" />
+                      )}
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          })}
         </div>
       </div>
 
-      {/* How it works — one-time explainer */}
-      <div className="rounded-xl border border-border/60 bg-muted/30 p-5">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          How BYOK works
-        </p>
-        <div className="mt-3 grid gap-4 sm:grid-cols-3">
-          {[
-            {
-              step: '1',
-              title: 'Sign up at the provider',
-              body: 'Each service has its own free account. Use the "Sign up" link next to each card — most have a free tier.',
-            },
-            {
-              step: '2',
-              title: 'Copy your API key',
-              body: 'Find the key in the provider\'s dashboard. Use the "Get key" link to go directly there.',
-            },
-            {
-              step: '3',
-              title: 'Paste it here',
-              body: 'We encrypt it with AES-256 and store it in your workspace. You pay the provider directly — we never see your bill.',
-            },
-          ].map((s) => (
-            <div key={s.step} className="flex gap-3">
-              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[10px] font-bold text-primary">
-                {s.step}
-              </span>
-              <div>
-                <p className="text-sm font-semibold">{s.title}</p>
-                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                  {s.body}
-                </p>
-              </div>
-            </div>
-          ))}
+      {/* ── Blocker banner if no LLM key ── */}
+      {!hasLlm && (
+        <div className="flex items-start gap-3 rounded-xl border-2 border-amber-200 bg-amber-50/80 px-5 py-4">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
+            <AlertTriangle className="h-4.5 w-4.5" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-amber-900">
+              Connect an AI provider to start generating
+            </p>
+            <p className="mt-0.5 text-xs text-amber-700">
+              Without at least one AI key (OpenAI, Anthropic, or Google), Clipflow
+              can&apos;t generate scripts, captions, or any AI content. Pick whichever
+              you already have — all three work the same inside Clipflow.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {!isOwner ? (
         <div className="rounded-2xl border border-dashed border-border/60 bg-muted/20 p-8 text-center text-sm text-muted-foreground">
@@ -112,64 +224,108 @@ export default async function ApiKeysPage() {
         </div>
       ) : null}
 
-      {/* ── AI Providers ───────────────────────────────────────── */}
+      {/* ── AI Providers (Required) ── */}
       <section className="space-y-3">
-        <div>
-          <div className="flex items-baseline gap-2">
-            <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              AI Providers
-            </h2>
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 font-mono text-[10px] font-semibold text-amber-700">
-              Required · Pick one
-            </span>
+        <div className={`rounded-2xl border-2 p-5 ${
+          hasLlm
+            ? 'border-emerald-200 bg-emerald-50/30'
+            : 'border-amber-200 bg-amber-50/20'
+        }`}>
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+                hasLlm
+                  ? 'bg-emerald-100 text-emerald-600'
+                  : 'bg-amber-100 text-amber-600'
+              }`}>
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-bold">AI Provider</h2>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    hasLlm
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    {hasLlm ? 'Connected' : 'Required — pick one'}
+                  </span>
+                </div>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Powers all AI features: scripts, hooks, captions, SEO, transcription.
+                  Pick any one — all three work identically.
+                </p>
+              </div>
+            </div>
+            {hasLlm && (
+              <Check className="h-5 w-5 text-emerald-500" />
+            )}
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            At least one is required — used for every content generation task:
-            scripts, hooks, captions, SEO descriptions, and transcription.
-            All three work identically inside Clipflow. Pick whichever you
-            already have credits for.
-          </p>
-        </div>
-        <div className="space-y-2">
-          {llmServices.map((spec) => (
-            <ServiceCard
-              key={spec.provider}
-              spec={spec}
-              connectedKeys={keysByProvider[spec.provider] ?? []}
-              workspaceId={currentWorkspace.id}
-              isOwner={isOwner}
-            />
-          ))}
+          <div className="space-y-2">
+            {llmServices.map((spec) => (
+              <ServiceCard
+                key={spec.provider}
+                spec={spec}
+                connectedKeys={keysByProvider[spec.provider] ?? []}
+                workspaceId={currentWorkspace.id}
+                isOwner={isOwner}
+              />
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ── Media Stack ────────────────────────────────────────── */}
+      {/* ── Media Stack (Optional) ── */}
       <section className="space-y-3">
         <div>
-          <div className="flex items-baseline gap-2">
-            <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              Media Stack
-            </h2>
-            <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground">
-              Optional · Unlock rendering &amp; voice
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Connect these to unlock MP4 rendering, AI avatars, and voice
-            cloning. Each has a generous free tier. You only pay the provider
-            when you actually use the feature — no Clipflow markup.
-          </p>
-          <div className="mt-2 grid grid-cols-3 gap-3 text-xs text-muted-foreground sm:max-w-sm">
-            {[
-              { label: 'Shotstack', what: 'MP4 render' },
-              { label: 'Replicate', what: 'Avatars' },
-              { label: 'ElevenLabs', what: 'Voice / TTS' },
-            ].map((row) => (
-              <div key={row.label} className="flex flex-col gap-0.5">
-                <span className="font-semibold text-foreground">{row.label}</span>
-                <span>{row.what}</span>
+          <div className="flex items-center gap-3 mb-3">
+            <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+              hasMedia
+                ? 'bg-emerald-100 text-emerald-600'
+                : 'bg-muted text-muted-foreground'
+            }`}>
+              <Zap className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold">Media Stack</h2>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                  Optional
+                </span>
               </div>
-            ))}
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Unlock video rendering (MP4), AI avatars, and voice cloning.
+                Each has a free tier — you only pay when you actually use it.
+              </p>
+            </div>
+          </div>
+          {/* Quick what-unlocks-what */}
+          <div className="mb-3 flex flex-wrap gap-2">
+            {[
+              { provider: 'shotstack', label: 'Shotstack', what: 'MP4 export' },
+              { provider: 'replicate', label: 'Replicate', what: 'AI avatars' },
+              { provider: 'elevenlabs', label: 'ElevenLabs', what: 'Voice & TTS' },
+            ].map((item) => {
+              const active = connectedProviderSet.has(item.provider as AiProvider)
+              return (
+                <div
+                  key={item.provider}
+                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] ${
+                    active
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                      : 'border-border/60 bg-muted/30 text-muted-foreground'
+                  }`}
+                >
+                  {active ? (
+                    <Check className="h-3 w-3 text-emerald-500" />
+                  ) : (
+                    <Lock className="h-3 w-3 text-muted-foreground/40" />
+                  )}
+                  <span className="font-semibold">{item.label}</span>
+                  <span className="text-muted-foreground/70">{item.what}</span>
+                </div>
+              )
+            })}
           </div>
         </div>
         <div className="space-y-2">
@@ -185,44 +341,45 @@ export default async function ApiKeysPage() {
         </div>
       </section>
 
-      {/* ── Publishing ─────────────────────────────────────────── */}
+      {/* ── Publishing (Optional) ── */}
       <section className="space-y-3">
         <div>
-          <div className="flex items-baseline gap-2">
-            <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              Publishing
-            </h2>
-            <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground">
-              Optional · Auto-post to social
-            </span>
+          <div className="flex items-center gap-3 mb-3">
+            <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+              hasPublish
+                ? 'bg-emerald-100 text-emerald-600'
+                : 'bg-muted text-muted-foreground'
+            }`}>
+              <ArrowRight className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold">Publishing</h2>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                  Optional
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Without this you export and post manually. With Upload-Post,
+                one click publishes to all platforms simultaneously.
+              </p>
+            </div>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Without this, you export your videos and post them yourself.
-            With Upload-Post connected, a{' '}
-            <strong className="text-foreground">Publish</strong> button appears
-            on every finished output — one click posts to TikTok, Instagram
-            Reels, YouTube Shorts, and LinkedIn simultaneously.
-          </p>
-          <div className="mt-3 rounded-lg border border-border/60 bg-muted/20 p-4">
-            <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-              How Upload-Post works
-            </p>
-            <ol className="mt-2 space-y-1.5 text-xs text-muted-foreground">
-              <li className="flex gap-2">
-                <span className="shrink-0 font-mono font-bold text-foreground">1.</span>
-                Create a free account at upload-post.com (10 posts/mo free, $16/mo for unlimited).
-              </li>
-              <li className="flex gap-2">
-                <span className="shrink-0 font-mono font-bold text-foreground">2.</span>
-                Inside their dashboard, connect your TikTok, Instagram, YouTube, and LinkedIn accounts.
-                They handle the OAuth — you log in to each platform once.
-              </li>
-              <li className="flex gap-2">
-                <span className="shrink-0 font-mono font-bold text-foreground">3.</span>
-                Copy your Upload-Post API key and paste it below. Clipflow uses that key to
-                trigger posts on your behalf. We never store your social passwords.
-              </li>
-            </ol>
+          {/* How it works mini */}
+          <div className="mb-3 rounded-xl border border-border/60 bg-muted/20 p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                <ArrowRight className="h-3.5 w-3.5" />
+              </div>
+              <div className="space-y-1 text-xs text-muted-foreground">
+                <p>
+                  <span className="font-semibold text-foreground">How it works: </span>
+                  Sign up at upload-post.com (free: 10 posts/mo) → connect your
+                  TikTok, Instagram, YouTube, LinkedIn there → paste the API key here.
+                  Clipflow posts on your behalf, never stores your social passwords.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
         <div className="space-y-2">
@@ -237,6 +394,47 @@ export default async function ApiKeysPage() {
           ))}
         </div>
       </section>
+
+      {/* ── Bottom: quick how-to for confused users ── */}
+      <details className="group rounded-xl border border-border/50 bg-card">
+        <summary className="flex cursor-pointer items-center gap-2 px-5 py-3.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
+          <span className="transition-transform group-open:rotate-90">▶</span>
+          New to API keys? How to get started in 2 minutes
+        </summary>
+        <div className="border-t border-border/40 p-5">
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              {
+                step: '1',
+                title: 'Pick a provider above',
+                body: 'OpenAI, Anthropic, or Google — all work the same. Most have free credits at signup.',
+              },
+              {
+                step: '2',
+                title: 'Get your API key',
+                body: 'Click "Sign up" → create account → find "API Keys" in their dashboard → copy.',
+              },
+              {
+                step: '3',
+                title: 'Paste it here',
+                body: 'Click "Connect" next to the provider → paste your key → done. Clipflow encrypts it automatically.',
+              },
+            ].map((s) => (
+              <div key={s.step} className="flex gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[10px] font-bold text-primary">
+                  {s.step}
+                </span>
+                <div>
+                  <p className="text-sm font-semibold">{s.title}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                    {s.body}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </details>
     </div>
   )
 }
