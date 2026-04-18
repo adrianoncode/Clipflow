@@ -16,6 +16,8 @@ const APP_ROUTES = ['/dashboard', '/workspace', '/settings', '/onboarding']
 const AUTH_ROUTES = ['/login', '/signup', '/magic-link']
 /** Routes that are intentionally public — skip all auth checks. */
 const PUBLIC_ROUTES = ['/review', '/invite']
+/** MFA challenge route — accessible while authenticated-but-unverified (AAL1). */
+const MFA_ROUTE = '/mfa'
 
 function isPrefixOf(pathname: string, prefixes: readonly string[]): boolean {
   return prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`))
@@ -95,6 +97,23 @@ export async function middleware(request: NextRequest) {
       redirect.cookies.set(cookie)
     }
     return redirect
+  }
+
+  // MFA step-up gate: if the user's session is AAL1 but they have MFA
+  // enrolled (nextLevel === 'aal2'), force them through /mfa before
+  // they can hit any protected app route.
+  if (user && isAppRoute && pathname !== MFA_ROUTE) {
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+      const url = request.nextUrl.clone()
+      url.pathname = MFA_ROUTE
+      url.searchParams.set('next', pathname)
+      const redirect = NextResponse.redirect(url)
+      for (const cookie of response().cookies.getAll()) {
+        redirect.cookies.set(cookie)
+      }
+      return redirect
+    }
   }
 
   const res = response()

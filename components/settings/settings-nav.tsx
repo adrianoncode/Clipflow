@@ -10,12 +10,14 @@ import {
   Mic2,
   Bot,
   Plug,
+  Shield,
   Webhook,
   LayoutTemplate,
 } from 'lucide-react'
 
 const accountGroup = [
   { href: '/settings/profile', label: 'Profile', icon: User },
+  { href: '/settings/security', label: 'Security', icon: Shield },
   { href: '/settings/workspace', label: 'Workspace', icon: Building2 },
   { href: '/settings/referrals', label: 'Referrals', icon: Gift },
 ]
