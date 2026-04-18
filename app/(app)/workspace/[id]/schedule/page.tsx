@@ -115,7 +115,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
               className="group inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-primary"
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
-              Pipeline
+              Drafts
               <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
@@ -167,8 +167,8 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
           <h1 className="text-xl font-bold tracking-tight">Schedule</h1>
           <p className="text-sm text-muted-foreground">
             {posts.length === 0
-              ? 'Schedule your approved content to go live automatically.'
-              : `${upcomingCount} upcoming · ${publishedCount} published · ${posts.length} total`}
+              ? 'Line up your approved posts. We push them out for you at the time you pick.'
+              : `${upcomingCount} queued · ${publishedCount} live · ${posts.length} total`}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -191,7 +191,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
             className="group inline-flex shrink-0 items-center gap-2 rounded-xl border border-primary/20 bg-primary/[0.04] px-4 py-2.5 text-sm font-semibold text-primary transition-all hover:-translate-y-0.5 hover:bg-primary/10 hover:shadow-md"
           >
             <CheckCircle2 className="h-4 w-4" />
-            View Pipeline
+            View drafts
             <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
@@ -206,7 +206,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
             </div>
             <div>
               <p className="font-mono text-lg font-bold tabular-nums leading-none">{upcomingCount}</p>
-              <p className="text-[10px] font-medium text-amber-700/70">Upcoming</p>
+              <p className="text-[10px] font-medium text-amber-700/70">Queued</p>
             </div>
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-emerald-200/40 bg-emerald-50/30 px-4 py-3">
@@ -215,7 +215,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
             </div>
             <div>
               <p className="font-mono text-lg font-bold tabular-nums leading-none">{publishedCount}</p>
-              <p className="text-[10px] font-medium text-emerald-700/70">Published</p>
+              <p className="text-[10px] font-medium text-emerald-700/70">Live</p>
             </div>
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-red-200/40 bg-red-50/30 px-4 py-3">
@@ -238,10 +238,10 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-emerald-800">
-              Auto-publish connected
+              Auto-posting is on
             </p>
             <p className="text-[11px] text-emerald-700/70">
-              Auto-publishing to TikTok, Reels, Shorts &amp; LinkedIn.
+              We'll post straight to TikTok, Reels, Shorts &amp; LinkedIn.
             </p>
           </div>
           <Link
@@ -257,9 +257,9 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
             <Send className="h-4 w-4 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold">Connect auto-publishing</p>
+            <p className="text-sm font-semibold">Let Clipflow post for you</p>
             <p className="text-[11px] text-muted-foreground">
-              Publish directly to TikTok, Reels, Shorts &amp; LinkedIn. Posts stay queued until connected.
+              Hook up your TikTok, Reels, Shorts &amp; LinkedIn so posts go live on their own. Until then they wait here.
             </p>
           </div>
           <Link
@@ -275,11 +275,11 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
       {posts.length === 0 ? (
         <EmptyState
           icon={CalendarDays}
-          title="Nothing scheduled yet"
-          description="Approve your drafts first, then drag them onto the calendar to schedule."
+          title="Nothing queued up"
+          description="Approve a draft first, then drag it onto the calendar to pick a time."
           actionLabel="Review drafts"
           actionHref={`/workspace/${params.id}/pipeline`}
-          secondaryLabel="View Calendar"
+          secondaryLabel="Open calendar"
           secondaryHref={`/workspace/${params.id}/schedule?view=calendar`}
         />
       ) : (

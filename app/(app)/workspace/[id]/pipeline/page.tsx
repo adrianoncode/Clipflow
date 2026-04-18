@@ -151,8 +151,8 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
           <h1 className="text-xl font-bold tracking-tight">Drafts</h1>
           <p className="text-sm text-muted-foreground">
             {totalCount === 0
-              ? 'Your AI-generated drafts appear here. Review them and approve the ones you like.'
-              : `${totalCount} draft${totalCount === 1 ? '' : 's'} · ${reviewCount} in review · ${approvedCount} approved`}
+              ? 'Your drafts land here. Pick the ones you like and approve them.'
+              : `${totalCount} draft${totalCount === 1 ? '' : 's'} · ${reviewCount} waiting · ${approvedCount} approved`}
           </p>
         </div>
 
@@ -204,11 +204,11 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
       {totalCount === 0 ? (
         <EmptyState
           icon={GitBranch}
-          title="No outputs in your pipeline yet"
-          description="Generate outputs from your content first. They'll appear here ready for you to review and approve."
-          actionLabel="Go to Content"
+          title="No drafts yet"
+          description="Add a video and turn it into posts first. They'll show up here for you to review and approve."
+          actionLabel="Go to videos"
           actionHref={`/workspace/${workspaceId}`}
-          secondaryLabel="Import content"
+          secondaryLabel="Add a video"
           secondaryHref={`/workspace/${workspaceId}/content/new`}
         />
       ) : (
