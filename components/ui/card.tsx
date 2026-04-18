@@ -7,7 +7,11 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
     <div
       ref={ref}
       className={cn(
-        'rounded-xl border bg-card text-card-foreground shadow',
+        // Tighter default card: refined border tone, soft layered
+        // shadow that reads as depth without drawing attention. Matches
+        // the Dashboard / Pipeline card style so shadcn Cards stop
+        // looking "generic" next to the polished one-offs.
+        'rounded-2xl border border-border/60 bg-card text-card-foreground shadow-[0_1px_2px_rgba(0,0,0,0.03),0_4px_12px_-4px_rgba(0,0,0,0.04)]',
         className,
       )}
       {...props}
