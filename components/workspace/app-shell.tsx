@@ -115,11 +115,23 @@ export function AppShell({
           },
         ]
       : []),
+    // Integrations + Analytics live inline with the other groups
+    // instead of pinned to the sidebar floor. Previously the bottom
+    // nav + `flex-1` layout created an awkward vertical gap for
+    // Creator users (5 items up top, 3 items far below). Keeping them
+    // in the main flow matches their frequency of use.
+    {
+      label: 'Insights',
+      items: [
+        { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+        { href: '/settings/integrations', label: 'Integrations', icon: Plug },
+      ],
+    },
   ]
 
+  // Only Settings stays at the very bottom — it's the classic
+  // account/config entry point, users expect to find it there.
   const bottomItems: NavItem[] = [
-    { href: '/settings/integrations', label: 'Integrations', icon: Plug },
-    { href: '/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/settings', label: 'Settings', icon: SettingsIcon },
   ]
 
