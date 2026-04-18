@@ -8,6 +8,7 @@ import { DEFAULT_MODELS } from '@/lib/ai/generate/models'
 import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { buildFollowUpTopicsPrompt } from '@/lib/ai/prompts/follow-up-topics'
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { generate } from '@/lib/ai/generate/generate'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { deleteContentItem } from '@/lib/content/delete-content-item'
@@ -143,8 +144,11 @@ export async function editTranscriptAction(
   })
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
 
-  const user = await getUser()
-  if (!user) redirect('/login')
+  // Explicit workspace membership check — don't rely on RLS as the sole
+  // authz mechanism on destructive writes. Cheap extra query, massive
+  // safety net if an RLS policy ever regresses.
+  const check = await requireWorkspaceMember(parsed.data.workspace_id)
+  if (!check.ok) return { ok: false, error: check.message }
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = createClient()
@@ -184,8 +188,8 @@ export async function renameContentAction(
   })
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
 
-  const user = await getUser()
-  if (!user) redirect('/login')
+  const check = await requireWorkspaceMember(parsed.data.workspace_id)
+  if (!check.ok) return { ok: false, error: check.message }
 
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = createClient()
@@ -809,8 +813,10 @@ export async function deleteContentAction(
 
   if (!workspaceId || !contentId) return { ok: false, error: 'Invalid input.' }
 
-  const user = await getUser()
-  if (!user) redirect('/login')
+  // Destructive action — explicit membership check before we let
+  // deleteContentItem run, even though it's already workspace-scoped.
+  const check = await requireWorkspaceMember(workspaceId)
+  if (!check.ok) return { ok: false, error: check.message }
 
   const result = await deleteContentItem(contentId, workspaceId)
   if (!result.ok) return { ok: false, error: result.error }

@@ -23,17 +23,22 @@ export async function searchWorkspace(workspaceId: string, query: string): Promi
   if (!q) return []
   const wildcard = `%${q}%`
 
+  // Soft-delete: search hits the user-facing results surface, so it must
+  // never return trashed content or trashed draft bodies. Both tables
+  // have deleted_at — filter on both branches of the Promise.all.
   const [contentRes, outputRes] = await Promise.all([
     supabase
       .from('content_items')
       .select('id, title, status, kind, created_at, transcript')
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .or(`title.ilike.${wildcard},transcript.ilike.${wildcard}`)
       .limit(10),
     supabase
       .from('outputs')
       .select('id, platform, body, created_at, content_id')
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
       .ilike('body', wildcard)
       .limit(10),
   ])

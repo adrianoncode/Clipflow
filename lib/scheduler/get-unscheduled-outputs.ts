@@ -30,11 +30,15 @@ export async function getUnscheduledOutputs(
     (scheduledRows ?? []).map((r) => r.output_id),
   )
 
-  // 2. Get all outputs in this workspace
+  // 2. Get all outputs in this workspace. Soft-deleted outputs (and
+  // outputs whose content_item was soft-deleted) must not surface as
+  // "available to schedule" — we filter both here and on the content
+  // title lookup below.
   const { data: outputs } = await supabase
     .from('outputs')
     .select('id, platform, body, content_id')
     .eq('workspace_id', workspaceId)
+    .is('deleted_at', null)
 
   if (!outputs?.length) return []
 
@@ -64,12 +68,16 @@ export async function getUnscheduledOutputs(
 
   if (eligible.length === 0) return []
 
-  // 5. Resolve content titles
+  // 5. Resolve content titles — also filter soft-deleted content so
+  // an output tied to trashed content doesn't slip through with a null
+  // title (the eligible list is already filtered, but the content-side
+  // filter is defense-in-depth in case the reaper timing diverges).
   const contentIds = [...new Set(eligible.map((o) => o.content_id))]
   const { data: contents } = await supabase
     .from('content_items')
     .select('id, title')
     .in('id', contentIds)
+    .is('deleted_at', null)
 
   const titleMap = new Map<string, string | null>()
   for (const c of contents ?? []) titleMap.set(c.id, c.title)

@@ -175,6 +175,17 @@ export async function createPortalSessionAction(
 /**
  * Upserts a subscription row via admin client (bypasses RLS).
  * Called from the webhook handler.
+ *
+ * Concurrency: Stripe retries webhook deliveries on any 5xx, and two
+ * deliveries can land at the same time. The previous check-then-update
+ * pattern could race:
+ *
+ *   [both] see "no existing row" → [both] INSERT → duplicate rows
+ *
+ * We rely on a UNIQUE constraint on subscriptions.workspace_id (see
+ * migration) and use PostgREST's `upsert(..., onConflict)` which
+ * resolves to an atomic `INSERT ... ON CONFLICT DO UPDATE`. Safe under
+ * concurrent webhook delivery.
  */
 export async function upsertSubscription(params: {
   workspaceId: string
@@ -190,16 +201,11 @@ export async function upsertSubscription(params: {
   const status = params.status as 'active' | 'trialing' | 'past_due' | 'canceled' | 'unpaid' | 'incomplete' | 'incomplete_expired' | 'paused'
   const periodEnd = params.currentPeriodEnd.toISOString()
 
-  const { data: existing } = await admin
+  await admin
     .from('subscriptions')
-    .select('id')
-    .eq('workspace_id', params.workspaceId)
-    .maybeSingle()
-
-  if (existing) {
-    await admin
-      .from('subscriptions')
-      .update({
+    .upsert(
+      {
+        workspace_id: params.workspaceId,
         stripe_customer_id: params.stripeCustomerId,
         stripe_subscription_id: params.stripeSubscriptionId,
         plan,
@@ -207,17 +213,7 @@ export async function upsertSubscription(params: {
         current_period_end: periodEnd,
         cancel_at_period_end: params.cancelAtPeriodEnd,
         updated_at: new Date().toISOString(),
-      })
-      .eq('workspace_id', params.workspaceId)
-  } else {
-    await admin.from('subscriptions').insert({
-      workspace_id: params.workspaceId,
-      stripe_customer_id: params.stripeCustomerId,
-      stripe_subscription_id: params.stripeSubscriptionId,
-      plan,
-      status,
-      current_period_end: periodEnd,
-      cancel_at_period_end: params.cancelAtPeriodEnd,
-    })
-  }
+      },
+      { onConflict: 'workspace_id' },
+    )
 }
