@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: '%s | Clipflow',
   },
   description:
-    'Turn one video into TikTok, Instagram Reels, YouTube Shorts & LinkedIn posts in seconds. AI-powered content repurposing with auto-subtitles, B-Roll, virality scoring, and social scheduling. BYOK — bring your own AI key.',
+    'Turn one video into TikTok, Instagram Reels, YouTube Shorts & LinkedIn posts in seconds. AI-powered content repurposing with auto-subtitles, B-Roll, A/B-tested hooks, and social scheduling. BYOK — bring your own AI key.',
   keywords: [
     'content repurposing',
     'AI content creator',
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     'content scheduling tool',
     'auto subtitles',
     'AI B-Roll',
-    'virality score',
+    'A/B hook testing',
     'social media management',
     'content marketing tool',
     'BYOK AI',
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     siteName: 'Clipflow',
     title: 'Clipflow — AI Content Repurposing for Creators & Agencies',
     description:
-      'Turn one video into TikTok, Reels, Shorts & LinkedIn posts in seconds. Auto-subtitles, B-Roll, virality scoring & scheduling.',
+      'Turn one video into TikTok, Reels, Shorts & LinkedIn posts in seconds. Auto-subtitles, B-Roll, A/B-tested hooks & scheduling.',
   },
   twitter: {
     card: 'summary_large_image',

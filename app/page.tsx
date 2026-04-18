@@ -37,7 +37,7 @@ import { REFERRAL_DISCOUNT_PERCENT } from '@/lib/referrals/constants'
 export const metadata: Metadata = {
   title: 'Clipflow — One video. Every platform. In 30 seconds.',
   description:
-    'The AI content studio that turns one video into TikTok, Reels, Shorts and LinkedIn posts. Real MP4 rendering, auto-subtitles, B-Roll, virality scoring. BYOK — zero AI markup.',
+    'The AI content studio that turns one video into TikTok, Reels, Shorts and LinkedIn posts. Real MP4 rendering, auto-subtitles, B-Roll, A/B-tested hooks. BYOK — zero AI markup.',
   alternates: { canonical: 'https://clipflow.to' },
 }
 
@@ -206,8 +206,8 @@ function Hero({ signupHref }: { signupHref: string }) {
         </h1>
 
         <p className="mx-auto mt-7 max-w-xl text-center text-lg leading-relaxed text-zinc-600 sm:text-xl">
-          Paste a YouTube link. Get TikTok, Reels, Shorts and LinkedIn drafts — with AI
-          subtitles, B-Roll and virality scoring — in under 30 seconds.
+          Paste a YouTube link. Get TikTok, Reels, Shorts and LinkedIn drafts — with
+          AI subtitles, B-Roll and A/B-tested hooks — in under 30 seconds.
         </p>
 
         {/* CTA */}
@@ -271,8 +271,8 @@ function Hero({ signupHref }: { signupHref: string }) {
               className="glass-pill animate-float absolute -right-2 bottom-16 z-20 hidden items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium text-zinc-800 md:flex"
               style={{ animationDelay: '3s' }}
             >
-              <span className="font-mono font-bold text-violet-700">94/100</span>
-              virality score
+              <span className="font-mono font-bold text-violet-700">4×</span>
+              platform coverage
             </div>
 
             <div className="conic-glow rounded-3xl p-px">
@@ -502,9 +502,9 @@ function FeaturesBento() {
             <SpotlightCard className="h-full rounded-2xl">
               <BentoCard
                 className="h-full"
-                eyebrow="Creation"
-                title="AI Ghostwriter"
-                desc="Topic → full script with hooks, CTA and platform variants. Zero prompt writing."
+                eyebrow="Hooks"
+                title="A/B Hook Testing"
+                desc="Generate three hook variants with different psychological triggers. Pick the winner before you publish."
                 icon={Wand2}
               />
             </SpotlightCard>

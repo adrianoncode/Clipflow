@@ -14,7 +14,6 @@ import {
 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
-import { AiCoachPanel } from '@/components/outputs/ai-coach-panel'
 import { SeoPanel } from '@/components/outputs/seo-panel'
 import { ExportAllButton } from '@/components/outputs/export-all-button'
 import { GenerateOutputsForm } from '@/components/outputs/generate-outputs-form'
@@ -200,7 +199,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
                 </span>
               </span>
               <span className="text-xs font-normal text-muted-foreground">
-                Video Studio, AI Coach, SEO, Reviews & more
+                Video Studio, SEO, Reviews &amp; more
               </span>
             </summary>
             <div className="space-y-4 border-t border-border/40 p-4">
@@ -215,12 +214,6 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
               {/* Render history */}
               <RenderHistoryPanel initialRenders={renders} />
 
-              <AiCoachPanel
-                workspaceId={params.id}
-                outputBodies={outputs
-                  .map((o) => `[${o.platform}]\n${o.body ?? ''}`)
-                  .join('\n\n---\n\n')}
-              />
               <SeoPanel
                 workspaceId={params.id}
                 contentId={params.contentId}

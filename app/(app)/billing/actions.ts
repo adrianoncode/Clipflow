@@ -11,6 +11,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getReferralCouponId } from '@/lib/referrals/constants'
 import { getEarnedReferrerCouponId } from '@/lib/referrals/confirm-referral'
 
+// 'team' is the legacy "Creator Pro" SKU. It's hidden from the public
+// pricing surface (PUBLIC_PLAN_ORDER = free/solo/agency), so BillingPlansClient
+// never renders an upgrade button for it — but leaving it in the enum
+// means grandfathered subscribers can still change interval or reactivate
+// without the schema rejecting their existing plan.
 const checkoutSchema = z.object({
   workspace_id: z.string().uuid(),
   plan: z.enum(['solo', 'team', 'agency']),

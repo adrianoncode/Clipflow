@@ -63,7 +63,7 @@ export function ToolsTab({ item, workspaceId, meta, currentPlan }: ToolsTabProps
             label="Subtitles"
             description="Burn stylized captions into your video for social platforms."
             href={`/workspace/${workspaceId}/content/${item.id}/subtitles`}
-            locked={gate('scheduling', currentPlan)}
+            locked={gate('brollAutomation', currentPlan)}
           />
           <ToolCard
             icon={<Clapperboard className="h-4 w-4 text-muted-foreground" />}
@@ -85,7 +85,7 @@ export function ToolsTab({ item, workspaceId, meta, currentPlan }: ToolsTabProps
               label="Reframe"
               description="Smart-crop horizontal video to vertical 9:16 format."
               href={`/workspace/${workspaceId}/content/${item.id}/reframe`}
-              locked={gate('scheduling', currentPlan)}
+              locked={gate('brollAutomation', currentPlan)}
             />
           )}
           {item.kind === 'video' && (

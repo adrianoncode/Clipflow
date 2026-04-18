@@ -35,10 +35,10 @@ export default async function DubPage({ params }: PageProps) {
   return (
     <UpgradeGate
       currentPlan={plan ?? 'free'}
-      requiredPlan="team"
+      requiredPlan="agency"
       workspaceId={params.id}
       featureName="Voice Dubbing"
-      description="Dub your video into another language with ElevenLabs voice cloning. Available from the Team plan."
+      description="Dub your video into another language with ElevenLabs voice cloning. Unlocks on the Studio plan."
     >
       <div className="mx-auto w-full max-w-2xl p-4 sm:p-8">
         <DubbingClient

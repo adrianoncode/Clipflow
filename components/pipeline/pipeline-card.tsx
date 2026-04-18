@@ -229,7 +229,7 @@ export function PipelineCard({
             contentTitle={contentTitle}
           />
           <Link
-            href={`/workspace/${workspaceId}/studio?content_id=${contentId}`}
+            href={`/workspace/${workspaceId}/content/${contentId}/outputs#video-studio`}
             className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-pink-50 px-2 py-1.5 text-[10px] font-semibold text-pink-700 transition-all hover:bg-pink-100"
           >
             <Clapperboard className="h-3 w-3" />

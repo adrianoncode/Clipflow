@@ -33,10 +33,10 @@ export default async function AvatarPage({ params }: PageProps) {
   return (
     <UpgradeGate
       currentPlan={plan ?? 'free'}
-      requiredPlan="solo"
+      requiredPlan="agency"
       workspaceId={params.id}
       featureName="AI Avatar"
-      description="Turn any script into a photorealistic talking-head video with D-ID. Available from the Solo plan."
+      description="Turn any script into a photorealistic talking-head video with D-ID. Unlocks on the Studio plan."
     >
       <div className="mx-auto w-full max-w-2xl p-4 sm:p-8">
         <AvatarClient

@@ -14,7 +14,7 @@ import { createClient } from '@/lib/supabase/server'
 import { PLATFORM_LABELS, PLATFORM_SOFT_COLORS as PLATFORM_BADGE_COLORS } from '@/lib/platforms'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Pipeline' }
+export const metadata = { title: 'Drafts' }
 
 const COLUMN_CONFIG: PipelineColumn[] = [
   {

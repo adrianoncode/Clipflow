@@ -132,59 +132,6 @@ export async function getSeoSuggestionsAction(
 }
 
 // ---------------------------------------------------------------------------
-// AI Coach — critique + 3 improvements per draft set
-// ---------------------------------------------------------------------------
-
-export type AiCoachFeedbackState =
-  | { ok?: undefined }
-  | { ok: true; feedback: string }
-  | { ok: false; error: string }
-
-export async function getAiCoachFeedbackAction(
-  _prev: AiCoachFeedbackState,
-  formData: FormData,
-): Promise<AiCoachFeedbackState> {
-  const workspaceId = formData.get('workspace_id')?.toString() ?? ''
-  const outputBodies = formData.get('output_bodies')?.toString() ?? ''
-
-  if (!workspaceId) return { ok: false, error: 'Invalid input.' }
-
-  const user = await getUser()
-  if (!user) redirect('/login')
-
-  const pick = await pickGenerationProvider(workspaceId)
-  if (!pick.ok) return { ok: false, error: pick.message }
-
-  const systemPrompt =
-    'You are a social media content coach. Give concise, direct, actionable feedback. Format your response as a numbered list of 3 specific improvements. No preamble, no fluff.'
-  const userPrompt = `Review these platform drafts and give 3 specific, actionable improvements:\n\n${outputBodies.slice(0, 4000)}`
-
-  const gen = await generate({
-    provider: pick.provider,
-    apiKey: pick.apiKey,
-    model: DEFAULT_MODELS[pick.provider],
-    system: systemPrompt,
-    user: userPrompt,
-  })
-
-  if (!gen.ok) return { ok: false, error: gen.message }
-
-  // The generate function returns structured JSON — the model's coaching text
-  // will land in the hook or caption field depending on provider. Extract the
-  // most content-rich field as plain text feedback.
-  const raw = gen.json as unknown as Record<string, unknown>
-  const feedback =
-    [raw.hook, raw.script, raw.caption]
-      .filter((v): v is string => typeof v === 'string' && v.length > 0)
-      .sort((a, b) => b.length - a.length)[0] ?? ''
-
-  if (!feedback) return { ok: false, error: 'No feedback generated. Try again.' }
-
-  return { ok: true, feedback }
-}
-
-
-// ---------------------------------------------------------------------------
 // A/B Hook Testing — 3 variants with psychological triggers
 // ---------------------------------------------------------------------------
 

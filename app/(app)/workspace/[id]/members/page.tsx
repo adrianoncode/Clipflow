@@ -1,6 +1,8 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
+import { getWorkspacePlan } from '@/lib/billing/get-subscription'
+import { checkPlanAccess } from '@/lib/billing/plans'
 import { getWorkspaceMembers, getWorkspaceInvites } from '@/lib/members/get-workspace-members'
 import { MembersPanel } from '@/components/members/members-panel'
 
@@ -14,6 +16,13 @@ export default async function MembersPage({ params }: MembersPageProps) {
   const workspaces = await getWorkspaces()
   const workspace = workspaces.find((w) => w.id === params.id)
   if (!workspace) notFound()
+
+  // Server gate — teamSeats is Studio-only. Matches the sidebar
+  // `requires: 'teamSeats'` rule but guards URL paste too.
+  const plan = await getWorkspacePlan(params.id)
+  if (!checkPlanAccess(plan, 'teamSeats')) {
+    redirect(`/billing?workspace_id=${params.id}&plan=agency&feature=teamSeats`)
+  }
 
   const isOwner = workspace.role === 'owner'
 

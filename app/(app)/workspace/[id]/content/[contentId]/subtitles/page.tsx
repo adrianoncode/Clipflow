@@ -1,11 +1,13 @@
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Subtitles' }
 
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 
 import { SubtitlesClient } from '@/components/content/subtitles-client'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getSignedUrl } from '@/lib/content/get-signed-url'
+import { getWorkspacePlan } from '@/lib/billing/get-subscription'
+import { checkPlanAccess } from '@/lib/billing/plans'
 import type { SubtitleCue } from '@/lib/subtitles/generate-subtitles'
 import type { WordTimestamp } from '@/lib/ai/transcription/transcribe-with-timestamps'
 
@@ -15,6 +17,14 @@ interface SubtitlesPageProps {
 
 export default async function SubtitlesPage({ params }: SubtitlesPageProps) {
   const { id: workspaceId, contentId } = params
+
+  // Server gate — tools-tab links through the plan gate client-side,
+  // but anyone pasting this URL would otherwise reach the page.
+  // brollAutomation is the "solo+ unlocks video-render tools" flag.
+  const plan = await getWorkspacePlan(workspaceId)
+  if (!checkPlanAccess(plan, 'brollAutomation')) {
+    redirect(`/billing?workspace_id=${workspaceId}&plan=solo&feature=brollAutomation`)
+  }
 
   const item = await getContentItem(contentId, workspaceId)
   if (!item) notFound()

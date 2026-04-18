@@ -27,7 +27,7 @@ const POSTS: Post[] = [
     name: 'Sarah Kim',
     photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&h=256&q=80',
     verified: true,
-    body: 'ok Clipflow is unreal. dropped a 45min podcast → got 4 platform-native drafts with virality scores in ~30s. My content pipeline just got 10x lighter.',
+    body: 'ok Clipflow is unreal. dropped a 45min podcast → got 4 platform-native drafts with A/B-tested hooks in ~30s. My content workflow just got 10x lighter.',
     stats: { likes: 1284, reposts: 142, replies: 38, views: 48200 },
     timeAgo: '2h',
   },

@@ -98,12 +98,17 @@ export async function createTeamWorkspaceAction(
 
   const supabase = createClient()
 
+  // Agency users go straight to `client` workspace type — their first
+  // workspace IS their studio / agency brand. `team` stays as the
+  // legacy type only for users who are grandfathered in from the
+  // pre-ICP-split schema.
+  const workspaceType = parsed.data.role_type === 'agency' ? 'client' : 'team'
   const { data: newWorkspaceId, error: rpcError } = await supabase.rpc(
     'create_workspace_with_owner',
     {
       _name: parsed.data.name,
       _slug: slugify(parsed.data.name),
-      _type: 'team',
+      _type: workspaceType,
     },
   )
   if (rpcError || !newWorkspaceId) {

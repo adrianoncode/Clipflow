@@ -135,11 +135,11 @@ export function AnimatedHeroMockup() {
           <div className="hidden w-40 shrink-0 border-r border-zinc-100 bg-zinc-50/60 p-3 sm:block">
             {[
               ['◉', 'Dashboard'],
-              ['≡', 'Pipeline'],
-              ['◷', 'Calendar'],
-              ['✎', 'Ghostwriter'],
-              ['✶', 'All Tools', true],
-              ['▲', 'Trends'],
+              ['≡', 'Drafts'],
+              ['◷', 'Schedule'],
+              ['✎', 'Content'],
+              ['✶', 'AI Tools', true],
+              ['▲', 'Analytics'],
               ['◢', 'Creators'],
             ].map(([icon, label, active]) => (
               <div

@@ -65,8 +65,6 @@ export async function checkRateLimit(
 export const RATE_LIMITS = {
   /** AI generation: 20 requests per minute per user */
   generation: { limit: 20, windowMs: 60_000 },
-  /** Script coach: 10 requests per minute per user */
-  scriptCoach: { limit: 10, windowMs: 60_000 },
   /** Content creation: 10 per minute per user */
   contentCreate: { limit: 10, windowMs: 60_000 },
   /** API routes: 30 per minute per user */

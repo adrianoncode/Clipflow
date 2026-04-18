@@ -7,6 +7,8 @@ import { BrollClient } from '@/components/content/broll-client'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { extractBrollKeywords } from '@/lib/broll/extract-broll-keywords'
 import { searchPexelsVideos } from '@/lib/broll/search-pexels'
+import { getWorkspacePlan } from '@/lib/billing/get-subscription'
+import { checkPlanAccess } from '@/lib/billing/plans'
 
 interface BrollPageProps {
   params: { id: string; contentId: string }
@@ -14,6 +16,13 @@ interface BrollPageProps {
 
 export default async function BrollPage({ params }: BrollPageProps) {
   const { id: workspaceId, contentId } = params
+
+  // Server-level plan gate — URL paste would otherwise bypass the
+  // tools-tab client gate.
+  const plan = await getWorkspacePlan(workspaceId)
+  if (!checkPlanAccess(plan, 'brollAutomation')) {
+    redirect(`/billing?workspace_id=${workspaceId}&plan=solo&feature=brollAutomation`)
+  }
 
   const item = await getContentItem(contentId, workspaceId)
 

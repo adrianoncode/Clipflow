@@ -2,15 +2,36 @@ export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Clients' }
 
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
 import { getUser } from '@/lib/auth/get-user'
+import { getWorkspaces } from '@/lib/auth/get-workspaces'
+import { getWorkspacePlan } from '@/lib/billing/get-subscription'
+import { checkPlanAccess } from '@/lib/billing/plans'
 import { getClientWorkspaces } from '@/lib/workspaces/get-client-workspaces'
+
+const WORKSPACE_COOKIE = 'clipflow.current_workspace'
 
 export default async function ClientsPage() {
   const user = await getUser()
   if (!user) redirect('/login')
+
+  // Server gate — Clients is a Studio-plan surface. Sidebar hides it
+  // for non-agency users but a pasted /clients URL would otherwise
+  // reach it. Resolve the active workspace to check its plan.
+  const workspaces = await getWorkspaces()
+  const cookieWorkspaceId = cookies().get(WORKSPACE_COOKIE)?.value
+  const active =
+    workspaces.find((w) => w.id === cookieWorkspaceId) ??
+    workspaces.find((w) => w.type === 'personal') ??
+    workspaces[0]
+  if (!active) redirect('/dashboard')
+  const plan = await getWorkspacePlan(active.id)
+  if (!checkPlanAccess(plan, 'multiWorkspace')) {
+    redirect(`/billing?workspace_id=${active.id}&plan=agency&feature=multiWorkspace`)
+  }
 
   const clientWorkspaces = await getClientWorkspaces(user.id)
 
@@ -22,7 +43,7 @@ export default async function ClientsPage() {
           <p className="text-sm text-muted-foreground">All your client workspaces in one place.</p>
         </div>
         <Button asChild>
-          <Link href="/workspace/new">Create client workspace</Link>
+          <Link href="/workspace/new?as=client">Create client workspace</Link>
         </Button>
       </div>
 
@@ -30,7 +51,7 @@ export default async function ClientsPage() {
         <div className="rounded-lg border border-dashed p-12 text-center">
           <p className="text-muted-foreground">No client workspaces yet.</p>
           <Button asChild className="mt-4" variant="outline">
-            <Link href="/workspace/new">Create client workspace</Link>
+            <Link href="/workspace/new?as=client">Create client workspace</Link>
           </Button>
         </div>
       ) : (

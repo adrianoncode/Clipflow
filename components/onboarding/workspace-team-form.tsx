@@ -14,6 +14,11 @@ import {
 
 const initialState: WorkspaceState = {}
 
+// Legacy note: the form's DB action lives under `createTeamWorkspaceAction`
+// for schema reasons (it was originally the shared team+agency form).
+// The onboarding role step only offers 'agency' now, so this component
+// is agency-only. The `team` role stays in the Zod enum for grandfathered
+// users only.
 interface WorkspaceTeamFormProps {
   roleType: 'team' | 'agency'
 }
@@ -27,18 +32,9 @@ function SubmitButton({ label }: { label: string }) {
   )
 }
 
-function LiveTeamPreview({
-  name,
-  roleType,
-}: {
-  name: string
-  roleType: 'team' | 'agency'
-}) {
-  const defaultName = roleType === 'agency' ? 'Acme Agency' : 'Acme Studios'
-  const displayName = name.trim() || defaultName
+function LivePreview({ name }: { name: string }) {
+  const displayName = name.trim() || 'Acme Studio'
   const initial = displayName.charAt(0).toUpperCase()
-  const subtitle =
-    roleType === 'agency' ? 'Agency · multi-client' : 'Team · shared workspace'
   return (
     <div className="mt-4 overflow-hidden rounded-xl border border-border/60 bg-zinc-50/60 p-3">
       <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -51,7 +47,7 @@ function LiveTeamPreview({
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{displayName}</p>
           <p className="truncate text-[11px] text-muted-foreground">
-            {subtitle}
+            Studio · multi-client
           </p>
         </div>
         <span className="font-mono text-[10px] text-muted-foreground/50">
@@ -69,36 +65,31 @@ export function WorkspaceTeamForm({ roleType }: WorkspaceTeamFormProps) {
   )
   const [name, setName] = useState('')
 
-  const placeholder = roleType === 'team' ? 'Acme Studios' : 'Acme Agency'
-  const label =
-    roleType === 'team' ? 'Create team workspace' : 'Create agency workspace'
-
   return (
     <form action={formAction} className="space-y-5">
       <input type="hidden" name="role_type" value={roleType} />
       <div className="space-y-2">
-        <Label htmlFor="name">Workspace name</Label>
+        <Label htmlFor="name">Studio name</Label>
         <Input
           id="name"
           name="name"
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder={placeholder}
+          placeholder="Acme Studio"
           maxLength={80}
           autoFocus
         />
         <p className="text-xs text-muted-foreground">
-          {roleType === 'agency'
-            ? 'This is your agency workspace. You can add client workspaces later.'
-            : 'This is where your team will collaborate on content.'}
+          This is your home workspace. You can add client workspaces later from
+          the sidebar.
         </p>
-        <LiveTeamPreview name={name} roleType={roleType} />
+        <LivePreview name={name} />
       </div>
       {state.error ? (
         <FormMessage variant="error">{state.error}</FormMessage>
       ) : null}
-      <SubmitButton label={label} />
+      <SubmitButton label="Create studio workspace" />
     </form>
   )
 }

@@ -6,6 +6,11 @@ import { z } from 'zod'
 
 import { ONBOARDING_ROLE_COOKIE } from '@/app/(onboarding)/onboarding/cookies'
 
+// 'team' stays in the enum because the DB profiles table still has
+// grandfathered users with role_type='team'. New onboarding only
+// writes 'solo' or 'agency' (UI offers just those), but accepting
+// 'team' as input keeps a future "re-run onboarding" flow from
+// rejecting legacy users.
 const schema = z.object({
   role: z.enum(['solo', 'team', 'agency']),
 })
