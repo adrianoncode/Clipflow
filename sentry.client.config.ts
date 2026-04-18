@@ -15,8 +15,19 @@ if (dsn) {
     environment: process.env.NEXT_PUBLIC_VERCEL_ENV ?? 'development',
     release: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
 
-    // Performance sampling — 10% of transactions in production.
+    // Performance monitoring — 10% transaction sampling in prod, 0% in dev.
+    // Browser-side traces capture pageviews, navigations, and resource
+    // timings. Combined with tracePropagationTargets below, traces flow
+    // from browser → server → Supabase for end-to-end latency insight.
     tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
+
+    // Distributed tracing: only propagate trace headers to our own
+    // domains so we don't leak trace context to third-party CDNs.
+    tracePropagationTargets: [
+      'localhost',
+      /^https:\/\/clipflow\.to/,
+      /^https:\/\/.*\.vercel\.app/,
+    ],
 
     // Session replay: 100% of errored sessions, 1% of normal sessions.
     // Zero cost in dev because we don't init without a DSN.
@@ -24,6 +35,7 @@ if (dsn) {
     replaysSessionSampleRate: 0.01,
 
     integrations: [
+      Sentry.browserTracingIntegration(),
       Sentry.replayIntegration({
         // Mask everything sensitive by default — user-generated content
         // (drafts, transcripts) may contain PII.

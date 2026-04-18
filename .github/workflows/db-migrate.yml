@@ -1,0 +1,52 @@
+# ---------------------------------------------------------------------------
+# Auto-apply Supabase migrations on every push to main.
+#
+# Previously you had to manually run `supabase db push` — easy to forget,
+# which means "new migration on GitHub, but DB still on old schema" bugs.
+# This workflow runs ONLY when files in supabase/migrations/ change.
+#
+# Required GitHub repository secrets (add at: Settings → Secrets → Actions):
+#   SUPABASE_ACCESS_TOKEN   — personal access token from
+#                             https://supabase.com/dashboard/account/tokens
+#   SUPABASE_DB_PASSWORD    — project DB password (Settings → Database → Connection)
+#   SUPABASE_PROJECT_REF    — project ref (20-char id, visible in dashboard URL)
+#
+# First-time setup (after adding secrets):
+#   Push any migration to trigger. Verify it applied via Supabase dashboard
+#   SQL editor: `SELECT * FROM supabase_migrations.schema_migrations;`
+# ---------------------------------------------------------------------------
+name: DB Migrate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+
+jobs:
+  migrate:
+    name: Apply migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+      - name: Push migrations
+        run: supabase db push
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
