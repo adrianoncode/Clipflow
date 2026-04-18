@@ -39,10 +39,10 @@ const COLUMN_HINTS: Record<PipelineStateKey, string> = {
 
 /** Per-column empty state hint */
 const COLUMN_EMPTY: Record<PipelineStateKey, string> = {
-  draft: 'New AI drafts will appear here after generating',
-  review: 'Move drafts here when ready for review',
-  approved: 'Approve your best drafts to move them here',
-  exported: 'Published content will show up here',
+  draft: 'New drafts land here after you turn a video into posts',
+  review: 'Move drafts here when they\u2019re ready for a second look',
+  approved: 'Approve your favorites to move them here',
+  exported: 'Posts you\u2019ve already sent out live here',
 }
 
 interface PipelineBoardProps {

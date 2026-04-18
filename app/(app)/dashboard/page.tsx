@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { cookies } from 'next/headers'
 import {
   ArrowRight,
-  ArrowUpRight,
   Calendar,
   CheckCircle2,
   Clock,
@@ -13,7 +12,6 @@ import {
   Star,
   TrendingDown,
   TrendingUp,
-  Upload,
   Video,
   Wand2,
   Zap,
@@ -99,9 +97,6 @@ export default async function DashboardPage() {
   const pendingReview = stats?.pipelineByState.review ?? 0
   const processing = stats?.recentContent.find((c) => c.status === 'processing')
   const readyContent = stats?.recentContent.find((c) => c.status === 'ready')
-  const totalPipeline = stats
-    ? stats.pipelineByState.draft + stats.pipelineByState.review + stats.pipelineByState.approved + stats.pipelineByState.exported
-    : 0
   const hasData = (stats?.totalContent ?? 0) > 0
 
   return (
@@ -220,75 +215,6 @@ export default async function DashboardPage() {
               ))}
             </div>
           )}
-
-          {/* ── Pipeline ──────────────────────────────────────────── */}
-          {stats && totalPipeline > 0 && (
-            <div className="rounded-2xl border border-border/50 bg-card">
-              <div className="flex items-center justify-between border-b border-border/40 px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Drafts</p>
-                  <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] font-bold tabular-nums text-muted-foreground">{totalPipeline}</span>
-                </div>
-                <Link href={`/workspace/${workspace.id}/pipeline`} className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/10">
-                  Open <ArrowUpRight className="h-3 w-3" />
-                </Link>
-              </div>
-              <div className="p-5">
-                <div className="mb-4 flex h-3 overflow-hidden rounded-full bg-muted/50">
-                  {([
-                    { state: 'draft' as const, color: 'bg-zinc-400' },
-                    { state: 'review' as const, color: 'bg-amber-400' },
-                    { state: 'approved' as const, color: 'bg-emerald-400' },
-                    { state: 'exported' as const, color: 'bg-blue-500' },
-                  ] as const).map(({ state, color }) => {
-                    const count = stats.pipelineByState[state]
-                    if (count === 0) return null
-                    return <div key={state} className={`${color} transition-all duration-700`} style={{ width: `${(count / totalPipeline) * 100}%` }} />
-                  })}
-                </div>
-                <div className="grid grid-cols-4 gap-3">
-                  {([
-                    { state: 'draft' as const, label: 'Draft', dot: 'bg-zinc-400' },
-                    { state: 'review' as const, label: 'Review', dot: 'bg-amber-400' },
-                    { state: 'approved' as const, label: 'Approved', dot: 'bg-emerald-400' },
-                    { state: 'exported' as const, label: 'Published', dot: 'bg-blue-500' },
-                  ] as const).map(({ state, label, dot }) => (
-                    <div key={state} className="text-center">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <span className={`h-2 w-2 rounded-full ${dot}`} />
-                        <span className="font-mono text-2xl font-bold tabular-nums">{stats.pipelineByState[state]}</span>
-                      </div>
-                      <p className="mt-0.5 text-[11px] font-medium text-muted-foreground">{label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Core Workflow ─────────────────────────────────────── */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              { href: `/workspace/${workspace.id}/content/new`, label: 'Import', desc: 'YouTube, MP4, text', icon: Upload, gradient: 'from-violet-500/10 to-violet-500/[0.02]', border: 'border-violet-200/60', iconBg: 'bg-violet-100 text-violet-600' },
-              { href: `/workspace/${workspace.id}`, label: 'Generate', desc: 'Turn into posts', icon: Wand2, gradient: 'from-blue-500/10 to-blue-500/[0.02]', border: 'border-blue-200/60', iconBg: 'bg-blue-100 text-blue-600' },
-              { href: `/workspace/${workspace.id}/pipeline`, label: 'Drafts', desc: 'Review & approve', icon: Layers, gradient: 'from-emerald-500/10 to-emerald-500/[0.02]', border: 'border-emerald-200/60', iconBg: 'bg-emerald-100 text-emerald-600' },
-              { href: `/workspace/${workspace.id}/schedule`, label: 'Schedule', desc: 'Plan & publish', icon: Calendar, gradient: 'from-amber-500/10 to-amber-500/[0.02]', border: 'border-amber-200/60', iconBg: 'bg-amber-100 text-amber-600' },
-            ].map((a) => (
-              <Link
-                key={a.href}
-                href={a.href}
-                className={`group flex flex-col items-center gap-3 rounded-2xl border bg-gradient-to-b p-5 text-center transition-all hover:-translate-y-1 hover:shadow-lg ${a.gradient} ${a.border}`}
-              >
-                <div className={`flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-110 ${a.iconBg}`}>
-                  <a.icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold">{a.label}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{a.desc}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
 
           {/* ── Quick Access + Usage ──────────────────────────────── */}
           <div className="grid gap-4 lg:grid-cols-2">
