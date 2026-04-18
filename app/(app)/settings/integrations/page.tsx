@@ -14,21 +14,29 @@ export const dynamic = 'force-dynamic'
 const WORKSPACE_COOKIE = 'clipflow.current_workspace'
 
 /**
- * Integrations — honest version.
+ * Integrations.
  *
- * The old page advertised twelve cards (Notion, Drive, Sheets, LinkedIn,
- * Airtable, Beehiiv, WordPress, Medium, Zapier, Make, Zoom, …) but
- * only Slack and Discord webhooks actually fire at runtime — everything
- * else just stored config under `branding.integrations[id]` and never
- * did anything on approve / export / publish. That's worse than not
- * showing them: it makes the product feel half-built and gives users
- * a 0/12 progress bar that can never hit 100 %.
+ * This page only shows integrations that actually fire at runtime:
  *
- * Ship what works. "Notifications" (Slack + Discord) is the only
- * category with real plumbing. Social publishing gets its own
- * banner because it lives in AI Connections. Everything else is a
- * request-it CTA at the bottom so the demand signal lands in our
- * inbox instead of the UI.
+ *   OAuth via Composio (lib/integrations/composio.ts):
+ *     - Notion         → NOTION_CREATE_A_PAGE on approve/export
+ *     - Google Drive   → OAuth connectable (for future import flows)
+ *     - Google Sheets  → GOOGLESHEETS_BATCH_UPDATE on approve/export
+ *     - LinkedIn       → LINKEDIN_CREATE_A_LINKED_IN_POST on export
+ *
+ *   Webhook (lib/integrations/dispatch-integrations.ts):
+ *     - Slack   → message on approve/export/publish
+ *     - Discord → message on approve/export/publish
+ *
+ * Anything else lives behind "Request an integration" at the bottom —
+ * aspirational cards that don't fire would just mislead users.
+ *
+ * Note on LinkedIn: there are two LinkedIn paths in the product.
+ * Composio LinkedIn here posts to your personal feed when a draft is
+ * exported. Upload-Post (AI Connections) publishes to LinkedIn as
+ * part of the TikTok/Reels/Shorts/LinkedIn bundle on schedule. The
+ * pointer-card below points heavy social-publishing users to that
+ * instead.
  */
 
 type ConnectionType = 'webhook' | 'api_key' | 'oauth' | 'coming_soon' | 'managed'
@@ -44,26 +52,84 @@ interface IntegrationDef {
   iconText: string
 }
 
-const NOTIFICATION_INTEGRATIONS: IntegrationDef[] = [
+interface IntegrationGroup {
+  title: string
+  subtitle: string
+  items: IntegrationDef[]
+}
+
+const GROUPS: IntegrationGroup[] = [
   {
-    id: 'slack',
-    name: 'Slack',
-    connectionType: 'webhook',
-    benefit: 'Get a Slack message the moment a draft is approved, exported, or published.',
-    trigger: 'Fires on approve · export · publish',
-    letter: '#',
-    iconBg: 'bg-[#4A154B]',
-    iconText: 'text-white',
+    title: 'Notifications',
+    subtitle: 'Get a ping when content moves through your pipeline.',
+    items: [
+      {
+        id: 'slack',
+        name: 'Slack',
+        connectionType: 'webhook',
+        benefit: 'Message your Slack channel when a draft is approved, exported, or published.',
+        trigger: 'Fires on approve · export · publish',
+        letter: '#',
+        iconBg: 'bg-[#4A154B]',
+        iconText: 'text-white',
+      },
+      {
+        id: 'discord',
+        name: 'Discord',
+        connectionType: 'webhook',
+        benefit: 'Ping your Discord channel when new content is ready to review.',
+        trigger: 'Fires on approve · export · publish',
+        letter: '◈',
+        iconBg: 'bg-[#5865F2]',
+        iconText: 'text-white',
+      },
+    ],
   },
   {
-    id: 'discord',
-    name: 'Discord',
-    connectionType: 'webhook',
-    benefit: 'Ping your Discord channel when new content is ready to review.',
-    trigger: 'Fires on approve · export · publish',
-    letter: '◈',
-    iconBg: 'bg-[#5865F2]',
-    iconText: 'text-white',
+    title: 'Sync & publish',
+    subtitle: 'Send approved content out to the tools you already work in.',
+    items: [
+      {
+        id: 'notion',
+        name: 'Notion',
+        connectionType: 'oauth',
+        benefit: 'Create a Notion page with the draft every time you approve or export content.',
+        trigger: 'Fires on approve · export',
+        letter: 'N',
+        iconBg: 'bg-zinc-900',
+        iconText: 'text-white',
+      },
+      {
+        id: 'google-sheets',
+        name: 'Google Sheets',
+        connectionType: 'oauth',
+        benefit: 'Append a row — date, title, platform, body — to your tracking sheet automatically.',
+        trigger: 'Fires on approve · export',
+        letter: 'S',
+        iconBg: 'bg-emerald-600',
+        iconText: 'text-white',
+      },
+      {
+        id: 'linkedin',
+        name: 'LinkedIn',
+        connectionType: 'oauth',
+        benefit: 'Post your LinkedIn drafts to your personal feed the moment you export them.',
+        trigger: 'Fires on export',
+        letter: 'in',
+        iconBg: 'bg-[#0A66C2]',
+        iconText: 'text-white',
+      },
+      {
+        id: 'google-drive',
+        name: 'Google Drive',
+        connectionType: 'oauth',
+        benefit: 'Connect your Drive for future import flows. Already connected? You\u2019re set up.',
+        trigger: 'Import source (coming soon)',
+        letter: 'G',
+        iconBg: 'bg-gradient-to-br from-blue-500 via-green-500 to-yellow-400',
+        iconText: 'text-white',
+      },
+    ],
   },
 ]
 
@@ -110,13 +176,13 @@ export default async function IntegrationsPage({
         <div>
           <h1 className="text-lg font-bold tracking-tight">Integrations</h1>
           <p className="mt-0.5 max-w-2xl text-sm text-muted-foreground">
-            Send events to the tools you already use. Publishing to social
-            platforms is set up separately.
+            Send events from Clipflow into the tools you already use. Social
+            auto-publishing (TikTok, Reels, Shorts) is set up separately.
           </p>
         </div>
       </div>
 
-      {/* ── OAuth feedback ── */}
+      {/* ── OAuth feedback banners ── */}
       {urlError && (
         <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
           <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white">!</span>
@@ -144,13 +210,15 @@ export default async function IntegrationsPage({
               {urlConnected.replace(/-/g, ' ')} connected
             </p>
             <p className="mt-0.5 text-xs text-emerald-700">
-              You&apos;ll start getting messages the next time content moves through the pipeline.
+              You&apos;ll start getting events the next time content moves through the pipeline.
             </p>
           </div>
         </div>
       )}
 
-      {/* ── Social publishing pointer ── */}
+      {/* ── Social publishing pointer. The LinkedIn card below posts to
+           your personal feed on single-export; Upload-Post does the full
+           multi-platform publish on schedule. Two different jobs. ── */}
       <Link
         href="/settings/ai-keys"
         className="group flex items-start gap-3 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/[0.06] to-background p-4 transition-all hover:-translate-y-px hover:border-primary/30 hover:shadow-md"
@@ -160,10 +228,10 @@ export default async function IntegrationsPage({
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold">
-            Looking for TikTok, Reels, Shorts, or LinkedIn publishing?
+            Auto-publish to TikTok, Reels, Shorts &amp; LinkedIn at scheduled times
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Social auto-publishing lives in AI Connections — one Upload-Post key covers all four.
+            That lives in AI Connections — one Upload-Post key covers all four platforms on a schedule.
           </p>
         </div>
         <span className="self-center text-sm font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">
@@ -171,81 +239,79 @@ export default async function IntegrationsPage({
         </span>
       </Link>
 
-      {/* ── Notifications section (the only real category) ── */}
-      <section className="space-y-3">
-        <div>
-          <h2 className="text-sm font-bold">Notifications</h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Get a ping when content moves through your pipeline.
-          </p>
-        </div>
+      {/* ── Integration groups ── */}
+      {GROUPS.map((group) => (
+        <section key={group.title} className="space-y-3">
+          <div>
+            <h2 className="text-sm font-bold">{group.title}</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">{group.subtitle}</p>
+          </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          {NOTIFICATION_INTEGRATIONS.map((integration) => {
-            const isConnected = connectedIds.has(integration.id)
-            return (
-              <div
-                key={integration.id}
-                className={`relative flex flex-col rounded-2xl border p-5 transition-all ${
-                  isConnected
-                    ? 'border-emerald-200 bg-emerald-50/40'
-                    : 'border-border/60 bg-card hover:-translate-y-px hover:border-primary/25 hover:shadow-md'
-                }`}
-              >
-                {isConnected && (
-                  <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-                    Live
-                  </div>
-                )}
-
+          <div className="grid gap-3 sm:grid-cols-2">
+            {group.items.map((integration) => {
+              const isConnected = connectedIds.has(integration.id)
+              return (
                 <div
-                  className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl text-xl font-black ${integration.iconBg} ${integration.iconText}`}
-                  aria-hidden
+                  key={integration.id}
+                  className={`relative flex flex-col rounded-2xl border p-5 transition-all ${
+                    isConnected
+                      ? 'border-emerald-200 bg-emerald-50/40'
+                      : 'border-border/60 bg-card hover:-translate-y-px hover:border-primary/25 hover:shadow-md'
+                  }`}
                 >
-                  {integration.letter}
-                </div>
-
-                <div className="flex-1">
-                  <h3 className="text-sm font-bold">{integration.name}</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    {integration.benefit}
-                  </p>
                   {isConnected && (
-                    <p className="mt-2 rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-medium text-emerald-700">
-                      {integration.trigger}
+                    <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                      Live
+                    </div>
+                  )}
+
+                  <div
+                    className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl text-xl font-black ${integration.iconBg} ${integration.iconText}`}
+                    aria-hidden
+                  >
+                    {integration.letter}
+                  </div>
+
+                  <div className="flex-1">
+                    <h3 className="text-sm font-bold">{integration.name}</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {integration.benefit}
                     </p>
+                    {isConnected && (
+                      <p className="mt-2 rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-medium text-emerald-700">
+                        {integration.trigger}
+                      </p>
+                    )}
+                  </div>
+
+                  {workspaceId && (
+                    <div className="mt-4">
+                      <ConnectDialog
+                        integrationId={integration.id}
+                        integrationName={integration.name}
+                        workspaceId={workspaceId}
+                        isConnected={isConnected}
+                        connectionType={integration.connectionType}
+                      />
+                    </div>
                   )}
                 </div>
+              )
+            })}
+          </div>
+        </section>
+      ))}
 
-                {workspaceId && (
-                  <div className="mt-4">
-                    <ConnectDialog
-                      integrationId={integration.id}
-                      integrationName={integration.name}
-                      workspaceId={workspaceId}
-                      isConnected={isConnected}
-                      connectionType={integration.connectionType}
-                    />
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </section>
-
-      {/* ── Request-an-integration footer. Replaces the 10 aspirational
-           cards that used to sit here and never did anything. A single
-           mailto collects real demand. ── */}
+      {/* ── Request-an-integration footer ── */}
       <div className="flex items-start gap-3 rounded-xl border border-border/50 bg-muted/30 p-5">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted">
           <Zap className="h-4 w-4 text-muted-foreground" />
         </div>
         <div>
-          <p className="text-sm font-semibold">Need Notion, Airtable, Zapier, or something else?</p>
+          <p className="text-sm font-semibold">Need Airtable, Zapier, Beehiiv, or something else?</p>
           <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-            We ship the integrations our users actually ask for.{' '}
+            We ship integrations our users actually ask for.{' '}
             <a
               href="mailto:support@clipflow.to?subject=Integration request"
               className="font-semibold text-primary underline-offset-2 hover:underline"

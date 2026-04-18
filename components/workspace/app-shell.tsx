@@ -83,7 +83,13 @@ export function AppShell({
   // Plan-driven visibility. Features the current plan supports show up
   // normally; features it doesn't still render with a lock + upsell so
   // users can see what's on the next tier (instead of us hiding it).
-  const isAgency = checkPlanAccess(currentPlan, 'multiWorkspace')
+  //
+  // The "Clients" group only appears when the user is actually running
+  // multiple workspaces — a solo Studio-plan account with just one
+  // workspace doesn't need a Clients nav group yet (the dashboard's
+  // "Your clients" strip uses the same rule for the same reason).
+  const isAgency =
+    checkPlanAccess(currentPlan, 'multiWorkspace') && workspaces.length > 1
 
   const groups: NavGroup[] = [
     {

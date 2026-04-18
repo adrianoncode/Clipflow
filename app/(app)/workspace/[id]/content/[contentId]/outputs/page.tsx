@@ -210,7 +210,6 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
                 contentId={params.contentId}
                 isVideo={item.kind === 'video'}
                 renderCount={renders.length}
-                trendingSoundsEnabled={planFeatures.trendingSounds}
               />
 
               {/* Render history */}

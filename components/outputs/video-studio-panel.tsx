@@ -17,8 +17,6 @@ interface VideoStudioPanelProps {
   /** Whether the source item is a video (enables reframe/dub). */
   isVideo: boolean
   renderCount: number
-  /** Team+ gate: trending-sound picker only shown on paid tiers. */
-  trendingSoundsEnabled: boolean
 }
 
 interface Tool {
@@ -41,7 +39,6 @@ export function VideoStudioPanel({
   contentId,
   isVideo,
   renderCount,
-  trendingSoundsEnabled,
 }: VideoStudioPanelProps) {
   const tools: Tool[] = [
     {
@@ -126,7 +123,6 @@ export function VideoStudioPanel({
             <MakeVideoButton
               workspaceId={workspaceId}
               contentId={contentId}
-              trendingSoundsEnabled={trendingSoundsEnabled}
             />
           ) : null}
         </div>
