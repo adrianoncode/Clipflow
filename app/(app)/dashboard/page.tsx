@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { cookies } from 'next/headers'
 import {
   ArrowRight,
+  ArrowUpRight,
   Calendar,
   CheckCircle2,
   Clock,
@@ -12,6 +13,7 @@ import {
   Star,
   TrendingDown,
   TrendingUp,
+  Users2,
   Video,
   Wand2,
   Zap,
@@ -25,7 +27,7 @@ import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getWorkspaceUsage } from '@/lib/billing/get-usage'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
-import { PLANS } from '@/lib/billing/plans'
+import { PLANS, checkPlanAccess } from '@/lib/billing/plans'
 import { getWorkspaceStats } from '@/lib/dashboard/get-workspace-stats'
 import { getSuggestions } from '@/lib/suggestions/get-suggestions'
 
@@ -99,6 +101,14 @@ export default async function DashboardPage() {
   const readyContent = stats?.recentContent.find((c) => c.status === 'ready')
   const hasData = (stats?.totalContent ?? 0) > 0
 
+  // Agency mode: user is on Studio + runs more than one client workspace.
+  // The dashboard then leads with a cross-client strip instead of only
+  // showing numbers for whatever workspace happens to be "current".
+  const isAgencyMode = checkPlanAccess(plan ?? 'free', 'multiWorkspace') && workspaces.length > 1
+  const otherWorkspaces = workspace
+    ? workspaces.filter((w) => w.id !== workspace.id).slice(0, 6)
+    : []
+
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
 
@@ -114,19 +124,75 @@ export default async function DashboardPage() {
           </p>
         </div>
         {workspace && (
-          <Link
-            href={`/workspace/${workspace.id}/content/new`}
-            className="group inline-flex h-10 items-center gap-2 rounded-xl bg-primary pl-4 pr-3 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/25"
-          >
-            <span className="text-lg leading-none">+</span>
-            New content
-            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-          </Link>
+          <div className="flex items-center gap-2">
+            {isAgencyMode && (
+              <Link
+                href="/workspace/new"
+                className="group inline-flex h-10 items-center gap-2 rounded-xl border border-border/60 bg-card pl-4 pr-3 text-sm font-semibold text-foreground transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
+              >
+                <Users2 className="h-3.5 w-3.5" />
+                New client
+              </Link>
+            )}
+            <Link
+              href={`/workspace/${workspace.id}/content/new`}
+              className="group inline-flex h-10 items-center gap-2 rounded-xl bg-primary pl-4 pr-3 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/25"
+            >
+              <span className="text-lg leading-none">+</span>
+              New content
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
         )}
       </div>
 
       {workspace && (
         <>
+          {/* ── Clients strip (Studio plan, multi-workspace only) ── */}
+          {isAgencyMode && otherWorkspaces.length > 0 && (
+            <div className="rounded-2xl border border-border/50 bg-card">
+              <div className="flex items-center justify-between border-b border-border/40 px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <Users2 className="h-3.5 w-3.5 text-primary" />
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Your clients
+                  </p>
+                  <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] font-bold tabular-nums text-muted-foreground">
+                    {workspaces.length}
+                  </span>
+                </div>
+                <Link
+                  href="/workspace/new"
+                  className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/10"
+                >
+                  Add client <ArrowUpRight className="h-3 w-3" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 gap-px bg-border/30 sm:grid-cols-3">
+                {/* Current workspace pinned first so agency owners always
+                    have a clear "here's where I am" anchor. */}
+                <Link
+                  href={`/workspace/${workspace.id}`}
+                  className="flex items-center gap-2.5 bg-primary/[0.04] px-3.5 py-3 transition-colors hover:bg-primary/[0.08]"
+                >
+                  <div className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  <span className="truncate text-xs font-semibold">{workspace.name}</span>
+                  <span className="ml-auto font-mono text-[9px] uppercase tracking-wider text-primary">Now</span>
+                </Link>
+                {otherWorkspaces.map((w) => (
+                  <Link
+                    key={w.id}
+                    href={`/workspace/${w.id}`}
+                    className="flex items-center gap-2.5 bg-card px-3.5 py-3 transition-colors hover:bg-primary/[0.04]"
+                  >
+                    <div className="h-2 w-2 shrink-0 rounded-full bg-muted-foreground/30" />
+                    <span className="truncate text-xs font-medium">{w.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* ── Setup checklist ────────────────────────────────────── */}
           {showChecklist && (
             <SetupChecklist
@@ -223,12 +289,21 @@ export default async function DashboardPage() {
                 <p className="text-xs font-bold">Quick access</p>
               </div>
               <div className="grid grid-cols-2 gap-px bg-border/30">
-                {[
-                  { href: '/settings/integrations', label: 'Integrations', icon: Plug, color: 'text-violet-500' },
-                  { href: '/settings/brand-voice', label: 'Brand Voice', icon: MessageSquare, color: 'text-pink-500' },
-                  { href: '/settings/templates', label: 'Templates', icon: FileText, color: 'text-blue-500' },
-                  { href: `/workspace/${workspace.id}/schedule?view=calendar`, label: 'Calendar', icon: Calendar, color: 'text-amber-500' },
-                ].map((a) => (
+                {(isAgencyMode
+                  ? [
+                      // Studio ICP: managing clients + team comes before creator-specific tools.
+                      { href: `/workspace/${workspace.id}/members`, label: 'Team', icon: Users2, color: 'text-violet-500' },
+                      { href: '/settings/integrations', label: 'Integrations', icon: Plug, color: 'text-pink-500' },
+                      { href: '/settings/brand-voice', label: 'Brand Voice', icon: MessageSquare, color: 'text-blue-500' },
+                      { href: `/workspace/${workspace.id}/schedule?view=calendar`, label: 'Calendar', icon: Calendar, color: 'text-amber-500' },
+                    ]
+                  : [
+                      { href: '/settings/integrations', label: 'Integrations', icon: Plug, color: 'text-violet-500' },
+                      { href: '/settings/brand-voice', label: 'Brand Voice', icon: MessageSquare, color: 'text-pink-500' },
+                      { href: '/settings/templates', label: 'Templates', icon: FileText, color: 'text-blue-500' },
+                      { href: `/workspace/${workspace.id}/schedule?view=calendar`, label: 'Calendar', icon: Calendar, color: 'text-amber-500' },
+                    ]
+                ).map((a) => (
                   <Link key={a.href} href={a.href} className="flex items-center gap-2.5 bg-card px-3.5 py-3 transition-colors hover:bg-primary/[0.04]">
                     <a.icon className={`h-3.5 w-3.5 shrink-0 ${a.color}`} />
                     <span className="truncate text-xs font-medium">{a.label}</span>

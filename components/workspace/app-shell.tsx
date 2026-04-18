@@ -14,6 +14,8 @@ import {
   Settings as SettingsIcon,
   Plus,
   MoreHorizontal,
+  Users2,
+  Lock,
 } from 'lucide-react'
 
 import { SignoutButton } from '@/components/auth/signout-button'
@@ -24,12 +26,20 @@ import { ReferralSidebarCard } from '@/components/workspace/referral-sidebar-car
 import { KeyboardShortcuts } from '@/components/keyboard-shortcuts'
 import { FeedbackWidget } from '@/components/feedback-widget'
 import type { WorkspaceSummary } from '@/lib/auth/get-workspaces'
-import type { BillingPlan } from '@/lib/billing/plans'
+import {
+  checkPlanAccess,
+  FEATURE_MIN_PLAN,
+  PLANS,
+  type BillingPlan,
+} from '@/lib/billing/plans'
 
 interface NavItem {
   href: string
   label: string
   icon: typeof FileVideo
+  /** If set, requires this feature. Locked items are still rendered but
+   * click routes to /billing instead of the destination. */
+  requires?: keyof typeof FEATURE_MIN_PLAN
 }
 
 interface NavGroup {
@@ -70,6 +80,11 @@ export function AppShell({
     return pathname === href || pathname.startsWith(href + '/')
   }
 
+  // Plan-driven visibility. Features the current plan supports show up
+  // normally; features it doesn't still render with a lock + upsell so
+  // users can see what's on the next tier (instead of us hiding it).
+  const isAgency = checkPlanAccess(currentPlan, 'multiWorkspace')
+
   const groups: NavGroup[] = [
     {
       label: 'Workflow',
@@ -77,15 +92,28 @@ export function AppShell({
         { href: `/workspace/${currentWorkspaceId}`, label: 'Content', icon: FileVideo },
         { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Import', icon: Sparkles },
         { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Drafts', icon: CheckSquare },
-        { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Send },
+        { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Send, requires: 'scheduling' },
       ],
     },
     {
       label: 'Research',
       items: [
-        { href: `/workspace/${currentWorkspaceId}/research`, label: 'Creators', icon: Search },
+        { href: `/workspace/${currentWorkspaceId}/research`, label: 'Creators', icon: Search, requires: 'creatorResearch' },
       ],
     },
+    // Studio-only: client + team management. Hidden entirely for Creator
+    // and Free plans — this group exists to serve the agency ICP and
+    // showing it empty would just be noise for indie creators.
+    ...(isAgency
+      ? [
+          {
+            label: 'Clients',
+            items: [
+              { href: `/workspace/${currentWorkspaceId}/members`, label: 'Team', icon: Users2, requires: 'teamSeats' as const },
+            ],
+          },
+        ]
+      : []),
   ]
 
   const bottomItems: NavItem[] = [
@@ -99,7 +127,7 @@ export function AppShell({
     { href: `/workspace/${currentWorkspaceId}`, label: 'Content', icon: FileVideo },
     { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Import', icon: Sparkles },
     { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Drafts', icon: CheckSquare },
-    { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Send },
+    { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Send, requires: 'scheduling' },
   ]
 
   const mobileMoreItems: NavItem[] = [
@@ -112,14 +140,24 @@ export function AppShell({
   function renderItem(item: NavItem) {
     const active = isActive(item.href)
     const Icon = item.icon
+    const locked = item.requires ? !checkPlanAccess(currentPlan, item.requires) : false
+    // Locked items route to /billing with the plan hint so we get one
+    // consistent upsell page instead of a dozen different mini-modals.
+    const href = locked && item.requires
+      ? `/billing?plan=${FEATURE_MIN_PLAN[item.requires]}&feature=${item.requires}`
+      : item.href
+    const requiredPlanName = item.requires ? PLANS[FEATURE_MIN_PLAN[item.requires]].name : null
     return (
       <Link
         key={item.href}
-        href={item.href}
+        href={href}
+        title={locked ? `${item.label} — ${requiredPlanName} plan` : undefined}
         className={`group relative flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] transition-all duration-150 ${
           active
             ? 'bg-primary/10 font-semibold text-primary'
-            : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+            : locked
+              ? 'text-muted-foreground/60 hover:bg-accent/30 hover:text-muted-foreground'
+              : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
         }`}
       >
         {active && (
@@ -133,7 +171,8 @@ export function AppShell({
             active ? 'text-primary' : 'text-muted-foreground/50 group-hover:text-foreground/70'
           }`}
         />
-        <span className="leading-none">{item.label}</span>
+        <span className="flex-1 leading-none">{item.label}</span>
+        {locked && <Lock className="h-3 w-3 shrink-0 text-muted-foreground/40" aria-label={`Requires ${requiredPlanName} plan`} />}
       </Link>
     )
   }
@@ -226,16 +265,23 @@ export function AppShell({
         {mobileItems.map((item) => {
           const active = isActive(item.href)
           const Icon = item.icon
+          const locked = item.requires ? !checkPlanAccess(currentPlan, item.requires) : false
+          const href = locked && item.requires
+            ? `/billing?plan=${FEATURE_MIN_PLAN[item.requires]}&feature=${item.requires}`
+            : item.href
           return (
             <Link
               key={item.href}
-              href={item.href}
-              className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-all ${
-                active ? 'text-primary' : 'text-muted-foreground active:scale-95'
+              href={href}
+              className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-all ${
+                active ? 'text-primary' : locked ? 'text-muted-foreground/60' : 'text-muted-foreground active:scale-95'
               }`}
             >
               <Icon className="h-4 w-4" />
               {item.label}
+              {locked && (
+                <Lock className="absolute right-2 top-1.5 h-2.5 w-2.5 text-muted-foreground/40" />
+              )}
             </Link>
           )
         })}
@@ -272,15 +318,24 @@ export function AppShell({
             <div className="grid grid-cols-3 gap-2">
               {mobileMoreItems.map((item) => {
                 const Icon = item.icon
+                const locked = item.requires ? !checkPlanAccess(currentPlan, item.requires) : false
+                const href = locked && item.requires
+                  ? `/billing?plan=${FEATURE_MIN_PLAN[item.requires]}&feature=${item.requires}`
+                  : item.href
                 return (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    href={href}
                     onClick={() => setMobileMoreOpen(false)}
-                    className="flex flex-col items-center gap-1.5 rounded-xl p-3 text-center transition-colors hover:bg-accent"
+                    className={`relative flex flex-col items-center gap-1.5 rounded-xl p-3 text-center transition-colors hover:bg-accent ${
+                      locked ? 'opacity-60' : ''
+                    }`}
                   >
                     <Icon className="h-5 w-5 text-muted-foreground" />
                     <span className="text-[11px] font-medium">{item.label}</span>
+                    {locked && (
+                      <Lock className="absolute right-1.5 top-1.5 h-2.5 w-2.5 text-muted-foreground/50" />
+                    )}
                   </Link>
                 )
               })}
