@@ -12,6 +12,7 @@ import {
   type StartEnrollState,
   type VerifyEnrollState,
 } from '@/app/(app)/settings/security/actions'
+import { RecoveryCodesDisplay } from './recovery-codes-display'
 
 /**
  * Two-step enrollment:
@@ -56,16 +57,22 @@ export function TotpEnrollForm() {
 
     if (verifyState.ok === true) {
       return (
-        <div className="flex items-center gap-3 rounded-xl border border-emerald-200/60 bg-emerald-50/40 p-4">
-          <ShieldCheck className="h-5 w-5 text-emerald-600" />
-          <div>
-            <p className="text-sm font-semibold text-emerald-900">
-              Two-factor authentication enabled
-            </p>
-            <p className="text-xs text-emerald-700">
-              You&apos;ll be asked for a code on your next login.
-            </p>
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 rounded-xl border border-emerald-200/60 bg-emerald-50/40 p-4">
+            <ShieldCheck className="h-5 w-5 text-emerald-600" />
+            <div>
+              <p className="text-sm font-semibold text-emerald-900">
+                Two-factor authentication enabled
+              </p>
+              <p className="text-xs text-emerald-700">
+                You&apos;ll be asked for a code on your next login.
+              </p>
+            </div>
           </div>
+
+          {verifyState.recoveryCodes.length > 0 && (
+            <RecoveryCodesDisplay codes={verifyState.recoveryCodes} />
+          )}
         </div>
       )
     }

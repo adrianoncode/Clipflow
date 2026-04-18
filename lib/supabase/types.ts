@@ -753,6 +753,30 @@ export type Database = {
         }
         Relationships: []
       }
+      mfa_recovery_codes: {
+        Row: {
+          id: string
+          user_id: string
+          code_hash: string
+          used_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          code_hash: string
+          used_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          code_hash?: string
+          used_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           id: string

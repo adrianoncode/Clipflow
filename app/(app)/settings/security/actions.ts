@@ -11,7 +11,8 @@ import {
   unenroll,
   type EnrollResult,
 } from '@/lib/auth/mfa'
-import { checkRateLimit, extractClientIp, RATE_LIMITS } from '@/lib/rate-limit'
+import { regenerateRecoveryCodes } from '@/lib/auth/recovery-codes'
+import { checkRateLimit, extractClientIp } from '@/lib/rate-limit'
 
 export type StartEnrollState =
   | { ok?: undefined }
@@ -42,7 +43,7 @@ const verifySchema = z.object({
 
 export type VerifyEnrollState =
   | { ok?: undefined }
-  | { ok: true }
+  | { ok: true; recoveryCodes: string[] }
   | { ok: false; error: string }
 
 export async function verifyTotpEnrollmentAction(
@@ -74,8 +75,48 @@ export async function verifyTotpEnrollmentAction(
   const res = await verifyEnrollment(parsed.data.factor_id, parsed.data.code)
   if (!res.ok) return res
 
+  // Generate recovery codes immediately. User sees them ONCE — they
+  // must copy them somewhere safe. We return them in the action state
+  // instead of revalidating away from the form.
+  const codes = await regenerateRecoveryCodes(user.id)
+  if (!codes.ok) {
+    // TOTP enrollment succeeded but codes failed — still useful,
+    // user can regenerate from settings.
+    revalidatePath('/settings/security')
+    return { ok: true, recoveryCodes: [] }
+  }
+
   revalidatePath('/settings/security')
-  return { ok: true }
+  return { ok: true, recoveryCodes: codes.codes }
+}
+
+export type RegenerateCodesState =
+  | { ok?: undefined }
+  | { ok: true; recoveryCodes: string[] }
+  | { ok: false; error: string }
+
+export async function regenerateRecoveryCodesAction(
+  _prev: RegenerateCodesState,
+  _formData: FormData,
+): Promise<RegenerateCodesState> {
+  const user = await getUser()
+  if (!user) return { ok: false, error: 'Not authenticated.' }
+
+  const ip = extractClientIp(headers())
+  const rl = await checkRateLimit(
+    `mfa:regenerate:${user.id}:${ip}`,
+    5,
+    60 * 60_000,
+  )
+  if (!rl.ok) {
+    return { ok: false, error: 'Too many regenerations. Wait an hour.' }
+  }
+
+  const res = await regenerateRecoveryCodes(user.id)
+  if (!res.ok) return res
+
+  revalidatePath('/settings/security')
+  return { ok: true, recoveryCodes: res.codes }
 }
 
 const unenrollSchema = z.object({

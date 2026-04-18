@@ -3,8 +3,10 @@ import { Shield, Info } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
 import { listFactors } from '@/lib/auth/mfa'
+import { countUnusedCodes } from '@/lib/auth/recovery-codes'
 import { TotpEnrollForm } from '@/components/settings/totp-enroll-form'
 import { TotpFactorList } from '@/components/settings/totp-factor-list'
+import { RecoveryCodesPanel } from '@/components/settings/recovery-codes-panel'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Security — Clipflow' }
@@ -13,7 +15,10 @@ export default async function SecurityPage() {
   const user = await getUser()
   if (!user) redirect('/login')
 
-  const factors = await listFactors()
+  const [factors, unusedCodes] = await Promise.all([
+    listFactors(),
+    countUnusedCodes(user.id),
+  ])
   const hasVerifiedFactor = factors.some((f) => f.status === 'verified')
 
   return (
@@ -46,13 +51,10 @@ export default async function SecurityPage() {
             <div className="flex items-start gap-2 rounded-lg border border-border/50 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
               <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               <p>
-                You&apos;ll be asked for a code on every new login. Don&apos;t
-                lose access to your authenticator app — there&apos;s no self-serve
-                recovery right now, you&apos;d have to email{' '}
-                <a href="mailto:support@clipflow.to" className="underline">
-                  support
-                </a>{' '}
-                with identity proof.
+                You&apos;ll be asked for a code on every new login. Lost your
+                authenticator? Use one of your recovery codes below to log back
+                in — that will also remove this factor so you can enroll a new
+                device.
               </p>
             </div>
           </div>
@@ -60,6 +62,16 @@ export default async function SecurityPage() {
           <TotpEnrollForm />
         )}
       </section>
+
+      {/* ── Recovery codes — only relevant once 2FA is active ── */}
+      {hasVerifiedFactor && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground">
+            Recovery codes
+          </h2>
+          <RecoveryCodesPanel unusedCount={unusedCodes} />
+        </section>
+      )}
 
       {/* ── Pending / unverified factors cleanup ── */}
       {factors.some((f) => f.status !== 'verified') && (
