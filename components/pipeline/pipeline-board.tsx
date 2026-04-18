@@ -121,7 +121,20 @@ export function PipelineBoard({ workspaceId, columns, grouped }: PipelineBoardPr
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Mobile: horizontal-snap carousel so 4 columns don't stack into
+         * a vertical tower of 40+ cards. Each column gets a fixed min
+         * width and snaps into view on swipe (Trello-style). sm+ falls
+         * back to the regular grid so the layout is flush on larger
+         * screens.
+         *
+         * `-mx-4 px-4 sm:mx-0 sm:px-0` bleeds the edges to the viewport
+         * on mobile (so the snap area feels native) but keeps desktop
+         * alignment. The gradient edge hint is pure CSS — no JS. */}
+      <div
+        className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-4"
+        role="region"
+        aria-label="Drafts by stage"
+      >
         {columns.map((col) => {
           const items = grouped[col.state]
           const columnIds = items.map((i) => i.id)
@@ -129,7 +142,10 @@ export function PipelineBoard({ workspaceId, columns, grouped }: PipelineBoardPr
           const someColumnSelected = items.length > 0 && columnIds.some((id) => selected.has(id))
 
           return (
-            <div key={col.state} className="flex flex-col gap-3">
+            <div
+              key={col.state}
+              className="flex w-[85vw] max-w-[320px] shrink-0 snap-start flex-col gap-3 sm:w-auto sm:max-w-none"
+            >
               {/* Column header with select-all checkbox */}
               <div className="rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5">
                 <div className="flex items-center gap-2">

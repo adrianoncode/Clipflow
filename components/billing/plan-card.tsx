@@ -13,11 +13,12 @@ function formatLimit(value: number): string {
   return isUnlimited(value) ? 'Unlimited' : String(value)
 }
 
-function UpgradeButton({ planId, interval, workspaceId, isCurrent }: {
+function UpgradeButton({ planId, interval, workspaceId, isCurrent, feature }: {
   planId: BillingPlan
   interval: 'monthly' | 'annual'
   workspaceId: string
   isCurrent: boolean
+  feature?: string
 }) {
   const [, action] = useFormState(createCheckoutSessionAction, undefined)
   const { pending } = useFormStatus()
@@ -36,6 +37,7 @@ function UpgradeButton({ planId, interval, workspaceId, isCurrent }: {
       <input type="hidden" name="workspace_id" value={workspaceId} />
       <input type="hidden" name="plan" value={planId} />
       <input type="hidden" name="interval" value={interval} />
+      {feature ? <input type="hidden" name="feature" value={feature} /> : null}
       <Button type="submit" size="sm" className="w-full" disabled={pending}>
         {pending ? 'Redirecting…' : 'Upgrade'}
       </Button>
@@ -48,13 +50,27 @@ interface PlanCardProps {
   interval: 'monthly' | 'annual'
   workspaceId: string
   currentPlan: BillingPlan
+  /** Feature the user was trying to reach — survives through the
+   * checkout form so the success_url can route them back to it. */
+  feature?: string
 }
 
-export function PlanCard({ planId, interval, workspaceId, currentPlan }: PlanCardProps) {
+export function PlanCard({ planId, interval, workspaceId, currentPlan, feature }: PlanCardProps) {
   const plan = PLANS[planId]
   const isCurrent = planId === currentPlan
   const price = interval === 'annual' ? plan.annualPrice : plan.monthlyPrice
   const { limits } = plan
+
+  // Bullets that are 0 are misleading ("0 AI avatars / mo" reads as a
+  // zero-quota feature you get nothing of, not "not included"). Hide
+  // them and let the plan's price + name do the selling.
+  const bullets: string[] = []
+  bullets.push(`${formatLimit(limits.contentItemsPerMonth)} videos / mo`)
+  bullets.push(`${formatLimit(limits.outputsPerMonth)} posts / mo`)
+  if (limits.videoRendersPerMonth !== 0) bullets.push(`${formatLimit(limits.videoRendersPerMonth)} video renders / mo`)
+  if (limits.avatarVideosPerMonth !== 0) bullets.push(`${formatLimit(limits.avatarVideosPerMonth)} AI avatars / mo`)
+  if (limits.voiceClonesMax !== 0) bullets.push(`${formatLimit(limits.voiceClonesMax)} voice clone${limits.voiceClonesMax !== 1 ? 's' : ''}`)
+  bullets.push(`${formatLimit(limits.workspaces)} workspace${limits.workspaces !== 1 ? 's' : ''}`)
 
   return (
     <Card
@@ -89,12 +105,9 @@ export function PlanCard({ planId, interval, workspaceId, currentPlan }: PlanCar
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-4">
         <ul className="space-y-1 text-sm text-muted-foreground">
-          <li>{formatLimit(limits.contentItemsPerMonth)} content items/mo</li>
-          <li>{formatLimit(limits.outputsPerMonth)} text drafts/mo</li>
-          <li>{formatLimit(limits.videoRendersPerMonth)} video renders/mo</li>
-          <li>{formatLimit(limits.avatarVideosPerMonth)} AI avatars/mo</li>
-          <li>{formatLimit(limits.voiceClonesMax)} voice clone{limits.voiceClonesMax !== 1 ? 's' : ''}</li>
-          <li>{formatLimit(limits.workspaces)} workspace{limits.workspaces !== 1 ? 's' : ''}</li>
+          {bullets.map((b) => (
+            <li key={b}>{b}</li>
+          ))}
         </ul>
         <div className="mt-auto">
           <UpgradeButton
@@ -102,6 +115,7 @@ export function PlanCard({ planId, interval, workspaceId, currentPlan }: PlanCar
             interval={interval}
             workspaceId={workspaceId}
             isCurrent={isCurrent}
+            feature={feature}
           />
         </div>
       </CardContent>

@@ -15,7 +15,35 @@ const checkoutSchema = z.object({
   workspace_id: z.string().uuid(),
   plan: z.enum(['solo', 'team', 'agency']),
   interval: z.enum(['monthly', 'annual']),
+  /** Feature the user was trying to reach when they hit the paywall.
+   * Used to build a feature-specific success_url so they land where
+   * they actually wanted to go post-payment. */
+  feature: z.string().max(40).optional(),
 })
+
+/** Map a gated feature key → the page that feature lives on. After
+ * checkout we bounce the user straight there. Workspace-scoped paths
+ * get the id substituted at call time. Features without an entry
+ * (e.g. pure cross-workspace capabilities) fall back to the dashboard. */
+function featurePostCheckoutPath(
+  feature: string | undefined,
+  workspaceId: string,
+): string {
+  if (!feature) return '/dashboard?billing=success'
+  const map: Record<string, string> = {
+    scheduling: `/workspace/${workspaceId}/schedule?billing=success`,
+    abHookTesting: `/workspace/${workspaceId}/pipeline?billing=success`,
+    creatorResearch: `/workspace/${workspaceId}/research?billing=success`,
+    brollAutomation: `/workspace/${workspaceId}?billing=success`,
+    avatarVideos: `/workspace/${workspaceId}?billing=success`,
+    autoDub: `/workspace/${workspaceId}?billing=success`,
+    multiWorkspace: '/clients?billing=success',
+    teamSeats: `/workspace/${workspaceId}/members?billing=success`,
+    clientReviewLink: `/workspace/${workspaceId}/pipeline?billing=success`,
+    whiteLabelReview: `/workspace/${workspaceId}/pipeline?billing=success`,
+  }
+  return map[feature] ?? `/workspace/${workspaceId}?billing=success`
+}
 
 export async function createCheckoutSessionAction(
   _prev: { error?: string } | undefined,
@@ -25,6 +53,7 @@ export async function createCheckoutSessionAction(
     workspace_id: formData.get('workspace_id'),
     plan: formData.get('plan'),
     interval: formData.get('interval'),
+    feature: formData.get('feature')?.toString() || undefined,
   })
   if (!parsed.success) {
     return { error: 'Invalid request.' }
@@ -73,7 +102,7 @@ export async function createCheckoutSessionAction(
     customer: customerId,
     mode: 'subscription',
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${baseUrl}/workspace/${parsed.data.workspace_id}?billing=success`,
+    success_url: `${baseUrl}${featurePostCheckoutPath(parsed.data.feature, parsed.data.workspace_id)}`,
     cancel_url: `${baseUrl}/billing?workspace_id=${parsed.data.workspace_id}`,
     ...(discounts ? { discounts } : {}),
     // Stripe forbids combining `discounts` with `allow_promotion_codes`;

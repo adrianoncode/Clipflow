@@ -47,6 +47,10 @@ export function BillingPlansClient({
   const searchParams = useSearchParams()
   const fallbackWorkspaceId = searchParams.get('workspace_id') ?? ''
   const resolvedWorkspaceId = workspaceId || fallbackWorkspaceId
+  // The feature the user was trying to reach — forwarded into every
+  // upgrade button's hidden input so the post-checkout success_url
+  // can route them back to it.
+  const feature = searchParams.get('feature') ?? undefined
 
   const [interval, setInterval] = useState<'monthly' | 'annual'>('monthly')
 
@@ -64,6 +68,7 @@ export function BillingPlansClient({
             interval={interval}
             workspaceId={resolvedWorkspaceId}
             currentPlan={currentPlan}
+            feature={feature}
           />
         ))}
       </div>
