@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Flame, Target, BarChart2, Star, CalendarDays } from 'lucide-react'
+import { Target, Star, CalendarDays } from 'lucide-react'
 
 import {
   Card,
@@ -15,13 +15,11 @@ import { OutputStateBadge } from '@/components/outputs/output-state-badge'
 import { OutputActions } from '@/components/outputs/output-actions'
 import { PerformanceTracker } from '@/components/outputs/performance-tracker'
 import { StateTransitionPills } from '@/components/outputs/state-transition-pills'
-import { ViralityScore } from '@/components/outputs/virality-score'
 import { HookAbTest } from '@/components/outputs/hook-ab-test'
-import { EngagementPredictor } from '@/components/outputs/engagement-predictor'
 import { SchedulePostButton } from '@/components/scheduler/schedule-post-button'
 import type { OutputRow } from '@/lib/content/get-outputs'
 import type { OutputPlatform } from '@/lib/supabase/types'
-import type { AbHookVariant, EngagementPrediction } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/ai-actions'
+import type { AbHookVariant } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/ai-actions'
 import { PLATFORM_LONG_LABELS as PLATFORM_LABELS } from '@/lib/platforms'
 
 // Maps OutputPlatform to the platform key used by the social scheduler
@@ -39,7 +37,7 @@ const PLATFORM_DESCRIPTIONS: Record<OutputPlatform, string> = {
   linkedin: 'Text-first post, professional but human',
 }
 
-type SectionKey = 'virality' | 'hooks' | 'predict' | 'track' | 'schedule'
+type SectionKey = 'hooks' | 'track' | 'schedule'
 
 interface SectionToggleProps {
   icon: React.ReactNode
@@ -110,25 +108,11 @@ export function OutputCard({ output, contentId, workspaceId, hasPublishKey = fal
           <div className="w-full space-y-2">
             <div className="flex items-center gap-1 border-t border-border/50 pt-3">
               <SectionToggle
-                icon={<Flame className="h-4 w-4" />}
-                label="Virality"
-                sectionKey="virality"
-                active={openSection === 'virality'}
-                onClick={() => toggle('virality')}
-              />
-              <SectionToggle
                 icon={<Target className="h-4 w-4" />}
-                label="Hooks"
+                label="A/B Hooks"
                 sectionKey="hooks"
                 active={openSection === 'hooks'}
                 onClick={() => toggle('hooks')}
-              />
-              <SectionToggle
-                icon={<BarChart2 className="h-4 w-4" />}
-                label="Predict"
-                sectionKey="predict"
-                active={openSection === 'predict'}
-                onClick={() => toggle('predict')}
               />
               <SectionToggle
                 icon={<Star className="h-4 w-4" />}
@@ -148,16 +132,6 @@ export function OutputCard({ output, contentId, workspaceId, hasPublishKey = fal
 
             {/* Accordion content */}
             <div className={`overflow-hidden transition-all duration-200 ${openSection ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-              {openSection === 'virality' && (
-                <div className="rounded-xl border border-border/50 bg-muted/20 p-3">
-                  <ViralityScore
-                    outputId={output.id}
-                    workspaceId={resolvedWorkspaceId}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    initialVirality={((output.metadata as any)?.virality) ?? null}
-                  />
-                </div>
-              )}
               {openSection === 'hooks' && (
                 <div className="rounded-xl border border-border/50 bg-muted/20 p-3">
                   <HookAbTest
@@ -165,17 +139,6 @@ export function OutputCard({ output, contentId, workspaceId, hasPublishKey = fal
                     workspaceId={resolvedWorkspaceId}
                     initialVariants={
                       ((output.metadata as Record<string, unknown> | null)?.hook_variants as AbHookVariant[] | null) ?? null
-                    }
-                  />
-                </div>
-              )}
-              {openSection === 'predict' && (
-                <div className="rounded-xl border border-border/50 bg-muted/20 p-3">
-                  <EngagementPredictor
-                    outputId={output.id}
-                    workspaceId={resolvedWorkspaceId}
-                    initialPrediction={
-                      ((output.metadata as Record<string, unknown> | null)?.engagement_prediction as EngagementPrediction | null) ?? null
                     }
                   />
                 </div>

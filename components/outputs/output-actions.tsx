@@ -6,7 +6,6 @@ import { useFormState, useFormStatus } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { FormMessage } from '@/components/ui/form-message'
 import { EditOutputDialog } from '@/components/outputs/edit-output-dialog'
-import { HookVariantsDialog } from '@/components/outputs/hook-variants-dialog'
 import { PublishPanel } from '@/components/outputs/publish-panel'
 import {
   regenerateOutputAction,
@@ -181,13 +180,6 @@ export function OutputActions({ output, contentId, hasPublishKey = false }: Outp
       )}
 
       <EditOutputDialog output={output} open={editOpen} onOpenChange={setEditOpen} />
-
-      <HookVariantsDialog
-        outputId={output.id}
-        workspaceId={output.workspace_id}
-        contentId={contentId}
-        platform={output.platform}
-      />
     </div>
   )
 }
