@@ -97,19 +97,57 @@ export async function deleteAccountAction(
   const admin = createAdminClient()
 
   try {
-    // 1. Delete all workspaces owned by this user (cascades to content, outputs, etc.)
+    // 1. Cancel any active Stripe subscriptions on workspaces the user
+    //    owns, BEFORE deleting the workspace rows. Otherwise we'd leave
+    //    orphaned subscriptions billing a deleted account and Stripe
+    //    eventually generates unpaid-invoice emails to a dead mailbox.
+    //    We cancel immediately (not end-of-period) because the
+    //    workspace itself is about to be deleted.
+    const { data: ownedWorkspaces } = await admin
+      .from('workspaces')
+      .select('id')
+      .eq('owner_id', user.id)
+
+    if (ownedWorkspaces && ownedWorkspaces.length > 0) {
+      const { data: subs } = await admin
+        .from('subscriptions')
+        .select('stripe_subscription_id')
+        .in('workspace_id', ownedWorkspaces.map((w) => w.id))
+        .not('stripe_subscription_id', 'is', null)
+
+      if (subs && subs.length > 0) {
+        // Lazy-load Stripe so local dev without a secret doesn't fail
+        // the whole action; cancellations just get skipped.
+        try {
+          const { stripe } = await import('@/lib/stripe/client')
+          await Promise.allSettled(
+            subs.map((s) =>
+              s.stripe_subscription_id
+                ? stripe.subscriptions.cancel(s.stripe_subscription_id)
+                : Promise.resolve(),
+            ),
+          )
+        } catch {
+          // Cancellation failing shouldn't block account deletion — the
+          // user's GDPR right trumps our bookkeeping. Log and continue.
+        }
+      }
+    }
+
+    // 2. Delete all workspaces owned by this user (cascades to content,
+    //    outputs, subscriptions, etc. via FK constraints).
     await admin
       .from('workspaces')
       .delete()
       .eq('owner_id', user.id)
 
-    // 2. Delete profile
+    // 3. Delete profile
     await admin
       .from('profiles')
       .delete()
       .eq('id', user.id)
 
-    // 3. Delete auth user (Supabase Admin API)
+    // 4. Delete auth user (Supabase Admin API)
     const { error } = await admin.auth.admin.deleteUser(user.id)
     if (error) {
       return { ok: false, error: 'Failed to delete account. Please contact support.' }
