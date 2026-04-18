@@ -1,20 +1,18 @@
 import Link from 'next/link'
 import { Lock, Zap } from 'lucide-react'
 
-import type { BillingPlan } from '@/lib/billing/plans'
+import { PLANS, type BillingPlan } from '@/lib/billing/plans'
 
 const PLAN_ORDER: BillingPlan[] = ['free', 'solo', 'team', 'agency']
-const PLAN_NAMES: Record<BillingPlan, string> = {
-  free: 'Free',
-  solo: 'Solo',
-  team: 'Team',
-  agency: 'Agency',
+
+function planName(id: BillingPlan): string {
+  return PLANS[id].name
 }
-const PLAN_PRICES: Record<BillingPlan, string> = {
-  free: '$0',
-  solo: '$19/mo',
-  team: '$49/mo',
-  agency: '$99/mo',
+
+function planPrice(id: BillingPlan): string {
+  const cents = PLANS[id].monthlyPrice
+  if (cents === 0) return '$0'
+  return `$${Math.round(cents / 100)}/mo`
 }
 
 function hasPlanAccess(currentPlan: BillingPlan, requiredPlan: BillingPlan): boolean {
@@ -61,9 +59,9 @@ export function UpgradeGate({
         <p className="text-sm text-muted-foreground">
           Available on the{' '}
           <span className="font-semibold text-foreground">
-            {PLAN_NAMES[requiredPlan]} plan
+            {planName(requiredPlan)} plan
           </span>{' '}
-          ({PLAN_PRICES[requiredPlan]}) and above.
+          ({planPrice(requiredPlan)}) and above.
         </p>
       </div>
 
@@ -73,11 +71,11 @@ export function UpgradeGate({
         className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
       >
         <Zap className="h-4 w-4" />
-        Upgrade to {PLAN_NAMES[requiredPlan]}
+        Upgrade to {planName(requiredPlan)}
       </Link>
 
       <p className="text-xs text-muted-foreground">
-        You are on the <span className="font-medium">{PLAN_NAMES[currentPlan]}</span> plan.
+        You are on the <span className="font-medium">{planName(currentPlan)}</span> plan.
       </p>
     </div>
   )
@@ -100,7 +98,7 @@ export function UpgradeInline({
         <Lock className="h-4 w-4 shrink-0 text-amber-600" />
         <p className="text-sm text-amber-800">
           <span className="font-semibold">{featureName}</span> requires the{' '}
-          {PLAN_NAMES[requiredPlan]} plan ({PLAN_PRICES[requiredPlan]})
+          {planName(requiredPlan)} plan ({planPrice(requiredPlan)})
         </p>
       </div>
       <Link
