@@ -7,6 +7,7 @@ import { insertAiKey } from '@/lib/ai/insert-ai-key'
 import { getUser } from '@/lib/auth/get-user'
 import { createClient } from '@/lib/supabase/server'
 import type { AiKeyFormState } from '@/components/ai-keys/ai-key-form'
+import { log } from '@/lib/log'
 
 const saveSchema = z.object({
   provider: z.enum(['openai', 'anthropic', 'google']),
@@ -90,8 +91,7 @@ export async function deleteAiKeyAction(formData: FormData): Promise<void> {
     .eq('workspace_id', parsed.data.workspace_id)
 
   if (error) {
-    // eslint-disable-next-line no-console
-    console.error('[deleteAiKeyAction]', error.message)
+    log.error('deleteAiKey failed', error)
   }
 
   revalidatePath('/settings/ai-keys')

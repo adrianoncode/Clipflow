@@ -3,6 +3,7 @@ import 'server-only'
 import { createHash } from 'crypto'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { log } from '@/lib/log'
 
 /**
  * Deterministic hash of `actor + sorted-JSON-input`. Sorted-keys is
@@ -44,14 +45,14 @@ export async function readCache<T>(cacheKey: string): Promise<T | null> {
       .maybeSingle()
 
     if (error) {
-      console.error('[scraper-cache] read:', error.message)
+      log.error('scraper-cache read failed', error, { cacheKey })
       return null
     }
     if (!data) return null
     if (new Date(data.expires_at as string) < new Date()) return null
     return data.data as T
   } catch (err) {
-    console.error('[scraper-cache] read unexpected:', err)
+    log.error('scraper-cache read unexpected', err, { cacheKey })
     return null
   }
 }
@@ -80,9 +81,9 @@ export async function writeCache<T>(
       { onConflict: 'cache_key' },
     )
     if (error) {
-      console.error('[scraper-cache] write:', error.message)
+      log.error('scraper-cache write failed', error, { cacheKey })
     }
   } catch (err) {
-    console.error('[scraper-cache] write unexpected:', err)
+    log.error('scraper-cache write unexpected', err, { cacheKey })
   }
 }

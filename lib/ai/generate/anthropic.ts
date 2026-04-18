@@ -10,6 +10,7 @@ import {
   promptOutputSchema,
 } from '@/lib/ai/generate/schemas'
 import type { GenerateInput, GenerateResult } from '@/lib/ai/generate/types'
+import { log } from '@/lib/log'
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages'
 const TOOL_NAME = 'emit_output'
@@ -94,8 +95,7 @@ export async function generateWithAnthropic(
               : 'Anthropic rate-limited this request. Try again in a moment.',
         }
       default:
-        // eslint-disable-next-line no-console
-        console.error('[anthropic.generate] unexpected status', response.status)
+        log.error('anthropic.generate unexpected status', { status: response.status })
         return {
           ok: false,
           code: 'provider_error',

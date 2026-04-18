@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { getResendClient, getFromAddress } from '@/lib/email/client'
+import { log } from '@/lib/log'
 
 /**
  * Sends a welcome email after a new user completes onboarding.
@@ -11,7 +12,7 @@ export async function sendWelcomeEmail(params: {
 }): Promise<void> {
   const resend = getResendClient()
   if (!resend) {
-    console.warn('[email] RESEND_API_KEY not set, skipping welcome email')
+    log.warn('email: RESEND_API_KEY not set, skipping welcome email')
     return
   }
 
@@ -85,7 +86,7 @@ Go to dashboard: https://clipflow.to/dashboard`
       text,
     })
   } catch (err) {
-    console.error('[email] Failed to send welcome email:', err)
+    log.error('email: failed to send welcome email', err, { toEmail: params.toEmail })
   }
 }
 

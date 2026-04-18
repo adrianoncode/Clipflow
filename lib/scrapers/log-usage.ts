@@ -33,6 +33,6 @@ export async function logScraperUsage(params: {
       log.error('logScraperUsage failed', error)
     }
   } catch (err) {
-    console.error('[logScraperUsage] unexpected:', err)
+    log.error('logScraperUsage unexpected', err)
   }
 }

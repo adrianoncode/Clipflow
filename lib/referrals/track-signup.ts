@@ -49,7 +49,7 @@ export async function trackSignupReferral(params: {
     // The referee-unique constraint makes re-runs safe — swallow 23505
     // (unique violation), surface anything else.
     if (error && error.code !== '23505') {
-      console.error('[trackSignupReferral] insert failed:', error.message)
+      log.error('trackSignupReferral insert failed', error)
       return
     }
     // Only a fresh pending referral gets the welcome email — re-runs
@@ -87,7 +87,7 @@ async function sendWelcomeEmail(params: {
       referrerDisplay: display,
     })
   } catch (err) {
-    console.error('[trackSignupReferral] welcome email failed:', err)
+    log.error('trackSignupReferral welcome email failed', err)
   }
 }
 

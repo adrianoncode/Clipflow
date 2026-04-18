@@ -2,6 +2,7 @@ import 'server-only'
 
 import { getResendClient, getFromAddress } from '@/lib/email/client'
 import { REFERRAL_DISCOUNT_PERCENT } from '@/lib/referrals/constants'
+import { log } from '@/lib/log'
 
 interface ReferralWelcomeParams {
   /** The new signup (referee). */
@@ -20,7 +21,7 @@ interface ReferralWelcomeParams {
 export async function sendReferralWelcomeEmail(params: ReferralWelcomeParams): Promise<void> {
   const resend = getResendClient()
   if (!resend) {
-    console.warn('[email] RESEND_API_KEY not set, skipping referral welcome email')
+    log.warn('email: RESEND_API_KEY not set, skipping referral welcome email')
     return
   }
 
@@ -99,7 +100,7 @@ See plans: ${billingUrl}
   })
 
   if (error) {
-    console.error('[email] Failed to send referral welcome:', error)
+    log.error('email: failed to send referral welcome', error, { toEmail: params.toEmail })
   }
 }
 

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { getOAuthConfig, type OAuthPlatform } from '@/lib/oauth/config'
 import { exchangeCodeForToken } from '@/lib/oauth/exchange-token'
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
@@ -92,7 +93,7 @@ export async function GET(
     })
 
   if (insertError) {
-    console.error('[oauth callback] insert error:', insertError)
+    log.error('oauth callback insert error', insertError)
     return NextResponse.redirect(
       `${BASE_URL}/workspace/${stateData.workspaceId}/schedule/connect?error=${encodeURIComponent('Failed to save connection')}`,
     )

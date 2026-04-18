@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendReviewNotification } from '@/lib/email/send-review-notification'
 import { notifyReviewComment } from '@/lib/notifications/triggers'
+import { log } from '@/lib/log'
 
 const submitCommentSchema = z.object({
   review_link_id: z.string().uuid(),
@@ -118,7 +119,7 @@ export async function submitReviewCommentAction(
         outputsUrl,
       })
     } catch (err) {
-      console.error('[review] Email notification failed:', err)
+      log.error('review email notification failed', err)
     }
   })()
 

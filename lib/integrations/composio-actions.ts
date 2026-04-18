@@ -2,6 +2,7 @@ import 'server-only'
 
 import { executeComposioAction, getComposioConnections } from '@/lib/integrations/composio'
 import type { IntegrationEvent } from '@/lib/integrations/dispatch-integrations'
+import { log } from '@/lib/log'
 
 /**
  * Dispatch Composio-based actions for connected OAuth integrations.
@@ -38,8 +39,7 @@ export async function dispatchComposioActions(
         title: `[Clipflow] ${payload.title}`,
         content: buildNotionContent(event, payload),
       }).catch((err) => {
-        // eslint-disable-next-line no-console
-        console.warn('[composio:notion]', err instanceof Error ? err.message : 'failed')
+        log.warn('composio:notion failed', { error: err instanceof Error ? err.message : 'failed' })
       }),
     )
   }
@@ -57,8 +57,7 @@ export async function dispatchComposioActions(
           (payload.body ?? '').slice(0, 500),
         ]],
       }).catch((err) => {
-        // eslint-disable-next-line no-console
-        console.warn('[composio:sheets]', err instanceof Error ? err.message : 'failed')
+        log.warn('composio:sheets failed', { error: err instanceof Error ? err.message : 'failed' })
       }),
     )
   }
@@ -69,8 +68,7 @@ export async function dispatchComposioActions(
       executeComposioAction(workspaceId, 'LINKEDIN_CREATE_A_LINKED_IN_POST', {
         text: payload.body.slice(0, 3000),
       }).catch((err) => {
-        // eslint-disable-next-line no-console
-        console.warn('[composio:linkedin]', err instanceof Error ? err.message : 'failed')
+        log.warn('composio:linkedin failed', { error: err instanceof Error ? err.message : 'failed' })
       }),
     )
   }

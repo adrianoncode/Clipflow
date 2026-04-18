@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
 import type { OutputState } from '@/lib/supabase/types'
+import { log } from '@/lib/log'
 
 export interface TransitionStateInput {
   outputId: string
@@ -42,8 +43,10 @@ export async function transitionOutputState(
     .limit(1)
 
   if (readError) {
-    // eslint-disable-next-line no-console
-    console.error('[transitionOutputState.read]', readError.message)
+    log.error('transitionOutputState read failed', readError, {
+      outputId: input.outputId,
+      workspaceId: input.workspaceId,
+    })
     return { ok: false, error: 'Could not read current state.' }
   }
 
@@ -66,8 +69,10 @@ export async function transitionOutputState(
   })
 
   if (insertError) {
-    // eslint-disable-next-line no-console
-    console.error('[transitionOutputState.insert]', insertError.message)
+    log.error('transitionOutputState insert failed', insertError, {
+      outputId: input.outputId,
+      newState: input.newState,
+    })
     return { ok: false, error: 'Could not update state.' }
   }
 

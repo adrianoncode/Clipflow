@@ -37,6 +37,7 @@ import { updateOutput } from '@/lib/outputs/update-output'
 import type { OutputPlatform } from '@/lib/supabase/types'
 import { notifyOutputsGenerated, notifyOutputApproved } from '@/lib/notifications/triggers'
 import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
+import { log } from '@/lib/log'
 import { dispatchIntegrations } from '@/lib/integrations/dispatch-integrations'
 
 // NOTE: `export const maxDuration = 300` lives on the route segment
@@ -112,12 +113,10 @@ export async function generateOutputsAction(
   }
 
   if (item.transcript.length > 30_000) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      '[generateOutputsAction] long transcript',
-      `content_id=${parsed.data.content_id}`,
-      `chars=${item.transcript.length}`,
-    )
+    log.warn('generateOutputsAction long transcript', {
+      contentId: parsed.data.content_id,
+      chars: item.transcript.length,
+    })
   }
 
   const pick = await pickGenerationProvider(parsed.data.workspace_id)

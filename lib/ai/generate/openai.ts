@@ -7,6 +7,7 @@ import {
 } from '@/lib/ai/generate/models'
 import { promptOutputSchema } from '@/lib/ai/generate/schemas'
 import type { GenerateInput, GenerateResult } from '@/lib/ai/generate/types'
+import { log } from '@/lib/log'
 
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
 
@@ -81,8 +82,7 @@ export async function generateWithOpenAi(
           message: 'OpenAI rate-limited this request. Try again in a moment.',
         }
       default:
-        // eslint-disable-next-line no-console
-        console.error('[openai.generate] unexpected status', response.status)
+        log.error('openai.generate unexpected status', { status: response.status })
         return {
           ok: false,
           code: 'provider_error',

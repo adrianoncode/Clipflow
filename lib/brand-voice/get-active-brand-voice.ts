@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 
 export interface BrandVoice {
   id: string
@@ -26,7 +27,7 @@ export async function getActiveBrandVoice(workspaceId: string): Promise<BrandVoi
     .maybeSingle()
 
   if (error) {
-    console.error('[getActiveBrandVoice] error', error.message)
+    log.error('getActiveBrandVoice failed', error, { workspaceId })
     return null
   }
   return data ?? null

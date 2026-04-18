@@ -9,6 +9,7 @@ import { getSignedUrl } from '@/lib/content/get-signed-url'
 import { startReframeJob } from '@/lib/reframe/reframe-video'
 import { createClient } from '@/lib/supabase/server'
 import { checkWorkspaceRateLimit } from '@/lib/rate-limit-helper'
+import { log } from '@/lib/log'
 
 const reframeSchema = z.object({
   workspaceId: z.string().uuid(),
@@ -86,7 +87,7 @@ export async function startReframeAction(
 
   if (updateError) {
     // Non-fatal: job started successfully even if we can't persist the jobId
-    console.error('[startReframeAction] Failed to persist jobId:', updateError.message)
+    log.error('startReframeAction failed to persist jobId', updateError)
   }
 
   return { ok: true, jobId: result.jobId }

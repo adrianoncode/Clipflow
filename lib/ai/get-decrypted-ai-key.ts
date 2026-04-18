@@ -59,8 +59,7 @@ export async function getDecryptedAiKey(
     })
     return { ok: true, plaintext, keyId: data.id }
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('[getDecryptedAiKey] decrypt failed for key', data.id, (err as Error).message)
+    log.error('getDecryptedAiKey decrypt failed', err, { keyId: data.id })
     return {
       ok: false,
       code: 'decrypt_failed',

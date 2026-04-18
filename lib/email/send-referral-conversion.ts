@@ -2,6 +2,7 @@ import 'server-only'
 
 import { getResendClient, getFromAddress } from '@/lib/email/client'
 import { REFERRAL_DISCOUNT_PERCENT } from '@/lib/referrals/constants'
+import { log } from '@/lib/log'
 
 interface ReferralConversionEmailParams {
   /** Referrer — the person who earned the reward. */
@@ -23,7 +24,7 @@ export async function sendReferralConversionEmail(
 ): Promise<void> {
   const resend = getResendClient()
   if (!resend) {
-    console.warn('[email] RESEND_API_KEY not set, skipping referral conversion email')
+    log.warn('email: RESEND_API_KEY not set, skipping referral conversion email')
     return
   }
 
@@ -95,7 +96,7 @@ View your referrals: ${referralsUrl}
   })
 
   if (error) {
-    console.error('[email] Failed to send referral conversion email:', error)
+    log.error('email: failed to send referral conversion', error, { toEmail: params.toEmail })
   }
 }
 

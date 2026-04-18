@@ -1,5 +1,6 @@
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 
 export async function createNotification(params: {
   userId: string
@@ -21,14 +22,12 @@ export async function createNotification(params: {
     })
 
     if (error) {
-      // eslint-disable-next-line no-console
-      console.warn(`[createNotification] DB error for ${params.type}:`, error.message)
+      log.warn('createNotification db error', { type: params.type, error: error.message })
     }
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      '[createNotification] Unexpected error:',
-      err instanceof Error ? err.message : 'unknown',
-    )
+    log.warn('createNotification unexpected error', {
+      type: params.type,
+      error: err instanceof Error ? err.message : 'unknown',
+    })
   }
 }

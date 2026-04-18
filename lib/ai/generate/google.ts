@@ -10,6 +10,7 @@ import {
   promptOutputSchema,
 } from '@/lib/ai/generate/schemas'
 import type { GenerateInput, GenerateResult } from '@/lib/ai/generate/types'
+import { log } from '@/lib/log'
 
 /**
  * Gemini Generate Content with a structured responseSchema.
@@ -82,8 +83,7 @@ export async function generateWithGoogle(
           message: 'Google rate-limited this request. Try again in a moment.',
         }
       default:
-        // eslint-disable-next-line no-console
-        console.error('[google.generate] unexpected status', response.status)
+        log.error('google.generate unexpected status', { status: response.status })
         return {
           ok: false,
           code: 'provider_error',

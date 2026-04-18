@@ -4,6 +4,7 @@ import type { PromptOutput } from '@/lib/ai/generate/types'
 import type { AiProvider } from '@/lib/ai/providers/types'
 import { createClient } from '@/lib/supabase/server'
 import type { Json, OutputPlatform } from '@/lib/supabase/types'
+import { log } from '@/lib/log'
 
 export interface InsertOutputInput {
   workspaceId: string
@@ -61,11 +62,11 @@ export async function insertOutputWithDraftState(
     .single()
 
   if (insertError || !output) {
-    // eslint-disable-next-line no-console
-    console.error(
-      '[insertOutputWithDraftState.outputs]',
-      insertError?.message ?? 'unknown error',
-    )
+    log.error('insertOutputWithDraftState outputs insert failed', insertError, {
+      workspaceId: input.workspaceId,
+      contentId: input.contentId,
+      platform: input.platform,
+    })
     return { ok: false, error: 'Could not save generated output.' }
   }
 
@@ -79,12 +80,9 @@ export async function insertOutputWithDraftState(
   if (stateError) {
     // Orphan-tolerant: the output is stored, the state row is missing.
     // Log and keep going — M5's state backfill will make this whole.
-    // eslint-disable-next-line no-console
-    console.error(
-      '[insertOutputWithDraftState.output_states]',
-      stateError.message,
-      `output_id=${output.id}`,
-    )
+    log.error('insertOutputWithDraftState state insert failed', stateError, {
+      outputId: output.id,
+    })
   }
 
   return { ok: true, outputId: output.id }

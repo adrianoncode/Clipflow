@@ -1,5 +1,6 @@
 import 'server-only'
 import { getResendClient, getFromAddress } from '@/lib/email/client'
+import { log } from '@/lib/log'
 
 interface ReviewNotificationParams {
   /** Workspace owner's email */
@@ -22,8 +23,7 @@ export async function sendReviewNotification(
 ): Promise<void> {
   const resend = getResendClient()
   if (!resend) {
-    // No API key configured — skip silently in dev
-    console.warn('[email] RESEND_API_KEY not set, skipping review notification email')
+    log.warn('email: RESEND_API_KEY not set, skipping review notification email')
     return
   }
 
@@ -83,7 +83,7 @@ export async function sendReviewNotification(
   })
 
   if (error) {
-    console.error('[email] Failed to send review notification:', error)
+    log.error('email: failed to send review notification', error, { toEmail: params.toEmail })
   }
 }
 

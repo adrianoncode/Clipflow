@@ -8,6 +8,7 @@ import { publishToMedium } from '@/lib/integrations/medium'
 import { publishToBeehiiv } from '@/lib/integrations/beehiiv'
 import { createAirtableRecord } from '@/lib/integrations/airtable'
 import { dispatchComposioActions } from '@/lib/integrations/composio-actions'
+import { log } from '@/lib/log'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -191,8 +192,7 @@ async function _dispatch(
   // ── Composio OAuth integrations (Notion, Sheets, LinkedIn) ─────────
   tasks.push(
     dispatchComposioActions(workspaceId, event, payload).catch((err) => {
-      // eslint-disable-next-line no-console
-      console.warn('[dispatch:composio]', err instanceof Error ? err.message : 'failed')
+      log.warn('dispatch:composio failed', { error: err instanceof Error ? err.message : 'failed' })
     }),
   )
 

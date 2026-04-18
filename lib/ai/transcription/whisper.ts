@@ -1,6 +1,7 @@
 import 'server-only'
 
 import type { TranscribeInput, TranscribeResult } from '@/lib/ai/transcription/types'
+import { log } from '@/lib/log'
 
 const WHISPER_URL = 'https://api.openai.com/v1/audio/transcriptions'
 const WHISPER_MODEL = 'whisper-1'
@@ -110,8 +111,7 @@ export async function transcribeWithWhisper(
         message: 'OpenAI rate-limited the transcription. Try again in a moment.',
       }
     default:
-      // eslint-disable-next-line no-console
-      console.error('[whisper] unexpected status', response.status)
+      log.error('whisper unexpected status', { status: response.status })
       return {
         ok: false,
         code: 'provider_error',

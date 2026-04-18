@@ -5,6 +5,7 @@ import { stripe } from '@/lib/stripe/client'
 import { upsertSubscription } from '@/app/(app)/billing/actions'
 import type { BillingPlan } from '@/lib/billing/plans'
 import { confirmReferralAndRewardReferrer } from '@/lib/referrals/confirm-referral'
+import { log } from '@/lib/log'
 
 const RELEVANT_EVENTS = new Set([
   'checkout.session.completed',
@@ -33,7 +34,7 @@ async function handleSubscriptionEvent(sub: Stripe.Subscription) {
     (sub.metadata?.workspace_id as string | undefined) ?? ''
 
   if (!workspaceId) {
-    console.warn('[stripe webhook] subscription missing workspace_id metadata', sub.id)
+    log.warn('stripe webhook subscription missing workspace_id metadata', { subscriptionId: sub.id })
     return
   }
 
@@ -62,7 +63,7 @@ export async function POST(req: Request) {
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
-    console.error('[stripe webhook] signature verification failed:', message)
+    log.error('stripe webhook signature verification failed', err, { message })
     return new Response(`Webhook error: ${message}`, { status: 400 })
   }
 
@@ -99,7 +100,7 @@ export async function POST(req: Request) {
       await handleSubscriptionEvent(event.data.object as Stripe.Subscription)
     }
   } catch (err) {
-    console.error('[stripe webhook] handler error:', err)
+    log.error('stripe webhook handler error', err)
     return new Response('Handler error', { status: 500 })
   }
 

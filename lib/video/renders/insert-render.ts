@@ -45,7 +45,7 @@ export async function insertRender(params: InsertRenderParams): Promise<string |
     }
     return (data as { id: string } | null)?.id ?? null
   } catch (err) {
-    console.error('[insertRender] unexpected:', err)
+    log.error('insertRender unexpected', err)
     return null
   }
 }

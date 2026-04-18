@@ -6,6 +6,7 @@ import { stripe } from '@/lib/stripe/client'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendReferralConversionEmail } from '@/lib/email/send-referral-conversion'
 import { getReferralCouponId, REFERRAL_DISCOUNT_PERCENT } from './constants'
+import { log } from '@/lib/log'
 
 /**
  * Called from the Stripe webhook once a referee has successfully completed
@@ -27,14 +28,14 @@ export async function confirmReferralAndRewardReferrer(params: {
     .maybeSingle()
 
   if (refErr || !ref) {
-    console.error('[confirmReferral] lookup failed:', refErr?.message ?? 'not found')
+    log.error('confirmReferral lookup failed', { error: refErr?.message ?? 'not found' })
     return
   }
 
   // `blocked` referrals never graduate — they're recorded for analytics
   // but get no coupon on either side. See is-disposable-email.ts.
   if (ref.status === 'blocked') {
-    console.warn('[confirmReferral] referral is blocked, not applying coupon', ref.id)
+    log.warn('confirmReferral referral blocked, not applying coupon', { referralId: ref.id })
     return
   }
 
@@ -59,7 +60,7 @@ export async function confirmReferralAndRewardReferrer(params: {
   }
 
   if (!couponId) {
-    console.warn('[confirmReferral] STRIPE_REFERRAL_COUPON_ID missing — skipping referrer reward')
+    log.warn('confirmReferral STRIPE_REFERRAL_COUPON_ID missing, skipping referrer reward')
     return
   }
 
@@ -104,7 +105,7 @@ async function notifyReferrer(params: {
     link: '/settings/referrals',
   })
   if (notifError) {
-    console.error('[confirmReferral] notify failed:', notifError.message)
+    log.error('confirmReferral notify failed', { error: notifError.message })
   }
 
   // Email — best-effort, silently skips in dev when RESEND_API_KEY is missing.
@@ -161,7 +162,7 @@ async function applyCouponToReferrerSubscriptions(params: {
         discounts: [{ coupon: params.couponId }],
       } as Stripe.SubscriptionUpdateParams)
     } catch (err) {
-      console.error('[confirmReferral] failed to attach coupon to', s.stripe_subscription_id, err)
+      log.error('confirmReferral failed to attach coupon', err, { subscriptionId: s.stripe_subscription_id })
     }
   }
 }
