@@ -18,73 +18,58 @@ interface Plan {
   ctaLabel?: string
 }
 
+// Three public tiers, two ICPs. Keep feature bullets creator-friendly —
+// this is a marketing surface, not a spec sheet.
 const PLANS: Plan[] = [
   {
     id: 'free',
     name: 'Free',
-    description: 'Try every tool, no card.',
+    description: 'Kick the tires, no card.',
     monthly: 0,
     annual: 0,
     features: [
-      '3 content items / mo',
-      '10 text drafts / mo',
+      '3 videos / month',
+      '10 posts / month',
       '1 workspace',
-      'All AI scripts + hooks',
-      'No video renders',
+      'All AI writing tools',
+      'No scheduling',
     ],
     ctaLabel: 'Get started',
   },
   {
     id: 'solo',
-    name: 'Solo',
-    description: 'For creators shipping weekly.',
-    monthly: 19,
-    annual: 15,
+    name: 'Creator',
+    description: 'For indie creators shipping weekly.',
+    monthly: 29,
+    annual: 19,
     features: [
-      '20 content items / mo',
-      '100 text drafts / mo',
-      '20 video renders / mo',
-      '5 AI avatars / mo',
-      '1 voice clone',
-      'Background music library',
+      '30 videos / month',
+      '150 posts / month',
+      'Schedule + auto-publish to 4 platforms',
+      'A/B hook testing',
+      'Creator research',
+      'B-roll automation',
       'Custom branding',
     ],
     highlight: true,
-    ctaLabel: 'Start trial',
-  },
-  {
-    id: 'team',
-    name: 'Team',
-    description: 'For agencies & content teams.',
-    monthly: 49,
-    annual: 39,
-    features: [
-      '100 content items / mo',
-      '500 text drafts / mo',
-      '100 video renders / mo',
-      '30 AI avatars + 20 dubs / mo',
-      '3 voice clones',
-      'Trending TikTok sounds',
-      '5 workspaces + members',
-      'Priority render queue',
-    ],
-    ctaLabel: 'Start trial',
+    ctaLabel: 'Start free trial',
   },
   {
     id: 'agency',
-    name: 'Agency',
-    description: 'Unlimited, white-label.',
+    name: 'Studio',
+    description: 'For social-media managers with clients.',
     monthly: 99,
     annual: 79,
     features: [
-      'Unlimited everything',
-      'Unlimited voice clones',
-      'Unlimited workspaces',
-      'White-label review portal',
-      'API access + webhooks',
-      'Priority support',
+      'Unlimited videos + posts',
+      'One workspace per client',
+      'Team seats with roles',
+      'Client review links (white-label)',
+      'AI avatars + auto-dub',
+      'Voice cloning',
+      'Priority renders',
     ],
-    ctaLabel: 'Contact us',
+    ctaLabel: 'Start free trial',
   },
 ]
 
@@ -147,7 +132,7 @@ export function PricingSection({ signupHref }: PricingSectionProps) {
         </div>
 
         {/* Plans */}
-        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PLANS.map((plan) => {
             const price = interval === 'annual' ? plan.annual : plan.monthly
             return (
@@ -220,7 +205,7 @@ export function PricingSection({ signupHref }: PricingSectionProps) {
         </div>
 
         <p className="mt-8 text-center text-sm text-zinc-400">
-          All plans include every AI tool. No feature gating.
+          BYOK — bring your own OpenAI / Anthropic keys and pay them at cost.
         </p>
       </div>
     </section>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useFormState, useFormStatus } from 'react-dom'
-import { User, Users, Building2, ArrowRight } from 'lucide-react'
+import { User, Building2, ArrowRight } from 'lucide-react'
 
 import { FormMessage } from '@/components/ui/form-message'
 import { cn } from '@/lib/utils'
@@ -12,30 +12,26 @@ import {
 
 const initialState: RoleState = {}
 
+// Two ICPs, two paths. `team` stays in the DB enum as a legacy SKU but
+// new sign-ups pick Creator or Studio — that alone decides what the
+// dashboard + sidebar show from day one.
 const OPTIONS = [
   {
     role: 'solo' as const,
     icon: User,
-    title: 'Solo Creator',
-    description: 'I create and publish my own content.',
-    features: ['Personal workspace', 'All AI tools', 'Brand voice'],
-  },
-  {
-    role: 'team' as const,
-    icon: Users,
-    title: 'Content Team',
-    description: 'We publish together as a brand.',
-    features: ['Shared workspace', 'Team members', 'Review links'],
+    title: "I'm a creator",
+    description: 'One brand, one voice. Turn my videos into posts.',
+    features: ['Schedule + auto-publish', 'A/B hook testing', 'Creator research'],
   },
   {
     role: 'agency' as const,
     icon: Building2,
-    title: 'Agency',
-    description: 'I manage content for multiple clients.',
+    title: 'I manage multiple brands',
+    description: 'Agency or social-media manager with clients to run.',
     features: [
-      'Multi-client dashboards',
-      'White-label portals',
-      'Unlimited workspaces',
+      'One workspace per client',
+      'Team seats + review links',
+      'White-label portal',
     ],
   },
 ]

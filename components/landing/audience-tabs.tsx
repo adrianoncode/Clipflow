@@ -5,7 +5,6 @@ import Link from 'next/link'
 import {
   ArrowRight,
   User,
-  Users,
   Building2,
   Check,
 } from 'lucide-react'
@@ -23,54 +22,41 @@ interface Audience {
   ctaLabel: string
 }
 
+// Two ICPs = two tabs. Each tab tells a different story using ONLY
+// features the matching plan actually unlocks. If you remove a feature
+// from the product, remove it here too — dead promises kill trust.
 const AUDIENCES: Audience[] = [
   {
     id: 'creator',
-    tabLabel: 'Creator',
+    tabLabel: "I'm a creator",
     icon: User,
-    eyebrow: 'For solo creators',
+    eyebrow: 'For indie creators',
     headline: 'Ship a week of content before your coffee cools.',
     subline:
-      'One long-form upload becomes 4 platform-native drafts with hooks tuned for each algorithm. Keep your voice, drop the copy-paste.',
+      'One long-form video becomes four platform-native posts — TikTok, Reels, Shorts, LinkedIn — each with hooks tuned for that feed. Approve, schedule, walk away.',
     benefits: [
-      'Brand voice training on your own writing',
-      'AI Ghostwriter for scripts, hooks, CTAs',
-      'Virality scoring before you post',
-      'Real MP4 rendering with captions + B-roll',
+      'Turn any video into 4 platform-specific posts',
+      'A/B test hooks before you publish',
+      'Schedule + auto-publish to all 4 platforms',
+      'Creator research across YouTube / TikTok / Instagram',
     ],
     ctaLabel: 'Start creating',
   },
   {
-    id: 'team',
-    tabLabel: 'Team',
-    icon: Users,
-    eyebrow: 'For content teams',
-    headline: 'Your whole team writes in one voice.',
-    subline:
-      'Shared brand voice, persona and approval pipeline. Reviewers can comment without a login — no more Slack threads hunting for the latest draft.',
-    benefits: [
-      'Workspace members with roles',
-      'Draft → Review → Approved pipeline',
-      'Client review portal (no login needed)',
-      'Shared AI keys, shared usage caps',
-    ],
-    ctaLabel: 'Start a team workspace',
-  },
-  {
     id: 'agency',
-    tabLabel: 'Agency',
+    tabLabel: 'I manage brands',
     icon: Building2,
-    eyebrow: 'For agencies',
-    headline: 'One platform. Every client. Zero AI markup.',
+    eyebrow: 'For agencies & social-media managers',
+    headline: 'One cockpit. Every client. No tab gymnastics.',
     subline:
-      'Separate workspace per client, white-label review links, and BYOK so your margin stays yours. API access for custom workflows.',
+      "A workspace per client keeps voices, approvals, and schedules cleanly separated. Share review links so clients can approve without logging in — and everything stays white-label.",
     benefits: [
-      'Unlimited client workspaces',
-      'White-label review portals',
-      'BYOK — AI at cost, no platform markup',
-      'API access + webhooks for custom automation',
+      'Unlimited client workspaces with their own brand voice',
+      'Team seats with owner / editor / reviewer roles',
+      'White-label client review links — no Clipflow logo',
+      'AI avatars + auto-dub to scale creative across clients',
     ],
-    ctaLabel: 'Run your agency on Clipflow',
+    ctaLabel: 'Run your studio on Clipflow',
   },
 ]
 
@@ -92,13 +78,13 @@ export function AudienceTabs({ signupHref }: AudienceTabsProps) {
     <section className="bg-white px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto max-w-2xl text-center">
-          <SectionBadge number="02" label="Built for every creator" className="justify-center" />
+          <SectionBadge number="02" label="Built for two kinds of people" className="justify-center" />
           <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
             Pick <span className="italic text-violet-600">your lane.</span>
           </h2>
           <p className="mt-4 text-lg text-zinc-500">
-            Same platform — completely different stories for solo creators, teams,
-            and agencies.
+            Same platform — a very different home screen for solo creators and
+            for the agencies running them.
           </p>
         </div>
 
