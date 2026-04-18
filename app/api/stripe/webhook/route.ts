@@ -3,14 +3,20 @@ import Stripe from 'stripe'
 
 import { stripe } from '@/lib/stripe/client'
 import { upsertSubscription } from '@/app/(app)/billing/actions'
-import type { BillingPlan } from '@/lib/billing/plans'
+import { PLANS, type BillingPlan } from '@/lib/billing/plans'
 import { confirmReferralAndRewardReferrer } from '@/lib/referrals/confirm-referral'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { sendPaymentFailedEmail } from '@/lib/email/send-payment-failed'
 import { log } from '@/lib/log'
 
 const RELEVANT_EVENTS = new Set([
   'checkout.session.completed',
   'customer.subscription.updated',
   'customer.subscription.deleted',
+  // Dunning: Stripe notifies us when a charge fails. We fire a
+  // proactive email so the user can update their card before the
+  // subscription actually gets paused.
+  'invoice.payment_failed',
 ])
 
 /**
@@ -29,6 +35,65 @@ function planFromPriceId(priceId: string): BillingPlan | null {
     [process.env.STRIPE_PRICE_AGENCY_ANNUAL ?? '__']: 'agency',
   }
   return envMap[priceId] ?? null
+}
+
+/**
+ * Fires when Stripe fails to charge a card. We look up the workspace
+ * owner by customer ID, generate a billing-portal link for them, and
+ * send a proactive email pointing at it. The subscription status row
+ * in our DB will separately transition to `past_due` via the
+ * subscription.updated event — we don't touch it here.
+ */
+async function handlePaymentFailed(invoice: Stripe.Invoice) {
+  const customerId =
+    typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
+  if (!customerId) {
+    log.warn('stripe payment_failed missing customer ID', { invoiceId: invoice.id })
+    return
+  }
+
+  const admin = createAdminClient()
+  const { data: subRow } = await admin
+    .from('subscriptions')
+    .select('workspace_id, plan, workspaces(name, owner_id)')
+    .eq('stripe_customer_id', customerId)
+    .maybeSingle()
+
+  if (!subRow) return
+  const workspace = subRow.workspaces as unknown as { name: string; owner_id: string } | null
+  if (!workspace) return
+
+  // Owner email from auth
+  const { data: ownerData } = await admin.auth.admin.getUserById(workspace.owner_id)
+  const ownerEmail = ownerData?.user?.email
+  if (!ownerEmail) return
+
+  // Create a portal session so the email link drops them directly onto
+  // their payment methods. Stripe expires these quickly which is fine —
+  // the email is meant to be clicked soon anyway.
+  let portalUrl = 'https://clipflow.to/billing'
+  try {
+    const portal = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://clipflow.to'}/billing`,
+    })
+    portalUrl = portal.url
+  } catch {
+    // fall back to in-app billing page
+  }
+
+  const nextAttemptAt =
+    invoice.next_payment_attempt != null
+      ? new Date(invoice.next_payment_attempt * 1000)
+      : null
+
+  await sendPaymentFailedEmail({
+    toEmail: ownerEmail,
+    workspaceName: workspace.name,
+    planName: PLANS[subRow.plan as BillingPlan]?.name ?? subRow.plan,
+    billingPortalUrl: portalUrl,
+    nextAttemptAt,
+  })
 }
 
 async function handleSubscriptionEvent(sub: Stripe.Subscription) {
@@ -112,6 +177,8 @@ export async function POST(req: Request) {
       event.type === 'customer.subscription.deleted'
     ) {
       await handleSubscriptionEvent(event.data.object as Stripe.Subscription)
+    } else if (event.type === 'invoice.payment_failed') {
+      await handlePaymentFailed(event.data.object as Stripe.Invoice)
     }
   } catch (err) {
     log.error('stripe webhook handler error', err)

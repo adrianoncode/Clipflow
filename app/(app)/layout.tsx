@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { AppShell } from '@/components/workspace/app-shell'
+import { SubscriptionStatusBanner } from '@/components/billing/subscription-status-banner'
 import { getProfile } from '@/lib/auth/get-profile'
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
@@ -61,6 +62,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       referralStats={referralStats}
       currentPlan={currentPlan}
     >
+      {/* Billing-state banner above every page — past_due, unpaid, or
+          cancel-scheduled subscriptions surface here so users notice
+          before their plan actually flips to free. */}
+      <SubscriptionStatusBanner workspaceId={currentWorkspace.id} />
       {children}
     </AppShell>
   )
