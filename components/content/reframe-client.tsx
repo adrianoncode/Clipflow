@@ -72,7 +72,9 @@ export function ReframeClient({
 
     const poll = async () => {
       try {
-        const res = await fetch(`/api/reframe?jobId=${jobId}`)
+        const res = await fetch(
+          `/api/reframe?jobId=${encodeURIComponent(jobId)}&workspace_id=${encodeURIComponent(workspaceId)}&content_id=${encodeURIComponent(contentId)}`,
+        )
         const data = await res.json() as PollResult
         if (!data.ok) {
           setPollError(data.error ?? 'Failed to poll job status.')

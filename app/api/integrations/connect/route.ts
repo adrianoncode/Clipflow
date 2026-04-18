@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
-import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { initiateComposioConnection, isComposioOAuth } from '@/lib/integrations/composio'
 
 const WORKSPACE_COOKIE = 'clipflow.current_workspace'
@@ -10,12 +10,16 @@ const WORKSPACE_COOKIE = 'clipflow.current_workspace'
  * GET /api/integrations/connect?app=notion&workspace_id=xxx
  *
  * Kicks off a Composio OAuth flow. Redirects the user to the provider's
- * OAuth consent screen. On completion, Composio calls our callback route.
+ * OAuth consent screen. On completion, Composio calls our callback
+ * route.
+ *
+ * Authz: previously auth-only — a logged-in user could pass any
+ * workspace_id and seed the pending cookie with it. The callback then
+ * wrote to that workspace's integrations config. Now we verify the
+ * caller is a member of the target workspace before starting the
+ * OAuth dance.
  */
 export async function GET(req: NextRequest) {
-  const user = await getUser()
-  if (!user) return NextResponse.redirect(new URL('/login', req.url))
-
   const { searchParams } = new URL(req.url)
   const integrationId = searchParams.get('app') ?? ''
   const workspaceId =
@@ -26,6 +30,16 @@ export async function GET(req: NextRequest) {
   if (!integrationId || !workspaceId) {
     return NextResponse.redirect(
       new URL('/settings/integrations?error=missing_params', req.url),
+    )
+  }
+
+  const check = await requireWorkspaceMember(workspaceId)
+  if (!check.ok) {
+    if (check.status === 401) {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
+    return NextResponse.redirect(
+      new URL('/settings/integrations?error=not_a_member', req.url),
     )
   }
 

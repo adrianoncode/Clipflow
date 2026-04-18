@@ -15,9 +15,11 @@ const RELEVANT_EVENTS = new Set([
 
 /**
  * Maps a Stripe price ID back to our plan name.
- * Checks all plan/interval combos against the configured env vars.
+ * Returns null (not 'free') when the price ID is unrecognized — a
+ * misconfigured preview deploy otherwise silently downgraded paying
+ * customers on every subscription.updated event. Caller logs + skips.
  */
-function planFromPriceId(priceId: string): BillingPlan {
+function planFromPriceId(priceId: string): BillingPlan | null {
   const envMap: Record<string, BillingPlan> = {
     [process.env.STRIPE_PRICE_SOLO_MONTHLY ?? '__']: 'solo',
     [process.env.STRIPE_PRICE_SOLO_ANNUAL ?? '__']: 'solo',
@@ -26,7 +28,7 @@ function planFromPriceId(priceId: string): BillingPlan {
     [process.env.STRIPE_PRICE_AGENCY_MONTHLY ?? '__']: 'agency',
     [process.env.STRIPE_PRICE_AGENCY_ANNUAL ?? '__']: 'agency',
   }
-  return envMap[priceId] ?? 'free'
+  return envMap[priceId] ?? null
 }
 
 async function handleSubscriptionEvent(sub: Stripe.Subscription) {
@@ -40,6 +42,18 @@ async function handleSubscriptionEvent(sub: Stripe.Subscription) {
 
   const priceId = sub.items.data[0]?.price.id ?? ''
   const plan = planFromPriceId(priceId)
+
+  if (!plan) {
+    // Don't touch the DB on an unknown price ID. Safer to leave the
+    // existing row intact than downgrade a real paying customer
+    // because STRIPE_PRICE_* envs are missing on this deploy.
+    log.error('stripe webhook unknown price ID — skipping subscription update', undefined, {
+      priceId,
+      subscriptionId: sub.id,
+      workspaceId,
+    })
+    return
+  }
 
   await upsertSubscription({
     workspaceId,

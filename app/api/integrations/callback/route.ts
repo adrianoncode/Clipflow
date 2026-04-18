@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
-import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -11,11 +11,14 @@ import { createClient } from '@/lib/supabase/server'
  * Composio redirects here after the user completes (or cancels) OAuth.
  * We mark the integration as connected in the workspace branding JSON
  * and redirect back to the integrations settings page.
+ *
+ * Authz: we re-check workspace membership here even though /connect
+ * already did. Reason: the pending cookie is httpOnly but a user who
+ * lost their membership between /connect and /callback (unlikely but
+ * possible) should not be able to complete the write. Defense in
+ * depth — if /connect ever regresses, the callback still holds.
  */
 export async function GET(req: NextRequest) {
-  const user = await getUser()
-  if (!user) return NextResponse.redirect(new URL('/login', req.url))
-
   const { searchParams } = new URL(req.url)
   const connectedAppName = searchParams.get('connectedAppName') ?? ''
   const connectionId = searchParams.get('connectionId') ?? searchParams.get('id') ?? ''
@@ -33,12 +36,24 @@ export async function GET(req: NextRequest) {
     } catch { /* ignore */ }
   }
 
-  // Fallback: try to derive from query params Composio may send
   if (!workspaceId || !integrationId) {
     return NextResponse.redirect(
       new URL('/settings/integrations?error=session_expired', req.url),
     )
   }
+
+  const check = await requireWorkspaceMember(workspaceId)
+  if (!check.ok) {
+    if (check.status === 401) {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
+    const res = NextResponse.redirect(
+      new URL('/settings/integrations?error=not_a_member', req.url),
+    )
+    res.cookies.set('composio_pending', '', { maxAge: 0, path: '/' })
+    return res
+  }
+  const user = { id: check.userId }
 
   if (connectionId) {
     // Persist the connectionId in workspace branding so the settings

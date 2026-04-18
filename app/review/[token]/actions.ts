@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendReviewNotification } from '@/lib/email/send-review-notification'
 import { notifyReviewComment } from '@/lib/notifications/triggers'
+import { checkRateLimit } from '@/lib/rate-limit'
 import { log } from '@/lib/log'
 
 const submitCommentSchema = z.object({
@@ -35,6 +36,15 @@ export async function submitReviewCommentAction(
     return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
   }
 
+  // Rate limit public review submissions per link + reviewer name.
+  // Without this, a guessable token could be used to spam comments and
+  // the email-notification pipeline (Resend) bill.
+  const rlKey = `review:${parsed.data.review_link_id}:${parsed.data.reviewer_name.toLowerCase().slice(0, 40)}`
+  const rl = await checkRateLimit(rlKey, 5, 60_000)
+  if (!rl.ok) {
+    return { ok: false, error: 'Too many comments in a short time. Please wait a minute.' }
+  }
+
   const admin = createAdminClient()
 
   // Validate the review link is still active (double-check server-side).
@@ -47,6 +57,22 @@ export async function submitReviewCommentAction(
   if (!link?.is_active) return { ok: false, error: 'This review link is no longer active.' }
   if (link.expires_at && new Date(link.expires_at) < new Date()) {
     return { ok: false, error: 'This review link has expired.' }
+  }
+
+  // If the comment references an output, verify it belongs to the same
+  // content the review link was issued for — stops a reviewer on link A
+  // from tagging a comment against an unrelated output B.
+  if (parsed.data.output_id) {
+    const { data: output } = await admin
+      .from('outputs')
+      .select('id')
+      .eq('id', parsed.data.output_id)
+      .eq('content_id', link.content_id)
+      .eq('workspace_id', link.workspace_id)
+      .maybeSingle()
+    if (!output) {
+      return { ok: false, error: 'Comment target does not belong to this review.' }
+    }
   }
 
   const { error } = await admin.from('review_comments').insert({

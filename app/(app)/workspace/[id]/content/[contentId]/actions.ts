@@ -11,6 +11,30 @@ import { getUser } from '@/lib/auth/get-user'
 import { generate } from '@/lib/ai/generate/generate'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { deleteContentItem } from '@/lib/content/delete-content-item'
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
+
+/**
+ * Shared AI rate-limit helper. Every action in this file that makes a
+ * paid LLM call (suggestFollowUpTopics, autoTag, analyzeSentiment,
+ * generateShowNotes, generateNewsletter, findBestClips) funnels through
+ * this so a malicious member can't loop them in a tight client script
+ * and rack up the workspace's AI bill. `bucket` scopes the limit so
+ * different action families don't starve each other.
+ */
+async function checkAiRateLimit(
+  userId: string,
+  bucket: string,
+): Promise<string | null> {
+  const rl = await checkRateLimit(
+    `ai:${bucket}:${userId}`,
+    RATE_LIMITS.generation.limit,
+    RATE_LIMITS.generation.windowMs,
+  )
+  if (!rl.ok) {
+    return 'You\u2019re generating too fast. Wait a minute and try again.'
+  }
+  return null
+}
 
 // ── Follow-up topics ──────────────────────────────────────────────────────────
 
@@ -44,6 +68,9 @@ export async function suggestFollowUpTopicsAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  const rlError = await checkAiRateLimit(user.id, 'followup')
+  if (rlError) return { ok: false, code: 'unknown', error: rlError }
 
   const item = await getContentItem(parsed.data.content_id, parsed.data.workspace_id)
   if (!item || item.status !== 'ready' || !item.transcript) {
@@ -202,6 +229,9 @@ export async function autoTagContentAction(
   const user = await getUser()
   if (!user) redirect('/login')
 
+  const rlError = await checkAiRateLimit(user.id, 'autotag')
+  if (rlError) return { ok: false, code: 'unknown', error: rlError }
+
   const item = await getContentItem(parsed.data.content_id, parsed.data.workspace_id)
   if (!item || !item.transcript) {
     return { ok: false, code: 'unknown', error: 'Content has no transcript to tag.' }
@@ -327,6 +357,9 @@ export async function analyzeSentimentAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  const rlError = await checkAiRateLimit(user.id, 'sentiment')
+  if (rlError) return { ok: false, code: 'unknown', error: rlError }
 
   const item = await getContentItem(parsed.data.content_id, parsed.data.workspace_id)
   if (!item || !item.transcript) {
@@ -457,6 +490,9 @@ export async function generateShowNotesAction(
   const user = await getUser()
   if (!user) redirect('/login')
 
+  const rlError = await checkAiRateLimit(user.id, 'shownotes')
+  if (rlError) return { ok: false, code: 'unknown', error: rlError }
+
   const item = await getContentItem(parsed.data.content_id, parsed.data.workspace_id)
   if (!item || !item.transcript) {
     return { ok: false, code: 'unknown', error: 'Content has no transcript.' }
@@ -564,6 +600,9 @@ export async function generateNewsletterAction(
   const user = await getUser()
   if (!user) redirect('/login')
 
+  const rlError = await checkAiRateLimit(user.id, 'newsletter')
+  if (rlError) return { ok: false, code: 'unknown', error: rlError }
+
   const item = await getContentItem(parsed.data.content_id, parsed.data.workspace_id)
   if (!item || !item.transcript) {
     return { ok: false, code: 'unknown', error: 'Content has no transcript.' }
@@ -668,6 +707,9 @@ export async function findBestClipsAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  const rlError = await checkAiRateLimit(user.id, 'clips')
+  if (rlError) return { ok: false, code: 'unknown', error: rlError }
 
   const item = await getContentItem(parsed.data.content_id, parsed.data.workspace_id)
   if (!item || !item.transcript) {

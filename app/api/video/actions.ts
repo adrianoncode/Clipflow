@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { burnCaptions, type CaptionStyle } from '@/lib/video/burn-captions'
 import { assembleBRollVideo } from '@/lib/video/assemble-broll'
 import { renderBrandedVideo } from '@/lib/video/brand-template'
@@ -12,16 +13,33 @@ import { checkRenderQuota, type QuotaKey } from '@/lib/billing/check-feature'
 import type { RenderKind } from '@/lib/supabase/types'
 
 /**
- * Shared pre-submit gate. Returns the error-shaped result if the
- * workspace is over its monthly cap for `quota`; returns null to
- * indicate "proceed". We call this BEFORE touching any provider API
- * so we don't burn Shotstack/Replicate credits on rejected requests.
+ * Shared pre-submit gate. Does two things:
+ *
+ *   1. Verifies the caller is a member of `workspaceId`. Previously
+ *      these actions trusted the workspace_id from formData and only
+ *      ran `checkRenderQuota` — meaning an attacker could pass a
+ *      victim's workspace_id and (a) burn that workspace's render
+ *      quota, and (b) attribute Shotstack spend to that workspace.
+ *
+ *   2. If the caller is a member, ensures the workspace hasn't hit
+ *      its monthly render cap for this quota bucket. Gate runs
+ *      BEFORE any provider API call so rejected requests don't burn
+ *      Shotstack / Replicate credits.
+ *
+ * Returns null to mean "proceed", or an error-shaped result the
+ * action can return as-is.
  */
 async function gateOrReturn(
   workspaceId: string | null,
   quota: QuotaKey,
 ): Promise<{ ok: false; error: string } | null> {
-  if (!workspaceId) return null
+  if (!workspaceId) {
+    return { ok: false, error: 'Workspace required.' }
+  }
+  const member = await requireWorkspaceMember(workspaceId)
+  if (!member.ok) {
+    return { ok: false, error: member.message }
+  }
   const check = await checkRenderQuota(workspaceId, quota)
   if (check.ok) return null
   return { ok: false, error: check.message ?? 'Plan limit reached.' }

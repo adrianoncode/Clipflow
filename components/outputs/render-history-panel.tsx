@@ -31,7 +31,7 @@ export function RenderHistoryPanel({ initialRenders }: RenderHistoryPanelProps) 
           if (!r.provider_render_id) return null
           try {
             const res = await fetch(
-              `/api/video/render-status?id=${encodeURIComponent(r.provider_render_id)}`,
+              `/api/video/render-status?id=${encodeURIComponent(r.provider_render_id)}&workspace_id=${encodeURIComponent(r.workspace_id)}`,
             )
             if (!res.ok) return null
             const data = (await res.json()) as {

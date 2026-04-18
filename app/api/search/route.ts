@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { searchWorkspace } from '@/lib/search/search-workspace'
 
 export async function GET(req: NextRequest) {
@@ -7,9 +8,13 @@ export async function GET(req: NextRequest) {
   const workspaceId = req.nextUrl.searchParams.get('workspaceId') ?? ''
   if (!q || !workspaceId) return NextResponse.json([])
 
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  // Previously trusted the workspaceId query param after only checking
+  // auth. That let any logged-in user search any workspace's content
+  // titles, transcripts, and draft bodies by guessing IDs.
+  const check = await requireWorkspaceMember(workspaceId)
+  if (!check.ok) {
+    return NextResponse.json({ error: check.message }, { status: check.status })
+  }
 
   const results = await searchWorkspace(workspaceId, q)
   return NextResponse.json(results)
