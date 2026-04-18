@@ -5,7 +5,6 @@ import { RealtimeStatusWatcher } from '@/components/content/realtime-status-watc
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getSignedUrl } from '@/lib/content/get-signed-url'
 import { hasOutputs } from '@/lib/content/has-outputs'
-import { getProjects } from '@/lib/projects/get-projects'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -47,9 +46,8 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
     item.source_url != null &&
     !item.source_url.startsWith('http')
 
-  const [hasExistingOutputs, projects, signedUrl] = await Promise.all([
+  const [hasExistingOutputs, signedUrl] = await Promise.all([
     item.status === 'ready' ? hasOutputs(params.contentId, params.id) : Promise.resolve(false),
-    getProjects(params.id),
     needsSignedUrl ? getSignedUrl(item.source_url!) : Promise.resolve(null),
   ])
 
@@ -77,7 +75,6 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
         workspaceId={params.id}
         hasExistingOutputs={hasExistingOutputs}
         outputCount={outputCount}
-        projects={projects}
         signedUrl={signedUrl ?? undefined}
       />
     </>

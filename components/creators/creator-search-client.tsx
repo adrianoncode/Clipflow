@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useFormState, useFormStatus } from 'react-dom'
 import { useState } from 'react'
 import { Search, Youtube, Users } from 'lucide-react'
-import { searchCreatorsAction } from '@/app/(app)/workspace/[id]/creators/actions'
+import { searchCreatorsAction } from '@/app/(app)/workspace/[id]/research/actions'
 
 interface CreatorSearchClientProps {
   workspaceId: string

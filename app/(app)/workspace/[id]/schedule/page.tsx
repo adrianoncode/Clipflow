@@ -241,7 +241,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
               Auto-posting is on
             </p>
             <p className="text-[11px] text-emerald-700/70">
-              We'll post straight to TikTok, Reels, Shorts &amp; LinkedIn.
+              We&apos;ll post straight to TikTok, Reels, Shorts &amp; LinkedIn.
             </p>
           </div>
           <Link

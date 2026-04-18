@@ -8,9 +8,6 @@ import {
   Sparkles,
   CheckSquare,
   Send,
-  PenLine,
-  Zap,
-  Clapperboard,
   Search,
   Plug,
   BarChart3,
@@ -70,11 +67,6 @@ export function AppShell({
     if (href === `/workspace/${currentWorkspaceId}/schedule`) {
       return pathname === href || pathname.startsWith(href + '/') || pathname === `/workspace/${currentWorkspaceId}/calendar`
     }
-    // Discover hub also matches legacy /trends, /research, /ideas
-    if (href === `/workspace/${currentWorkspaceId}/discover`) {
-      const wsBase = `/workspace/${currentWorkspaceId}`
-      return pathname === href || pathname.startsWith(href + '/') || pathname === `${wsBase}/trends` || pathname === `${wsBase}/research` || pathname === `${wsBase}/ideas`
-    }
     return pathname === href || pathname.startsWith(href + '/')
   }
 
@@ -89,17 +81,9 @@ export function AppShell({
       ],
     },
     {
-      label: 'Create',
+      label: 'Research',
       items: [
-        { href: `/workspace/${currentWorkspaceId}/ghostwriter`, label: 'Ghostwriter', icon: PenLine },
-        { href: `/workspace/${currentWorkspaceId}/batch`, label: 'Batch', icon: Zap },
-        { href: `/workspace/${currentWorkspaceId}/studio`, label: 'Studio', icon: Clapperboard },
-      ],
-    },
-    {
-      label: 'Discover',
-      items: [
-        { href: `/workspace/${currentWorkspaceId}/discover`, label: 'Discover', icon: Search },
+        { href: `/workspace/${currentWorkspaceId}/research`, label: 'Creators', icon: Search },
       ],
     },
   ]

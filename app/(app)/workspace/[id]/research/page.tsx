@@ -1,9 +1,34 @@
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 
-/**
- * Legacy route — Research is now a tab on the Discover hub.
- * Redirect so old bookmarks keep working.
- */
-export default function ResearchPage({ params }: { params: { id: string } }) {
-  redirect(`/workspace/${params.id}/discover?tab=research`)
+import { CreatorSearchClient } from '@/components/creators/creator-search-client'
+import { getUser } from '@/lib/auth/get-user'
+import { getWorkspaces } from '@/lib/auth/get-workspaces'
+
+export const dynamic = 'force-dynamic'
+export const metadata = { title: 'Creator Research' }
+
+interface ResearchPageProps {
+  params: { id: string }
+}
+
+export default async function ResearchPage({ params }: ResearchPageProps) {
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const workspaces = await getWorkspaces()
+  const workspace = workspaces.find((w) => w.id === params.id)
+  if (!workspace) notFound()
+
+  return (
+    <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
+      <div className="space-y-1">
+        <h1 className="text-xl font-bold tracking-tight">Creator Research</h1>
+        <p className="text-sm text-muted-foreground">
+          Find creators by niche across YouTube, TikTok, and Instagram. Great for competitor checks, collab ideas, or just lurking.
+        </p>
+      </div>
+
+      <CreatorSearchClient workspaceId={params.id} />
+    </div>
+  )
 }

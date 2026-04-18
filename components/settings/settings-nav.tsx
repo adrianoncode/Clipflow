@@ -8,10 +8,8 @@ import {
   Gift,
   Key,
   Mic2,
-  Bot,
   Plug,
   Shield,
-  Webhook,
   LayoutTemplate,
 } from 'lucide-react'
 
@@ -25,13 +23,11 @@ const accountGroup = [
 const aiGroup = [
   { href: '/settings/ai-keys', label: 'AI Connections', icon: Key },
   { href: '/settings/brand-voice', label: 'Brand Voice', icon: Mic2 },
-  { href: '/settings/personas', label: 'Personas', icon: Bot },
   { href: '/settings/templates', label: 'Templates', icon: LayoutTemplate },
 ]
 
 const connectGroup = [
   { href: '/settings/integrations', label: 'Integrations', icon: Plug },
-  { href: '/settings/webhooks', label: 'Webhooks', icon: Webhook },
 ]
 
 const groups = [accountGroup, aiGroup, connectGroup]

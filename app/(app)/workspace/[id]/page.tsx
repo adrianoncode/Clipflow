@@ -4,7 +4,6 @@ import {
   AlertCircle,
   CheckCircle2,
   ChevronRight,
-  Clapperboard,
   Loader2,
   Plus,
   Wand2,
@@ -14,7 +13,6 @@ import { ContentListWithSearch } from '@/components/content/content-list-with-se
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getContentItems } from '@/lib/content/get-content-items'
 import { findDuplicateIds } from '@/lib/content/find-duplicates'
-import { getProjects } from '@/lib/projects/get-projects'
 
 interface WorkspaceHomePageProps {
   params: { id: string }
@@ -31,13 +29,9 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
   const page = Math.max(1, parseInt(searchParams.page ?? '1', 10) || 1)
   const offset = (page - 1) * PAGE_SIZE
 
-  const [items, projects] = await Promise.all([
-    getContentItems(params.id, { limit: PAGE_SIZE, offset }),
-    getProjects(params.id),
-  ])
+  const items = await getContentItems(params.id, { limit: PAGE_SIZE, offset })
   const canCreate = workspace.role === 'owner' || workspace.role === 'editor'
   const duplicateIds = findDuplicateIds(items)
-  const projectOptions = projects.map((p) => ({ id: p.id, name: p.name }))
 
   // Quick stats
   const readyCount = items.filter((i) => i.status === 'ready').length
@@ -109,7 +103,7 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
 
       {/* ── Workflow shortcuts — show when user has ready content ── */}
       {readyCount > 0 && (
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           {firstReady && (
             <Link
               href={`/workspace/${params.id}/content/${firstReady.id}/outputs`}
@@ -140,19 +134,6 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
             </div>
             <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/30 transition-transform group-hover:translate-x-0.5" />
           </Link>
-          <Link
-            href={`/workspace/${params.id}/studio`}
-            className="group flex items-center gap-3 rounded-xl border border-border/50 bg-card p-3.5 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md"
-          >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-pink-50 text-pink-600 transition-colors group-hover:bg-pink-100">
-              <Clapperboard className="h-4 w-4" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-bold">Video Studio</p>
-              <p className="text-[10px] text-muted-foreground">Create video clips</p>
-            </div>
-            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/30 transition-transform group-hover:translate-x-0.5" />
-          </Link>
         </div>
       )}
 
@@ -161,7 +142,6 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
         items={items}
         workspaceId={params.id}
         duplicateIds={duplicateIds}
-        projects={projectOptions}
       />
 
       {/* ── Pagination ── */}

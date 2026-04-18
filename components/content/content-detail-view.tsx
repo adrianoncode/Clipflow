@@ -14,12 +14,10 @@ import { FormMessage } from '@/components/ui/form-message'
 import { ContentStatusBadge } from '@/components/content/content-status-badge'
 import { RetryTranscriptionButton } from '@/components/content/retry-transcription-button'
 import { VideoPlayer } from '@/components/content/video-player'
-import { AssignToProjectSelector } from '@/components/projects/assign-to-project-selector'
 import { AutoGenerateTrigger } from '@/components/content/auto-generate-trigger'
 import { DeleteContentButton } from '@/components/content/delete-content-button'
 import { RenameContentForm } from '@/components/content/rename-content-form'
 import type { ContentItemRow } from '@/lib/content/get-content-item'
-import type { ProjectRow } from '@/lib/projects/get-projects'
 
 import {
   TabNav,
@@ -36,7 +34,6 @@ interface ContentDetailViewProps {
   workspaceId: string
   hasExistingOutputs: boolean
   outputCount?: number
-  projects?: Pick<ProjectRow, 'id' | 'name'>[]
   signedUrl?: string
 }
 
@@ -54,7 +51,6 @@ export function ContentDetailView({
   workspaceId,
   hasExistingOutputs,
   outputCount = 0,
-  projects = [],
   signedUrl,
 }: ContentDetailViewProps) {
   const [activeTab, setActiveTab] = useState<ContentDetailTab>('overview')
@@ -97,14 +93,6 @@ export function ContentDetailView({
                   : 'Text'}{' '}
             · added {formatDate(item.created_at)}
           </p>
-          {projects.length > 0 && (
-            <AssignToProjectSelector
-              workspaceId={workspaceId}
-              contentId={item.id}
-              currentProjectId={item.project_id}
-              projects={projects}
-            />
-          )}
         </div>
         <ContentStatusBadge status={item.status} />
       </div>

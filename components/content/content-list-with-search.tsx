@@ -23,16 +23,10 @@ import { BulkActionBar } from '@/components/content/bulk-action-bar'
 import { EmptyState } from '@/components/ui/empty-state'
 import type { ContentItemListRow } from '@/lib/content/get-content-items'
 
-interface Project {
-  id: string
-  name: string
-}
-
 interface ContentListWithSearchProps {
   items: ContentItemListRow[]
   workspaceId: string
   duplicateIds?: Set<string>
-  projects?: Project[]
 }
 
 function formatRelative(iso: string): string {
@@ -126,7 +120,6 @@ export function ContentListWithSearch({
   items,
   workspaceId,
   duplicateIds,
-  projects = [],
 }: ContentListWithSearchProps) {
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -182,8 +175,6 @@ export function ContentListWithSearch({
         description="Upload a video, paste a YouTube link, or add text. Clipflow will transcribe it and generate platform-specific outputs."
         actionLabel="Import content"
         actionHref={`/workspace/${workspaceId}/content/new`}
-        secondaryLabel="Need ideas? Brainstorm with AI"
-        secondaryHref={`/workspace/${workspaceId}/ideas`}
       />
     )
   }
@@ -384,7 +375,6 @@ export function ContentListWithSearch({
         workspaceId={workspaceId}
         selected={selected}
         onClear={() => setSelected(new Set())}
-        projects={projects}
       />
     </div>
   )
