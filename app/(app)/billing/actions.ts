@@ -172,6 +172,23 @@ export async function createPortalSessionAction(
   redirect(session.url)
 }
 
+// Runtime-validate the plan + status strings we persist. These come
+// from Stripe (status) and our own env mapping (plan), but a drift
+// between Stripe's subscription.status enum and ours used to slip
+// through the TypeScript `as` cast and land straight in the DB.
+// Zod gives us a real rejection path instead.
+const subscriptionPlanZ = z.enum(['free', 'solo', 'team', 'agency'])
+const subscriptionStatusZ = z.enum([
+  'active',
+  'trialing',
+  'past_due',
+  'canceled',
+  'unpaid',
+  'incomplete',
+  'incomplete_expired',
+  'paused',
+])
+
 /**
  * Upserts a subscription row via admin client (bypasses RLS).
  * Called from the webhook handler.
@@ -196,11 +213,20 @@ export async function upsertSubscription(params: {
   currentPeriodEnd: Date
   cancelAtPeriodEnd: boolean
 }) {
-  const admin = createAdminClient()
-  const plan = params.plan as 'free' | 'solo' | 'team' | 'agency'
-  const status = params.status as 'active' | 'trialing' | 'past_due' | 'canceled' | 'unpaid' | 'incomplete' | 'incomplete_expired' | 'paused'
-  const periodEnd = params.currentPeriodEnd.toISOString()
+  const planResult = subscriptionPlanZ.safeParse(params.plan)
+  const statusResult = subscriptionStatusZ.safeParse(params.status)
 
+  if (!planResult.success || !statusResult.success) {
+    // Don't touch the DB with garbage — if Stripe ever ships a new
+    // status value we don't know about, noisily refuse rather than
+    // silently corrupting the column. Re-driving from the Stripe
+    // dashboard after deploy is easier than reconstructing state.
+    throw new Error(
+      `upsertSubscription: invalid plan="${params.plan}" status="${params.status}"`,
+    )
+  }
+
+  const admin = createAdminClient()
   await admin
     .from('subscriptions')
     .upsert(
@@ -208,9 +234,9 @@ export async function upsertSubscription(params: {
         workspace_id: params.workspaceId,
         stripe_customer_id: params.stripeCustomerId,
         stripe_subscription_id: params.stripeSubscriptionId,
-        plan,
-        status,
-        current_period_end: periodEnd,
+        plan: planResult.data,
+        status: statusResult.data,
+        current_period_end: params.currentPeriodEnd.toISOString(),
         cancel_at_period_end: params.cancelAtPeriodEnd,
         updated_at: new Date().toISOString(),
       },

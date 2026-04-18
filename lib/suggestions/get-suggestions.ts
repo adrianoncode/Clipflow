@@ -151,17 +151,44 @@ export async function getSuggestions(workspaceId: string): Promise<Suggestion[]>
     }
   }
 
-  // ── content_stale ───────────────────────────────────────────
-  if (readyNoOutputsResult.data && readyNoOutputsResult.data.length > 0) {
-    // Check which ready items actually have outputs
-    const readyIds = readyNoOutputsResult.data.map((r) => r.id)
-    const { data: outputsForReady } = await supabase
-      .from('outputs')
-      .select('content_id')
-      .eq('workspace_id', workspaceId)
-      .in('content_id', readyIds)
+  // ── content_stale + recycle (parallelized) ─────────────────
+  //
+  // Both branches depend on the initial Promise.all results but are
+  // independent of each other. Previously they ran back-to-back,
+  // meaning every dashboard render spent an extra round-trip of
+  // latency for no reason. Kick them off together and wait once.
+  const readyIds =
+    (readyNoOutputsResult.data ?? []).map((r) => r.id)
+  const oldIds = (recyclableResult.data ?? []).map((r) => r.id)
 
-    const idsWithOutputs = new Set((outputsForReady ?? []).map((o) => o.content_id))
+  const [outputsForReadyRes, oldOutputStatesRes, oldOutputsRes] = await Promise.all([
+    readyIds.length > 0
+      ? supabase
+          .from('outputs')
+          .select('content_id')
+          .eq('workspace_id', workspaceId)
+          .in('content_id', readyIds)
+      : Promise.resolve({ data: [] as { content_id: string }[] }),
+    oldIds.length > 0
+      ? supabase
+          .from('output_states')
+          .select('output_id, state')
+          .eq('workspace_id', workspaceId)
+          .in('state', ['approved', 'exported'])
+      : Promise.resolve({ data: [] as { output_id: string; state: string }[] }),
+    oldIds.length > 0
+      ? supabase
+          .from('outputs')
+          .select('id, content_id')
+          .eq('workspace_id', workspaceId)
+          .in('content_id', oldIds)
+      : Promise.resolve({ data: [] as { id: string; content_id: string }[] }),
+  ])
+
+  if (readyIds.length > 0) {
+    const idsWithOutputs = new Set(
+      (outputsForReadyRes.data ?? []).map((o) => o.content_id),
+    )
     const staleCount = readyIds.filter((id) => !idsWithOutputs.has(id)).length
 
     if (staleCount > 0) {
@@ -209,28 +236,13 @@ export async function getSuggestions(workspaceId: string): Promise<Suggestion[]>
     })
   }
 
-  // ── recycle ─────────────────────────────────────────────────
-  if (recyclableResult.data && recyclableResult.data.length > 0) {
-    const oldIds = recyclableResult.data.map((r) => r.id)
-    // Check which old content has approved/exported outputs
-    const { data: oldOutputStates } = await supabase
-      .from('output_states')
-      .select('output_id, state')
-      .eq('workspace_id', workspaceId)
-      .in('state', ['approved', 'exported'])
-
-    // Get which outputs belong to old content
-    const { data: oldOutputs } = await supabase
-      .from('outputs')
-      .select('id, content_id')
-      .eq('workspace_id', workspaceId)
-      .in('content_id', oldIds)
-
+  // ── recycle (uses the parallelized results from above) ─────
+  if (oldIds.length > 0) {
     const outputIdsWithApproval = new Set(
-      (oldOutputStates ?? []).map((s) => s.output_id),
+      (oldOutputStatesRes.data ?? []).map((s) => s.output_id),
     )
     const contentIdsWithApproved = new Set(
-      (oldOutputs ?? [])
+      (oldOutputsRes.data ?? [])
         .filter((o) => outputIdsWithApproval.has(o.id))
         .map((o) => o.content_id),
     )
