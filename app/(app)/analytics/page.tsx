@@ -154,6 +154,36 @@ export default async function AnalyticsPage() {
         ? { label: 'Mixed', class: 'text-amber-700 bg-amber-50' }
         : { label: 'Low', class: 'text-red-700 bg-red-50' }
 
+  // Pristine account: show a dedicated empty state instead of a wall of
+  // zeros — rows of "0" on every card looks broken, not "getting
+  // started", and there's no path forward to fix it.
+  const hasAnyData = analytics.totalContent > 0 || analytics.totalOutputs > 0
+  if (!hasAnyData) {
+    return (
+      <div className="mx-auto w-full max-w-3xl space-y-6 p-4 sm:p-8">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight">Analytics</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">{currentWorkspace.name}</p>
+        </div>
+        <div className="rounded-2xl border border-dashed border-border/60 bg-card p-10 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary/60">
+            <Upload className="h-5 w-5" />
+          </div>
+          <h2 className="mt-4 text-base font-semibold">No analytics yet</h2>
+          <p className="mx-auto mt-1.5 max-w-sm text-sm text-muted-foreground">
+            Add your first video and turn it into posts — your weekly velocity, approval rate, and engagement data all live here once you start shipping.
+          </p>
+          <Link
+            href={`/workspace/${currentWorkspace.id}/content/new`}
+            className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:-translate-y-px hover:shadow-md"
+          >
+            Add your first video
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-8">
       {/* ── Header ── */}

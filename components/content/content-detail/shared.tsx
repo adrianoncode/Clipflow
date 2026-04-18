@@ -64,19 +64,34 @@ export interface ToolCardProps {
   label: string
   description: string
   href: string
+  /** When set, the card shows a lock + upsell pill and routes to
+   * /billing with the feature name preserved instead of the tool's
+   * real page. Keeps us from leading users into server actions that
+   * will 403 on their plan. */
+  locked?: { requiredPlan: string; feature: string }
 }
 
-export function ToolCard({ icon, label, description, href }: ToolCardProps) {
+export function ToolCard({ icon, label, description, href, locked }: ToolCardProps) {
+  const effectiveHref = locked
+    ? `/billing?plan=${locked.requiredPlan}&feature=${locked.feature}`
+    : href
   return (
     <Link
-      href={href}
-      className="flex flex-col gap-2 rounded-xl border border-border/50 bg-card p-4 transition-all card-hover hover:text-foreground text-muted-foreground"
+      href={effectiveHref}
+      className={`relative flex flex-col gap-2 rounded-xl border border-border/50 bg-card p-4 transition-all card-hover hover:text-foreground ${
+        locked ? 'text-muted-foreground opacity-80' : 'text-muted-foreground'
+      }`}
     >
       <div className="flex items-center gap-2.5">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
           {icon}
         </span>
-        <span className="text-sm font-semibold text-foreground">{label}</span>
+        <span className="flex-1 text-sm font-semibold text-foreground">{label}</span>
+        {locked && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">
+            {locked.requiredPlan === 'agency' ? 'Studio' : 'Creator'}
+          </span>
+        )}
       </div>
       <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
     </Link>

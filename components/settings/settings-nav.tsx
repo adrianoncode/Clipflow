@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   User,
   Building2,
+  CreditCard,
   Gift,
   Key,
   Mic2,
@@ -16,7 +17,8 @@ import {
 const accountGroup = [
   { href: '/settings/profile', label: 'Profile', icon: User },
   { href: '/settings/security', label: 'Security', icon: Shield },
-  { href: '/settings/workspace', label: 'Workspace', icon: Building2 },
+  { href: '/settings/workspace', label: 'Workspace profile', icon: Building2 },
+  { href: '/billing', label: 'Billing', icon: CreditCard },
   { href: '/settings/referrals', label: 'Referrals', icon: Gift },
 ]
 

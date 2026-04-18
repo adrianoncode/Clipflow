@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
+import { ChevronRight } from 'lucide-react'
 
 import {
   Card,
@@ -68,8 +69,8 @@ export default async function NewContentPage({ params }: NewContentPageProps) {
 
       {/* Advanced options — full tab UI for upload, audio recording, RSS etc. */}
       <details className="group">
-        <summary className="flex cursor-pointer items-center gap-2 px-1 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
-          <span className="transition-transform group-open:rotate-90">▶</span>
+        <summary className="flex cursor-pointer items-center gap-1.5 px-1 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
+          <ChevronRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" />
           More options (video upload, audio recording, podcast RSS)
         </summary>
         <Card className="mt-2">

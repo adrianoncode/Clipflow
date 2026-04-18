@@ -5,6 +5,7 @@ import { RealtimeStatusWatcher } from '@/components/content/realtime-status-watc
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getSignedUrl } from '@/lib/content/get-signed-url'
 import { hasOutputs } from '@/lib/content/has-outputs'
+import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -46,9 +47,10 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
     item.source_url != null &&
     !item.source_url.startsWith('http')
 
-  const [hasExistingOutputs, signedUrl] = await Promise.all([
+  const [hasExistingOutputs, signedUrl, currentPlan] = await Promise.all([
     item.status === 'ready' ? hasOutputs(params.contentId, params.id) : Promise.resolve(false),
     needsSignedUrl ? getSignedUrl(item.source_url!) : Promise.resolve(null),
+    getWorkspacePlan(params.id),
   ])
 
   // Get output count for the "next step" banner
@@ -76,6 +78,7 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
         hasExistingOutputs={hasExistingOutputs}
         outputCount={outputCount}
         signedUrl={signedUrl ?? undefined}
+        currentPlan={currentPlan}
       />
     </>
   )

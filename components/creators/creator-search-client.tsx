@@ -30,14 +30,27 @@ function SubmitButton() {
   )
 }
 
+// Seeded suggestions for the pristine state — a blank form with no
+// hint is a dead-end for first-time users. One click pre-fills the
+// query so they see actual results on the first interaction.
+const SUGGESTIONS: Record<string, string[]> = {
+  youtube: ['fitness', 'SaaS marketing', 'finance tips', 'video editing'],
+  tiktok: ['@charlidamelio', '@khaby.lame', '@bellapoarch'],
+  instagram: ['@cristiano', '@zendaya', '@therock'],
+  twitter: ['@elonmusk', '@paulg', '@naval'],
+  linkedin: [],
+}
+
 export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearchClientProps) {
   const [state, formAction] = useFormState(searchCreatorsAction, {})
   const [platform, setPlatform] = useState('youtube')
+  const [query, setQuery] = useState('')
 
   const results = state.ok === true ? (state.results as {
     platform: string
     creators: Array<Record<string, unknown>>
   }) : null
+  const hasSubmitted = state.ok !== undefined
 
   return (
     <div className="space-y-6">
@@ -75,6 +88,8 @@ export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearch
             name="query"
             type="text"
             required
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder={
               platform === 'youtube'
                 ? 'Search by niche, e.g. "fitness", "SaaS marketing"'
@@ -86,6 +101,26 @@ export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearch
           />
           <SubmitButton />
         </div>
+
+        {/* Suggestion chips — fastest way to see a first result on a
+            blank page. */}
+        {!hasSubmitted && SUGGESTIONS[platform] && SUGGESTIONS[platform]!.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
+              Try
+            </span>
+            {SUGGESTIONS[platform]!.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setQuery(s)}
+                className="rounded-full border border-border/60 bg-background px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
 
         <p className="text-xs text-muted-foreground">
           {platform === 'youtube'

@@ -21,6 +21,8 @@ import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getScheduledPosts } from '@/lib/scheduler/get-scheduled-posts'
 import { getUnscheduledOutputs } from '@/lib/scheduler/get-unscheduled-outputs'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
+import { getWorkspacePlan } from '@/lib/billing/get-subscription'
+import { checkPlanAccess } from '@/lib/billing/plans'
 import { CancelPostButton } from '@/components/scheduler/cancel-post-button'
 import { CalendarClient } from '@/components/workspace/calendar-client'
 import {
@@ -68,6 +70,15 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
   const workspaces = await getWorkspaces()
   const workspace = workspaces.find((w) => w.id === params.id)
   if (!workspace) notFound()
+
+  // Hard server-gate: if the plan doesn't include scheduling, bounce to
+  // the billing upsell before we render any "Schedule" UI — otherwise
+  // the Pipeline's "Schedule N" button lands the user on a page that
+  // silently does nothing on submit.
+  const currentPlan = await getWorkspacePlan(params.id)
+  if (!checkPlanAccess(currentPlan, 'scheduling')) {
+    redirect(`/billing?workspace_id=${params.id}&plan=solo&feature=scheduling`)
+  }
 
   const isCalendarView = searchParams.view === 'calendar'
 

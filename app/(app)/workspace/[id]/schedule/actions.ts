@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { getUser } from '@/lib/auth/get-user'
+import { getWorkspacePlan } from '@/lib/billing/get-subscription'
+import { checkPlanAccess } from '@/lib/billing/plans'
 import { createClient } from '@/lib/supabase/server'
 
 export type ScheduleOutputState =
@@ -23,6 +25,18 @@ export async function scheduleOutputAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  // Defense-in-depth: the inline schedule form on each output card is
+  // reachable even when the user never visits /schedule. Check the plan
+  // here too so Free users get a clear error message instead of the
+  // post silently landing in the scheduled queue and never firing.
+  const plan = await getWorkspacePlan(workspaceId)
+  if (!checkPlanAccess(plan, 'scheduling')) {
+    return {
+      ok: false,
+      error: 'Scheduling is on the Creator plan. Upgrade in Billing to unlock.',
+    }
+  }
 
   const supabase = await createClient()
   const { error } = await supabase

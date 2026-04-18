@@ -109,6 +109,7 @@ export function AppShell({
           {
             label: 'Clients',
             items: [
+              { href: '/clients', label: 'All clients', icon: FileVideo, requires: 'multiWorkspace' as const },
               { href: `/workspace/${currentWorkspaceId}/members`, label: 'Team', icon: Users2, requires: 'teamSeats' as const },
             ],
           },

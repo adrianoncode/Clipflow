@@ -18,6 +18,7 @@ import { AutoGenerateTrigger } from '@/components/content/auto-generate-trigger'
 import { DeleteContentButton } from '@/components/content/delete-content-button'
 import { RenameContentForm } from '@/components/content/rename-content-form'
 import type { ContentItemRow } from '@/lib/content/get-content-item'
+import type { BillingPlan } from '@/lib/billing/plans'
 
 import {
   TabNav,
@@ -35,6 +36,7 @@ interface ContentDetailViewProps {
   hasExistingOutputs: boolean
   outputCount?: number
   signedUrl?: string
+  currentPlan: BillingPlan
 }
 
 /**
@@ -52,6 +54,7 @@ export function ContentDetailView({
   hasExistingOutputs,
   outputCount = 0,
   signedUrl,
+  currentPlan,
 }: ContentDetailViewProps) {
   const [activeTab, setActiveTab] = useState<ContentDetailTab>('overview')
   const title = item.title ?? 'Untitled'
@@ -185,7 +188,7 @@ export function ContentDetailView({
           )}
 
           {activeTab === 'tools' && (
-            <ToolsTab item={item} workspaceId={workspaceId} meta={meta} />
+            <ToolsTab item={item} workspaceId={workspaceId} meta={meta} currentPlan={currentPlan} />
           )}
         </>
       )}

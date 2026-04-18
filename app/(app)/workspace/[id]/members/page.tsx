@@ -25,9 +25,9 @@ export default async function MembersPage({ params }: MembersPageProps) {
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 p-4 sm:p-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Members</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Team</h1>
         <p className="text-sm text-muted-foreground">
-          Manage who has access to <span className="font-medium">{workspace.name}</span>.
+          Invite teammates and manage who can edit <span className="font-medium">{workspace.name}</span>.
         </p>
       </div>
 

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { PlanCard } from '@/components/billing/plan-card'
+import { PUBLIC_PLAN_ORDER } from '@/lib/billing/plans'
 import { cn } from '@/lib/utils'
 
 // Interactive portion of the billing page — interval toggle + plan grid.
@@ -55,8 +56,8 @@ export function BillingPlansClient({
         <IntervalToggle value={interval} onChange={setInterval} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {(['free', 'solo', 'team', 'agency'] as const).map((planId) => (
+      <div className="grid gap-4 sm:grid-cols-3">
+        {PUBLIC_PLAN_ORDER.map((planId) => (
           <PlanCard
             key={planId}
             planId={planId}

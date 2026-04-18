@@ -127,7 +127,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-2">
             {isAgencyMode && (
               <Link
-                href="/workspace/new"
+                href="/workspace/new?as=client"
                 className="group inline-flex h-10 items-center gap-2 rounded-xl border border-border/60 bg-card pl-4 pr-3 text-sm font-semibold text-foreground transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
               >
                 <Users2 className="h-3.5 w-3.5" />
@@ -162,7 +162,7 @@ export default async function DashboardPage() {
                   </span>
                 </div>
                 <Link
-                  href="/workspace/new"
+                  href="/workspace/new?as=client"
                   className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/10"
                 >
                   Add client <ArrowUpRight className="h-3 w-3" />

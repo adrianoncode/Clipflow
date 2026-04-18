@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { Sparkles } from 'lucide-react'
@@ -5,6 +6,7 @@ import { Sparkles } from 'lucide-react'
 import { BillingPlansClient } from './billing-plans-client'
 import { ActiveDiscountBanner } from '@/components/billing/active-discount-banner'
 import { getUser } from '@/lib/auth/get-user'
+import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getSubscription } from '@/lib/billing/get-subscription'
 import { getActiveStripeDiscount } from '@/lib/billing/get-active-discount'
 import {
@@ -13,6 +15,8 @@ import {
   type BillingPlan,
   type PlanFeatures,
 } from '@/lib/billing/plans'
+
+const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Billing · Clipflow' }
@@ -49,7 +53,20 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
   const user = await getUser()
   if (!user) redirect('/login')
 
-  const workspaceId = searchParams.workspace_id ?? ''
+  // If the user arrived here from a sidebar lock click (or any CTA
+  // that didn't thread the workspace_id), fall back to the cookie so
+  // we never show a dead page with zero-op upgrade buttons.
+  let workspaceId = searchParams.workspace_id ?? ''
+  if (!workspaceId) {
+    const cookieWorkspaceId = cookies().get(CURRENT_WORKSPACE_COOKIE)?.value
+    if (cookieWorkspaceId) {
+      workspaceId = cookieWorkspaceId
+    } else {
+      const workspaces = await getWorkspaces()
+      const personal = workspaces.find((w) => w.type === 'personal')
+      workspaceId = personal?.id ?? workspaces[0]?.id ?? ''
+    }
+  }
   const sub = workspaceId ? await getSubscription(workspaceId) : null
 
   const currentPlan: BillingPlan =

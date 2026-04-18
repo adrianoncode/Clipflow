@@ -23,19 +23,13 @@ export default async function OnboardingWorkspacePage() {
   const workspaces = await getWorkspaces()
   const personal = workspaces.find((w) => w.type === 'personal')
 
-  const title =
-    role === 'solo'
-      ? 'Name your workspace'
-      : role === 'agency'
-        ? 'Name your agency'
-        : 'Name your team'
-
+  // We only offer `solo` and `agency` in the onboarding role step now.
+  // `team` stays in the enum as a legacy plan, but nobody new picks it.
+  const title = role === 'solo' ? 'Name your workspace' : 'Name your studio'
   const subtitle =
     role === 'solo'
       ? 'This is your creative home base. All your content lives here.'
-      : role === 'agency'
-        ? 'Your agency workspace. Add client workspaces later.'
-        : 'A shared workspace for your team. Invite members later.'
+      : 'Your studio workspace. You can add client workspaces later from the sidebar.'
 
   if (role === 'solo' && !personal) redirect('/onboarding/role')
 
@@ -60,7 +54,7 @@ export default async function OnboardingWorkspacePage() {
           currentName={personal.name}
         />
       ) : (
-        <WorkspaceTeamForm roleType={role as 'team' | 'agency'} />
+        <WorkspaceTeamForm roleType="agency" />
       )}
     </div>
   )

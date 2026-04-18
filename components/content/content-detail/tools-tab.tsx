@@ -1,13 +1,11 @@
 'use client'
 
-import Link from 'next/link'
 import {
   BarChart3,
   Clapperboard,
   Globe,
   MessageSquare,
   Move,
-  Play,
   Scissors,
   Sparkles,
   Tag,
@@ -18,15 +16,33 @@ import { ClipFinder } from '@/components/content/clip-finder'
 import { SentimentAnalysisButton } from '@/components/content/sentiment-analysis-button'
 import type { BestClip, SentimentResult } from '@/app/(app)/workspace/[id]/content/[contentId]/actions'
 import type { ContentItemRow } from '@/lib/content/get-content-item'
+import {
+  checkPlanAccess,
+  FEATURE_MIN_PLAN,
+  type BillingPlan,
+  type PlanFeatures,
+} from '@/lib/billing/plans'
 import { ToolCard } from './shared'
 
 interface ToolsTabProps {
   item: ContentItemRow
   workspaceId: string
   meta: Record<string, unknown> | null
+  currentPlan: BillingPlan
 }
 
-export function ToolsTab({ item, workspaceId, meta }: ToolsTabProps) {
+/** Build the locked descriptor for a ToolCard, or `undefined` when the
+ * plan already includes it. Centralized so every tool goes through the
+ * same gate rather than each card deciding for itself. */
+function gate(
+  feature: keyof PlanFeatures,
+  currentPlan: BillingPlan,
+): { requiredPlan: string; feature: string } | undefined {
+  if (checkPlanAccess(currentPlan, feature)) return undefined
+  return { requiredPlan: FEATURE_MIN_PLAN[feature], feature }
+}
+
+export function ToolsTab({ item, workspaceId, meta, currentPlan }: ToolsTabProps) {
   const currentTags = Array.isArray(meta?.tags) ? (meta.tags as string[]) : []
   const initialSentiment: SentimentResult | null =
     meta && 'sentiment' in meta ? (meta.sentiment as SentimentResult) : null
@@ -36,27 +52,6 @@ export function ToolsTab({ item, workspaceId, meta }: ToolsTabProps) {
 
   return (
     <div className="space-y-6">
-      {/* Studio shortcut */}
-      {(item.kind === 'video' || item.kind === 'youtube') && (
-        <Link
-          href={`/workspace/${workspaceId}/studio?content_id=${item.id}`}
-          className="group flex w-full items-center justify-between rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/[0.06] to-background px-5 py-4 transition-all hover:border-primary/50 hover:bg-primary/[0.08] hover:shadow-sm"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
-              <Play className="h-4 w-4 fill-current text-primary" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold">Render in Video Studio</p>
-              <p className="text-xs text-muted-foreground">
-                AI captions + reframe → ready-to-post MP4 in ~60 s
-              </p>
-            </div>
-          </div>
-          <Clapperboard className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary/60" />
-        </Link>
-      )}
-
       {/* Video Tools */}
       <div className="space-y-3">
         <h3 className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -68,18 +63,21 @@ export function ToolsTab({ item, workspaceId, meta }: ToolsTabProps) {
             label="Subtitles"
             description="Burn stylized captions into your video for social platforms."
             href={`/workspace/${workspaceId}/content/${item.id}/subtitles`}
+            locked={gate('scheduling', currentPlan)}
           />
           <ToolCard
             icon={<Clapperboard className="h-4 w-4 text-muted-foreground" />}
             label="B-Roll"
             description="Auto-generate contextual B-Roll clips with AI."
             href={`/workspace/${workspaceId}/content/${item.id}/broll`}
+            locked={gate('brollAutomation', currentPlan)}
           />
           <ToolCard
             icon={<Sparkles className="h-4 w-4 text-muted-foreground" />}
             label="AI Avatar"
             description="Generate a talking-head avatar from your transcript."
             href={`/workspace/${workspaceId}/content/${item.id}/avatar`}
+            locked={gate('avatarVideos', currentPlan)}
           />
           {item.kind === 'video' && (
             <ToolCard
@@ -87,6 +85,7 @@ export function ToolsTab({ item, workspaceId, meta }: ToolsTabProps) {
               label="Reframe"
               description="Smart-crop horizontal video to vertical 9:16 format."
               href={`/workspace/${workspaceId}/content/${item.id}/reframe`}
+              locked={gate('scheduling', currentPlan)}
             />
           )}
           {item.kind === 'video' && (
@@ -95,6 +94,7 @@ export function ToolsTab({ item, workspaceId, meta }: ToolsTabProps) {
               label="Auto-Dub"
               description="Translate and dub your video into other languages."
               href={`/workspace/${workspaceId}/content/${item.id}/dub`}
+              locked={gate('autoDub', currentPlan)}
             />
           )}
         </div>
