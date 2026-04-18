@@ -19,6 +19,7 @@ import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { createClient } from '@/lib/supabase/server'
 import { sendWelcomeEmail } from '@/lib/email/send-welcome'
+import { trackServer } from '@/lib/analytics/posthog-server'
 
 export const metadata = { title: 'Welcome to Clipflow' }
 
@@ -86,6 +87,11 @@ export default async function OnboardingCompletePage() {
       toEmail: user.email ?? '',
       userName: fullName,
     }).catch(() => {})
+
+    // Funnel event: signup + onboarding complete. Tracked server-side
+    // so the attribution survives even if the client never loads
+    // PostHog (ad-blocker, flaky network, etc.).
+    void trackServer(user.id, 'signup_completed').catch(() => {})
   }
 
   const firstName =

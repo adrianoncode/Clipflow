@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { AppShell } from '@/components/workspace/app-shell'
+import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { SubscriptionStatusBanner } from '@/components/billing/subscription-status-banner'
 import { getProfile } from '@/lib/auth/get-profile'
 import { getUser } from '@/lib/auth/get-user'
@@ -54,19 +55,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const currentPlan = await getWorkspacePlan(currentWorkspace.id)
 
   return (
-    <AppShell
-      user={{ id: user.id, email: user.email ?? '' }}
-      workspaces={workspaces}
-      currentWorkspaceId={currentWorkspace.id}
-      referralLink={referralLink}
-      referralStats={referralStats}
-      currentPlan={currentPlan}
-    >
-      {/* Billing-state banner above every page — past_due, unpaid, or
-          cancel-scheduled subscriptions surface here so users notice
-          before their plan actually flips to free. */}
-      <SubscriptionStatusBanner workspaceId={currentWorkspace.id} />
-      {children}
-    </AppShell>
+    <PostHogProvider userId={user.id} email={user.email ?? ''}>
+      <AppShell
+        user={{ id: user.id, email: user.email ?? '' }}
+        workspaces={workspaces}
+        currentWorkspaceId={currentWorkspace.id}
+        referralLink={referralLink}
+        referralStats={referralStats}
+        currentPlan={currentPlan}
+      >
+        {/* Billing-state banner above every page — past_due, unpaid, or
+            cancel-scheduled subscriptions surface here so users notice
+            before their plan actually flips to free. */}
+        <SubscriptionStatusBanner workspaceId={currentWorkspace.id} />
+        {children}
+      </AppShell>
+    </PostHogProvider>
   )
 }
