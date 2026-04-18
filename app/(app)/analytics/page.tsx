@@ -166,7 +166,7 @@ export default async function AnalyticsPage() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           icon={Upload}
-          label="Content imported"
+          label="Videos added"
           value={analytics.velocityContent.thisWeek}
           helper="this week"
           delta={analytics.velocityContent.deltaPct}
@@ -174,7 +174,7 @@ export default async function AnalyticsPage() {
         />
         <KpiCard
           icon={Layers}
-          label="Drafts generated"
+          label="Posts created"
           value={analytics.velocityOutputs.thisWeek}
           helper="this week"
           delta={analytics.velocityOutputs.deltaPct}
@@ -182,17 +182,21 @@ export default async function AnalyticsPage() {
         />
         <KpiCard
           icon={CheckCircle2}
-          label="Approval rate"
+          label="Made it through"
           value={`${analytics.approvalRate}%`}
-          helper={`${approvalZone.label} · drafts reviewed`}
+          helper={`${approvalZone.label} · of the drafts you reviewed`}
           badge={approvalZone}
           tint="emerald"
         />
         <KpiCard
           icon={Send}
-          label="Published"
+          label="Went live"
           value={totalPublished}
-          helper={`${analytics.publishingStats.scheduled} scheduled · ${analytics.publishingStats.failed} failed`}
+          helper={
+            analytics.publishingStats.scheduled > 0 || analytics.publishingStats.failed > 0
+              ? `${analytics.publishingStats.scheduled} waiting · ${analytics.publishingStats.failed} stuck`
+              : 'posts published to your accounts'
+          }
           tint="amber"
         />
       </div>
@@ -204,11 +208,11 @@ export default async function AnalyticsPage() {
             <div className="flex items-center gap-2">
               <TrendingUp className="h-3.5 w-3.5 text-primary" />
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                Real engagement
+                How your posts are doing
               </p>
             </div>
             <span className="font-mono text-[10px] text-muted-foreground/60">
-              From your published posts
+              live data from your socials
             </span>
           </div>
 
@@ -225,7 +229,7 @@ export default async function AnalyticsPage() {
                   : '-'}
               </span>
               <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
-                Avg. engagement
+                People engaging
               </span>
             </div>
           </div>
@@ -345,7 +349,7 @@ export default async function AnalyticsPage() {
       <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
         <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
           <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Conversion funnel
+            From video to live post
           </p>
           <span className="font-mono text-[10px] text-muted-foreground/60">
             All-time
@@ -406,19 +410,19 @@ export default async function AnalyticsPage() {
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                Stuck drafts
+                Drafts you forgot
               </p>
             </div>
             <span className="font-mono text-[10px] text-muted-foreground/60">
-              {analytics.stuckDrafts.length} · &gt;7d old
+              {analytics.stuckDrafts.length} · untouched for 7+ days
             </span>
           </div>
           {analytics.stuckDrafts.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-10 text-center">
               <CheckCircle2 className="h-6 w-6 text-emerald-500/60" />
-              <p className="text-sm font-semibold text-foreground">Nothing stuck</p>
+              <p className="text-sm font-semibold text-foreground">You&apos;re caught up</p>
               <p className="text-xs text-muted-foreground">
-                All drafts have been touched within the last week.
+                No drafts have been sitting untouched.
               </p>
             </div>
           ) : (
@@ -464,30 +468,30 @@ export default async function AnalyticsPage() {
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card lg:col-span-2">
           <div className="border-b border-border/50 px-5 py-3">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Platform coverage
+              How many videos went multi-platform
             </p>
           </div>
           <div className="space-y-3 p-5">
             {totalItemsWithCoverage === 0 ? (
               <p className="text-xs text-muted-foreground">
-                Import content to see coverage.
+                Import a video to see this.
               </p>
             ) : (
               <>
                 <CoverageRow
-                  label="All 4 platforms"
+                  label="Posted to all 4"
                   count={analytics.platformCoverage.full}
                   total={totalItemsWithCoverage}
                   color="bg-emerald-500"
                 />
                 <CoverageRow
-                  label="Some platforms"
+                  label="Posted to some"
                   count={analytics.platformCoverage.partial}
                   total={totalItemsWithCoverage}
                   color="bg-amber-400"
                 />
                 <CoverageRow
-                  label="No outputs yet"
+                  label="Not posted yet"
                   count={analytics.platformCoverage.none}
                   total={totalItemsWithCoverage}
                   color="bg-zinc-300"
@@ -503,7 +507,7 @@ export default async function AnalyticsPage() {
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="border-b border-border/50 px-5 py-3">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Imports · last 6 months
+              Videos you added · last 6 months
             </p>
           </div>
           <div className="p-5">
@@ -513,7 +517,7 @@ export default async function AnalyticsPage() {
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="border-b border-border/50 px-5 py-3">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Drafts generated · last 6 months
+              Posts you created · last 6 months
             </p>
           </div>
           <div className="p-5">
@@ -527,7 +531,7 @@ export default async function AnalyticsPage() {
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="border-b border-border/50 px-5 py-3">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Drafts by platform
+              Where your posts go
             </p>
           </div>
           <div className="space-y-3 p-5">
@@ -566,7 +570,7 @@ export default async function AnalyticsPage() {
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="border-b border-border/50 px-5 py-3">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Draft status
+              Where your drafts are at
             </p>
           </div>
           <div className="space-y-3 p-5">
@@ -603,7 +607,7 @@ export default async function AnalyticsPage() {
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="border-b border-border/50 px-5 py-3">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Top content by stars
+              Your favorite videos
             </p>
           </div>
           <ul className="divide-y divide-border/40">
@@ -640,10 +644,10 @@ export default async function AnalyticsPage() {
           <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/50" />
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-foreground">
-              Want to see real engagement data here?
+              See how your posts actually perform
             </p>
             <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
-              Connect Upload-Post in AI Connections to publish posts and track views, likes, comments, and shares for each platform.
+              Connect Upload-Post and Clipflow pulls real views, likes, comments, and shares from every post you publish.
             </p>
           </div>
           <Link

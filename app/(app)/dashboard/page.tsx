@@ -189,10 +189,10 @@ export default async function DashboardPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-semibold">&ldquo;{readyContent.title ?? 'Content'}&rdquo; is ready</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">Generate TikTok, Reels, Shorts &amp; LinkedIn drafts.</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Turn it into TikTok, Reels, Shorts &amp; LinkedIn posts.</p>
               </div>
               <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20">
-                Generate <ArrowRight className="h-3.5 w-3.5" />
+                Make posts <ArrowRight className="h-3.5 w-3.5" />
               </span>
             </Link>
           )}
@@ -201,8 +201,8 @@ export default async function DashboardPage() {
           {hasData && stats && (
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {[
-                { key: 'content', label: 'Content', value: stats.totalContent, thisMonth: stats.contentThisMonth, lastMonth: stats.contentLastMonth, icon: Video, spark: stats.contentByDay, href: `/workspace/${workspace.id}`, color: 'text-violet-600 bg-violet-50' },
-                { key: 'outputs', label: 'AI Drafts', value: stats.totalOutputs, thisMonth: stats.outputsThisMonth, lastMonth: stats.outputsLastMonth, icon: Layers, spark: stats.outputsByDay, href: `/workspace/${workspace.id}/pipeline`, color: 'text-blue-600 bg-blue-50' },
+                { key: 'content', label: 'Videos', value: stats.totalContent, thisMonth: stats.contentThisMonth, lastMonth: stats.contentLastMonth, icon: Video, spark: stats.contentByDay, href: `/workspace/${workspace.id}`, color: 'text-violet-600 bg-violet-50' },
+                { key: 'outputs', label: 'Posts', value: stats.totalOutputs, thisMonth: stats.outputsThisMonth, lastMonth: stats.outputsLastMonth, icon: Layers, spark: stats.outputsByDay, href: `/workspace/${workspace.id}/pipeline`, color: 'text-blue-600 bg-blue-50' },
                 { key: 'approved', label: 'Approved', value: stats.approvedOutputs, thisMonth: 0, lastMonth: 0, icon: CheckCircle2, spark: null, href: `/workspace/${workspace.id}/pipeline`, color: 'text-emerald-600 bg-emerald-50' },
                 { key: 'starred', label: 'Starred', value: stats.starredOutputs, thisMonth: 0, lastMonth: 0, icon: Star, spark: null, href: `/workspace/${workspace.id}/pipeline`, color: 'text-amber-600 bg-amber-50' },
               ].map((m) => (
@@ -270,7 +270,7 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
               { href: `/workspace/${workspace.id}/content/new`, label: 'Import', desc: 'YouTube, MP4, text', icon: Upload, gradient: 'from-violet-500/10 to-violet-500/[0.02]', border: 'border-violet-200/60', iconBg: 'bg-violet-100 text-violet-600' },
-              { href: `/workspace/${workspace.id}`, label: 'Generate', desc: 'AI-powered drafts', icon: Wand2, gradient: 'from-blue-500/10 to-blue-500/[0.02]', border: 'border-blue-200/60', iconBg: 'bg-blue-100 text-blue-600' },
+              { href: `/workspace/${workspace.id}`, label: 'Generate', desc: 'Turn into posts', icon: Wand2, gradient: 'from-blue-500/10 to-blue-500/[0.02]', border: 'border-blue-200/60', iconBg: 'bg-blue-100 text-blue-600' },
               { href: `/workspace/${workspace.id}/pipeline`, label: 'Drafts', desc: 'Review & approve', icon: Layers, gradient: 'from-emerald-500/10 to-emerald-500/[0.02]', border: 'border-emerald-200/60', iconBg: 'bg-emerald-100 text-emerald-600' },
               { href: `/workspace/${workspace.id}/schedule`, label: 'Schedule', desc: 'Plan & publish', icon: Calendar, gradient: 'from-amber-500/10 to-amber-500/[0.02]', border: 'border-amber-200/60', iconBg: 'bg-amber-100 text-amber-600' },
             ].map((a) => (
@@ -322,7 +322,7 @@ export default async function DashboardPage() {
                 <div className="space-y-4 p-4">
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold">Content</span>
+                      <span className="text-[11px] font-semibold">Videos</span>
                       <span className="font-mono text-[10px] font-bold tabular-nums text-muted-foreground">
                         {usage.contentItemsThisMonth}{planDef.limits.contentItemsPerMonth !== -1 ? ` / ${planDef.limits.contentItemsPerMonth}` : ' / \u221e'}
                       </span>
@@ -331,7 +331,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold">AI Drafts</span>
+                      <span className="text-[11px] font-semibold">Posts</span>
                       <span className="font-mono text-[10px] font-bold tabular-nums text-muted-foreground">
                         {usage.outputsThisMonth}{planDef.limits.outputsPerMonth !== -1 ? ` / ${planDef.limits.outputsPerMonth}` : ' / \u221e'}
                       </span>
