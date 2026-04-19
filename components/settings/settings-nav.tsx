@@ -7,6 +7,7 @@ import {
   Building2,
   CreditCard,
   Gift,
+  HelpCircle,
   Key,
   Mic2,
   Plug,
@@ -30,6 +31,7 @@ const aiGroup = [
 
 const connectGroup = [
   { href: '/settings/integrations', label: 'Integrations', icon: Plug },
+  { href: '/help', label: 'Help', icon: HelpCircle },
 ]
 
 const groups = [accountGroup, aiGroup, connectGroup]
