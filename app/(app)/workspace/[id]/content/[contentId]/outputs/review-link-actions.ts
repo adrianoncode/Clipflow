@@ -4,6 +4,9 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
+import { getWorkspacePlan } from '@/lib/billing/get-subscription'
+import { checkPlanAccess } from '@/lib/billing/plans'
 import { createClient } from '@/lib/supabase/server'
 
 export type CreateReviewLinkState =
@@ -23,6 +26,19 @@ export async function createReviewLinkAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  // Review links are a Studio-plan feature. Page-level gate already
+  // hides the UI on lower plans, but a crafted form POST could still
+  // hit this action — fail closed with a clear error.
+  const member = await requireWorkspaceMember(workspaceId)
+  if (!member.ok) return { ok: false, error: member.message }
+  const plan = await getWorkspacePlan(workspaceId)
+  if (!checkPlanAccess(plan, 'clientReviewLink')) {
+    return {
+      ok: false,
+      error: 'Client review links are on the Studio plan. Upgrade in Billing to unlock.',
+    }
+  }
 
   const supabase = await createClient()
   const { data, error } = await supabase

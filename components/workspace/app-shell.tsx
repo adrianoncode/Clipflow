@@ -198,6 +198,16 @@ export function AppShell({
 
   return (
     <div className="flex min-h-screen flex-col">
+      {/* Skip to main content — keyboard users tab-land here first and
+          can jump past the global nav instead of walking it on every
+          page. Visible only when focused so it doesn't clutter the UI. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
+
       <KeyboardShortcuts workspaceId={currentWorkspaceId} />
       <FeedbackWidget />
 
@@ -276,7 +286,13 @@ export function AppShell({
         </aside>
 
         {/* ── Main content ───────────────────────────────────────── */}
-        <main className="flex-1 overflow-y-auto pb-16 sm:pb-0">{children}</main>
+        <main
+          id="main-content"
+          className="flex-1 overflow-y-auto pb-16 sm:pb-0"
+          tabIndex={-1}
+        >
+          {children}
+        </main>
       </div>
 
       {/* ── Mobile bottom nav ────────────────────────────────────── */}
@@ -307,6 +323,8 @@ export function AppShell({
         <button
           type="button"
           onClick={() => setMobileMoreOpen((v) => !v)}
+          aria-expanded={mobileMoreOpen}
+          aria-controls="mobile-more-sheet"
           className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-all ${
             mobileMoreOpen ? 'text-primary' : 'text-muted-foreground active:scale-95'
           }`}
@@ -319,11 +337,18 @@ export function AppShell({
       {/* ── Mobile More sheet ─────────────────────────────────────── */}
       {mobileMoreOpen && (
         <>
-          <div
+          <button
+            type="button"
+            aria-label="Close menu"
             className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm sm:hidden"
             onClick={() => setMobileMoreOpen(false)}
           />
-          <div className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 max-h-[60vh] overflow-y-auto rounded-t-2xl border-t border-border/60 bg-white p-4 shadow-xl sm:hidden">
+          <div
+            id="mobile-more-sheet"
+            role="dialog"
+            aria-label="More navigation"
+            className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 max-h-[60vh] overflow-y-auto rounded-t-2xl border-t border-border/60 bg-white p-4 shadow-xl sm:hidden"
+          >
             <div className="mb-3 flex items-center justify-between">
               <p className="text-xs font-bold text-muted-foreground">All features</p>
               <button

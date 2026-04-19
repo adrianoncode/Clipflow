@@ -221,11 +221,32 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
                   ((outputs[0]?.metadata as Record<string, unknown> | null)?.seo as null | { primary_keyword: string; secondary_keywords: string[]; seo_title: string; meta_description: string; hashtag_strategy: string }) ?? null
                 }
               />
-              <ReviewLinkPanel
-                workspaceId={params.id}
-                contentId={params.contentId}
-                links={reviewLinks}
-              />
+              {/* Client review links are Studio-only. On Creator/Free
+                  we show a locked card that points to /billing with the
+                  feature query param so the upsell banner names it. */}
+              {planFeatures.clientReviewLink ? (
+                <ReviewLinkPanel
+                  workspaceId={params.id}
+                  contentId={params.contentId}
+                  links={reviewLinks}
+                />
+              ) : (
+                <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 p-5">
+                  <p className="text-sm font-semibold">Client review links</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    Share a no-login link with a client to collect feedback on
+                    these drafts. White-label, optional expiry. Available on
+                    the Studio plan.
+                  </p>
+                  <Link
+                    href={`/billing?plan=agency&feature=clientReviewLink`}
+                    className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-sm"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    Upgrade to unlock
+                  </Link>
+                </div>
+              )}
               <ReviewCommentsPanel comments={reviewComments} />
 
               {/* Editor Export — CapCut, Premiere etc. */}
