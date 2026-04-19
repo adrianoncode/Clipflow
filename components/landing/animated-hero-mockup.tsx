@@ -4,28 +4,29 @@ import { useEffect, useRef, useState } from 'react'
 
 interface OutputCard {
   platform: string
-  score: number
+  /** Character count — a real metric every post has. Replaces the old
+   * fake 0-100 "virality score" that implied a feature we don't ship. */
+  chars: number
   hook: string
   accent: string
   border: string
   text: string
 }
 
-// All 4 cards use the same violet accent now — the page only has ONE
-// primary color, so platform differentiation happens via the badge
-// label, not a rainbow of border hues.
+// Single-color palette: one primary violet, platform differentiation
+// happens via the pill label alone. No rainbow of accent hues.
 const OUTPUTS: OutputCard[] = [
   {
     platform: 'TikTok',
-    score: 94,
-    hook: '"POV: You spend 8 hours editing one video 😭"',
+    chars: 38,
+    hook: '"POV: you spend 8 hours editing one video"',
     accent: 'from-violet-50 to-white',
     border: 'border-violet-100',
     text: 'text-violet-700',
   },
   {
     platform: 'Reels',
-    score: 89,
+    chars: 47,
     hook: '"The workflow saving creators 6+ hours a week"',
     accent: 'from-violet-50 to-white',
     border: 'border-violet-100',
@@ -33,7 +34,7 @@ const OUTPUTS: OutputCard[] = [
   },
   {
     platform: 'YouTube Shorts',
-    score: 85,
+    chars: 42,
     hook: '"I automated my entire content pipeline"',
     accent: 'from-violet-50 to-white',
     border: 'border-violet-100',
@@ -41,7 +42,7 @@ const OUTPUTS: OutputCard[] = [
   },
   {
     platform: 'LinkedIn',
-    score: 81,
+    chars: 51,
     hook: '"80% of creators waste time on distribution"',
     accent: 'from-violet-50 to-white',
     border: 'border-violet-100',
@@ -186,9 +187,9 @@ export function AnimatedHeroMockup() {
                     <span className={`rounded-full border ${o.border} bg-white px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${o.text}`}>
                       {o.platform}
                     </span>
-                    <span className="text-sm font-bold tabular-nums text-violet-700">
-                      <AnimatedScore target={o.score} delay={150 * i + 400} />
-                      <span className="text-[9px] font-medium text-zinc-400">/100</span>
+                    <span className="inline-flex items-center gap-1 font-mono text-[10px] font-medium text-zinc-400 tabular-nums">
+                      <AnimatedScore target={o.chars} delay={150 * i + 400} />
+                      <span>chars</span>
                     </span>
                   </div>
                   <p className="mt-2 text-xs leading-snug text-zinc-700">{o.hook}</p>

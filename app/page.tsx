@@ -285,10 +285,10 @@ function Hero({ signupHref }: { signupHref: string }) {
         <div className="mx-auto mt-20 max-w-5xl">
           <div className="grid grid-cols-2 divide-zinc-200 border-y border-zinc-200 sm:grid-cols-4 sm:divide-x">
             {[
-              { n: '30+', l: 'AI tools', s: 'in one place' },
-              { n: '4', l: 'platforms', s: 'covered' },
-              { n: '~30s', l: 'to generate', s: '4 drafts in parallel' },
-              { n: '$0', l: 'AI markup', s: 'BYOK — pay at cost' },
+              { n: '4', l: 'platforms', s: 'TikTok · Reels · Shorts · LinkedIn' },
+              { n: '~30s', l: 'per video', s: '4 drafts generated in parallel' },
+              { n: '3', l: 'hook variants', s: 'A/B test every post before publish' },
+              { n: '$0', l: 'AI markup', s: 'BYOK — you pay your provider at cost' },
             ].map((stat, i) => (
               <div
                 key={stat.l}
@@ -316,16 +316,20 @@ function Hero({ signupHref }: { signupHref: string }) {
 // POWERED BY (logos strip)
 // ============================================================================
 function PoweredBy() {
+  // Stack we actually run. Whisper is bundled under the LLM providers,
+  // Replicate is not a primary dep anymore, and Pexels is a minor
+  // B-roll source — none earned marquee billing. Kept: the three LLM
+  // providers (user brings their own key), the media rendering stack,
+  // and the infra names users recognize.
   const logos = [
     'OpenAI',
     'Anthropic',
-    'Google Gemini',
-    'ElevenLabs',
+    'Google',
     'Shotstack',
-    'Pexels',
-    'Whisper',
-    'Replicate',
+    'ElevenLabs',
+    'Upload-Post',
     'Stripe',
+    'Supabase',
     'Resend',
   ]
 
@@ -429,9 +433,9 @@ function FeaturesBento() {
           <div className="mx-auto max-w-2xl text-center">
             <SectionBadge number="03" label="The feature grid" className="justify-center" />
             <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
-              30+ tools.
+              One workflow.
               <br />
-              <span className="italic text-zinc-400">One subscription.</span>
+              <span className="italic text-zinc-400">Every platform.</span>
             </h2>
             <p className="mt-4 text-lg text-zinc-500">
               Everything you&apos;d stitch together from five separate SaaS products — already integrated.
@@ -694,8 +698,10 @@ function ByokHighlight({ signupHref }: { signupHref: string }) {
                   {[
                     { label: 'OpenAI / Anthropic / Google', tag: 'LLM' },
                     { label: 'Shotstack', tag: 'Render' },
-                    { label: 'Replicate', tag: 'Avatars' },
+                    { label: 'D-ID', tag: 'Avatars' },
                     { label: 'ElevenLabs', tag: 'Voice' },
+                    { label: 'Upload-Post', tag: 'Publish' },
+                    { label: 'Composio', tag: 'Integrations' },
                   ].map((svc) => (
                     <div key={svc.label} className="flex items-center gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />
@@ -940,7 +946,7 @@ function FinalCta({ signupHref }: { signupHref: string }) {
                 </span>
               </h2>
               <p className="mx-auto mt-6 max-w-lg text-lg text-zinc-600">
-                30+ AI tools. Real video rendering. Zero AI markup. Free forever plan.
+                Four platforms. Real video rendering. Zero AI markup. Free forever plan.
               </p>
               <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link
