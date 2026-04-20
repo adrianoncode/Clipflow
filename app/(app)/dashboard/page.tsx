@@ -4,12 +4,16 @@ import {
   ArrowRight,
   ArrowUpRight,
   Calendar,
+  Check,
   CheckCircle2,
   Clock,
   FileText,
   Layers,
   MessageSquare,
+  MoreHorizontal,
   Plug,
+  Send,
+  Sparkles,
   Star,
   TrendingDown,
   TrendingUp,
@@ -30,20 +34,128 @@ import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { PLANS, checkPlanAccess } from '@/lib/billing/plans'
 import { getWorkspaceStats } from '@/lib/dashboard/get-workspace-stats'
 import { getSuggestions } from '@/lib/suggestions/get-suggestions'
+import { getActiveBrandVoice } from '@/lib/brand-voice/get-active-brand-voice'
+import { getScheduledOutputs } from '@/lib/schedule/get-scheduled-outputs'
+import { createClient } from '@/lib/supabase/server'
+import { PLATFORM_LABELS } from '@/lib/platforms'
+import type { OutputPlatform } from '@/lib/supabase/types'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Dashboard' }
 
 const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
 
+// ── Local style block — scopes the plum/chartreuse landing palette to
+// the dashboard via `.lv2-dash` so the rest of the app keeps its violet.
+const DASH_STYLES = `
+.lv2-dash {
+  --lv2d-bg: #FAF7F2; --lv2d-bg-2: #F3EDE3; --lv2d-fg: #181511;
+  --lv2d-fg-soft: #3a342c; --lv2d-muted: #7c7468; --lv2d-muted-2: #ECE5D8;
+  --lv2d-border: #E5DDCE; --lv2d-border-strong: #CFC4AF; --lv2d-card: #FFFDF8;
+  --lv2d-primary: #2A1A3D; --lv2d-primary-ink: #120920; --lv2d-primary-soft: #EDE6F5;
+  --lv2d-accent: #D6FF3E; --lv2d-accent-ink: #1a2000;
+  --lv2d-success: #0F6B4D; --lv2d-success-soft: #E6F4EE;
+  --lv2d-warn: #A0530B; --lv2d-warn-soft: #FBEDD9;
+  --lv2d-danger: #9B2018;
+  background-color: var(--lv2d-bg);
+  background-image: radial-gradient(circle at 2px 2px, rgba(120,90,40,.04) 1px, transparent 0);
+  background-size: 24px 24px;
+  color: var(--lv2d-fg);
+  min-height: 100%;
+}
+.lv2-dash .lv2d-display { font-family: var(--font-instrument-serif), serif; letter-spacing: -.01em; font-weight: 400; }
+.lv2-dash .lv2d-sans-d { font-family: var(--font-inter-tight), sans-serif; letter-spacing: -.02em; }
+.lv2-dash .lv2d-mono { font-family: var(--font-jetbrains-mono), monospace; }
+.lv2-dash .lv2d-tabular { font-variant-numeric: tabular-nums; }
+.lv2-dash .lv2d-mono-label {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--lv2d-muted);
+}
+.lv2-dash .lv2d-card { background: var(--lv2d-card); border: 1px solid var(--lv2d-border); border-radius: 14px; }
+.lv2-dash .lv2d-ring-soft { box-shadow: 0 1px 0 rgba(24,21,17,.03), 0 12px 24px -18px rgba(42,26,61,.15); }
+.lv2-dash .lv2d-chip {
+  display: inline-flex; align-items: center; gap: .25rem;
+  border-radius: 999px; padding: 2px 8px;
+  font-size: 10px; font-weight: 700; letter-spacing: .01em;
+}
+.lv2-dash .lv2d-btn-primary {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: var(--lv2d-primary); color: var(--lv2d-accent);
+  font-weight: 700; font-size: 13px;
+  padding: 9px 14px; border-radius: 10px;
+  box-shadow: inset 0 0 0 1px rgba(214,255,62,.15), 0 2px 10px -2px rgba(42,26,61,.35);
+  transition: transform .15s ease, background .15s ease;
+}
+.lv2-dash .lv2d-btn-primary:hover { transform: translateY(-1px); background: var(--lv2d-primary-ink); }
+.lv2-dash .lv2d-btn-accent {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: var(--lv2d-accent); color: var(--lv2d-accent-ink);
+  font-weight: 800; font-size: 13px;
+  padding: 9px 14px; border-radius: 10px;
+  box-shadow: 0 2px 0 rgba(100,125,0,.25), inset 0 0 0 1px rgba(0,0,0,.06);
+  transition: transform .15s ease;
+}
+.lv2-dash .lv2d-btn-accent:hover { transform: translateY(-1px); }
+.lv2-dash .lv2d-btn-ghost {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: var(--lv2d-card); border: 1px solid var(--lv2d-border);
+  color: var(--lv2d-fg); font-weight: 600; font-size: 13px;
+  padding: 8px 12px; border-radius: 10px;
+  transition: background .15s ease, border-color .15s ease;
+}
+.lv2-dash .lv2d-btn-ghost:hover { background: var(--lv2d-bg-2); border-color: var(--lv2d-border-strong); }
+.lv2-dash .lv2d-step-line {
+  height: 2px;
+  background-image: linear-gradient(to right, var(--lv2d-border-strong) 60%, transparent 0);
+  background-size: 8px 2px; background-repeat: repeat-x;
+}
+.lv2-dash .lv2d-funnel-step {
+  position: relative; z-index: 10;
+  border-radius: 12px; border: 1px solid var(--lv2d-border);
+  background: var(--lv2d-card); padding: 12px;
+  text-align: left; width: 100%;
+  transition: transform .18s, border-color .18s, box-shadow .18s;
+}
+.lv2-dash .lv2d-funnel-step:hover {
+  transform: translateY(-2px); border-color: var(--lv2d-border-strong);
+  box-shadow: 0 10px 24px -16px rgba(42,26,61,.22);
+}
+.lv2-dash .lv2d-funnel-cta { outline: 2px solid var(--lv2d-primary); outline-offset: 2px; }
+@keyframes lv2d-pulse { 0%,100% { opacity: 1 } 50% { opacity: .5 } }
+.lv2-dash .lv2d-pulse { animation: lv2d-pulse 2.4s ease-in-out infinite; }
+@keyframes lv2d-shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+.lv2-dash .lv2d-shimmer-wrap { position: relative; overflow: hidden; }
+.lv2-dash .lv2d-shimmer-bar {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(214,255,62,.7), transparent);
+  animation: lv2d-shimmer 2.2s linear infinite;
+}
+.lv2-dash .lv2d-thumb {
+  background:
+    repeating-linear-gradient(115deg, rgba(42,26,61,.1) 0 4px, rgba(42,26,61,.02) 4px 12px),
+    linear-gradient(135deg, #DDD2E8, #EFE9F5);
+  border-radius: 6px;
+}
+.lv2-dash .lv2d-row-hover { transition: background .15s ease; }
+.lv2-dash .lv2d-row-hover:hover { background: rgba(42,26,61,.035); }
+.lv2-dash .lv2d-divide > * + * { border-top: 1px solid var(--lv2d-border); }
+@keyframes lv2d-fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.lv2-dash .lv2d-fade-in { animation: lv2d-fade-in .3s cubic-bezier(.2,.8,.2,1) both; }
+`
+
 /* ── Helpers ──────────────────────────────────────────────────── */
 
-function DeltaBadge({ current, previous }: { current: number; previous: number }) {
+function DeltaChip({ current, previous }: { current: number; previous: number }) {
   if (previous === 0 && current === 0) return null
   if (previous === 0 && current > 0)
     return (
-      <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
-        <TrendingUp className="h-2.5 w-2.5" />New
+      <span
+        className="lv2d-chip"
+        style={{ background: 'var(--lv2d-success-soft)', color: 'var(--lv2d-success)' }}
+      >
+        <TrendingUp className="h-2.5 w-2.5" />
+        New
       </span>
     )
   const delta = current - previous
@@ -51,20 +163,67 @@ function DeltaBadge({ current, previous }: { current: number; previous: number }
   const pct = Math.round((delta / previous) * 100)
   const up = delta > 0
   return (
-    <span className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${up ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+    <span
+      className="lv2d-chip"
+      style={
+        up
+          ? { background: 'var(--lv2d-success-soft)', color: 'var(--lv2d-success)' }
+          : { background: '#F8E3E0', color: 'var(--lv2d-danger)' }
+      }
+    >
       {up ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
-      {up ? '+' : ''}{pct}%
+      {up ? '+' : ''}
+      {pct}%
     </span>
+  )
+}
+
+function formatRelative(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const m = Math.round(diff / 60_000)
+  if (m < 1) return 'just now'
+  if (m < 60) return `${m}m`
+  const h = Math.round(m / 60)
+  if (h < 24) return `${h}h`
+  return `${Math.round(h / 24)}d`
+}
+
+function relMinutes(rel: string): number {
+  if (rel === 'just now') return 0
+  const n = parseInt(rel)
+  if (rel.endsWith('m')) return n
+  if (rel.endsWith('h')) return n * 60
+  if (rel.endsWith('d')) return n * 1440
+  return 999_999
+}
+
+function PlatformDot({ platform }: { platform: OutputPlatform | string }) {
+  const bg: Record<string, string> = {
+    tiktok: '#111',
+    reels: 'linear-gradient(135deg,#F58529,#DD2A7B,#8134AF)',
+    shorts: '#FF0033',
+    linkedin: '#0A66C2',
+    x: '#111',
+  }
+  return (
+    <span
+      className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+      style={{ background: bg[platform] ?? '#888' }}
+    />
   )
 }
 
 function UsageBar({ used, limit }: { used: number; limit: number }) {
   const pct = limit === -1 ? 33 : Math.min(100, Math.round((used / limit) * 100))
+  const bar = pct >= 90 ? 'var(--lv2d-danger)' : pct >= 70 ? 'var(--lv2d-warn)' : 'var(--lv2d-primary)'
   return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+    <div
+      className="h-1.5 w-full overflow-hidden rounded-full"
+      style={{ background: 'var(--lv2d-muted-2)' }}
+    >
       <div
-        className={`h-full rounded-full transition-all duration-700 ${pct >= 90 ? 'bg-red-500' : pct >= 70 ? 'bg-amber-500' : 'bg-primary'}`}
-        style={{ width: `${pct}%` }}
+        className="h-full rounded-full"
+        style={{ width: `${pct}%`, background: bar, transition: 'width .9s cubic-bezier(.2,.8,.2,1)' }}
       />
     </div>
   )
@@ -74,15 +233,20 @@ function UsageBar({ used, limit }: { used: number; limit: number }) {
 
 export default async function DashboardPage() {
   const [user, workspaces] = await Promise.all([getUser(), getWorkspaces()])
-  const firstName = ((typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : null) ?? user?.email ?? 'there').split(/[\s@]/)[0] ?? 'there'
+  const firstName =
+    ((typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : null) ??
+      user?.email ??
+      'there')
+      .split(/[\s@]/)[0] ?? 'there'
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   const cookieWorkspaceId = cookies().get(CURRENT_WORKSPACE_COOKIE)?.value
   const personal = workspaces.find((w) => w.type === 'personal')
-  const workspace = workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal ?? workspaces[0]
+  const workspace =
+    workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal ?? workspaces[0]
 
-  const [aiKeys, stats, usage, plan, suggestions] =
+  const [aiKeys, stats, usage, plan, suggestions, brandVoice, scheduled] =
     workspace && user
       ? await Promise.all([
           getAiKeys(workspace.id),
@@ -90,268 +254,1194 @@ export default async function DashboardPage() {
           getWorkspaceUsage(workspace.id),
           getWorkspacePlan(workspace.id),
           getSuggestions(workspace.id),
+          getActiveBrandVoice(workspace.id),
+          getScheduledOutputs(workspace.id),
         ])
-      : [[], null, null, 'free' as const, []]
+      : [[], null, null, 'free' as const, [], null, []]
+
+  // Recent outputs for the "Recent drafts" panel — cheap dedicated query
+  // to avoid coupling with the stats aggregator.
+  let recentOutputs: Array<{
+    id: string
+    title: string
+    platform: string
+    state: string
+    created_at: string
+  }> = []
+  if (workspace) {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('outputs')
+      .select('id, platform, current_state, created_at, content_items(title)')
+      .eq('workspace_id', workspace.id)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(5)
+    recentOutputs = (data ?? []).map((o) => ({
+      id: o.id,
+      title:
+        (o.content_items as unknown as { title: string | null } | null)?.title ?? 'Untitled',
+      platform: o.platform,
+      state: o.current_state ?? 'draft',
+      created_at: o.created_at,
+    }))
+  }
 
   const planDef = PLANS[plan ?? 'free']
   const hasLlm = aiKeys.some((k) => ['openai', 'anthropic', 'google'].includes(k.provider))
-  const showChecklist = !hasLlm || (stats?.totalContent ?? 0) === 0 || (stats?.totalOutputs ?? 0) === 0 || (stats?.approvedOutputs ?? 0) === 0
+  const showChecklist =
+    !hasLlm ||
+    (stats?.totalContent ?? 0) === 0 ||
+    (stats?.totalOutputs ?? 0) === 0 ||
+    (stats?.approvedOutputs ?? 0) === 0
   const pendingReview = stats?.pipelineByState.review ?? 0
+  const approved = stats?.pipelineByState.approved ?? 0
+  const exported = stats?.pipelineByState.exported ?? 0
   const processing = stats?.recentContent.find((c) => c.status === 'processing')
   const readyContent = stats?.recentContent.find((c) => c.status === 'ready')
   const hasData = (stats?.totalContent ?? 0) > 0
 
-  // Agency mode: user is on Studio + runs more than one client workspace.
-  // The dashboard then leads with a cross-client strip instead of only
-  // showing numbers for whatever workspace happens to be "current".
-  const isAgencyMode = checkPlanAccess(plan ?? 'free', 'multiWorkspace') && workspaces.length > 1
+  const isAgencyMode =
+    checkPlanAccess(plan ?? 'free', 'multiWorkspace') && workspaces.length > 1
   const otherWorkspaces = workspace
     ? workspaces.filter((w) => w.id !== workspace.id).slice(0, 6)
     : []
 
+  // Brand voice ring score: blend of tone/voice completeness. If no
+  // brand voice is set up the card hides its ring and nudges setup.
+  const bvScore = brandVoice
+    ? Math.min(
+        100,
+        ((brandVoice.tone ? 1 : 0) +
+          (brandVoice.avoid ? 1 : 0) +
+          (brandVoice.example_hook ? 1 : 0)) *
+          33 +
+          ((brandVoice.tone && brandVoice.avoid && brandVoice.example_hook) ? 1 : 0),
+      )
+    : 0
+
+  // Brand voice 3-metric breakdown — derived from which fields are filled.
+  // Fully populated fields score higher than missing ones. Intentionally
+  // simple: we don't run live AI scoring here, just surface how complete
+  // the voice definition is across its three dimensions.
+  const bvMetrics = [
+    { label: 'Tone match', value: brandVoice?.tone ? 92 : 40 },
+    { label: 'Vocabulary', value: brandVoice?.avoid ? 88 : 55 },
+    { label: 'Hook strength', value: brandVoice?.example_hook ? 86 : 62 },
+  ]
+
+  // ── Upcoming Schedule — group scheduled outputs by day label.
+  const upcoming = (() => {
+    const byDay = new Map<
+      string,
+      Array<{ time: string; platform: OutputPlatform; title: string }>
+    >()
+    const now = new Date()
+    const todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toDateString()
+    const tomorrowKey = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toDateString()
+    for (const s of scheduled) {
+      const d = new Date(s.scheduled_for)
+      const key = d.toDateString()
+      const dayLabel =
+        key === todayKey
+          ? 'TODAY'
+          : key === tomorrowKey
+          ? 'TOMORROW'
+          : d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase()
+      const time = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+      const items = byDay.get(dayLabel) ?? []
+      items.push({
+        time,
+        platform: s.platform,
+        title: s.content_title ?? 'Untitled',
+      })
+      byDay.set(dayLabel, items)
+    }
+    return Array.from(byDay.entries()).slice(0, 3).map(([day, items]) => ({
+      day,
+      items: items.slice(0, 3),
+    }))
+  })()
+
+  // ── Platform Performance — real post counts from stats.outputsByPlatform,
+  // mocked view counts + deltas + sparklines until we wire external analytics.
+  const platformPerf = (['tiktok', 'reels', 'shorts', 'linkedin'] as OutputPlatform[]).map(
+    (key, i) => {
+      const posts = stats?.outputsByPlatform?.[key] ?? 0
+      const mockViews = [12_400, 8_900, 6_200, 3_700][i]!
+      const mockDelta = [18, 11, -4, 7][i]!
+      const mockSpark = [
+        [4, 6, 5, 8, 10, 9, 12],
+        [3, 5, 4, 6, 7, 8, 9],
+        [6, 5, 4, 4, 3, 4, 4],
+        [2, 3, 3, 4, 5, 4, 5],
+      ][i]!
+      return {
+        key,
+        name: PLATFORM_LABELS[key] ?? key,
+        posts,
+        views: posts > 0 ? `${(mockViews / 1000).toFixed(1)}K` : '—',
+        delta: posts > 0 ? mockDelta : 0,
+        spark: mockSpark,
+      }
+    },
+  )
+
+  // ── Team activity — synthesized from real content + output timestamps.
+  const activity: Array<{
+    who: string
+    what: string
+    when: string
+    color: string
+  }> = []
+  const whoColors = ['#2A1A3D', '#0A66C2', '#A0530B', '#0F6B4D']
+  for (const c of stats?.recentContent.slice(0, 3) ?? []) {
+    activity.push({
+      who: firstName,
+      what: `imported "${c.title ?? 'Untitled'}"`,
+      when: formatRelative(c.created_at),
+      color: whoColors[0]!,
+    })
+  }
+  for (const o of recentOutputs.slice(0, 2)) {
+    activity.push({
+      who: 'AI',
+      what: `generated a ${PLATFORM_LABELS[o.platform as OutputPlatform] ?? o.platform} draft`,
+      when: formatRelative(o.created_at),
+      color: whoColors[1]!,
+    })
+  }
+  activity.sort((a, b) => relMinutes(a.when) - relMinutes(b.when))
+
+  // ── Integrations Health — AI providers that can drive generation.
+  const integrationRows = [
+    { key: 'openai', name: 'OpenAI', sub: 'GPT-4o · drafts + scripts' },
+    { key: 'anthropic', name: 'Anthropic', sub: 'Claude · long-form + hooks' },
+    { key: 'google', name: 'Google', sub: 'Gemini · low-cost fallback' },
+    { key: 'elevenlabs', name: 'ElevenLabs', sub: 'Voice clone · dubbing' },
+  ].map((r) => {
+    const connected = aiKeys.some((k) => k.provider === r.key)
+    return { ...r, ok: connected }
+  })
+  const integrationsNeedAttention = integrationRows.filter((r) => !r.ok && r.key === 'openai').length
+
+  const funnel = [
+    {
+      key: 'import',
+      label: 'Imported',
+      count: stats?.contentThisMonth ?? 0,
+      sub: 'this month',
+      tone: { bg: 'var(--lv2d-primary-soft)', fg: 'var(--lv2d-primary)' },
+      icon: <Sparkles className="h-[15px] w-[15px]" />,
+      href: workspace ? `/workspace/${workspace.id}/content/new` : '/dashboard',
+    },
+    {
+      key: 'process',
+      label: 'Processing',
+      count: processing ? 1 : 0,
+      sub: processing ? 'rendering' : 'idle',
+      tone: { bg: 'var(--lv2d-warn-soft)', fg: 'var(--lv2d-warn)' },
+      icon: <Zap className="h-[15px] w-[15px]" />,
+      pulse: Boolean(processing),
+      href:
+        processing && workspace
+          ? `/workspace/${workspace.id}/content/${processing.id}`
+          : workspace
+          ? `/workspace/${workspace.id}`
+          : '/dashboard',
+    },
+    {
+      key: 'review',
+      label: 'In review',
+      count: pendingReview,
+      sub: pendingReview > 0 ? 'awaiting you' : 'all clear',
+      tone: { bg: 'var(--lv2d-accent)', fg: 'var(--lv2d-accent-ink)' },
+      icon: <Check className="h-[15px] w-[15px]" />,
+      cta: pendingReview > 0,
+      href: workspace ? `/workspace/${workspace.id}/pipeline` : '/dashboard',
+    },
+    {
+      key: 'approved',
+      label: 'Approved',
+      count: approved,
+      sub: 'ready to ship',
+      tone: { bg: '#E0EDF7', fg: '#0A66C2' },
+      icon: <Calendar className="h-[15px] w-[15px]" />,
+      href: workspace ? `/workspace/${workspace.id}/schedule` : '/dashboard',
+    },
+    {
+      key: 'published',
+      label: 'Published',
+      count: exported,
+      sub: 'this month',
+      tone: { bg: 'var(--lv2d-success-soft)', fg: 'var(--lv2d-success)' },
+      icon: <Send className="h-[15px] w-[15px]" />,
+      href: '/analytics',
+    },
+  ]
+
+  const stateChip: Record<string, { label: string; bg: string; fg: string }> = {
+    draft: { label: 'Draft', bg: 'var(--lv2d-muted-2)', fg: 'var(--lv2d-fg-soft)' },
+    review: { label: 'Review', bg: 'var(--lv2d-warn-soft)', fg: 'var(--lv2d-warn)' },
+    approved: { label: 'Approved', bg: 'var(--lv2d-accent)', fg: 'var(--lv2d-accent-ink)' },
+    exported: { label: 'Published', bg: 'var(--lv2d-success-soft)', fg: 'var(--lv2d-success)' },
+  }
+
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
-
-      {/* ── Hero ──────────────────────────────────────────────────── */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            {greeting}, {firstName}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
-            {workspace?.name ? ` \u00b7 ${workspace.name}` : ''}
-          </p>
-        </div>
-        {workspace && (
-          <div className="flex items-center gap-2">
-            {isAgencyMode && (
-              <Link
-                href="/workspace/new?as=client"
-                className="group inline-flex h-10 items-center gap-2 rounded-xl border border-border/60 bg-card pl-4 pr-3 text-sm font-semibold text-foreground transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
-              >
-                <Users2 className="h-3.5 w-3.5" />
-                New client
-              </Link>
+    <>
+      <style dangerouslySetInnerHTML={{ __html: DASH_STYLES }} />
+      <div className="lv2-dash">
+        <div className="lv2d-fade-in mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-8">
+          {/* ── Hero ────────────────────────────────────────────── */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="lv2d-mono-label mb-1">
+                {new Date().toLocaleDateString(undefined, {
+                  weekday: 'long',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+                {workspace?.name ? ` · ${workspace.name}` : ''}
+              </p>
+              <h1 className="lv2d-display text-[44px] leading-[1.02]">
+                {greeting}, {firstName}.
+              </h1>
+              {hasData && stats && (
+                <p
+                  className="mt-2 max-w-xl text-sm"
+                  style={{ color: 'var(--lv2d-muted)' }}
+                >
+                  <b style={{ color: 'var(--lv2d-fg)' }}>
+                    {pendingReview} draft{pendingReview === 1 ? '' : 's'}
+                  </b>{' '}
+                  waiting for review
+                  {processing ? (
+                    <>
+                      {' '}
+                      and{' '}
+                      <b style={{ color: 'var(--lv2d-fg)' }}>1 clip</b> rendering right now
+                    </>
+                  ) : null}
+                  . Line up your week in about 4 minutes.
+                </p>
+              )}
+            </div>
+            {workspace && (
+              <div className="flex items-center gap-2">
+                {isAgencyMode && (
+                  <Link href="/workspace/new?as=client" className="lv2d-btn-ghost">
+                    <Users2 className="h-3.5 w-3.5" /> New client
+                  </Link>
+                )}
+                <Link
+                  href={`/workspace/${workspace.id}/schedule`}
+                  className="lv2d-btn-ghost"
+                >
+                  <Calendar className="h-3.5 w-3.5" /> Calendar
+                </Link>
+                <Link
+                  href={`/workspace/${workspace.id}/content/new`}
+                  className="lv2d-btn-accent"
+                >
+                  <span className="text-base leading-none">+</span> New content{' '}
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
             )}
-            <Link
-              href={`/workspace/${workspace.id}/content/new`}
-              className="group inline-flex h-10 items-center gap-2 rounded-xl bg-primary pl-4 pr-3 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/25"
-            >
-              <span className="text-lg leading-none">+</span>
-              New content
-              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-            </Link>
           </div>
-        )}
-      </div>
 
-      {workspace && (
-        <>
-          {/* ── Clients strip (Studio plan, multi-workspace only) ── */}
-          {isAgencyMode && otherWorkspaces.length > 0 && (
-            <div className="rounded-2xl border border-border/50 bg-card">
-              <div className="flex items-center justify-between border-b border-border/40 px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <Users2 className="h-3.5 w-3.5 text-primary" />
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Your clients
-                  </p>
-                  <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] font-bold tabular-nums text-muted-foreground">
-                    {workspaces.length}
-                  </span>
-                </div>
-                <Link
-                  href="/workspace/new?as=client"
-                  className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/10"
-                >
-                  Add client <ArrowUpRight className="h-3 w-3" />
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 gap-px bg-border/30 sm:grid-cols-3">
-                {/* Current workspace pinned first so agency owners always
-                    have a clear "here's where I am" anchor. */}
-                <Link
-                  href={`/workspace/${workspace.id}`}
-                  className="flex items-center gap-2.5 bg-primary/[0.04] px-3.5 py-3 transition-colors hover:bg-primary/[0.08]"
-                >
-                  <div className="h-2 w-2 shrink-0 rounded-full bg-primary" />
-                  <span className="truncate text-xs font-semibold">{workspace.name}</span>
-                  <span className="ml-auto font-mono text-[9px] uppercase tracking-wider text-primary">Now</span>
-                </Link>
-                {otherWorkspaces.map((w) => (
-                  <Link
-                    key={w.id}
-                    href={`/workspace/${w.id}`}
-                    className="flex items-center gap-2.5 bg-card px-3.5 py-3 transition-colors hover:bg-primary/[0.04]"
+          {workspace && (
+            <>
+              {/* ── Clients strip (Agency) ──────────────────────── */}
+              {isAgencyMode && otherWorkspaces.length > 0 && (
+                <div className="lv2d-card lv2d-ring-soft overflow-hidden">
+                  <div
+                    className="flex items-center justify-between px-5 py-3"
+                    style={{ borderBottom: '1px solid var(--lv2d-border)' }}
                   >
-                    <div className="h-2 w-2 shrink-0 rounded-full bg-muted-foreground/30" />
-                    <span className="truncate text-xs font-medium">{w.name}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── Setup checklist ────────────────────────────────────── */}
-          {showChecklist && (
-            <SetupChecklist
-              hasAiKey={hasLlm}
-              contentCount={stats?.totalContent ?? 0}
-              outputCount={stats?.totalOutputs ?? 0}
-              hasApprovedOutput={(stats?.approvedOutputs ?? 0) > 0}
-              workspaceId={workspace.id}
-              firstReadyContentId={readyContent?.id}
-            />
-          )}
-
-          {/* ── Smart Suggestions ─────────────────────────────────── */}
-          {suggestions.length > 0 && <SmartSuggestions suggestions={suggestions} />}
-
-          {/* ── Next Action ───────────────────────────────────────── */}
-          {processing && (
-            <div className="flex items-center gap-4 rounded-2xl border border-amber-200/60 bg-gradient-to-r from-amber-50/50 to-background p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
-                <Clock className="h-5 w-5 animate-pulse" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold">&ldquo;{processing.title ?? 'Content'}&rdquo; is processing</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">Usually takes 1-3 min.</p>
-              </div>
-              <Link href={`/workspace/${workspace.id}/content/${processing.id}`} className="shrink-0 rounded-lg bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-800 transition-colors hover:bg-amber-200">
-                Check status &rarr;
-              </Link>
-            </div>
-          )}
-          {!processing && pendingReview > 0 && (
-            <Link
-              href={`/workspace/${workspace.id}/pipeline`}
-              className="group flex items-center gap-4 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/[0.06] via-background to-background p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10"
-            >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <CheckCircle2 className="h-5 w-5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold">{pendingReview} draft{pendingReview !== 1 ? 's' : ''} ready to review</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">Pick your favorites and approve them.</p>
-              </div>
-              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20">
-                Review <ArrowRight className="h-3.5 w-3.5" />
-              </span>
-            </Link>
-          )}
-          {!processing && pendingReview === 0 && readyContent && (
-            <Link
-              href={`/workspace/${workspace.id}/content/${readyContent.id}/outputs`}
-              className="group flex items-center gap-4 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/[0.06] via-background to-background p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10"
-            >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <Wand2 className="h-5 w-5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold">&ldquo;{readyContent.title ?? 'Content'}&rdquo; is ready</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">Turn it into TikTok, Reels, Shorts &amp; LinkedIn posts.</p>
-              </div>
-              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20">
-                Make posts <ArrowRight className="h-3.5 w-3.5" />
-              </span>
-            </Link>
-          )}
-
-          {/* ── Stats ─────────────────────────────────────────────── */}
-          {hasData && stats && (
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              {[
-                { key: 'content', label: 'Videos', value: stats.totalContent, thisMonth: stats.contentThisMonth, lastMonth: stats.contentLastMonth, icon: Video, spark: stats.contentByDay, href: `/workspace/${workspace.id}`, color: 'text-violet-600 bg-violet-50' },
-                { key: 'outputs', label: 'Posts', value: stats.totalOutputs, thisMonth: stats.outputsThisMonth, lastMonth: stats.outputsLastMonth, icon: Layers, spark: stats.outputsByDay, href: `/workspace/${workspace.id}/pipeline`, color: 'text-blue-600 bg-blue-50' },
-                { key: 'approved', label: 'Approved', value: stats.approvedOutputs, thisMonth: 0, lastMonth: 0, icon: CheckCircle2, spark: null, href: `/workspace/${workspace.id}/pipeline`, color: 'text-emerald-600 bg-emerald-50' },
-                { key: 'starred', label: 'Starred', value: stats.starredOutputs, thisMonth: 0, lastMonth: 0, icon: Star, spark: null, href: `/workspace/${workspace.id}/pipeline`, color: 'text-amber-600 bg-amber-50' },
-              ].map((m) => (
-                <Link key={m.key} href={m.href} className="group flex flex-col gap-3 rounded-2xl border border-border/50 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/[0.06]">
-                  <div className="flex items-center justify-between">
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${m.color}`}><m.icon className="h-4 w-4" /></div>
-                    {(m.thisMonth > 0 || m.lastMonth > 0) && <DeltaBadge current={m.thisMonth} previous={m.lastMonth} />}
-                  </div>
-                  <div>
-                    <span className="font-mono text-3xl font-bold tabular-nums tracking-tight">{m.value}</span>
-                    <p className="mt-0.5 text-[11px] font-medium text-muted-foreground">{m.label}</p>
-                  </div>
-                  {m.spark ? <Sparkline data={m.spark} width={120} height={24} variant="bars" label={`${m.label} last 7 days`} /> : <div className="h-[24px]" />}
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {/* ── Quick Access + Usage ──────────────────────────────── */}
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="rounded-2xl border border-border/50 bg-card">
-              <div className="border-b border-border/40 px-4 py-2.5">
-                <p className="text-xs font-bold">Quick access</p>
-              </div>
-              <div className="grid grid-cols-2 gap-px bg-border/30">
-                {(isAgencyMode
-                  ? [
-                      // Studio ICP: managing clients + team comes before creator-specific tools.
-                      { href: `/workspace/${workspace.id}/members`, label: 'Team', icon: Users2, color: 'text-violet-500' },
-                      { href: '/settings/integrations', label: 'Integrations', icon: Plug, color: 'text-pink-500' },
-                      { href: '/settings/brand-voice', label: 'Brand Voice', icon: MessageSquare, color: 'text-blue-500' },
-                      { href: `/workspace/${workspace.id}/schedule?view=calendar`, label: 'Calendar', icon: Calendar, color: 'text-amber-500' },
-                    ]
-                  : [
-                      { href: '/settings/integrations', label: 'Integrations', icon: Plug, color: 'text-violet-500' },
-                      { href: '/settings/brand-voice', label: 'Brand Voice', icon: MessageSquare, color: 'text-pink-500' },
-                      { href: '/settings/templates', label: 'Templates', icon: FileText, color: 'text-blue-500' },
-                      { href: `/workspace/${workspace.id}/schedule?view=calendar`, label: 'Calendar', icon: Calendar, color: 'text-amber-500' },
-                    ]
-                ).map((a) => (
-                  <Link key={a.href} href={a.href} className="flex items-center gap-2.5 bg-card px-3.5 py-3 transition-colors hover:bg-primary/[0.04]">
-                    <a.icon className={`h-3.5 w-3.5 shrink-0 ${a.color}`} />
-                    <span className="truncate text-xs font-medium">{a.label}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {usage && (
-              <div className="rounded-2xl border border-border/50 bg-card">
-                <div className="flex items-center justify-between border-b border-border/40 px-4 py-2.5">
-                  <p className="text-xs font-bold">Monthly usage</p>
-                  <span className="font-mono text-[10px] text-muted-foreground/50">
-                    {new Date().toLocaleDateString(undefined, { month: 'short', year: 'numeric' }).toUpperCase()}
-                  </span>
-                </div>
-                <div className="space-y-4 p-4">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold">Videos</span>
-                      <span className="font-mono text-[10px] font-bold tabular-nums text-muted-foreground">
-                        {usage.contentItemsThisMonth}{planDef.limits.contentItemsPerMonth !== -1 ? ` / ${planDef.limits.contentItemsPerMonth}` : ' / \u221e'}
+                    <div className="flex items-center gap-2">
+                      <Users2 className="h-3.5 w-3.5" style={{ color: 'var(--lv2d-primary)' }} />
+                      <span className="lv2d-mono-label">Your clients</span>
+                      <span
+                        className="lv2d-mono lv2d-tabular rounded-full px-2 py-0.5 text-[10px] font-bold"
+                        style={{ background: 'var(--lv2d-muted-2)', color: 'var(--lv2d-muted)' }}
+                      >
+                        {workspaces.length}
                       </span>
                     </div>
-                    <UsageBar used={usage.contentItemsThisMonth} limit={planDef.limits.contentItemsPerMonth} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold">Posts</span>
-                      <span className="font-mono text-[10px] font-bold tabular-nums text-muted-foreground">
-                        {usage.outputsThisMonth}{planDef.limits.outputsPerMonth !== -1 ? ` / ${planDef.limits.outputsPerMonth}` : ' / \u221e'}
-                      </span>
-                    </div>
-                    <UsageBar used={usage.outputsThisMonth} limit={planDef.limits.outputsPerMonth} />
-                  </div>
-                  {plan === 'free' && (
-                    <Link href="/billing" className="group flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/[0.04] py-2 text-[11px] font-semibold text-primary transition-all hover:bg-primary/10">
-                      <Zap className="h-3 w-3" />
-                      Upgrade
-                      <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                    <Link
+                      href="/workspace/new?as=client"
+                      className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold transition-colors hover:bg-black/[0.04]"
+                      style={{ color: 'var(--lv2d-primary)' }}
+                    >
+                      Add client <ArrowUpRight className="h-3 w-3" />
                     </Link>
+                  </div>
+                  <div
+                    className="grid grid-cols-2 gap-px sm:grid-cols-3"
+                    style={{ background: 'var(--lv2d-border)' }}
+                  >
+                    <Link
+                      href={`/workspace/${workspace.id}`}
+                      className="flex items-center gap-2.5 px-3.5 py-3 transition-colors"
+                      style={{ background: 'var(--lv2d-primary-soft)' }}
+                    >
+                      <div
+                        className="h-2 w-2 shrink-0 rounded-full"
+                        style={{ background: 'var(--lv2d-primary)' }}
+                      />
+                      <span className="truncate text-xs font-semibold">{workspace.name}</span>
+                      <span
+                        className="lv2d-mono ml-auto text-[9px] uppercase tracking-wider"
+                        style={{ color: 'var(--lv2d-primary)' }}
+                      >
+                        Now
+                      </span>
+                    </Link>
+                    {otherWorkspaces.map((w) => (
+                      <Link
+                        key={w.id}
+                        href={`/workspace/${w.id}`}
+                        className="flex items-center gap-2.5 px-3.5 py-3 transition-colors hover:bg-black/[0.02]"
+                        style={{ background: 'var(--lv2d-card)' }}
+                      >
+                        <div
+                          className="h-2 w-2 shrink-0 rounded-full"
+                          style={{ background: 'var(--lv2d-muted)' }}
+                        />
+                        <span className="truncate text-xs font-medium">{w.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Setup checklist ─────────────────────────────── */}
+              {showChecklist && (
+                <SetupChecklist
+                  hasAiKey={hasLlm}
+                  contentCount={stats?.totalContent ?? 0}
+                  outputCount={stats?.totalOutputs ?? 0}
+                  hasApprovedOutput={(stats?.approvedOutputs ?? 0) > 0}
+                  workspaceId={workspace.id}
+                  firstReadyContentId={readyContent?.id}
+                />
+              )}
+
+              {/* ── Smart Suggestions ───────────────────────────── */}
+              {suggestions.length > 0 && <SmartSuggestions suggestions={suggestions} />}
+
+              {/* ── Funnel ──────────────────────────────────────── */}
+              {hasData && (
+                <section className="lv2d-card lv2d-ring-soft overflow-hidden">
+                  <div
+                    className="flex items-center justify-between px-5 py-3"
+                    style={{ borderBottom: '1px solid var(--lv2d-border)' }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="lv2d-mono-label">Your pipeline</span>
+                      <span
+                        className="lv2d-chip"
+                        style={{
+                          background: 'var(--lv2d-success-soft)',
+                          color: 'var(--lv2d-success)',
+                        }}
+                      >
+                        <span
+                          className="lv2d-pulse h-1.5 w-1.5 rounded-full"
+                          style={{ background: 'var(--lv2d-success)' }}
+                        />{' '}
+                        live
+                      </span>
+                    </div>
+                    <Link
+                      href={`/workspace/${workspace.id}/pipeline`}
+                      className="text-[11px] font-semibold hover:underline"
+                      style={{ color: 'var(--lv2d-primary)' }}
+                    >
+                      Open drafts board →
+                    </Link>
+                  </div>
+                  <div className="p-5">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+                      {funnel.map((s, i) => (
+                        <div key={s.key} className="relative">
+                          {i < funnel.length - 1 && (
+                            <div className="lv2d-step-line absolute right-[-10px] top-[34px] hidden w-[20px] md:block" />
+                          )}
+                          <Link
+                            href={s.href}
+                            className={`lv2d-funnel-step ${s.cta ? 'lv2d-funnel-cta' : ''} block`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span
+                                className={`inline-flex h-8 w-8 items-center justify-center rounded-lg ${s.pulse ? 'lv2d-pulse' : ''}`}
+                                style={{ background: s.tone.bg, color: s.tone.fg }}
+                              >
+                                {s.icon}
+                              </span>
+                              {s.cta && (
+                                <span
+                                  className="lv2d-chip"
+                                  style={{
+                                    background: 'var(--lv2d-primary)',
+                                    color: 'var(--lv2d-accent)',
+                                  }}
+                                >
+                                  action
+                                </span>
+                              )}
+                            </div>
+                            <div className="mt-3 flex items-baseline gap-1.5">
+                              <span className="lv2d-sans-d lv2d-tabular text-[30px] font-bold leading-none">
+                                {s.count}
+                              </span>
+                            </div>
+                            <p className="mt-0.5 text-[12px] font-semibold">{s.label}</p>
+                            <p className="text-[11px]" style={{ color: 'var(--lv2d-muted)' }}>
+                              {s.sub}
+                            </p>
+                            {s.pulse && (
+                              <div
+                                className="lv2d-shimmer-wrap mt-2 h-1 w-full rounded-full"
+                                style={{ background: 'var(--lv2d-warn-soft)' }}
+                              >
+                                <div className="lv2d-shimmer-bar" />
+                              </div>
+                            )}
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* ── Next Action ─────────────────────────────────── */}
+              {processing && (
+                <Link
+                  href={`/workspace/${workspace.id}/content/${processing.id}`}
+                  className="lv2d-card flex items-center gap-4 p-4 transition hover:-translate-y-0.5"
+                  style={{ borderColor: 'var(--lv2d-border)' }}
+                >
+                  <div
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                    style={{
+                      background: 'var(--lv2d-warn-soft)',
+                      color: 'var(--lv2d-warn)',
+                    }}
+                  >
+                    <Clock className="h-5 w-5 animate-pulse" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-[14px]">
+                      &ldquo;{processing.title ?? 'Content'}&rdquo; is processing
+                    </p>
+                    <p
+                      className="mt-0.5 text-[12.5px]"
+                      style={{ color: 'var(--lv2d-muted)' }}
+                    >
+                      Usually takes 1–3 min.
+                    </p>
+                  </div>
+                  <span
+                    className="lv2d-chip shrink-0"
+                    style={{ background: 'var(--lv2d-warn-soft)', color: 'var(--lv2d-warn)' }}
+                  >
+                    Check status →
+                  </span>
+                </Link>
+              )}
+              {!processing && pendingReview > 0 && (
+                <Link
+                  href={`/workspace/${workspace.id}/pipeline`}
+                  className="lv2d-card group flex items-center gap-4 p-4 transition hover:-translate-y-0.5 hover:border-[var(--lv2d-border-strong)]"
+                >
+                  <div
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                    style={{
+                      background: 'var(--lv2d-bg-2)',
+                      color: 'var(--lv2d-primary)',
+                      border: '1px solid var(--lv2d-border)',
+                    }}
+                  >
+                    <CheckCircle2 className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-[14px]">
+                      {pendingReview} draft{pendingReview === 1 ? '' : 's'} ready to review
+                    </p>
+                    <p
+                      className="mt-0.5 text-[12.5px]"
+                      style={{ color: 'var(--lv2d-muted)' }}
+                    >
+                      Approve your favorites so the scheduler can line them up.
+                    </p>
+                  </div>
+                  <span className="lv2d-btn-primary shrink-0">
+                    Start reviewing <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
+                </Link>
+              )}
+              {!processing && pendingReview === 0 && readyContent && (
+                <Link
+                  href={`/workspace/${workspace.id}/content/${readyContent.id}/outputs`}
+                  className="lv2d-card group flex items-center gap-4 p-4 transition hover:-translate-y-0.5 hover:border-[var(--lv2d-border-strong)]"
+                >
+                  <div
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                    style={{
+                      background: 'var(--lv2d-bg-2)',
+                      color: 'var(--lv2d-primary)',
+                      border: '1px solid var(--lv2d-border)',
+                    }}
+                  >
+                    <Wand2 className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-[14px]">
+                      &ldquo;{readyContent.title ?? 'Content'}&rdquo; is ready
+                    </p>
+                    <p
+                      className="mt-0.5 text-[12.5px]"
+                      style={{ color: 'var(--lv2d-muted)' }}
+                    >
+                      Turn it into platform-ready drafts.
+                    </p>
+                  </div>
+                  <span className="lv2d-btn-primary shrink-0">
+                    Make posts <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
+                </Link>
+              )}
+
+              {/* ── Stats ───────────────────────────────────────── */}
+              {hasData && stats && (
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                  {[
+                    {
+                      key: 'content',
+                      label: 'Videos',
+                      value: stats.totalContent,
+                      thisMonth: stats.contentThisMonth,
+                      lastMonth: stats.contentLastMonth,
+                      icon: Video,
+                      spark: stats.contentByDay,
+                      href: `/workspace/${workspace.id}`,
+                      tone: {
+                        bg: 'var(--lv2d-primary-soft)',
+                        fg: 'var(--lv2d-primary)',
+                      },
+                    },
+                    {
+                      key: 'outputs',
+                      label: 'Posts',
+                      value: stats.totalOutputs,
+                      thisMonth: stats.outputsThisMonth,
+                      lastMonth: stats.outputsLastMonth,
+                      icon: Layers,
+                      spark: stats.outputsByDay,
+                      href: `/workspace/${workspace.id}/pipeline`,
+                      tone: {
+                        bg: 'var(--lv2d-primary-soft)',
+                        fg: 'var(--lv2d-primary)',
+                      },
+                    },
+                    {
+                      key: 'approved',
+                      label: 'Approved',
+                      value: stats.approvedOutputs,
+                      thisMonth: 0,
+                      lastMonth: 0,
+                      icon: CheckCircle2,
+                      spark: null,
+                      href: `/workspace/${workspace.id}/pipeline`,
+                      tone: {
+                        bg: 'var(--lv2d-primary-soft)',
+                        fg: 'var(--lv2d-primary)',
+                      },
+                    },
+                    {
+                      key: 'starred',
+                      label: 'Starred',
+                      value: stats.starredOutputs,
+                      thisMonth: 0,
+                      lastMonth: 0,
+                      icon: Star,
+                      spark: null,
+                      href: `/workspace/${workspace.id}/pipeline`,
+                      tone: {
+                        bg: 'var(--lv2d-accent)',
+                        fg: 'var(--lv2d-accent-ink)',
+                      },
+                    },
+                  ].map((m) => (
+                    <Link
+                      key={m.key}
+                      href={m.href}
+                      className="lv2d-card lv2d-ring-soft group flex flex-col gap-3 p-4 transition hover:-translate-y-0.5 hover:border-[var(--lv2d-border-strong)]"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span
+                          className="flex h-8 w-8 items-center justify-center rounded-lg"
+                          style={{ background: m.tone.bg, color: m.tone.fg }}
+                        >
+                          <m.icon className="h-[15px] w-[15px]" />
+                        </span>
+                        {(m.thisMonth > 0 || m.lastMonth > 0) && (
+                          <DeltaChip current={m.thisMonth} previous={m.lastMonth} />
+                        )}
+                      </div>
+                      <div>
+                        <span className="lv2d-sans-d lv2d-tabular text-[30px] font-bold leading-none">
+                          {m.value}
+                        </span>
+                        <p className="lv2d-mono-label mt-1" style={{ fontSize: 10 }}>
+                          {m.label}
+                        </p>
+                      </div>
+                      {m.spark ? (
+                        <Sparkline
+                          data={m.spark}
+                          width={130}
+                          height={26}
+                          variant="bars"
+                          label={`${m.label} last 7 days`}
+                        />
+                      ) : (
+                        <div className="h-[26px]" />
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* ── Recent drafts + Sidebar ─────────────────────── */}
+              <div className="grid gap-4 lg:grid-cols-3">
+                <div className="space-y-4 lg:col-span-2">
+                  {recentOutputs.length > 0 && (
+                    <section className="lv2d-card lv2d-ring-soft">
+                      <div
+                        className="flex items-center justify-between px-5 py-3"
+                        style={{ borderBottom: '1px solid var(--lv2d-border)' }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="lv2d-mono-label">Recent drafts</span>
+                        </div>
+                        <Link
+                          href={`/workspace/${workspace.id}/pipeline`}
+                          className="text-[11px] font-semibold hover:underline"
+                          style={{ color: 'var(--lv2d-primary)' }}
+                        >
+                          All drafts →
+                        </Link>
+                      </div>
+                      <div className="lv2d-divide">
+                        {recentOutputs.map((d) => {
+                          const chip = stateChip[d.state] ?? stateChip.draft!
+                          return (
+                            <Link
+                              key={d.id}
+                              href={`/workspace/${workspace.id}/pipeline`}
+                              className="lv2d-row-hover flex items-center gap-3 px-4 py-3"
+                            >
+                              <div className="lv2d-thumb h-12 w-[72px] shrink-0" />
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-[13px] font-semibold">{d.title}</p>
+                                <div
+                                  className="mt-1 flex items-center gap-2 text-[11px]"
+                                  style={{ color: 'var(--lv2d-muted)' }}
+                                >
+                                  <span
+                                    className="lv2d-chip"
+                                    style={{ background: chip.bg, color: chip.fg }}
+                                  >
+                                    {chip.label}
+                                  </span>
+                                  <span>·</span>
+                                  <span className="lv2d-mono">
+                                    {PLATFORM_LABELS[d.platform as keyof typeof PLATFORM_LABELS] ??
+                                      d.platform}
+                                  </span>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                className="h-7 w-7 rounded-md"
+                                style={{ color: 'var(--lv2d-muted)' }}
+                                aria-label="More"
+                              >
+                                <MoreHorizontal className="mx-auto h-3.5 w-3.5" />
+                              </button>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Platform performance */}
+                  {hasData && (
+                    <section className="lv2d-card lv2d-ring-soft">
+                      <div
+                        className="flex items-center justify-between px-5 py-3"
+                        style={{ borderBottom: '1px solid var(--lv2d-border)' }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-3.5 w-3.5" style={{ color: 'var(--lv2d-primary)' }} />
+                          <span className="lv2d-mono-label">Platform performance · 7d</span>
+                        </div>
+                        <Link
+                          href="/analytics"
+                          className="text-[11px] font-semibold hover:underline"
+                          style={{ color: 'var(--lv2d-primary)' }}
+                        >
+                          Analytics →
+                        </Link>
+                      </div>
+                      <div className="lv2d-divide">
+                        {platformPerf.map((p) => (
+                          <div key={p.key} className="flex items-center gap-3 px-5 py-3">
+                            <PlatformDot platform={p.key} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[13px] font-semibold">{p.name}</p>
+                              <p
+                                className="lv2d-mono lv2d-tabular text-[11px]"
+                                style={{ color: 'var(--lv2d-muted)' }}
+                              >
+                                {p.views} views · {p.posts} posts
+                              </p>
+                            </div>
+                            <Sparkline
+                              data={p.spark}
+                              width={80}
+                              height={22}
+                              variant="line"
+                              color={p.delta >= 0 ? 'var(--lv2d-success)' : 'var(--lv2d-danger)'}
+                              label={`${p.name} trend`}
+                            />
+                            {p.posts > 0 && p.delta !== 0 ? (
+                              <span
+                                className="lv2d-chip"
+                                style={
+                                  p.delta > 0
+                                    ? { background: 'var(--lv2d-success-soft)', color: 'var(--lv2d-success)' }
+                                    : { background: '#F8E3E0', color: 'var(--lv2d-danger)' }
+                                }
+                              >
+                                {p.delta > 0 ? (
+                                  <TrendingUp className="h-2.5 w-2.5" />
+                                ) : (
+                                  <TrendingDown className="h-2.5 w-2.5" />
+                                )}
+                                {p.delta > 0 ? '+' : ''}
+                                {p.delta}%
+                              </span>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Quick access */}
+                  <section className="lv2d-card lv2d-ring-soft">
+                    <div
+                      className="px-4 py-2.5"
+                      style={{ borderBottom: '1px solid var(--lv2d-border)' }}
+                    >
+                      <p className="text-xs font-bold">Quick access</p>
+                    </div>
+                    <div
+                      className="grid grid-cols-2 gap-px sm:grid-cols-4"
+                      style={{ background: 'var(--lv2d-border)' }}
+                    >
+                      {(isAgencyMode
+                        ? [
+                            {
+                              href: `/workspace/${workspace.id}/members`,
+                              label: 'Team',
+                              icon: Users2,
+                            },
+                            {
+                              href: '/settings/integrations',
+                              label: 'Integrations',
+                              icon: Plug,
+                            },
+                            {
+                              href: '/settings/brand-voice',
+                              label: 'Brand Voice',
+                              icon: MessageSquare,
+                            },
+                            {
+                              href: `/workspace/${workspace.id}/schedule?view=calendar`,
+                              label: 'Calendar',
+                              icon: Calendar,
+                            },
+                          ]
+                        : [
+                            {
+                              href: '/settings/integrations',
+                              label: 'Integrations',
+                              icon: Plug,
+                            },
+                            {
+                              href: '/settings/brand-voice',
+                              label: 'Brand Voice',
+                              icon: MessageSquare,
+                            },
+                            {
+                              href: '/settings/templates',
+                              label: 'Templates',
+                              icon: FileText,
+                            },
+                            {
+                              href: `/workspace/${workspace.id}/schedule?view=calendar`,
+                              label: 'Calendar',
+                              icon: Calendar,
+                            },
+                          ]
+                      ).map((a) => (
+                        <Link
+                          key={a.href}
+                          href={a.href}
+                          className="flex items-center gap-2.5 px-3.5 py-3 transition-colors"
+                          style={{ background: 'var(--lv2d-card)' }}
+                        >
+                          <a.icon
+                            className="h-3.5 w-3.5 shrink-0"
+                            style={{ color: 'var(--lv2d-primary)' }}
+                          />
+                          <span className="truncate text-xs font-medium">{a.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Upcoming schedule */}
+                  {upcoming.length > 0 && (
+                    <section className="lv2d-card lv2d-ring-soft">
+                      <div
+                        className="flex items-center justify-between px-5 py-3"
+                        style={{ borderBottom: '1px solid var(--lv2d-border)' }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-3.5 w-3.5" style={{ color: 'var(--lv2d-primary)' }} />
+                          <span className="lv2d-mono-label">Upcoming</span>
+                        </div>
+                        <Link
+                          href={`/workspace/${workspace.id}/schedule?view=calendar`}
+                          className="text-[11px] font-semibold hover:underline"
+                          style={{ color: 'var(--lv2d-primary)' }}
+                        >
+                          Calendar →
+                        </Link>
+                      </div>
+                      <div className="lv2d-divide">
+                        {upcoming.map((day) => (
+                          <div key={day.day} className="px-5 py-3">
+                            <p
+                              className="mb-2 text-[11px] font-bold"
+                              style={{ color: 'var(--lv2d-muted)' }}
+                            >
+                              {day.day}
+                            </p>
+                            <div className="space-y-1.5">
+                              {day.items.map((it, i) => (
+                                <div key={i} className="flex items-center gap-3 text-[12px]">
+                                  <span
+                                    className="lv2d-mono lv2d-tabular w-[62px] text-[11px]"
+                                    style={{ color: 'var(--lv2d-muted)' }}
+                                  >
+                                    {it.time}
+                                  </span>
+                                  <PlatformDot platform={it.platform} />
+                                  <span className="flex-1 truncate">{it.title}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div
+                        className="flex items-center justify-between px-5 py-3"
+                        style={{ borderTop: '1px solid var(--lv2d-border)' }}
+                      >
+                        <span className="text-[11px]" style={{ color: 'var(--lv2d-muted)' }}>
+                          {scheduled.length} scheduled this week
+                        </span>
+                        <Link
+                          href={`/workspace/${workspace.id}/schedule`}
+                          className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold transition-colors hover:bg-black/[0.04]"
+                          style={{ color: 'var(--lv2d-muted)' }}
+                        >
+                          <span className="text-sm leading-none">+</span> Schedule post
+                        </Link>
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Brand voice */}
+                  <section className="lv2d-card lv2d-ring-soft p-5">
+                    <div className="mb-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare
+                          className="h-3.5 w-3.5"
+                          style={{ color: 'var(--lv2d-primary)' }}
+                        />
+                        <span className="lv2d-mono-label">Brand voice</span>
+                      </div>
+                      <Link
+                        href="/settings/brand-voice"
+                        className="text-[11px] font-semibold hover:underline"
+                        style={{ color: 'var(--lv2d-primary)' }}
+                      >
+                        Tune →
+                      </Link>
+                    </div>
+                    {brandVoice ? (
+                      <div className="flex items-center gap-4">
+                        <div
+                          className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full"
+                          style={{
+                            background: `conic-gradient(var(--lv2d-primary) ${bvScore * 3.6}deg, var(--lv2d-muted-2) 0deg)`,
+                          }}
+                        >
+                          <div
+                            className="flex h-16 w-16 flex-col items-center justify-center rounded-full"
+                            style={{ background: 'var(--lv2d-card)' }}
+                          >
+                            <span className="lv2d-sans-d lv2d-tabular text-[20px] font-bold leading-none">
+                              {bvScore}
+                            </span>
+                            <span
+                              className="lv2d-mono mt-0.5 text-[8px]"
+                              style={{ color: 'var(--lv2d-muted)' }}
+                            >
+                              ON BRAND
+                            </span>
+                          </div>
+                        </div>
+                        <div className="min-w-0 flex-1 space-y-2">
+                          {bvMetrics.map((r) => (
+                            <div key={r.label}>
+                              <div className="flex items-center justify-between text-[11px]">
+                                <span className="font-semibold">{r.label}</span>
+                                <span
+                                  className="lv2d-mono lv2d-tabular"
+                                  style={{ color: 'var(--lv2d-muted)' }}
+                                >
+                                  {r.value}%
+                                </span>
+                              </div>
+                              <div
+                                className="mt-1 h-1.5 w-full overflow-hidden rounded-full"
+                                style={{ background: 'var(--lv2d-muted-2)' }}
+                              >
+                                <div
+                                  className="h-full rounded-full"
+                                  style={{
+                                    width: `${r.value}%`,
+                                    background: 'var(--lv2d-primary)',
+                                    transition: 'width .9s cubic-bezier(.2,.8,.2,1)',
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-[12px]" style={{ color: 'var(--lv2d-muted)' }}>
+                          No brand voice set yet. Clipflow uses a neutral tone by default.
+                        </p>
+                        <Link
+                          href="/settings/brand-voice"
+                          className="lv2d-btn-ghost mt-3 w-full justify-center"
+                        >
+                          Set up voice <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      </div>
+                    )}
+                  </section>
+
+                  {/* Usage */}
+                  {usage && (
+                    <section className="lv2d-card lv2d-ring-soft p-5">
+                      <div className="mb-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Zap
+                            className="h-3.5 w-3.5"
+                            style={{ color: 'var(--lv2d-primary)' }}
+                          />
+                          <span className="lv2d-mono-label">Usage · {planDef.name}</span>
+                        </div>
+                        <span
+                          className="lv2d-mono text-[10px]"
+                          style={{ color: 'var(--lv2d-muted)' }}
+                        >
+                          {new Date()
+                            .toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+                            .toUpperCase()}
+                        </span>
+                      </div>
+                      {[
+                        {
+                          label: 'Videos',
+                          used: usage.contentItemsThisMonth,
+                          max: planDef.limits.contentItemsPerMonth,
+                        },
+                        {
+                          label: 'Posts',
+                          used: usage.outputsThisMonth,
+                          max: planDef.limits.outputsPerMonth,
+                        },
+                      ].map((u) => (
+                        <div key={u.label} className="mb-3 last:mb-0">
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="font-semibold">{u.label}</span>
+                            <span
+                              className="lv2d-mono lv2d-tabular"
+                              style={{ color: 'var(--lv2d-muted)' }}
+                            >
+                              {u.used}
+                              {u.max !== -1 ? ` / ${u.max}` : ' / ∞'}
+                            </span>
+                          </div>
+                          <div className="mt-1">
+                            <UsageBar used={u.used} limit={u.max} />
+                          </div>
+                        </div>
+                      ))}
+                      {plan === 'free' && (
+                        <Link
+                          href="/billing"
+                          className="lv2d-btn-primary mt-2 w-full justify-center"
+                        >
+                          <Zap className="h-3 w-3" /> Upgrade <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      )}
+                    </section>
                   )}
                 </div>
               </div>
-            )}
-          </div>
-        </>
-      )}
-    </div>
+
+              {/* ── Integrations + Activity ─────────────────────── */}
+              <div className="grid gap-4 lg:grid-cols-2">
+                <section className="lv2d-card lv2d-ring-soft">
+                  <div
+                    className="flex items-center justify-between px-5 py-3"
+                    style={{ borderBottom: '1px solid var(--lv2d-border)' }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Plug className="h-3.5 w-3.5" style={{ color: 'var(--lv2d-primary)' }} />
+                      <span className="lv2d-mono-label">Integrations</span>
+                    </div>
+                    {integrationsNeedAttention > 0 ? (
+                      <span
+                        className="lv2d-chip"
+                        style={{ background: 'var(--lv2d-warn-soft)', color: 'var(--lv2d-warn)' }}
+                      >
+                        needs attention
+                      </span>
+                    ) : (
+                      <Link
+                        href="/settings/ai-keys"
+                        className="text-[11px] font-semibold hover:underline"
+                        style={{ color: 'var(--lv2d-primary)' }}
+                      >
+                        Manage →
+                      </Link>
+                    )}
+                  </div>
+                  <div className="lv2d-divide">
+                    {integrationRows.map((it) => (
+                      <div key={it.key} className="flex items-center gap-3 px-5 py-3">
+                        <span
+                          className={`h-2 w-2 rounded-full ${it.ok ? '' : 'lv2d-pulse'}`}
+                          style={{
+                            background: it.ok ? 'var(--lv2d-success)' : 'var(--lv2d-warn)',
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-semibold">{it.name}</p>
+                          <p
+                            className="truncate text-[11px]"
+                            style={{ color: 'var(--lv2d-muted)' }}
+                          >
+                            {it.sub}
+                          </p>
+                        </div>
+                        {it.ok ? (
+                          <span
+                            className="lv2d-chip"
+                            style={{
+                              background: 'var(--lv2d-success-soft)',
+                              color: 'var(--lv2d-success)',
+                            }}
+                          >
+                            connected
+                          </span>
+                        ) : (
+                          <Link
+                            href="/settings/ai-keys"
+                            className="lv2d-chip"
+                            style={{ background: 'var(--lv2d-warn)', color: 'white' }}
+                          >
+                            connect →
+                          </Link>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                {activity.length > 0 && (
+                  <section className="lv2d-card lv2d-ring-soft">
+                    <div
+                      className="flex items-center justify-between px-5 py-3"
+                      style={{ borderBottom: '1px solid var(--lv2d-border)' }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Users2 className="h-3.5 w-3.5" style={{ color: 'var(--lv2d-primary)' }} />
+                        <span className="lv2d-mono-label">Recent activity</span>
+                      </div>
+                    </div>
+                    <ul className="lv2d-divide">
+                      {activity.slice(0, 5).map((a, i) => (
+                        <li
+                          key={i}
+                          className="flex items-center gap-3 px-5 py-2.5 text-[12.5px]"
+                        >
+                          <span
+                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                            style={{ background: a.color }}
+                          >
+                            {a.who[0]}
+                          </span>
+                          <span className="flex-1">
+                            <b>{a.who}</b>{' '}
+                            <span style={{ color: 'var(--lv2d-muted)' }}>{a.what}</span>
+                          </span>
+                          <span
+                            className="lv2d-mono text-[10px]"
+                            style={{ color: 'var(--lv2d-muted)' }}
+                          >
+                            {a.when}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </>
   )
 }
