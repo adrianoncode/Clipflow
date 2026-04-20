@@ -472,11 +472,36 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             className="hidden items-center gap-1 text-[13.5px] font-semibold md:flex"
             style={{ color: 'var(--lv2-fg-soft)' }}
           >
-            <a className="lv2-u-sweep rounded-lg px-3 py-1.5 hover:bg-black/[.04]">Product</a>
-            <a className="lv2-u-sweep rounded-lg px-3 py-1.5 hover:bg-black/[.04]">Templates</a>
-            <a className="lv2-u-sweep rounded-lg px-3 py-1.5 hover:bg-black/[.04]">Creators</a>
-            <a className="lv2-u-sweep rounded-lg px-3 py-1.5 hover:bg-black/[.04]">Pricing</a>
-            <a className="lv2-u-sweep rounded-lg px-3 py-1.5 hover:bg-black/[.04]">Changelog</a>
+            <a
+              href="#features"
+              className="lv2-u-sweep rounded-lg px-3 py-1.5 hover:bg-black/[.04]"
+            >
+              Product
+            </a>
+            <a
+              href="#how-it-works"
+              className="lv2-u-sweep rounded-lg px-3 py-1.5 hover:bg-black/[.04]"
+            >
+              How it works
+            </a>
+            <a
+              href="#creators"
+              className="lv2-u-sweep rounded-lg px-3 py-1.5 hover:bg-black/[.04]"
+            >
+              Creators
+            </a>
+            <a
+              href="#pricing"
+              className="lv2-u-sweep rounded-lg px-3 py-1.5 hover:bg-black/[.04]"
+            >
+              Pricing
+            </a>
+            <Link
+              href="/changelog"
+              className="lv2-u-sweep rounded-lg px-3 py-1.5 hover:bg-black/[.04]"
+            >
+              Changelog
+            </Link>
           </nav>
           <div className="flex items-center gap-2">
             <Link
@@ -986,7 +1011,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
       </section>
 
       {/* CREATOR SHOWCASE */}
-      <section className="mx-auto max-w-[1240px] px-6 py-24">
+      <section id="creators" className="mx-auto max-w-[1240px] px-6 py-24">
         <div className="lv2-reveal mb-12 flex flex-wrap items-end justify-between gap-5">
           <div>
             <p className="lv2-mono-label mb-3">The creators who ship daily</p>
@@ -2193,22 +2218,70 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 MADE IN BERLIN · SOC 2 · GDPR
               </p>
             </div>
-            {[
-              { title: 'PRODUCT', items: ['Features', 'Templates', 'Integrations', 'Changelog'] },
-              { title: 'COMPANY', items: ['About', 'Careers', 'Press', 'Contact'] },
-              { title: 'RESOURCES', items: ['Docs', 'Blog', 'API', 'Status'] },
-              { title: 'LEGAL', items: ['Terms', 'Privacy', 'DPA', 'Security'] },
-            ].map((col) => (
+            {(
+              [
+                {
+                  title: 'PRODUCT',
+                  items: [
+                    { label: 'Features', href: '#features' },
+                    { label: 'How it works', href: '#how-it-works' },
+                    { label: 'Pricing', href: '#pricing' },
+                    { label: 'Changelog', href: '/changelog' },
+                  ],
+                },
+                {
+                  title: 'COMPANY',
+                  items: [
+                    { label: 'Creators', href: '#creators' },
+                    { label: 'FAQ', href: '#faq' },
+                    { label: 'Contact', href: 'mailto:hi@clipflow.to' },
+                    { label: 'Imprint', href: '/imprint' },
+                  ],
+                },
+                {
+                  title: 'RESOURCES',
+                  items: [
+                    { label: 'Help center', href: '/help' },
+                    { label: 'Sign in', href: '/login' },
+                    { label: 'Start free', href: signupHref },
+                  ],
+                },
+                {
+                  title: 'LEGAL',
+                  items: [
+                    { label: 'Terms', href: '/terms' },
+                    { label: 'Privacy', href: '/privacy' },
+                    { label: 'Cookies', href: '/cookies' },
+                    { label: 'DMCA', href: '/dmca' },
+                  ],
+                },
+              ] as const
+            ).map((col) => (
               <div key={col.title}>
                 <p className="lv2-mono-label mb-3" style={{ fontSize: 9 }}>
                   {col.title}
                 </p>
                 <ul className="space-y-2 text-[13px]">
-                  {col.items.map((it) => (
-                    <li key={it}>
-                      <a className="lv2-u-sweep">{it}</a>
-                    </li>
-                  ))}
+                  {col.items.map((it) => {
+                    const isExternal =
+                      it.href.startsWith('mailto:') || it.href.startsWith('http')
+                    const isAnchor = it.href.startsWith('#')
+                    const commonCls =
+                      'lv2-u-sweep transition-colors hover:text-[var(--lv2-fg)]'
+                    return (
+                      <li key={it.label}>
+                        {isExternal || isAnchor ? (
+                          <a href={it.href} className={commonCls}>
+                            {it.label}
+                          </a>
+                        ) : (
+                          <Link href={it.href} className={commonCls}>
+                            {it.label}
+                          </Link>
+                        )}
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             ))}
