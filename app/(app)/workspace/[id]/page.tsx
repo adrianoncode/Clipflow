@@ -48,12 +48,27 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
 
       {/* ── Header ── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-xl font-bold tracking-tight">My Videos</h1>
-          <p className="text-sm text-muted-foreground">
+        <div>
+          <p
+            className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
+            style={{ color: '#7c7468', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+          >
+            {workspace.name} · Content
+          </p>
+          <h1
+            className="text-[44px] leading-[1.02]"
+            style={{
+              fontFamily: 'var(--font-instrument-serif), serif',
+              letterSpacing: '-.015em',
+              color: '#2A1A3D',
+            }}
+          >
+            Your library.
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: '#7c7468' }}>
             {items.length === 0
               ? 'Import your first video to get started.'
-              : `${items.length} item${items.length === 1 ? '' : 's'} in ${workspace.name}`}
+              : `${items.length} item${items.length === 1 ? '' : 's'} · ${workspace.name}`}
           </p>
         </div>
 

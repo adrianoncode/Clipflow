@@ -148,7 +148,16 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
             {' → '}
             <Link href={`/workspace/${workspaceId}/schedule`} className="hover:text-foreground transition-colors">Schedule</Link>
           </p>
-          <h1 className="text-xl font-bold tracking-tight">Drafts</h1>
+          <h1
+            className="text-[44px] leading-[1.02]"
+            style={{
+              fontFamily: 'var(--font-instrument-serif), serif',
+              letterSpacing: '-.015em',
+              color: '#2A1A3D',
+            }}
+          >
+            Drafts.
+          </h1>
           <p className="text-sm text-muted-foreground">
             {totalCount === 0
               ? 'Your drafts land here. Pick the ones you like and approve them.'

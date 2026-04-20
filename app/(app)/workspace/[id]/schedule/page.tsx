@@ -175,7 +175,16 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
             {' → '}
             <span className="font-medium text-foreground">Schedule</span>
           </p>
-          <h1 className="text-xl font-bold tracking-tight">Schedule</h1>
+          <h1
+            className="text-[44px] leading-[1.02]"
+            style={{
+              fontFamily: 'var(--font-instrument-serif), serif',
+              letterSpacing: '-.015em',
+              color: '#2A1A3D',
+            }}
+          >
+            Schedule.
+          </h1>
           <p className="text-sm text-muted-foreground">
             {posts.length === 0
               ? 'Line up your approved posts. We push them out for you at the time you pick.'

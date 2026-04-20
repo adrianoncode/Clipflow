@@ -162,8 +162,22 @@ export default async function AnalyticsPage() {
     return (
       <div className="mx-auto w-full max-w-3xl space-y-6 p-4 sm:p-8">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">Analytics</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">{currentWorkspace.name}</p>
+          <p
+            className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
+            style={{ color: '#7c7468', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+          >
+            {currentWorkspace.name} · Insights
+          </p>
+          <h1
+            className="text-[44px] leading-[1.02]"
+            style={{
+              fontFamily: 'var(--font-instrument-serif), serif',
+              letterSpacing: '-.015em',
+              color: '#2A1A3D',
+            }}
+          >
+            How your posts perform.
+          </h1>
         </div>
         <div className="rounded-2xl border border-dashed border-border/60 bg-card p-10 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary/60">
@@ -188,8 +202,22 @@ export default async function AnalyticsPage() {
     <div className="mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-8">
       {/* ── Header ── */}
       <div>
-        <h1 className="text-xl font-bold tracking-tight">Analytics</h1>
-        <p className="mt-0.5 text-sm text-muted-foreground">{currentWorkspace.name}</p>
+        <p
+          className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
+          style={{ color: '#7c7468', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+        >
+          {currentWorkspace.name} · Insights
+        </p>
+        <h1
+          className="text-[44px] leading-[1.02]"
+          style={{
+            fontFamily: 'var(--font-instrument-serif), serif',
+            letterSpacing: '-.015em',
+            color: '#2A1A3D',
+          }}
+        >
+          How your posts perform.
+        </h1>
       </div>
 
       {/* ── Velocity row — KPI cards with week-over-week deltas ── */}
