@@ -88,9 +88,24 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 p-4 sm:p-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Billing</h1>
-        <p className="text-sm text-muted-foreground">
-          Manage your plan and usage.
+        <p
+          className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
+          style={{ color: '#7c7468', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+        >
+          Workspace · Billing
+        </p>
+        <h1
+          className="text-[44px] leading-[1.02]"
+          style={{
+            fontFamily: 'var(--font-instrument-serif), serif',
+            letterSpacing: '-.015em',
+            color: '#2A1A3D',
+          }}
+        >
+          Plan &amp; usage
+        </h1>
+        <p className="mt-1 text-sm" style={{ color: '#7c7468' }}>
+          BYOK — pay your AI provider at cost. We take zero markup on tokens.
         </p>
       </div>
 
