@@ -919,23 +919,33 @@ export default async function DashboardPage() {
               {/* ── Recent drafts + Sidebar ─────────────────────── */}
               <div className="grid gap-4 lg:grid-cols-3">
                 <div className="space-y-4 lg:col-span-2">
-                  {recentOutputs.length > 0 && (
-                    <section className="lv2d-card lv2d-ring-soft">
-                      <div
-                        className="flex items-center justify-between px-5 py-3"
-                        style={{ borderBottom: '1px solid var(--lv2d-border)' }}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="lv2d-mono-label">Recent drafts</span>
-                        </div>
-                        <Link
-                          href={`/workspace/${workspace.id}/pipeline`}
-                          className="text-[11px] font-semibold hover:underline"
-                          style={{ color: 'var(--lv2d-primary)' }}
-                        >
-                          All drafts →
-                        </Link>
+                  <section className="lv2d-card lv2d-ring-soft">
+                    <div
+                      className="flex items-center justify-between px-5 py-3"
+                      style={{ borderBottom: '1px solid var(--lv2d-border)' }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="lv2d-mono-label">Recent drafts</span>
                       </div>
+                      <Link
+                        href={`/workspace/${workspace.id}/pipeline`}
+                        className="text-[11px] font-semibold hover:underline"
+                        style={{ color: 'var(--lv2d-primary)' }}
+                      >
+                        All drafts →
+                      </Link>
+                    </div>
+                    {recentOutputs.length === 0 ? (
+                      <div
+                        className="px-5 py-10 text-center"
+                        style={{ color: 'var(--lv2d-muted)' }}
+                      >
+                        <p className="text-[13px]">No drafts yet.</p>
+                        <p className="mt-1 text-[11.5px]">
+                          Import a video to generate your first drafts.
+                        </p>
+                      </div>
+                    ) : (
                       <div className="lv2d-divide">
                         {recentOutputs.map((d) => {
                           const chip = stateChip[d.state] ?? stateChip.draft!
@@ -977,8 +987,8 @@ export default async function DashboardPage() {
                           )
                         })}
                       </div>
-                    </section>
-                  )}
+                    )}
+                  </section>
 
                   {/* Platform performance */}
                   {stats && (
@@ -1121,24 +1131,31 @@ export default async function DashboardPage() {
 
                 <div className="space-y-4">
                   {/* Upcoming schedule */}
-                  {upcoming.length > 0 && (
-                    <section className="lv2d-card lv2d-ring-soft">
-                      <div
-                        className="flex items-center justify-between px-5 py-3"
-                        style={{ borderBottom: '1px solid var(--lv2d-border)' }}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-3.5 w-3.5" style={{ color: 'var(--lv2d-primary)' }} />
-                          <span className="lv2d-mono-label">Upcoming</span>
-                        </div>
-                        <Link
-                          href={`/workspace/${workspace.id}/schedule?view=calendar`}
-                          className="text-[11px] font-semibold hover:underline"
-                          style={{ color: 'var(--lv2d-primary)' }}
-                        >
-                          Calendar →
-                        </Link>
+                  <section className="lv2d-card lv2d-ring-soft">
+                    <div
+                      className="flex items-center justify-between px-5 py-3"
+                      style={{ borderBottom: '1px solid var(--lv2d-border)' }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-3.5 w-3.5" style={{ color: 'var(--lv2d-primary)' }} />
+                        <span className="lv2d-mono-label">Upcoming</span>
                       </div>
+                      <Link
+                        href={`/workspace/${workspace.id}/schedule?view=calendar`}
+                        className="text-[11px] font-semibold hover:underline"
+                        style={{ color: 'var(--lv2d-primary)' }}
+                      >
+                        Calendar →
+                      </Link>
+                    </div>
+                    {upcoming.length === 0 ? (
+                      <div
+                        className="px-5 py-8 text-center"
+                        style={{ color: 'var(--lv2d-muted)' }}
+                      >
+                        <p className="text-[12.5px]">Nothing scheduled yet.</p>
+                      </div>
+                    ) : (
                       <div className="lv2d-divide">
                         {upcoming.map((day) => (
                           <div key={day.day} className="px-5 py-3">
@@ -1165,23 +1182,23 @@ export default async function DashboardPage() {
                           </div>
                         ))}
                       </div>
-                      <div
-                        className="flex items-center justify-between px-5 py-3"
-                        style={{ borderTop: '1px solid var(--lv2d-border)' }}
+                    )}
+                    <div
+                      className="flex items-center justify-between px-5 py-3"
+                      style={{ borderTop: '1px solid var(--lv2d-border)' }}
+                    >
+                      <span className="text-[11px]" style={{ color: 'var(--lv2d-muted)' }}>
+                        {scheduled.length} scheduled this week
+                      </span>
+                      <Link
+                        href={`/workspace/${workspace.id}/schedule`}
+                        className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold transition-colors hover:bg-black/[0.04]"
+                        style={{ color: 'var(--lv2d-muted)' }}
                       >
-                        <span className="text-[11px]" style={{ color: 'var(--lv2d-muted)' }}>
-                          {scheduled.length} scheduled this week
-                        </span>
-                        <Link
-                          href={`/workspace/${workspace.id}/schedule`}
-                          className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold transition-colors hover:bg-black/[0.04]"
-                          style={{ color: 'var(--lv2d-muted)' }}
-                        >
-                          <span className="text-sm leading-none">+</span> Schedule post
-                        </Link>
-                      </div>
-                    </section>
-                  )}
+                        <span className="text-sm leading-none">+</span> Schedule post
+                      </Link>
+                    </div>
+                  </section>
 
                   {/* Brand voice */}
                   <section className="lv2d-card lv2d-ring-soft p-5">
@@ -1399,17 +1416,27 @@ export default async function DashboardPage() {
                   </div>
                 </section>
 
-                {activity.length > 0 && (
-                  <section className="lv2d-card lv2d-ring-soft">
-                    <div
-                      className="flex items-center justify-between px-5 py-3"
-                      style={{ borderBottom: '1px solid var(--lv2d-border)' }}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Users2 className="h-3.5 w-3.5" style={{ color: 'var(--lv2d-primary)' }} />
-                        <span className="lv2d-mono-label">Recent activity</span>
-                      </div>
+                <section className="lv2d-card lv2d-ring-soft">
+                  <div
+                    className="flex items-center justify-between px-5 py-3"
+                    style={{ borderBottom: '1px solid var(--lv2d-border)' }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Users2 className="h-3.5 w-3.5" style={{ color: 'var(--lv2d-primary)' }} />
+                      <span className="lv2d-mono-label">Recent activity</span>
                     </div>
+                  </div>
+                  {activity.length === 0 ? (
+                    <div
+                      className="px-5 py-10 text-center"
+                      style={{ color: 'var(--lv2d-muted)' }}
+                    >
+                      <p className="text-[13px]">No activity yet.</p>
+                      <p className="mt-1 text-[11.5px]">
+                        Team actions and AI runs show up here.
+                      </p>
+                    </div>
+                  ) : (
                     <ul className="lv2d-divide">
                       {activity.slice(0, 5).map((a, i) => (
                         <li
@@ -1435,8 +1462,8 @@ export default async function DashboardPage() {
                         </li>
                       ))}
                     </ul>
-                  </section>
-                )}
+                  )}
+                </section>
               </div>
             </>
           )}
