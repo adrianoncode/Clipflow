@@ -632,7 +632,7 @@ export default async function DashboardPage() {
               {suggestions.length > 0 && <SmartSuggestions suggestions={suggestions} />}
 
               {/* ── Funnel ──────────────────────────────────────── */}
-              {hasData && (
+              {stats && (
                 <section className="lv2d-card lv2d-ring-soft overflow-hidden">
                   <div
                     className="flex items-center justify-between px-5 py-3"
@@ -816,7 +816,7 @@ export default async function DashboardPage() {
               )}
 
               {/* ── Stats ───────────────────────────────────────── */}
-              {hasData && stats && (
+              {stats && (
                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                   {[
                     {
@@ -981,7 +981,7 @@ export default async function DashboardPage() {
                   )}
 
                   {/* Platform performance */}
-                  {hasData && (
+                  {stats && (
                     <section className="lv2d-card lv2d-ring-soft">
                       <div
                         className="flex items-center justify-between px-5 py-3"
