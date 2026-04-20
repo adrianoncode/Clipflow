@@ -3,8 +3,6 @@
 import { useFormState, useFormStatus } from 'react-dom'
 import { useRef } from 'react'
 
-import { Button } from '@/components/ui/button'
-import { FormMessage } from '@/components/ui/form-message'
 import { submitReviewCommentAction, type SubmitCommentState } from '@/app/review/[token]/actions'
 
 interface ReviewCommentFormProps {
@@ -16,13 +14,30 @@ interface ReviewCommentFormProps {
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <Button type="submit" size="sm" disabled={pending}>
+    <button
+      type="submit"
+      disabled={pending}
+      className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] font-bold transition-transform hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
+      style={{
+        background: '#2A1A3D',
+        color: '#D6FF3E',
+        boxShadow:
+          'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(42,26,61,.35)',
+      }}
+    >
       {pending ? 'Sending…' : 'Send feedback'}
-    </Button>
+    </button>
   )
 }
 
 const initial: SubmitCommentState = {}
+
+const inputStyle: React.CSSProperties = {
+  border: '1px solid #E5DDCE',
+  background: '#FFFFFF',
+  color: '#181511',
+  borderRadius: 10,
+}
 
 export function ReviewCommentForm({ reviewLinkId, outputId, label }: ReviewCommentFormProps) {
   const formRef = useRef<HTMLFormElement>(null)
@@ -40,12 +55,23 @@ export function ReviewCommentForm({ reviewLinkId, outputId, label }: ReviewComme
       <input type="hidden" name="review_link_id" value={reviewLinkId} />
       {outputId && <input type="hidden" name="output_id" value={outputId} />}
 
-      {label && <p className="text-xs font-medium text-muted-foreground">{label}</p>}
+      {label && (
+        <p
+          className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em]"
+          style={{ color: '#7c7468' }}
+        >
+          {label}
+        </p>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1">
-          <label className="text-xs font-medium" htmlFor={`name-${outputId ?? 'general'}`}>
-            Your name <span className="text-destructive">*</span>
+          <label
+            className="text-[11px] font-semibold"
+            htmlFor={`name-${outputId ?? 'general'}`}
+            style={{ color: '#3a342c' }}
+          >
+            Your name <span style={{ color: '#9B2018' }}>*</span>
           </label>
           <input
             id={`name-${outputId ?? 'general'}`}
@@ -53,26 +79,36 @@ export function ReviewCommentForm({ reviewLinkId, outputId, label }: ReviewComme
             type="text"
             required
             placeholder="Jane Doe"
-            className="w-full rounded-md border bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full px-3 py-1.5 text-sm focus:outline-none"
+            style={inputStyle}
           />
         </div>
         <div className="space-y-1">
-          <label className="text-xs font-medium" htmlFor={`email-${outputId ?? 'general'}`}>
-            Email <span className="text-muted-foreground">(optional)</span>
+          <label
+            className="text-[11px] font-semibold"
+            htmlFor={`email-${outputId ?? 'general'}`}
+            style={{ color: '#3a342c' }}
+          >
+            Email <span style={{ color: '#7c7468' }}>(optional)</span>
           </label>
           <input
             id={`email-${outputId ?? 'general'}`}
             name="reviewer_email"
             type="email"
             placeholder="jane@example.com"
-            className="w-full rounded-md border bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full px-3 py-1.5 text-sm focus:outline-none"
+            style={inputStyle}
           />
         </div>
       </div>
 
       <div className="space-y-1">
-        <label className="text-xs font-medium" htmlFor={`body-${outputId ?? 'general'}`}>
-          Comment <span className="text-destructive">*</span>
+        <label
+          className="text-[11px] font-semibold"
+          htmlFor={`body-${outputId ?? 'general'}`}
+          style={{ color: '#3a342c' }}
+        >
+          Comment <span style={{ color: '#9B2018' }}>*</span>
         </label>
         <textarea
           id={`body-${outputId ?? 'general'}`}
@@ -80,16 +116,27 @@ export function ReviewCommentForm({ reviewLinkId, outputId, label }: ReviewComme
           required
           rows={3}
           placeholder="Looks great! Maybe tweak the hook…"
-          className="w-full rounded-md border bg-background px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full px-3 py-2 text-sm focus:outline-none"
+          style={inputStyle}
         />
       </div>
 
       {state.ok === false && state.error ? (
-        <FormMessage variant="error">{state.error}</FormMessage>
+        <p
+          className="rounded-lg border px-3 py-2 text-[12.5px]"
+          style={{ borderColor: '#9B2018', background: '#FDECEB', color: '#9B2018' }}
+        >
+          {state.error}
+        </p>
       ) : null}
 
       {state.ok === true ? (
-        <FormMessage variant="success">Feedback sent! Thank you.</FormMessage>
+        <p
+          className="rounded-lg border px-3 py-2 text-[12.5px]"
+          style={{ borderColor: '#0F6B4D', background: '#E6F4EE', color: '#0F6B4D' }}
+        >
+          Feedback sent! Thank you.
+        </p>
       ) : null}
 
       <SubmitButton />
