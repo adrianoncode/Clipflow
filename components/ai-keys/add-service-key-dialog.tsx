@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ExternalLink, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -50,6 +51,14 @@ export function AddServiceKeyDialog({
   )
 
   const [state, formAction] = useFormState(action, {} as AiKeyFormState)
+  // Portal target — rendering into document.body takes the dialog out of
+  // the ServiceCard's `.group` subtree so its hover effects (shine-sweep,
+  // translate-y) don't retrigger every time the pointer crosses a form
+  // field. That was the 'flickering on Connect click' bug.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const errorMessage =
     state && state.ok === false
@@ -58,9 +67,12 @@ export function AddServiceKeyDialog({
         ? state.error
         : undefined
 
-  return (
+  const modal = (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/50 p-4 backdrop-blur-sm sm:items-center"
+      // Apply the app shell's token remap so this portaled modal inherits
+      // Clipflow's paper / plum / lime palette instead of falling back to
+      // the shadcn violet defaults on the root element.
+      className="lv2-shell fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/50 p-4 backdrop-blur-sm sm:items-center"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
@@ -159,4 +171,7 @@ export function AddServiceKeyDialog({
       </div>
     </div>
   )
+
+  if (!mounted) return null
+  return createPortal(modal, document.body)
 }

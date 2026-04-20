@@ -25,6 +25,7 @@ import { RenderHistoryPanel } from '@/components/outputs/render-history-panel'
 import { ReviewCommentsPanel } from '@/components/review/review-comments-panel'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getOutputs } from '@/lib/content/get-outputs'
+import { getLongLivedSourceUrl } from '@/lib/content/get-signed-url'
 import { getReviewLinksForContent } from '@/lib/review/get-review-links-for-content'
 import { getReviewCommentsForContent } from '@/lib/review/get-review-comments-for-content'
 import { listRenders } from '@/lib/video/renders/list-renders'
@@ -75,14 +76,16 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
     redirect(`/workspace/${params.id}/content/${params.contentId}`)
   }
 
-  const [outputs, reviewLinks, reviewComments, renders, plan, aiKeys] = await Promise.all([
-    getOutputs(params.contentId, params.id),
-    getReviewLinksForContent(params.contentId, params.id),
-    getReviewCommentsForContent(params.contentId, params.id),
-    listRenders({ workspaceId: params.id, contentId: params.contentId, limit: 12 }),
-    getWorkspacePlan(params.id),
-    getAiKeys(params.id),
-  ])
+  const [outputs, reviewLinks, reviewComments, renders, plan, aiKeys, longLivedSourceUrl] =
+    await Promise.all([
+      getOutputs(params.contentId, params.id),
+      getReviewLinksForContent(params.contentId, params.id),
+      getReviewCommentsForContent(params.contentId, params.id),
+      listRenders({ workspaceId: params.id, contentId: params.contentId, limit: 12 }),
+      getWorkspacePlan(params.id),
+      getAiKeys(params.id),
+      getLongLivedSourceUrl(item.source_url),
+    ])
   const planFeatures = getPlanFeatures(plan)
   const hasPublishKey = aiKeys.some((k) => k.provider === 'upload-post')
   const title = item.title ?? 'Untitled'
@@ -271,7 +274,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
                   estimated_duration: string
                 }>) ?? null}
                 estimatedDurationSec={((item.metadata as Record<string, unknown> | null)?.duration_seconds as number) ?? null}
-                sourceUrl={item.source_url ?? null}
+                sourceUrl={longLivedSourceUrl}
               />
             </div>
           </details>

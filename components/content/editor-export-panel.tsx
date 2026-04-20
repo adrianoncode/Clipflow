@@ -155,13 +155,46 @@ interface ExportOption {
   onDownload: () => void
 }
 
+// Parses a standard SRT string into { text, start, end } in seconds.
+// Returns empty on malformed input — caller treats absence of captions
+// as "export without title tracks" rather than erroring.
+function parseSrt(
+  srt: string,
+): Array<{ text: string; start: number; end: number }> {
+  const blocks = srt.replace(/\r\n/g, '\n').split(/\n\n+/)
+  const parseTs = (t: string) => {
+    const m = t.match(/(\d{2}):(\d{2}):(\d{2})[,.](\d{3})/)
+    if (!m) return NaN
+    return +m[1]! * 3600 + +m[2]! * 60 + +m[3]! + +m[4]! / 1000
+  }
+  return blocks
+    .map((b) => {
+      const lines = b.split('\n').filter(Boolean)
+      const timeLine = lines.find((l) => l.includes('-->'))
+      if (!timeLine) return null
+      const [a, b2] = timeLine.split('-->').map((s) => s.trim())
+      const start = parseTs(a ?? '')
+      const end = parseTs(b2 ?? '')
+      if (!Number.isFinite(start) || !Number.isFinite(end)) return null
+      const text = lines
+        .filter((l) => !l.includes('-->') && !/^\d+$/.test(l))
+        .join(' ')
+      return { text, start, end }
+    })
+    .filter((x): x is { text: string; start: number; end: number } => Boolean(x))
+}
+
 // Derives clip in/out seconds for the FCPXML from the AI's best-clip
 // `position_pct` + `estimated_duration`. We use the same heuristic as the
-// EDL generator so both exports describe the same timeline.
+// EDL generator so both exports describe the same timeline, and overlay
+// the parsed SRT captions onto whichever clip range they fall into so
+// the editor opens Premiere / Resolve / FCP with real caption tracks.
 function clipsToFcpxRanges(
   clips: NonNullable<EditorExportPanelProps['clips']>,
   duration: number,
+  srt: string | null,
 ): FcpxClip[] {
+  const allCaptions = srt ? parseSrt(srt) : []
   return clips.map((clip, i) => {
     const startSec = (clip.position_pct / 100) * duration
     const durMatch = clip.estimated_duration.match(/(\d+)-?(\d+)?/)
@@ -171,11 +204,15 @@ function clipsToFcpxRanges(
         : parseInt(durMatch[1]!)
       : 20
     const endSec = Math.min(startSec + durSec, duration)
+    const captions = allCaptions.filter(
+      (c) => c.end > startSec && c.start < endSec,
+    )
     return {
       sourceStart: startSec,
       sourceEnd: endSec,
       label: `Clip ${i + 1} · ${clip.type}`.slice(0, 60),
       markers: [{ at: startSec, note: clip.type.toUpperCase() }],
+      captions,
     }
   })
 }
@@ -214,7 +251,7 @@ export function EditorExportPanel({
           title: contentTitle,
           sourceUrl,
           sourceDuration: duration,
-          clips: clipsToFcpxRanges(clips, duration),
+          clips: clipsToFcpxRanges(clips, duration, srt),
         })
         downloadFile(xml, `${safeName}.fcpxml`, 'application/xml')
       },
