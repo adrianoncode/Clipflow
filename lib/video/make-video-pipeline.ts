@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { getBrandKit } from '@/lib/brand-kit/get-brand-kit'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getSignedUrl } from '@/lib/content/get-signed-url'
 import {
@@ -80,17 +81,47 @@ export async function makeVideoPipeline(
     ? input.clipRange.end - input.clipRange.start
     : estimatedTotal
 
-  const subtitles = buildEvenlySpacedSubtitles(item.transcript, clipLength)
+  // Brand kit — optional intro/outro slides prepended / appended to every
+  // render. Loading is best-effort; if the branding JSON is missing or
+  // malformed we skip silently and render the clip unbranded.
+  const brandKit = await getBrandKit(input.workspaceId)
+  const introDuration = brandKit?.introText ? 2 : 0
+  const outroDuration = brandKit?.outroText ? 3 : 0
+  const videoStart = introDuration
 
-  const clips: ShotstackClip[] = [
-    {
-      type: 'video',
-      src: sourceUrl,
+  const subtitles = buildEvenlySpacedSubtitles(item.transcript, clipLength).map((s) => ({
+    ...s,
+    // Captions sit over the body only — shift past the intro.
+    start: s.start + videoStart,
+  }))
+
+  const clips: ShotstackClip[] = []
+
+  if (brandKit?.introText) {
+    clips.push({
+      type: 'title',
+      text: brandKit.introText,
       start: 0,
-      length: clipLength,
-      fit: 'cover',
-    },
-  ]
+      length: introDuration,
+    })
+  }
+
+  clips.push({
+    type: 'video',
+    src: sourceUrl,
+    start: videoStart,
+    length: clipLength,
+    fit: 'cover',
+  })
+
+  if (brandKit?.outroText) {
+    clips.push({
+      type: 'title',
+      text: brandKit.outroText,
+      start: videoStart + clipLength,
+      length: outroDuration,
+    })
+  }
 
   const renderResult = await submitRender({
     clips,
@@ -117,6 +148,13 @@ export async function makeVideoPipeline(
       clipStart,
       clipLength,
       hasMusic: Boolean(input.musicUrl),
+      brandKit: brandKit
+        ? {
+            intro: Boolean(brandKit.introText),
+            outro: Boolean(brandKit.outroText),
+            watermark: Boolean(brandKit.logoUrl),
+          }
+        : null,
       pipeline: 'one-click',
     },
   })

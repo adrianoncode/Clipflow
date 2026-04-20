@@ -10,6 +10,7 @@ import {
   HelpCircle,
   Key,
   Mic2,
+  Palette,
   Plug,
   Shield,
   LayoutTemplate,
@@ -26,6 +27,7 @@ const accountGroup = [
 const aiGroup = [
   { href: '/settings/ai-keys', label: 'AI Connections', icon: Key },
   { href: '/settings/brand-voice', label: 'Brand Voice', icon: Mic2 },
+  { href: '/settings/brand-kit', label: 'Brand Kit', icon: Palette },
   { href: '/settings/templates', label: 'Templates', icon: LayoutTemplate },
 ]
 
