@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { NewWorkspaceForm } from '@/components/workspace/new-workspace-form'
+import { PageHeading } from '@/components/workspace/page-heading'
 
 export const metadata = { title: 'New workspace' }
 
@@ -23,14 +24,17 @@ export default function NewWorkspacePage({ searchParams }: NewWorkspacePageProps
         >
           ← Back to dashboard
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-          {isClientContext ? 'Add a client' : 'New workspace'}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {isClientContext
-            ? "Give your client their own workspace. Their brand voice, drafts, and schedule stay separate from everyone else's."
-            : 'Keep brand voice, drafts, and schedules separate per brand or project.'}
-        </p>
+        <div className="mt-2">
+          <PageHeading
+            eyebrow={isClientContext ? 'Agency · Client' : 'Workspace · New'}
+            title={isClientContext ? 'Add a client.' : 'New workspace.'}
+            body={
+              isClientContext
+                ? "Give your client their own workspace. Their brand voice, drafts, and schedule stay separate from everyone else's."
+                : 'Keep brand voice, drafts, and schedules separate per brand or project.'
+            }
+          />
+        </div>
       </div>
       <NewWorkspaceForm defaultTypeHint={isClientContext ? 'client' : undefined} />
     </div>

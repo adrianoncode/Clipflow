@@ -1,5 +1,6 @@
 import { CopyTokenButton } from '@/components/settings/copy-token-button'
 import { createClient } from '@/lib/supabase/server'
+import { PageHeading } from '@/components/workspace/page-heading'
 
 export const metadata = {
   title: 'Browser Extension',
@@ -15,12 +16,11 @@ export default async function ExtensionPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold">Browser Extension</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Install the Clipflow Chrome extension to save any webpage to your workspace in one click.
-        </p>
-      </div>
+      <PageHeading
+        eyebrow="Settings · Extension"
+        title="Browser extension."
+        body="Install the Clipflow Chrome extension to save any webpage to your workspace in one click."
+      />
 
       {/* Installation Steps */}
       <div className="space-y-4">

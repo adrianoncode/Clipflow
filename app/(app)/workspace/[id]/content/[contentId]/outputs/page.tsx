@@ -114,8 +114,15 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Outputs for: {title}
+            <h1
+              className="text-[36px] leading-[1.05]"
+              style={{
+                fontFamily: 'var(--font-instrument-serif), serif',
+                letterSpacing: '-.015em',
+                color: '#2A1A3D',
+              }}
+            >
+              {title}
             </h1>
             <Badge
               variant="secondary"

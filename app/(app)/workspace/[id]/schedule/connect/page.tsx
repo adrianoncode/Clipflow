@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getSocialAccounts } from '@/lib/scheduler/get-social-accounts'
 import { ConnectPlatformCard } from '@/components/scheduler/connect-platform-card'
+import { PageHeading } from '@/components/workspace/page-heading'
 
 export const metadata = { title: 'Connect Social Accounts' }
 
@@ -57,13 +58,11 @@ export default async function ConnectPage({ params }: ConnectPageProps) {
         </Link>
       </div>
 
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Connect Social Accounts</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          OAuth integration requires a developer app for each platform. Paste your access token
-          below to get started — full OAuth flows will be added when developer apps are approved.
-        </p>
-      </div>
+      <PageHeading
+        eyebrow="Scheduler · Connect"
+        title="Connect social accounts."
+        body="OAuth integration requires a developer app for each platform. Paste your access token below to get started — full OAuth flows will be added when developer apps are approved."
+      />
 
       <div className="space-y-4">
         {PLATFORMS.map((platform) => (

@@ -7,6 +7,7 @@ import { countUnusedCodes } from '@/lib/auth/recovery-codes'
 import { TotpEnrollForm } from '@/components/settings/totp-enroll-form'
 import { TotpFactorList } from '@/components/settings/totp-factor-list'
 import { RecoveryCodesPanel } from '@/components/settings/recovery-codes-panel'
+import { PageHeading } from '@/components/workspace/page-heading'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Security — Clipflow' }
@@ -23,12 +24,11 @@ export default async function SecurityPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-8 p-6">
-      <header className="space-y-1">
-        <h1 className="text-xl font-bold tracking-tight">Security</h1>
-        <p className="text-sm text-muted-foreground">
-          Two-factor authentication and session management.
-        </p>
-      </header>
+      <PageHeading
+        eyebrow="Account · Security"
+        title="Security."
+        body="Two-factor authentication and session management."
+      />
 
       {/* ── Two-factor auth ── */}
       <section className="space-y-4">

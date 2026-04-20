@@ -62,16 +62,14 @@ export default async function ApiKeysPage() {
     <div className="space-y-8">
       {/* ── Header ── */}
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-          <Key className="h-4 w-4 text-primary" />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: '#EDE6F5' }}>
+          <Key className="h-4 w-4" style={{ color: '#2A1A3D' }} />
         </div>
-        <div>
-          <h1 className="text-lg font-bold tracking-tight">AI Connections</h1>
-          <p className="mt-0.5 max-w-2xl text-sm text-muted-foreground">
-            Bring your own AI keys — one connects scripts, captions, hooks, and transcription.
-            You pay your provider directly at cost, no markup. Keys are encrypted at rest.
-          </p>
-        </div>
+        <PageHeading
+          eyebrow="Settings · AI"
+          title="AI connections."
+          body="Bring your own AI keys — one connects scripts, captions, hooks, and transcription. You pay your provider directly at cost, no markup. Keys are encrypted at rest."
+        />
       </div>
 
       {/* ── Blocker banner: only when truly blocked ── */}

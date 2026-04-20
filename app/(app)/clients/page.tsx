@@ -6,6 +6,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
+import { PageHeading } from '@/components/workspace/page-heading'
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
@@ -38,10 +39,11 @@ export default async function ClientsPage() {
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Clients</h1>
-          <p className="text-sm text-muted-foreground">All your client workspaces in one place.</p>
-        </div>
+        <PageHeading
+          eyebrow="Agency · Workspaces"
+          title="Clients."
+          body="All your client workspaces in one place."
+        />
         <Button asChild>
           <Link href="/workspace/new?as=client">Create client workspace</Link>
         </Button>

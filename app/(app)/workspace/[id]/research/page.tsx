@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 
 import { CreatorSearchClient } from '@/components/creators/creator-search-client'
+import { PageHeading } from '@/components/workspace/page-heading'
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
@@ -30,12 +31,11 @@ export default async function ResearchPage({ params }: ResearchPageProps) {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
-      <div className="space-y-1">
-        <h1 className="text-xl font-bold tracking-tight">Creator Research</h1>
-        <p className="text-sm text-muted-foreground">
-          Find creators by niche across YouTube, TikTok, and Instagram. Great for competitor checks, collab ideas, or just lurking.
-        </p>
-      </div>
+      <PageHeading
+        eyebrow={`${workspace.name} · Research`}
+        title="Creator research."
+        body="Find creators by niche across YouTube, TikTok, and Instagram. Great for competitor checks, collab ideas, or just lurking."
+      />
 
       <CreatorSearchClient workspaceId={params.id} />
     </div>

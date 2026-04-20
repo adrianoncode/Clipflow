@@ -5,6 +5,7 @@ import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { getWorkspaceUsage } from '@/lib/billing/get-usage'
 import { getPlanLimits, isUnlimited, PLANS } from '@/lib/billing/plans'
+import { PageHeading } from '@/components/workspace/page-heading'
 
 interface LimitsPageProps {
   params: { id: string }
@@ -72,16 +73,15 @@ export default async function LimitsPage({ params }: LimitsPageProps) {
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-8">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Usage &amp; Limits</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Current usage for{' '}
-            <span className="font-medium">{workspace.name}</span> on the{' '}
-            <span className="font-medium">{planDef.name}</span> plan.
-          </p>
-        </div>
-      </div>
+      <PageHeading
+        eyebrow={`${workspace.name} · Limits`}
+        title="Usage &amp; limits."
+        body={
+          <>
+            On the <span style={{ color: '#181511', fontWeight: 600 }}>{planDef.name}</span> plan.
+          </>
+        }
+      />
 
       <div className="overflow-hidden rounded-lg border">
         <table className="w-full text-sm">

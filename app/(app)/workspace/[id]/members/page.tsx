@@ -5,6 +5,7 @@ import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { checkPlanAccess } from '@/lib/billing/plans'
 import { getWorkspaceMembers, getWorkspaceInvites } from '@/lib/members/get-workspace-members'
 import { MembersPanel } from '@/components/members/members-panel'
+import { PageHeading } from '@/components/workspace/page-heading'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,12 +34,11 @@ export default async function MembersPage({ params }: MembersPageProps) {
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 p-4 sm:p-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Team</h1>
-        <p className="text-sm text-muted-foreground">
-          Invite teammates and manage who can edit <span className="font-medium">{workspace.name}</span>.
-        </p>
-      </div>
+      <PageHeading
+        eyebrow={`${workspace.name} · Team`}
+        title="Teammates."
+        body={<>Invite teammates and manage who can edit <span style={{ color: '#181511', fontWeight: 600 }}>{workspace.name}</span>.</>}
+      />
 
       <MembersPanel
         workspaceId={params.id}
