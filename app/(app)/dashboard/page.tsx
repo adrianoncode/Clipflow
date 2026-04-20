@@ -7,7 +7,6 @@ import {
   Check,
   CheckCircle2,
   Clock,
-  FileText,
   Layers,
   MessageSquare,
   MoreHorizontal,
@@ -1054,79 +1053,6 @@ export default async function DashboardPage() {
                     </section>
                   )}
 
-                  {/* Quick access */}
-                  <section className="lv2d-card lv2d-ring-soft">
-                    <div
-                      className="px-4 py-2.5"
-                      style={{ borderBottom: '1px solid var(--lv2d-border)' }}
-                    >
-                      <p className="text-xs font-bold">Quick access</p>
-                    </div>
-                    <div
-                      className="grid grid-cols-2 gap-px sm:grid-cols-4"
-                      style={{ background: 'var(--lv2d-border)' }}
-                    >
-                      {(isAgencyMode
-                        ? [
-                            {
-                              href: `/workspace/${workspace.id}/members`,
-                              label: 'Team',
-                              icon: Users2,
-                            },
-                            {
-                              href: '/settings/integrations',
-                              label: 'Integrations',
-                              icon: Plug,
-                            },
-                            {
-                              href: '/settings/brand-voice',
-                              label: 'Brand Voice',
-                              icon: MessageSquare,
-                            },
-                            {
-                              href: `/workspace/${workspace.id}/schedule?view=calendar`,
-                              label: 'Calendar',
-                              icon: Calendar,
-                            },
-                          ]
-                        : [
-                            {
-                              href: '/settings/integrations',
-                              label: 'Integrations',
-                              icon: Plug,
-                            },
-                            {
-                              href: '/settings/brand-voice',
-                              label: 'Brand Voice',
-                              icon: MessageSquare,
-                            },
-                            {
-                              href: '/settings/templates',
-                              label: 'Templates',
-                              icon: FileText,
-                            },
-                            {
-                              href: `/workspace/${workspace.id}/schedule?view=calendar`,
-                              label: 'Calendar',
-                              icon: Calendar,
-                            },
-                          ]
-                      ).map((a) => (
-                        <Link
-                          key={a.href}
-                          href={a.href}
-                          className="flex items-center gap-2.5 px-3.5 py-3 transition-colors"
-                          style={{ background: 'var(--lv2d-card)' }}
-                        >
-                          <a.icon
-                            className="h-3.5 w-3.5 shrink-0"
-                            style={{ color: 'var(--lv2d-primary)' }}
-                          />
-                          <span className="truncate text-xs font-medium">{a.label}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </section>
                 </div>
 
                 <div className="space-y-4">
