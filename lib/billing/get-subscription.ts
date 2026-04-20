@@ -1,5 +1,7 @@
 import 'server-only'
 
+import { cache } from 'react'
+
 import { createClient } from '@/lib/supabase/server'
 import type { BillingPlan } from '@/lib/billing/plans'
 
@@ -17,29 +19,33 @@ export interface SubscriptionRow {
 /**
  * Returns the subscription for a workspace.
  * If no row exists, returns a synthetic free-plan object.
+ *
+ * Wrapped in React.cache so duplicate callers within a single request
+ * (layout + dashboard page + feature-gate checks) share one round-trip.
  */
-export async function getSubscription(workspaceId: string): Promise<SubscriptionRow> {
-  const supabase = createClient()
-  const { data } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('workspace_id', workspaceId)
-    .maybeSingle()
+export const getSubscription = cache(
+  async (workspaceId: string): Promise<SubscriptionRow> => {
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('workspace_id', workspaceId)
+      .maybeSingle()
 
-  if (data) return data as SubscriptionRow
+    if (data) return data as SubscriptionRow
 
-  // No subscription row → free plan
-  return {
-    id: '',
-    workspace_id: workspaceId,
-    stripe_customer_id: null,
-    stripe_subscription_id: null,
-    plan: 'free',
-    status: null,
-    current_period_end: null,
-    cancel_at_period_end: false,
-  }
-}
+    return {
+      id: '',
+      workspace_id: workspaceId,
+      stripe_customer_id: null,
+      stripe_subscription_id: null,
+      plan: 'free',
+      status: null,
+      current_period_end: null,
+      cancel_at_period_end: false,
+    }
+  },
+)
 
 /**
  * Admin email(s) that always get agency-tier access, regardless of Stripe.
@@ -53,38 +59,40 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
 /**
  * Returns just the plan name for a workspace — cheap shortcut when you
  * only need the plan (e.g. for limit checks).
+ *
+ * Perf notes:
+ * - Cached per request so repeat calls from layout / dashboard / feature
+ *   gates share a single subscriptions round-trip.
+ * - The admin-override path used to run two extra sequential queries
+ *   (workspaces → profiles) on every free-plan hit. Those now run only
+ *   when ADMIN_EMAILS is actually configured, and share the same
+ *   supabase client with a joined select so it's one round-trip instead
+ *   of two. For self-hosted / non-admin deploys this is free.
  */
-export async function getWorkspacePlan(workspaceId: string): Promise<BillingPlan> {
-  const sub = await getSubscription(workspaceId)
+export const getWorkspacePlan = cache(
+  async (workspaceId: string): Promise<BillingPlan> => {
+    const sub = await getSubscription(workspaceId)
 
-  // Admin override — check if workspace owner is an admin (only when on free plan to avoid extra queries)
-  if (sub.plan === 'free' || !sub.stripe_subscription_id) {
-    try {
-      const supabase = createClient()
-      const { data: ws } = await supabase
-        .from('workspaces')
-        .select('owner_id')
-        .eq('id', workspaceId)
-        .maybeSingle()
-
-      if (ws?.owner_id) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('id', ws.owner_id)
+    if (ADMIN_EMAILS.length > 0 && (sub.plan === 'free' || !sub.stripe_subscription_id)) {
+      try {
+        const supabase = createClient()
+        const { data } = await supabase
+          .from('workspaces')
+          .select('owner:profiles!workspaces_owner_id_fkey(email)')
+          .eq('id', workspaceId)
           .maybeSingle()
-
-        if (profile?.email && ADMIN_EMAILS.includes(profile.email.toLowerCase())) {
+        const email = (data as { owner?: { email?: string | null } } | null)?.owner?.email
+        if (email && ADMIN_EMAILS.includes(email.toLowerCase())) {
           return 'agency'
         }
+      } catch {
+        // Admin check failed — continue with normal plan.
       }
-    } catch {
-      // Admin check failed — continue with normal plan
     }
-  }
-  // Treat canceled/expired subscriptions as free
-  if (sub.status && !['active', 'trialing'].includes(sub.status)) {
-    return 'free'
-  }
-  return sub.plan
-}
+
+    if (sub.status && !['active', 'trialing'].includes(sub.status)) {
+      return 'free'
+    }
+    return sub.plan
+  },
+)
