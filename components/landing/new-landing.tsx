@@ -3,6 +3,18 @@
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 
+import {
+  FlipNumber,
+  HeroSpotlight,
+  KineticHeadline,
+  MagneticButton,
+  MagneticWrap,
+  PricingTilt,
+  ScrollRail,
+  TiltWrap,
+  WordReveal,
+} from './hero-motion'
+
 interface NewLandingProps {
   signupHref: string
   hasValidRef: boolean
@@ -133,9 +145,10 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
 
   return (
     <div ref={rootRef} className="lv2-root lv2-paper">
+      <ScrollRail />
+      {/* Scoped design tokens + animations for the landing page only.
+          All custom classes prefixed `lv2-` to avoid colliding with the app theme. */}
       <style
-        // Scoped design tokens + animations for the landing page only.
-        // All custom classes prefixed `lv2-` to avoid colliding with the app theme.
         dangerouslySetInnerHTML={{
           __html: `
         .lv2-root {
@@ -213,6 +226,79 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           padding: 10px 14px; border-radius: 10px; transition: background .15s;
         }
         .lv2-btn-ghost:hover { background: rgba(0,0,0,.04); }
+
+        .lv2-magnetic { position: relative; overflow: hidden; isolation: isolate; }
+        .lv2-magnetic-label { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: .5rem; }
+        .lv2-magnetic-shine {
+          position: absolute; inset: 0; z-index: 1; pointer-events: none;
+          background: linear-gradient(115deg, transparent 30%, rgba(214,255,62,.38) 50%, transparent 70%);
+          transform: translateX(-120%);
+          transition: transform .7s cubic-bezier(.2,.8,.2,1);
+        }
+        .lv2-magnetic:hover .lv2-magnetic-shine { transform: translateX(120%); }
+
+        .lv2-tilt-card { transform-style: preserve-3d; will-change: transform; }
+        .lv2-tilt-shine {
+          position: absolute; inset: 0; z-index: 2; pointer-events: none;
+          border-radius: inherit;
+          background: radial-gradient(
+            320px circle at var(--mx, 50%) var(--my, 50%),
+            rgba(214,255,62,0.18),
+            rgba(214,255,62,0) 60%
+          );
+          opacity: 0; transition: opacity .3s;
+        }
+        .lv2-tilt-card:hover .lv2-tilt-shine { opacity: 1; }
+
+        @keyframes lv2-pulse-ring {
+          0%, 100% { box-shadow: 0 1px 0 rgba(24,21,17,.04), 0 30px 60px -20px rgba(42,26,61,.35), 0 0 0 0 rgba(214,255,62,.0); }
+          50%      { box-shadow: 0 1px 0 rgba(24,21,17,.04), 0 30px 60px -20px rgba(42,26,61,.45), 0 0 0 8px rgba(214,255,62,.18); }
+        }
+        .lv2-pulse-ring { animation: lv2-pulse-ring 3.4s ease-in-out infinite; }
+
+        @property --lv2-beam-angle {
+          syntax: '<angle>';
+          initial-value: 0deg;
+          inherits: false;
+        }
+        @keyframes lv2-beam-spin {
+          to { --lv2-beam-angle: 360deg; }
+        }
+        .lv2-beam { position: relative; isolation: isolate; }
+        .lv2-beam::before {
+          content: '';
+          position: absolute;
+          inset: -1.5px;
+          border-radius: inherit;
+          padding: 1.5px;
+          background: conic-gradient(
+            from var(--lv2-beam-angle),
+            transparent 0deg,
+            transparent 210deg,
+            rgba(214,255,62,0.0) 240deg,
+            rgba(214,255,62,0.9) 268deg,
+            #FFFFFF 275deg,
+            rgba(214,255,62,0.9) 282deg,
+            rgba(214,255,62,0.0) 310deg,
+            transparent 360deg
+          );
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+          -webkit-mask-composite: xor;
+          animation: lv2-beam-spin 4.5s linear infinite;
+          pointer-events: none;
+          z-index: 3;
+          filter: drop-shadow(0 0 6px rgba(214,255,62,0.55));
+          opacity: 0;
+          transition: opacity .35s ease;
+        }
+        .lv2-beam:hover::before { opacity: 1; }
+        .lv2-beam-always::before { opacity: 1; }
+        @media (prefers-reduced-motion: reduce) {
+          .lv2-pulse-ring { animation: none; }
+          .lv2-beam::before { animation: none; }
+        }
 
         .lv2-chip {
           display: inline-flex; align-items: center; gap: .3rem;
@@ -404,6 +490,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
 
       {/* HERO */}
       <section className="lv2-hero-area relative overflow-hidden">
+        <HeroSpotlight />
         <div className="lv2-grid-bg absolute inset-0 opacity-60" />
         <div
           className="lv2-orb"
@@ -452,27 +539,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 className="lv2-display text-[68px] leading-[0.95] sm:text-[92px]"
                 style={{ color: 'var(--lv2-primary)' }}
               >
-                <span className="lv2-reveal block" style={{ transitionDelay: '.05s' }}>
-                  One recording.
-                </span>
-                <span className="lv2-reveal block" style={{ transitionDelay: '.15s' }}>
-                  <span className="italic">A&nbsp;month</span> of
-                </span>
-                <span className="lv2-reveal block" style={{ transitionDelay: '.25s' }}>
-                  <span className="relative inline-block">
-                    <span className="relative z-10">posts.</span>
-                    <span
-                      id="lv2-hlStroke"
-                      className="absolute bottom-1.5 left-0 right-0 z-0 h-4"
-                      style={{
-                        background: 'var(--lv2-accent)',
-                        transformOrigin: 'left',
-                        transform: 'scaleX(0)',
-                        transition: 'transform 1s .6s cubic-bezier(.2,.8,.2,1)',
-                      }}
-                    />
-                  </span>
-                </span>
+                <KineticHeadline />
               </h1>
               <p
                 className="lv2-reveal mt-8 max-w-[560px] text-[18px] leading-relaxed"
@@ -486,9 +553,8 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 className="lv2-reveal mt-9 flex flex-wrap items-center gap-3"
                 style={{ transitionDelay: '.5s' }}
               >
-                <Link href={signupHref} className="lv2-btn-primary">
-                  Start free — no card <span className="lv2-arrow">→</span>
-                </Link>
+                <MagneticButton href={signupHref}>Start free — no card</MagneticButton>
+                <MagneticWrap radius={110} strength={0.25}>
                 <a className="lv2-btn-ghost group">
                   <span
                     className="relative flex h-8 w-8 items-center justify-center rounded-full transition-transform group-hover:scale-110"
@@ -500,6 +566,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                   </span>
                   Watch 90-sec demo
                 </a>
+                </MagneticWrap>
               </div>
               <div
                 className="lv2-reveal mt-8 flex items-center gap-5 text-[12.5px]"
@@ -534,7 +601,8 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             </div>
 
             {/* Hero visual stack */}
-            <div id="lv2-heroStack" className="relative h-[560px]">
+            <div id="lv2-heroStack" className="relative h-[560px]" style={{ perspective: 1200 }}>
+              <TiltWrap>
               {/* Source card */}
               <div
                 className="lv2-card lv2-ring-soft lv2-drift absolute left-0 top-0 w-[270px] p-3"
@@ -823,8 +891,8 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                   <p className="lv2-mono-label" style={{ fontSize: 9 }}>
                     FROM THIS VIDEO
                   </p>
-                  <p className="lv2-num-stamp lv2-countup" data-to="12">
-                    0
+                  <p className="lv2-num-stamp">
+                    <FlipNumber to={12} />
                   </p>
                 </div>
                 <div
@@ -841,6 +909,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                   +6 TODAY
                 </div>
               </div>
+              </TiltWrap>
             </div>
           </div>
         </div>
@@ -1245,7 +1314,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           ].map((step) => (
             <div
               key={step.n}
-              className="lv2-card lv2-ring-soft lv2-step-card relative z-10 p-6"
+              className="lv2-card lv2-ring-soft lv2-step-card lv2-beam relative z-10 p-6"
               style={
                 step.highlight
                   ? {
@@ -1813,7 +1882,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             className="lv2-display text-[52px] leading-[1]"
             style={{ color: 'var(--lv2-primary)' }}
           >
-            Simple. Obvious. No seat tax.
+            <WordReveal text="Simple. Obvious. No seat tax." />
           </h2>
           <p
             className="mx-auto mt-4 max-w-[520px] text-[15px]"
@@ -1824,7 +1893,8 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         </div>
 
         <div className="lv2-reveal-stagger mx-auto grid max-w-[1040px] gap-4 md:grid-cols-3">
-          <div className="lv2-card lv2-ring-soft lv2-card-hover p-6">
+          <PricingTilt className="lv2-card lv2-ring-soft lv2-card-hover lv2-beam p-6">
+          <div>
             <p className="lv2-mono-label mb-2">Starter</p>
             <p className="lv2-display text-[52px] leading-none" style={{ color: 'var(--lv2-primary)' }}>
               $0
@@ -1853,15 +1923,17 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               Start free
             </Link>
           </div>
+          </PricingTilt>
 
-          <div
-            className="lv2-card lv2-ring-soft lv2-card-hover relative p-6"
+          <PricingTilt
+            className="lv2-card lv2-ring-soft lv2-card-hover lv2-beam relative p-6"
             style={{
               borderColor: 'var(--lv2-primary)',
               boxShadow:
                 '0 1px 0 rgba(24,21,17,.04), 0 30px 60px -20px rgba(42,26,61,.35)',
             }}
           >
+          <div>
             <span
               className="lv2-chip absolute -top-3 left-6"
               style={{ background: 'var(--lv2-accent)', color: 'var(--lv2-accent-ink)' }}
@@ -1912,8 +1984,10 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               Start 14-day trial <span className="lv2-arrow">→</span>
             </Link>
           </div>
+          </PricingTilt>
 
-          <div className="lv2-card lv2-ring-soft lv2-card-hover p-6">
+          <PricingTilt className="lv2-card lv2-ring-soft lv2-card-hover lv2-beam p-6">
+          <div>
             <p className="lv2-mono-label mb-2">Studio</p>
             <p
               className="lv2-display text-[52px] leading-none"
@@ -1949,6 +2023,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               Contact sales
             </a>
           </div>
+          </PricingTilt>
         </div>
       </section>
 
@@ -1958,7 +2033,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           className="lv2-display lv2-reveal mb-10 text-center text-[44px] leading-[1]"
           style={{ color: 'var(--lv2-primary)' }}
         >
-          Questions, answered.
+          <WordReveal text="Questions, answered." />
         </h2>
         <div className="lv2-reveal-stagger space-y-3">
           {[

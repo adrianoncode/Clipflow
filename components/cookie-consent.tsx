@@ -28,26 +28,45 @@ export function CookieConsent() {
   if (!show) return null
 
   return (
-    <div
-      className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-lg animate-in slide-in-from-bottom-4 fade-in duration-300"
-    >
-      <div className="rounded-2xl border border-border/50 bg-card p-5 shadow-2xl backdrop-blur-xl">
-        <p className="text-sm text-muted-foreground">
+    <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-lg animate-in slide-in-from-bottom-4 fade-in duration-300">
+      <div
+        className="rounded-2xl p-5 shadow-2xl backdrop-blur-xl"
+        style={{
+          background: '#FFFDF8',
+          border: '1px solid #E5DDCE',
+          boxShadow: '0 1px 0 rgba(24,21,17,.04), 0 30px 60px -20px rgba(42,26,61,.28)',
+        }}
+      >
+        <p className="text-sm" style={{ color: '#7c7468' }}>
           We use essential cookies for authentication only. No tracking, no ads.{' '}
-          <Link href="/privacy" className="text-primary underline-offset-4 hover:underline">
+          <Link
+            href="/privacy"
+            className="underline-offset-4 hover:underline"
+            style={{ color: '#2A1A3D', fontWeight: 600 }}
+          >
             Privacy Policy
           </Link>
         </p>
         <div className="mt-4 flex items-center gap-3">
           <button
             onClick={accept}
-            className="inline-flex h-9 items-center rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex h-9 items-center rounded-lg px-5 text-sm font-bold transition-transform hover:-translate-y-0.5"
+            style={{
+              background: '#2A1A3D',
+              color: '#D6FF3E',
+              boxShadow: 'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(42,26,61,.35)',
+            }}
           >
             Accept
           </button>
           <button
             onClick={decline}
-            className="inline-flex h-9 items-center rounded-lg border border-border px-5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="inline-flex h-9 items-center rounded-lg px-5 text-sm font-semibold transition-colors"
+            style={{
+              color: '#3a342c',
+              border: '1px solid #E5DDCE',
+              background: 'transparent',
+            }}
           >
             Decline
           </button>
