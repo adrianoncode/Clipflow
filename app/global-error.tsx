@@ -32,31 +32,59 @@ export default function GlobalError({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#fafafa',
-          color: '#18181b',
+          backgroundColor: '#FAF7F2',
+          backgroundImage:
+            'radial-gradient(circle at 2px 2px, rgba(120,90,40,.05) 1px, transparent 0)',
+          backgroundSize: '24px 24px',
+          color: '#181511',
           margin: 0,
           padding: '1rem',
         }}
       >
         <div style={{ textAlign: 'center', maxWidth: 480 }}>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 8 }}>
+          <p
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: '0.25em',
+              color: '#7c7468',
+              textTransform: 'uppercase',
+              marginBottom: 12,
+            }}
+          >
             Something went wrong
+          </p>
+          <h1
+            style={{
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontSize: '3rem',
+              lineHeight: 1.02,
+              letterSpacing: '-0.015em',
+              color: '#2A1A3D',
+              fontWeight: 400,
+              margin: 0,
+              marginBottom: 12,
+            }}
+          >
+            Crashed hard.
           </h1>
-          <p style={{ fontSize: '0.875rem', color: '#71717a', marginBottom: 16 }}>
+          <p style={{ fontSize: 14, color: '#7c7468', marginBottom: 20 }}>
             An unexpected error occurred. We&apos;ve been notified and are looking into it.
           </p>
           <button
             type="button"
             onClick={reset}
             style={{
-              padding: '0.5rem 1rem',
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              borderRadius: 8,
-              border: '1px solid #e4e4e7',
-              background: '#18181b',
-              color: '#fafafa',
+              padding: '10px 18px',
+              fontSize: 14,
+              fontWeight: 700,
+              borderRadius: 10,
+              border: 'none',
+              background: '#2A1A3D',
+              color: '#D6FF3E',
               cursor: 'pointer',
+              boxShadow:
+                'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(42,26,61,.35)',
             }}
           >
             Try again

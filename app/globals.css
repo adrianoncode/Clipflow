@@ -412,3 +412,35 @@
     .conic-glow::before { animation: none !important; }
   }
 }
+
+/* ── Sonner toast palette override (paper/plum/lime) ───────────────── */
+[data-sonner-toaster] [data-icon] svg {
+  color: #2A1A3D;
+}
+[data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] svg {
+  color: #0F6B4D;
+}
+[data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-icon] svg {
+  color: #9B2018;
+}
+[data-sonner-toaster] [data-sonner-toast][data-type="warning"] [data-icon] svg {
+  color: #A0530B;
+}
+[data-sonner-toaster] [data-sonner-toast] [data-close-button] {
+  background: #FFFDF8 !important;
+  border-color: #E5DDCE !important;
+  color: #7c7468 !important;
+}
+[data-sonner-toaster] .lv2-toast-desc { color: #7c7468 !important; }
+[data-sonner-toaster] .lv2-toast-action {
+  background: #2A1A3D !important;
+  color: #D6FF3E !important;
+  border-radius: 8px !important;
+  padding: 4px 10px !important;
+  font-weight: 700 !important;
+}
+[data-sonner-toaster] .lv2-toast-cancel {
+  background: transparent !important;
+  color: #7c7468 !important;
+  border: 1px solid #E5DDCE !important;
+}

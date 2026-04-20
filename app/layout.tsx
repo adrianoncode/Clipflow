@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter, Inter_Tight, Instrument_Serif, JetBrains_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
 import { CookieConsent } from '@/components/cookie-consent'
+import { Toaster } from 'sonner'
 import './globals.css'
 
 // `Inter` remains the workhorse body font used across the app.
@@ -108,6 +109,27 @@ export default function RootLayout({
         <ThemeProvider>
           {children}
           <CookieConsent />
+          <Toaster
+            position="bottom-right"
+            offset={16}
+            toastOptions={{
+              style: {
+                background: '#FFFDF8',
+                border: '1px solid #E5DDCE',
+                color: '#181511',
+                fontFamily: 'var(--font-inter), system-ui, sans-serif',
+                fontSize: 13,
+                borderRadius: 12,
+                boxShadow:
+                  '0 1px 0 rgba(24,21,17,.04), 0 20px 40px -24px rgba(42,26,61,.28)',
+              },
+              classNames: {
+                description: 'lv2-toast-desc',
+                actionButton: 'lv2-toast-action',
+                cancelButton: 'lv2-toast-cancel',
+              },
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>

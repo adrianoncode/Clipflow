@@ -1,34 +1,92 @@
 import Link from 'next/link'
-import { Search, Home, ArrowLeft } from 'lucide-react'
+import { Home, ArrowLeft } from 'lucide-react'
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
-        <Search className="h-8 w-8 text-muted-foreground" />
-      </div>
-      <div className="space-y-2">
-        <p className="text-5xl font-bold tracking-tight text-muted-foreground/30">404</p>
-        <h1 className="text-xl font-bold tracking-tight">Page not found</h1>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          The page you&apos;re looking for doesn&apos;t exist or has been moved.
+    <main
+      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center"
+      style={{
+        background: '#FAF7F2',
+        backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(120,90,40,.05) 1px, transparent 0)',
+        backgroundSize: '24px 24px',
+      }}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{
+          top: -160,
+          right: -100,
+          width: 440,
+          height: 440,
+          background: '#D6FF3E',
+          borderRadius: '50%',
+          filter: 'blur(60px)',
+          opacity: 0.5,
+          mixBlendMode: 'multiply',
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{
+          bottom: -160,
+          left: -100,
+          width: 360,
+          height: 360,
+          background: '#EFE9F5',
+          borderRadius: '50%',
+          filter: 'blur(70px)',
+          opacity: 0.8,
+        }}
+      />
+
+      <div className="relative flex flex-col items-center gap-6">
+        <p
+          className="text-[10px] font-semibold uppercase tracking-[0.25em]"
+          style={{ color: '#7c7468', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+        >
+          Error · 404
         </p>
-      </div>
-      <div className="flex items-center gap-3">
-        <Link
-          href="/dashboard"
-          className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90"
+        <h1
+          className="text-[72px] leading-[0.95] sm:text-[96px]"
+          style={{
+            fontFamily: 'var(--font-instrument-serif), serif',
+            letterSpacing: '-.015em',
+            color: '#2A1A3D',
+          }}
         >
-          <Home className="h-4 w-4" />
-          Dashboard
-        </Link>
-        <Link
-          href="/"
-          className="inline-flex h-10 items-center gap-2 rounded-lg border border-border px-5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Home
-        </Link>
+          Lost the thread.
+        </h1>
+        <p className="max-w-sm text-[15px]" style={{ color: '#7c7468' }}>
+          The page you&apos;re looking for doesn&apos;t exist or was moved. Pick a direction.
+        </p>
+        <div className="mt-2 flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="inline-flex h-11 items-center gap-2 rounded-[10px] px-5 text-sm font-bold transition-transform hover:-translate-y-0.5"
+            style={{
+              background: '#2A1A3D',
+              color: '#D6FF3E',
+              boxShadow: 'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(42,26,61,.35)',
+            }}
+          >
+            <Home className="h-4 w-4" />
+            Dashboard
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex h-11 items-center gap-2 rounded-[10px] border px-5 text-sm font-semibold transition-colors"
+            style={{
+              borderColor: '#E5DDCE',
+              color: '#3a342c',
+              background: 'transparent',
+            }}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Home
+          </Link>
+        </div>
       </div>
     </main>
   )
