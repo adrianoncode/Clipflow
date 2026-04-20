@@ -128,7 +128,19 @@ export function KineticHeadline() {
           }}
         >
           <span className="relative z-10">
-            <RotatingWord words={['posts', 'clips', 'hooks', 'reels', 'shorts']} />
+            <RotatingWord
+              words={[
+                'posts',
+                'clips',
+                'hooks',
+                'reels',
+                'shorts',
+                'threads',
+                'captions',
+                'quotes',
+                'stories',
+              ]}
+            />
             <span>.</span>
           </span>
           <motion.span
