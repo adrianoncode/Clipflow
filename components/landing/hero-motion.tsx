@@ -372,7 +372,7 @@ export function MarqueeScrub({ children }: { children: ReactNode }) {
     let raf = 0
     let hovering = false
     let pointerX = 0
-    let speed = reduce ? 0 : 0.35 // px per frame
+    const speed = reduce ? 0 : 0.35 // px per frame
 
     const tick = () => {
       const track = trackRef.current

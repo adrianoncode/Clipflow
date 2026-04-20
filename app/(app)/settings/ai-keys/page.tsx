@@ -3,6 +3,7 @@ import { AlertTriangle, ChevronRight, Key } from 'lucide-react'
 
 import { ServiceCard } from '@/components/ai-keys/service-card'
 import { SERVICE_DIRECTORY } from '@/components/ai-keys/service-directory'
+import { PageHeading } from '@/components/workspace/page-heading'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 
