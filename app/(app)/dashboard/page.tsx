@@ -36,7 +36,7 @@ import { getSuggestions } from '@/lib/suggestions/get-suggestions'
 import { getActiveBrandVoice } from '@/lib/brand-voice/get-active-brand-voice'
 import { getScheduledOutputs } from '@/lib/schedule/get-scheduled-outputs'
 import { createClient } from '@/lib/supabase/server'
-import { PLATFORM_LABELS } from '@/lib/platforms'
+import { PLATFORM_LABELS, PLATFORM_LONG_LABELS } from '@/lib/platforms'
 import type { OutputPlatform } from '@/lib/supabase/types'
 
 export const dynamic = 'force-dynamic'
@@ -213,8 +213,20 @@ function PlatformDot({ platform }: { platform: OutputPlatform | string }) {
 }
 
 function UsageBar({ used, limit }: { used: number; limit: number }) {
-  const pct = limit === -1 ? 33 : Math.min(100, Math.round((used / limit) * 100))
-  const bar = pct >= 90 ? 'var(--lv2d-danger)' : pct >= 70 ? 'var(--lv2d-warn)' : 'var(--lv2d-primary)'
+  // Unlimited plans get a subtle solid track instead of a fake 33% fill —
+  // a half-empty bar on an unlimited plan reads as "progress toward a cap"
+  // which is exactly the opposite of what we want to communicate.
+  if (limit === -1) {
+    return (
+      <div
+        className="h-1.5 w-full rounded-full"
+        style={{ background: 'var(--lv2d-primary-soft)' }}
+      />
+    )
+  }
+  const pct = Math.min(100, Math.round((used / limit) * 100))
+  const bar =
+    pct >= 90 ? 'var(--lv2d-danger)' : pct >= 70 ? 'var(--lv2d-warn)' : 'var(--lv2d-primary)'
   return (
     <div
       className="h-1.5 w-full overflow-hidden rounded-full"
@@ -222,7 +234,11 @@ function UsageBar({ used, limit }: { used: number; limit: number }) {
     >
       <div
         className="h-full rounded-full"
-        style={{ width: `${pct}%`, background: bar, transition: 'width .9s cubic-bezier(.2,.8,.2,1)' }}
+        style={{
+          width: `${pct}%`,
+          background: bar,
+          transition: 'width .9s cubic-bezier(.2,.8,.2,1)',
+        }}
       />
     </div>
   )
@@ -364,27 +380,27 @@ export default async function DashboardPage() {
 
   // ── Platform Performance — real post counts from stats.outputsByPlatform,
   // mocked view counts + deltas + sparklines until we wire external analytics.
-  const platformPerf = (['tiktok', 'reels', 'shorts', 'linkedin'] as OutputPlatform[]).map(
-    (key, i) => {
-      const posts = stats?.outputsByPlatform?.[key] ?? 0
-      const mockViews = [12_400, 8_900, 6_200, 3_700][i]!
-      const mockDelta = [18, 11, -4, 7][i]!
-      const mockSpark = [
-        [4, 6, 5, 8, 10, 9, 12],
-        [3, 5, 4, 6, 7, 8, 9],
-        [6, 5, 4, 4, 3, 4, 4],
-        [2, 3, 3, 4, 5, 4, 5],
-      ][i]!
-      return {
-        key,
-        name: PLATFORM_LABELS[key] ?? key,
-        posts,
-        views: posts > 0 ? `${(mockViews / 1000).toFixed(1)}K` : '—',
-        delta: posts > 0 ? mockDelta : 0,
-        spark: mockSpark,
-      }
-    },
-  )
+  const platformPerf = (
+    ['tiktok', 'instagram_reels', 'youtube_shorts', 'linkedin'] as OutputPlatform[]
+  ).map((key, i) => {
+    const posts = stats?.outputsByPlatform?.[key] ?? 0
+    const mockViews = [12_400, 8_900, 6_200, 3_700][i]!
+    const mockDelta = [18, 11, -4, 7][i]!
+    const mockSpark = [
+      [4, 6, 5, 8, 10, 9, 12],
+      [3, 5, 4, 6, 7, 8, 9],
+      [6, 5, 4, 4, 3, 4, 4],
+      [2, 3, 3, 4, 5, 4, 5],
+    ][i]!
+    return {
+      key,
+      name: PLATFORM_LONG_LABELS[key] ?? key,
+      posts,
+      views: posts > 0 ? `${(mockViews / 1000).toFixed(1)}K` : '—',
+      delta: posts > 0 ? mockDelta : 0,
+      spark: mockSpark,
+    }
+  })
 
   // ── Team activity — synthesized from real content + output timestamps.
   const activity: Array<{
@@ -422,7 +438,12 @@ export default async function DashboardPage() {
     const connected = aiKeys.some((k) => k.provider === r.key)
     return { ...r, ok: connected }
   })
-  const integrationsNeedAttention = integrationRows.filter((r) => !r.ok && r.key === 'openai').length
+  // "needs attention" only when at least one provider was connected and is
+  // now broken. Fresh accounts with nothing connected aren't "broken" —
+  // the setup checklist already surfaces that state.
+  const integrationsConnected = integrationRows.filter((r) => r.ok).length
+  const integrationsNeedAttention =
+    integrationsConnected > 0 && integrationRows.some((r) => !r.ok && r.key === 'openai') ? 1 : 0
 
   const funnel = [
     {
@@ -438,7 +459,7 @@ export default async function DashboardPage() {
       key: 'process',
       label: 'Processing',
       count: processing ? 1 : 0,
-      sub: processing ? 'rendering' : 'idle',
+      sub: processing ? 'rendering' : 'nothing running',
       tone: { bg: 'var(--lv2d-warn-soft)', fg: 'var(--lv2d-warn)' },
       icon: <Zap className="h-[15px] w-[15px]" />,
       pulse: Boolean(processing),
@@ -453,7 +474,7 @@ export default async function DashboardPage() {
       key: 'review',
       label: 'In review',
       count: pendingReview,
-      sub: pendingReview > 0 ? 'awaiting you' : 'all clear',
+      sub: pendingReview > 0 ? 'waiting on you' : 'nothing waiting',
       tone: { bg: 'var(--lv2d-accent)', fg: 'var(--lv2d-accent-ink)' },
       icon: <Check className="h-[15px] w-[15px]" />,
       cta: pendingReview > 0,
@@ -463,7 +484,7 @@ export default async function DashboardPage() {
       key: 'approved',
       label: 'Approved',
       count: approved,
-      sub: 'ready to ship',
+      sub: approved > 0 ? 'ready to ship' : 'none yet',
       tone: { bg: '#E0EDF7', fg: '#0A66C2' },
       icon: <Calendar className="h-[15px] w-[15px]" />,
       href: workspace ? `/workspace/${workspace.id}/schedule` : '/dashboard',
@@ -505,7 +526,7 @@ export default async function DashboardPage() {
               <h1 className="lv2d-display text-[44px] leading-[1.02]">
                 {greeting}, {firstName}.
               </h1>
-              {hasData && stats && (
+              {hasData && stats ? (
                 <p
                   className="mt-2 max-w-xl text-sm"
                   style={{ color: 'var(--lv2d-muted)' }}
@@ -522,6 +543,14 @@ export default async function DashboardPage() {
                     </>
                   ) : null}
                   . Line up your week in about 4 minutes.
+                </p>
+              ) : (
+                <p
+                  className="mt-2 max-w-xl text-sm"
+                  style={{ color: 'var(--lv2d-muted)' }}
+                >
+                  Connect an AI provider and drop in a video — your first drafts land here in
+                  about 30 seconds.
                 </p>
               )}
             </div>
@@ -941,7 +970,8 @@ export default async function DashboardPage() {
                       >
                         <p className="text-[13px]">No drafts yet.</p>
                         <p className="mt-1 text-[11.5px]">
-                          Import a video to generate your first drafts.
+                          Drop in a video and we&apos;ll have platform-ready cuts in about 30
+                          seconds.
                         </p>
                       </div>
                     ) : (
@@ -1114,15 +1144,19 @@ export default async function DashboardPage() {
                       style={{ borderTop: '1px solid var(--lv2d-border)' }}
                     >
                       <span className="text-[11px]" style={{ color: 'var(--lv2d-muted)' }}>
-                        {scheduled.length} scheduled this week
+                        {scheduled.length === 0
+                          ? 'Approve a draft to schedule it'
+                          : `${scheduled.length} scheduled this week`}
                       </span>
-                      <Link
-                        href={`/workspace/${workspace.id}/schedule`}
-                        className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold transition-colors hover:bg-black/[0.04]"
-                        style={{ color: 'var(--lv2d-muted)' }}
-                      >
-                        <span className="text-sm leading-none">+</span> Schedule post
-                      </Link>
+                      {scheduled.length > 0 && (
+                        <Link
+                          href={`/workspace/${workspace.id}/schedule`}
+                          className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold transition-colors hover:bg-black/[0.04]"
+                          style={{ color: 'var(--lv2d-muted)' }}
+                        >
+                          <span className="text-sm leading-none">+</span> Schedule post
+                        </Link>
+                      )}
                     </div>
                   </section>
 
@@ -1205,7 +1239,7 @@ export default async function DashboardPage() {
                           href="/settings/brand-voice"
                           className="lv2d-btn-ghost mt-3 w-full justify-center"
                         >
-                          Set up voice <ArrowRight className="h-3 w-3" />
+                          Teach it your voice <ArrowRight className="h-3 w-3" />
                         </Link>
                       </div>
                     )}

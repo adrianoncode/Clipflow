@@ -68,8 +68,8 @@ export default async function ApiKeysPage() {
         <div>
           <h1 className="text-lg font-bold tracking-tight">AI Connections</h1>
           <p className="mt-0.5 max-w-2xl text-sm text-muted-foreground">
-            Connect the AI services you want to use. You pay them directly at
-            cost — no markup. All credentials are encrypted at rest.
+            Bring your own AI keys — one connects scripts, captions, hooks, and transcription.
+            You pay your provider directly at cost, no markup. Keys are encrypted at rest.
           </p>
         </div>
       </div>

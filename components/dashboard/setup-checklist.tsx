@@ -57,7 +57,7 @@ export function SetupChecklist({
     {
       id: 'content',
       label: 'Import your first content',
-      description: 'Paste a YouTube link, website URL, or type your script',
+      description: 'Paste a YouTube link, upload a video, or drop in a script',
       done: contentCount > 0,
       href: `/workspace/${workspaceId}/content/new`,
       cta: 'Import',
