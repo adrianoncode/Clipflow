@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Book, HelpCircle, Mail, MessageCircle } from 'lucide-react'
+import { ArrowRight, Book, Mail, MessageCircle } from 'lucide-react'
 
 export const metadata = {
   title: 'Help & docs',
@@ -56,18 +56,17 @@ const SECTIONS = [
 
 export default function HelpCenterPage() {
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-10 p-6 sm:p-10">
+    <div className="mx-auto w-full max-w-4xl space-y-10 px-6 py-20">
       {/* ── Header ── */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-            <HelpCircle className="h-5 w-5 text-primary" />
-          </div>
-          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            Help &amp; docs
-          </h1>
-        </div>
-        <p className="max-w-2xl text-base text-muted-foreground">
+      <div>
+        <p className="lv2L-eyebrow">Support · Docs</p>
+        <h1
+          className="lv2L-display text-[56px] leading-[1.02]"
+          style={{ color: '#2A1A3D' }}
+        >
+          Help &amp; docs.
+        </h1>
+        <p className="mt-3 max-w-2xl text-[15px]" style={{ color: '#3a342c' }}>
           Short answers, no fluff. Pick the stage of the workflow where you&apos;re
           stuck, or scroll to the contact box at the bottom if we haven&apos;t
           written the right article yet.
@@ -75,26 +74,33 @@ export default function HelpCenterPage() {
       </div>
 
       {/* ── Sections ── */}
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         {SECTIONS.map((section) => (
-          <section
-            key={section.title}
-            className="rounded-2xl border border-border/60 bg-card p-5"
-          >
+          <section key={section.title} className="lv2L-card">
             <div className="mb-3 flex items-center gap-2">
-              <Book className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+              <Book
+                className="h-[14px] w-[14px]"
+                style={{ color: '#2A1A3D' }}
+              />
+              <h2
+                className="lv2L-mono text-[10.5px] font-bold uppercase"
+                style={{ color: '#7c7468', letterSpacing: '.2em' }}
+              >
                 {section.title}
               </h2>
             </div>
-            <ul className="space-y-1.5">
+            <ul className="space-y-1">
               {section.items.map((item) => (
                 <li key={item.slug}>
                   <Link
                     href={`/help/${item.slug}`}
-                    className="group flex items-start gap-2 rounded-lg px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-primary/[0.04] hover:text-foreground"
+                    className="group flex items-start gap-2 rounded-lg px-2 py-1.5 text-[13.5px] transition-colors"
+                    style={{ color: '#3a342c' }}
                   >
-                    <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
+                    <ArrowRight
+                      className="mt-[3px] h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5"
+                      style={{ color: '#CFC4AF' }}
+                    />
                     <span>{item.title}</span>
                   </Link>
                 </li>
@@ -105,17 +111,26 @@ export default function HelpCenterPage() {
       </div>
 
       {/* ── Contact fallback ── */}
-      <div className="flex items-start gap-4 rounded-2xl border border-border/60 bg-muted/30 p-5">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-background">
-          <MessageCircle className="h-4 w-4 text-muted-foreground" />
+      <div
+        className="flex items-start gap-4 rounded-2xl p-5"
+        style={{ background: '#F3EDE3', border: '1px solid #E5DDCE' }}
+      >
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+          style={{ background: '#FFFDF8' }}
+        >
+          <MessageCircle className="h-4 w-4" style={{ color: '#2A1A3D' }} />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-semibold">Still stuck?</p>
-          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+          <p className="text-sm font-semibold" style={{ color: '#181511' }}>
+            Still stuck?
+          </p>
+          <p className="mt-0.5 text-[12.5px] leading-relaxed" style={{ color: '#7c7468' }}>
             Reply to any Clipflow email or drop a line to{' '}
             <a
               href="mailto:support@clipflow.to"
-              className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+              className="inline-flex items-center gap-1 font-semibold hover:underline"
+              style={{ color: '#2A1A3D' }}
             >
               <Mail className="h-3 w-3" />
               support@clipflow.to

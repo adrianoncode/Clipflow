@@ -10,15 +10,10 @@ export default function CookiePolicyPage() {
   const updated = 'April 17, 2026'
 
   return (
-    <article className="prose prose-invert mx-auto max-w-3xl px-6 py-16 prose-headings:tracking-tight prose-p:text-muted-foreground prose-a:text-primary prose-li:text-muted-foreground">
-      <Link
-        href="/"
-        className="mb-8 inline-block text-sm text-muted-foreground no-underline hover:text-foreground"
-      >
-        &larr; Back to home
-      </Link>
-      <h1>Cookie Policy</h1>
-      <p className="text-sm text-muted-foreground">Last updated: {updated}</p>
+    <article className="mx-auto max-w-3xl px-6 py-20">
+      <p className="lv2L-eyebrow">Policy · Cookies</p>
+      <h1>Cookie policy.</h1>
+      <p className="mt-3 text-[13px]" style={{ color: '#7c7468' }}>Last updated · {updated}</p>
 
       <h2>1. What are cookies?</h2>
       <p>

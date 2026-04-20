@@ -11,15 +11,10 @@ export default function DmcaPage() {
   const updated = 'April 17, 2026'
 
   return (
-    <article className="prose prose-invert mx-auto max-w-3xl px-6 py-16 prose-headings:tracking-tight prose-p:text-muted-foreground prose-a:text-primary prose-li:text-muted-foreground">
-      <Link
-        href="/"
-        className="mb-8 inline-block text-sm text-muted-foreground no-underline hover:text-foreground"
-      >
-        &larr; Back to home
-      </Link>
-      <h1>DMCA / Copyright Policy</h1>
-      <p className="text-sm text-muted-foreground">Last updated: {updated}</p>
+    <article className="mx-auto max-w-3xl px-6 py-20">
+      <p className="lv2L-eyebrow">Policy · DMCA</p>
+      <h1>Copyright &amp; DMCA.</h1>
+      <p className="mt-3 text-[13px]" style={{ color: '#7c7468' }}>Last updated · {updated}</p>
 
       <h2>1. Our position</h2>
       <p>

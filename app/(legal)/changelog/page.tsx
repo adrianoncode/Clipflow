@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import type { Metadata } from 'next'
 import { Zap, Video, Sparkles } from 'lucide-react'
 
@@ -13,8 +12,8 @@ const ENTRIES = [
     version: 'v1.0',
     title: 'Launch Day',
     icon: Zap,
-    color: 'text-violet-400',
-    bg: 'bg-violet-400/10',
+    color: '#D6FF3E',
+    bg: '#2A1A3D',
     changes: [
       { type: 'new' as const, text: 'One video → 4 platform-native posts (TikTok, Reels, Shorts, LinkedIn)' },
       { type: 'new' as const, text: 'Video rendering via Shotstack — burn captions, assemble B-Roll, smart reframe to 9:16' },
@@ -31,8 +30,8 @@ const ENTRIES = [
     version: 'v0.9',
     title: 'Video & UI Overhaul',
     icon: Video,
-    color: 'text-pink-400',
-    bg: 'bg-pink-400/10',
+    color: '#2A1A3D',
+    bg: '#EDE6F5',
     changes: [
       { type: 'new' as const, text: 'Shotstack video rendering integration' },
       { type: 'new' as const, text: 'Raycast-inspired dark theme across the entire app' },
@@ -46,8 +45,8 @@ const ENTRIES = [
     version: 'v0.8',
     title: 'Core Platform',
     icon: Sparkles,
-    color: 'text-emerald-400',
-    bg: 'bg-emerald-400/10',
+    color: '#0F6B4D',
+    bg: '#E6F4EE',
     changes: [
       { type: 'new' as const, text: '4-platform draft generation — TikTok, Reels, Shorts, LinkedIn' },
       { type: 'new' as const, text: 'BYOK — bring your own OpenAI, Anthropic, or Google key' },
@@ -59,53 +58,98 @@ const ENTRIES = [
   },
 ]
 
-const TYPE_BADGE = {
-  new: { label: 'New', cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
-  improved: { label: 'Improved', cls: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
-  fixed: { label: 'Fixed', cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+const TYPE_BADGE: Record<'new' | 'improved' | 'fixed', { label: string; bg: string; fg: string }> = {
+  new: { label: 'New', bg: '#E6F4EE', fg: '#0F6B4D' },
+  improved: { label: 'Improved', bg: '#EDE6F5', fg: '#2A1A3D' },
+  fixed: { label: 'Fixed', bg: '#FBEDD9', fg: '#A0530B' },
 }
 
 export default function ChangelogPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16">
-      <Link href="/" className="mb-8 inline-block text-sm text-muted-foreground hover:text-foreground">&larr; Back to home</Link>
+    <div className="mx-auto max-w-3xl px-6 py-20">
+      <p className="lv2L-eyebrow">What&apos;s new · Clipflow</p>
+      <h1
+        className="lv2L-display text-[56px] leading-[1.02]"
+        style={{ color: '#2A1A3D' }}
+      >
+        Changelog.
+      </h1>
+      <p className="mt-3 text-[15px]" style={{ color: '#3a342c' }}>
+        New features, improvements, and fixes. Tightest summary, shipped dates.
+      </p>
 
-      <h1 className="text-3xl font-bold tracking-tight">Changelog</h1>
-      <p className="mt-2 text-muted-foreground">New features, improvements, and fixes.</p>
-
-      <div className="mt-12 space-y-12">
-        {ENTRIES.map((entry) => (
-          <div key={entry.version} className="relative">
-            {/* Version header */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${entry.bg}`}>
-                <entry.icon className={`h-4 w-4 ${entry.color}`} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-bold">{entry.title}</h2>
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">{entry.version}</span>
+      <div className="mt-14 space-y-14">
+        {ENTRIES.map((entry, idx) => {
+          const Icon = entry.icon
+          return (
+            <div key={entry.version} className="relative">
+              {/* Version header */}
+              <div className="mb-5 flex items-center gap-3">
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-xl"
+                  style={{ background: entry.bg }}
+                >
+                  <Icon className="h-4 w-4" style={{ color: entry.color }} />
                 </div>
-                <p className="text-xs text-muted-foreground">{entry.date}</p>
-              </div>
-            </div>
-
-            {/* Changes list */}
-            <ul className="ml-[18px] border-l-2 border-border/50 pl-6 space-y-2.5">
-              {entry.changes.map((change, i) => {
-                const badge = TYPE_BADGE[change.type]
-                return (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <span className={`mt-0.5 shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-semibold ${badge.cls}`}>
-                      {badge.label}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2
+                      className="lv2L-display text-[26px] leading-[1]"
+                      style={{ color: '#2A1A3D' }}
+                    >
+                      {entry.title}
+                    </h2>
+                    <span
+                      className="lv2L-mono rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                      style={{
+                        background: '#ECE5D8',
+                        color: '#3a342c',
+                        letterSpacing: '.1em',
+                      }}
+                    >
+                      {entry.version}
                     </span>
-                    <span className="text-sm text-muted-foreground">{change.text}</span>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
-        ))}
+                  </div>
+                  <p
+                    className="lv2L-mono mt-1 text-[10.5px]"
+                    style={{ color: '#7c7468', letterSpacing: '.15em' }}
+                  >
+                    {entry.date.toUpperCase()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Changes list — timeline rail in plum, fades at the bottom of the last group */}
+              <ul
+                className="ml-5 space-y-3 border-l pl-6"
+                style={{
+                  borderColor: idx === ENTRIES.length - 1 ? 'transparent' : '#E5DDCE',
+                }}
+              >
+                {entry.changes.map((change, i) => {
+                  const badge = TYPE_BADGE[change.type]
+                  return (
+                    <li key={i} className="flex items-start gap-2.5">
+                      <span
+                        className="lv2L-mono mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[9.5px] font-bold"
+                        style={{
+                          background: badge.bg,
+                          color: badge.fg,
+                          letterSpacing: '.08em',
+                        }}
+                      >
+                        {badge.label.toUpperCase()}
+                      </span>
+                      <span className="text-[14px]" style={{ color: '#3a342c' }}>
+                        {change.text}
+                      </span>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

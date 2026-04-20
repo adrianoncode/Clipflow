@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -14,15 +13,10 @@ export const metadata: Metadata = {
  */
 export default function ImprintPage() {
   return (
-    <article className="prose prose-invert mx-auto max-w-3xl px-6 py-16 prose-headings:tracking-tight prose-p:text-muted-foreground prose-a:text-primary prose-li:text-muted-foreground">
-      <Link
-        href="/"
-        className="mb-8 inline-block text-sm text-muted-foreground no-underline hover:text-foreground"
-      >
-        &larr; Back to home
-      </Link>
-      <h1>Imprint / Impressum</h1>
-      <p className="text-sm text-muted-foreground">
+    <article className="mx-auto max-w-3xl px-6 py-20">
+      <p className="lv2L-eyebrow">Legal · Imprint</p>
+      <h1>Impressum.</h1>
+      <p className="mt-3 text-[13px]" style={{ color: '#7c7468' }}>
         Information in accordance with §5 TMG and Art. 14 ODR Regulation.
       </p>
 
