@@ -22,6 +22,8 @@ import {
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getAnalytics } from '@/lib/dashboard/get-analytics'
 import { PLATFORM_LABELS, PLATFORM_DOT_COLORS as PLATFORM_COLOR } from '@/lib/platforms'
+import { RefreshStatsButton } from '@/components/analytics/refresh-stats-button'
+import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Analytics' }
@@ -136,6 +138,19 @@ export default async function AnalyticsPage() {
 
   const analytics = await getAnalytics(currentWorkspace.id)
 
+  // Last stats refresh timestamp — used in the header to tell the user
+  // how stale the published-post analytics are right now.
+  const supabaseForStats = createClient()
+  const { data: lastStatsRow } = await supabaseForStats
+    .from('scheduled_posts')
+    .select('stats_fetched_at')
+    .eq('workspace_id', currentWorkspace.id)
+    .not('stats_fetched_at', 'is', null)
+    .order('stats_fetched_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const lastStatsFetchedAt = lastStatsRow?.stats_fetched_at ?? null
+
   const maxPlatform = Math.max(...Object.values(analytics.platformBreakdown), 1)
   const totalItemsWithCoverage =
     analytics.platformCoverage.full +
@@ -201,23 +216,29 @@ export default async function AnalyticsPage() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-8">
       {/* ── Header ── */}
-      <div>
-        <p
-          className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
-          style={{ color: '#7c7468', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
-        >
-          {currentWorkspace.name} · Insights
-        </p>
-        <h1
-          className="text-[44px] leading-[1.02]"
-          style={{
-            fontFamily: 'var(--font-instrument-serif), serif',
-            letterSpacing: '-.015em',
-            color: '#2A1A3D',
-          }}
-        >
-          How your posts perform.
-        </h1>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p
+            className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
+            style={{ color: '#7c7468', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+          >
+            {currentWorkspace.name} · Insights
+          </p>
+          <h1
+            className="text-[44px] leading-[1.02]"
+            style={{
+              fontFamily: 'var(--font-instrument-serif), serif',
+              letterSpacing: '-.015em',
+              color: '#2A1A3D',
+            }}
+          >
+            How your posts perform.
+          </h1>
+        </div>
+        <RefreshStatsButton
+          workspaceId={currentWorkspace.id}
+          lastFetchedAt={lastStatsFetchedAt}
+        />
       </div>
 
       {/* ── Velocity row — KPI cards with week-over-week deltas ── */}
