@@ -271,6 +271,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
                   estimated_duration: string
                 }>) ?? null}
                 estimatedDurationSec={((item.metadata as Record<string, unknown> | null)?.duration_seconds as number) ?? null}
+                sourceUrl={item.source_url ?? null}
               />
             </div>
           </details>

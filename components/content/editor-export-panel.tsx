@@ -9,7 +9,10 @@ import {
   MessageSquare,
   Scissors,
   Copy,
+  Clapperboard,
 } from 'lucide-react'
+
+import { buildFcpxml, type FcpxClip } from '@/lib/export/fcpxml'
 
 /**
  * Editor Export Panel — lets users download their content in formats
@@ -38,6 +41,12 @@ interface EditorExportPanelProps {
   }> | null
   /** Estimated content duration in seconds (for clip timestamp calc). */
   estimatedDurationSec: number | null
+  /**
+   * Absolute HTTPS URL to the source media — included in the FCPXML so
+   * Premiere / Resolve / Final Cut can stream directly without a manual
+   * relink. When null the FCPXML export is disabled.
+   */
+  sourceUrl?: string | null
 }
 
 function downloadFile(content: string, filename: string, mimeType = 'text/plain'): void {
@@ -146,6 +155,31 @@ interface ExportOption {
   onDownload: () => void
 }
 
+// Derives clip in/out seconds for the FCPXML from the AI's best-clip
+// `position_pct` + `estimated_duration`. We use the same heuristic as the
+// EDL generator so both exports describe the same timeline.
+function clipsToFcpxRanges(
+  clips: NonNullable<EditorExportPanelProps['clips']>,
+  duration: number,
+): FcpxClip[] {
+  return clips.map((clip, i) => {
+    const startSec = (clip.position_pct / 100) * duration
+    const durMatch = clip.estimated_duration.match(/(\d+)-?(\d+)?/)
+    const durSec = durMatch
+      ? durMatch[2]
+        ? (parseInt(durMatch[1]!) + parseInt(durMatch[2]!)) / 2
+        : parseInt(durMatch[1]!)
+      : 20
+    const endSec = Math.min(startSec + durSec, duration)
+    return {
+      sourceStart: startSec,
+      sourceEnd: endSec,
+      label: `Clip ${i + 1} · ${clip.type}`.slice(0, 60),
+      markers: [{ at: startSec, note: clip.type.toUpperCase() }],
+    }
+  })
+}
+
 export function EditorExportPanel({
   contentId: _contentId,
   contentTitle,
@@ -154,6 +188,7 @@ export function EditorExportPanel({
   vtt,
   clips,
   estimatedDurationSec,
+  sourceUrl,
 }: EditorExportPanelProps) {
   const [copied, setCopied] = useState(false)
   const safeName = contentTitle.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40)
@@ -166,6 +201,24 @@ export function EditorExportPanel({
   }
 
   const exports: ExportOption[] = [
+    {
+      key: 'fcpxml',
+      label: 'FCPXML project',
+      desc: 'Premiere Pro · DaVinci Resolve · Final Cut — every clip as its own sequence with captions and markers on the timeline. Opens with source media already linked.',
+      icon: Clapperboard,
+      format: '.fcpxml',
+      available: !!sourceUrl && !!clips && clips.length > 0,
+      onDownload: () => {
+        if (!sourceUrl || !clips) return
+        const xml = buildFcpxml({
+          title: contentTitle,
+          sourceUrl,
+          sourceDuration: duration,
+          clips: clipsToFcpxRanges(clips, duration),
+        })
+        downloadFile(xml, `${safeName}.fcpxml`, 'application/xml')
+      },
+    },
     {
       key: 'srt',
       label: 'SRT Subtitles',
@@ -311,8 +364,12 @@ export function EditorExportPanel({
                 <p className="mt-0.5 text-[10px] leading-relaxed text-muted-foreground">
                   {exp.key === 'srt' || exp.key === 'vtt'
                     ? 'Generate subtitles first'
-                    : exp.key === 'edl' || exp.key === 'chapters-vtt'
-                      ? 'Run Clip Finder first'
+                    : exp.key === 'edl' ||
+                        exp.key === 'chapters-vtt' ||
+                        exp.key === 'fcpxml'
+                      ? exp.key === 'fcpxml' && !sourceUrl
+                        ? 'Only available for video sources'
+                        : 'Run Clip Finder first'
                       : 'Not available'}
                 </p>
               </div>
