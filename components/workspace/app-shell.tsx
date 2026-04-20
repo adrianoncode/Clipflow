@@ -1,8 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import {
+  AnimatePresence,
+  LayoutGroup,
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+} from 'framer-motion'
 import {
   BarChart3,
   CheckSquare,
@@ -96,12 +104,18 @@ const SHELL_STYLES = `
 }
 .lv2-shell .lv2s-nav-item:hover { background: rgba(24,21,17,.04); color: var(--lv2s-fg); }
 .lv2-shell .lv2s-nav-item.active {
-  background: var(--lv2s-primary); color: var(--lv2s-accent); font-weight: 600;
+  color: var(--lv2s-accent); font-weight: 600;
 }
-.lv2-shell .lv2s-nav-item.active::before {
+.lv2-shell .lv2s-nav-indicator {
+  position: absolute; inset: 0; z-index: 0; border-radius: 8px;
+  background: var(--lv2s-primary);
+  box-shadow: inset 0 0 0 1px rgba(214,255,62,.12), 0 4px 14px -6px rgba(42,26,61,.35);
+}
+.lv2-shell .lv2s-nav-indicator::before {
   content: ''; position: absolute; left: -10px; top: 50%; transform: translateY(-50%);
   width: 3px; height: 16px; background: var(--lv2s-accent); border-radius: 2px;
 }
+.lv2-shell .lv2s-nav-item > * { position: relative; z-index: 1; }
 .lv2-shell .lv2s-nav-item.locked { color: color-mix(in srgb, var(--lv2s-muted) 65%, transparent); }
 .lv2-shell .lv2s-btn-accent {
   display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
@@ -280,6 +294,14 @@ export function AppShell({
         title={locked ? `${item.label} — ${requiredPlanName} plan` : undefined}
         className={`lv2s-nav-item ${active ? 'active' : ''} ${locked ? 'locked' : ''}`}
       >
+        {active && (
+          <motion.span
+            layoutId="lv2s-nav-indicator"
+            aria-hidden
+            className="lv2s-nav-indicator"
+            transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.6 }}
+          />
+        )}
         <Icon className="h-[15px] w-[15px] shrink-0" />
         <span className="flex-1 leading-none">{item.label}</span>
         {locked && (
@@ -400,21 +422,18 @@ export function AppShell({
             }}
           >
             <div className="flex flex-1 flex-col px-3 py-3">
-              <Link
-                href={`/workspace/${currentWorkspaceId}/content/new`}
-                className="lv2s-btn-accent mb-3"
-              >
-                <Plus className="h-[14px] w-[14px]" /> New content
-              </Link>
+              <NewContentMagnet href={`/workspace/${currentWorkspaceId}/content/new`} />
 
-              {groups.map((g, gi) => (
-                <div key={g.label} className={gi > 0 ? 'mt-4' : ''}>
-                  <p className="lv2s-mono-label mb-1 px-2">{g.label}</p>
-                  <nav className="flex flex-col gap-px">
-                    {g.items.map(renderItem)}
-                  </nav>
-                </div>
-              ))}
+              <LayoutGroup>
+                {groups.map((g, gi) => (
+                  <div key={g.label} className={gi > 0 ? 'mt-4' : ''}>
+                    <p className="lv2s-mono-label mb-1 px-2">{g.label}</p>
+                    <nav className="flex flex-col gap-px">
+                      {g.items.map(renderItem)}
+                    </nav>
+                  </div>
+                ))}
+              </LayoutGroup>
             </div>
 
             {referralLink && (
@@ -432,7 +451,9 @@ export function AppShell({
               className="px-3 py-2"
               style={{ borderTop: '1px solid var(--lv2s-border)' }}
             >
-              <nav className="flex flex-col gap-px">{bottomItems.map(renderItem)}</nav>
+              <LayoutGroup id="bottom-nav">
+                <nav className="flex flex-col gap-px">{bottomItems.map(renderItem)}</nav>
+              </LayoutGroup>
             </div>
           </aside>
 
@@ -441,7 +462,7 @@ export function AppShell({
             className="flex-1 overflow-y-auto pb-16 sm:pb-0"
             tabIndex={-1}
           >
-            {children}
+            <PageTransition pathname={pathname}>{children}</PageTransition>
           </main>
         </div>
 
@@ -567,5 +588,85 @@ export function AppShell({
         )}
       </div>
     </>
+  )
+}
+
+// Wraps the primary sidebar CTA with a magnetic pull on hover. Keeps
+// appearance identical to the plain `.lv2s-btn-accent` but adds spring
+// translation toward the pointer when it's within a short radius.
+function NewContentMagnet({ href }: { href: string }) {
+  const reduce = useReducedMotion()
+  const ref = useRef<HTMLAnchorElement | null>(null)
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const sx = useSpring(x, { stiffness: 240, damping: 18, mass: 0.4 })
+  const sy = useSpring(y, { stiffness: 240, damping: 18, mass: 0.4 })
+
+  useEffect(() => {
+    if (reduce) return
+    const el = ref.current
+    if (!el) return
+    const onMove = (e: MouseEvent) => {
+      const r = el.getBoundingClientRect()
+      const cx = r.left + r.width / 2
+      const cy = r.top + r.height / 2
+      const dx = e.clientX - cx
+      const dy = e.clientY - cy
+      const dist = Math.hypot(dx, dy)
+      const radius = 100
+      if (dist < radius) {
+        const k = (1 - dist / radius) * 0.28
+        x.set(dx * k)
+        y.set(dy * k)
+      } else {
+        x.set(0)
+        y.set(0)
+      }
+    }
+    const onLeave = () => {
+      x.set(0)
+      y.set(0)
+    }
+    window.addEventListener('mousemove', onMove)
+    el.addEventListener('mouseleave', onLeave)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      el.removeEventListener('mouseleave', onLeave)
+    }
+  }, [x, y, reduce])
+
+  return (
+    <motion.div style={{ x: sx, y: sy }} className="mb-3">
+      <Link ref={ref} href={href} className="lv2s-btn-accent w-full">
+        <Plus className="h-[14px] w-[14px]" /> New content
+      </Link>
+    </motion.div>
+  )
+}
+
+// Fades + slides the main content in on route change. Keyed on pathname so
+// Next's App Router triggers the enter animation each navigation. Bypasses
+// the animation under reduced motion so screens don't flash.
+function PageTransition({
+  children,
+  pathname,
+}: {
+  children: React.ReactNode
+  pathname: string
+}) {
+  const reduce = useReducedMotion()
+  if (reduce) return <>{children}</>
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={pathname}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
   )
 }
