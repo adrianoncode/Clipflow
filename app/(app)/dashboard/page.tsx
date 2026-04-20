@@ -301,7 +301,30 @@ export default async function DashboardPage() {
   const workspace =
     workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal ?? workspaces[0]
 
-  const [aiKeys, stats, usage, plan, suggestions, brandVoice, scheduled] =
+  // Every per-workspace query runs in a single parallel batch so the page
+  // waits on the slowest one, not the sum. `recentOutputs` used to hang
+  // off a sequential second round-trip — fold it in here.
+  const recentOutputsQuery = async () => {
+    if (!workspace) return []
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('outputs')
+      .select('id, platform, current_state, created_at, content_items(title)')
+      .eq('workspace_id', workspace.id)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(5)
+    return (data ?? []).map((o) => ({
+      id: o.id,
+      title:
+        (o.content_items as unknown as { title: string | null } | null)?.title ?? 'Untitled',
+      platform: o.platform,
+      state: o.current_state ?? 'draft',
+      created_at: o.created_at,
+    }))
+  }
+
+  const [aiKeys, stats, usage, plan, suggestions, brandVoice, scheduled, recentOutputs] =
     workspace && user
       ? await Promise.all([
           getAiKeys(workspace.id),
@@ -311,36 +334,15 @@ export default async function DashboardPage() {
           getSuggestions(workspace.id),
           getActiveBrandVoice(workspace.id),
           getScheduledOutputs(workspace.id),
+          recentOutputsQuery(),
         ])
-      : [[], null, null, 'free' as const, [], null, []]
-
-  // Recent outputs for the "Recent drafts" panel — cheap dedicated query
-  // to avoid coupling with the stats aggregator.
-  let recentOutputs: Array<{
-    id: string
-    title: string
-    platform: string
-    state: string
-    created_at: string
-  }> = []
-  if (workspace) {
-    const supabase = await createClient()
-    const { data } = await supabase
-      .from('outputs')
-      .select('id, platform, current_state, created_at, content_items(title)')
-      .eq('workspace_id', workspace.id)
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false })
-      .limit(5)
-    recentOutputs = (data ?? []).map((o) => ({
-      id: o.id,
-      title:
-        (o.content_items as unknown as { title: string | null } | null)?.title ?? 'Untitled',
-      platform: o.platform,
-      state: o.current_state ?? 'draft',
-      created_at: o.created_at,
-    }))
-  }
+      : [[], null, null, 'free' as const, [], null, [], [] as Array<{
+          id: string
+          title: string
+          platform: string
+          state: string
+          created_at: string
+        }>]
 
   const planDef = PLANS[plan ?? 'free']
   const hasLlm = aiKeys.some((k) => ['openai', 'anthropic', 'google'].includes(k.provider))
