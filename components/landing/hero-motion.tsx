@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import {
+  AnimatePresence,
   motion,
   useInView,
   useMotionValue,
@@ -126,7 +127,10 @@ export function KineticHeadline() {
             },
           }}
         >
-          <span className="relative z-10">posts.</span>
+          <span className="relative z-10">
+            <RotatingWord words={['posts', 'clips', 'hooks', 'reels', 'shorts']} />
+            <span>.</span>
+          </span>
           <motion.span
             aria-hidden
             className="absolute bottom-1.5 left-0 right-0 z-0 h-4"
@@ -197,6 +201,214 @@ export function MagneticButton({ href, children }: { href: string; children: Rea
         <span aria-hidden className="lv2-magnetic-shine" />
       </Link>
     </motion.div>
+  )
+}
+
+// Cycles through a list of words with a vertical slot transition. Used in
+// the hero headline to keep the last word alive without redrawing the line.
+export function RotatingWord({ words, interval = 2200 }: { words: string[]; interval?: number }) {
+  const reduce = useReducedMotion()
+  const [i, setI] = useState(0)
+  useEffect(() => {
+    if (reduce) return
+    const t = window.setInterval(() => setI((v) => (v + 1) % words.length), interval)
+    return () => window.clearInterval(t)
+  }, [words.length, interval, reduce])
+  const current = words[i]
+  return (
+    <span className="relative inline-flex overflow-hidden align-baseline" style={{ height: '1em' }}>
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span
+          key={current}
+          className="inline-block whitespace-nowrap"
+          initial={reduce ? false : { y: '0.9em', opacity: 0, filter: 'blur(6px)' }}
+          animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
+          exit={reduce ? { opacity: 0 } : { y: '-0.9em', opacity: 0, filter: 'blur(6px)' }}
+          transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+        >
+          {current}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  )
+}
+
+// Custom site-wide cursor. A small lime dot tracks the pointer with spring
+// physics; a ring expands when hovering anything tagged `data-cursor`.
+// The native cursor stays visible for accessibility — this is an overlay.
+export function CustomCursor() {
+  const reduce = useReducedMotion()
+  const [enabled, setEnabled] = useState(false)
+  const [hovering, setHovering] = useState(false)
+  const x = useMotionValue(-100)
+  const y = useMotionValue(-100)
+  const sx = useSpring(x, { stiffness: 500, damping: 35, mass: 0.25 })
+  const sy = useSpring(y, { stiffness: 500, damping: 35, mass: 0.25 })
+  const rx = useSpring(x, { stiffness: 180, damping: 22, mass: 0.6 })
+  const ry = useSpring(y, { stiffness: 180, damping: 22, mass: 0.6 })
+
+  useEffect(() => {
+    if (reduce) return
+    const fine = window.matchMedia('(pointer: fine)').matches
+    if (!fine) return
+    setEnabled(true)
+    const onMove = (e: MouseEvent) => {
+      x.set(e.clientX)
+      y.set(e.clientY)
+      const t = e.target as HTMLElement | null
+      const h = !!t?.closest(
+        'a, button, [role="button"], input, textarea, select, .lv2-magnetic, .lv2-tilt-card, .lv2-step-card, .lv2-card-hover, .lv2-thumb',
+      )
+      setHovering(h)
+    }
+    window.addEventListener('mousemove', onMove, { passive: true })
+    return () => window.removeEventListener('mousemove', onMove)
+  }, [x, y, reduce])
+
+  if (!enabled) return null
+
+  return (
+    <>
+      <motion.div
+        aria-hidden
+        className="pointer-events-none fixed z-[70]"
+        style={{
+          x: sx,
+          y: sy,
+          translateX: '-50%',
+          translateY: '-50%',
+          width: 8,
+          height: 8,
+          borderRadius: 999,
+          background: '#D6FF3E',
+          mixBlendMode: 'difference',
+          opacity: hovering ? 0 : 1,
+          transition: 'opacity .2s',
+        }}
+      />
+      <motion.div
+        aria-hidden
+        className="pointer-events-none fixed z-[69]"
+        style={{
+          x: rx,
+          y: ry,
+          translateX: '-50%',
+          translateY: '-50%',
+          width: hovering ? 46 : 28,
+          height: hovering ? 46 : 28,
+          borderRadius: 999,
+          border: '1.5px solid rgba(42,26,61,0.55)',
+          background: hovering ? 'rgba(214,255,62,0.18)' : 'transparent',
+          transition: 'width .25s cubic-bezier(.2,.8,.2,1), height .25s cubic-bezier(.2,.8,.2,1), background .25s',
+        }}
+      />
+    </>
+  )
+}
+
+// Vertical progress rail that fills as the user scrolls through a target.
+// Pass the container ref; the rail scales from 0→1 across the section.
+export function StepProgressRail({
+  containerRef,
+  orientation = 'horizontal',
+}: {
+  containerRef: React.RefObject<HTMLElement>
+  orientation?: 'horizontal' | 'vertical'
+}) {
+  const reduce = useReducedMotion()
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start 80%', 'end 60%'],
+  })
+  const scale = useSpring(scrollYProgress, { stiffness: 90, damping: 22, mass: 0.5 })
+  if (reduce) return null
+  const isH = orientation === 'horizontal'
+  return (
+    <motion.span
+      aria-hidden
+      className={
+        isH
+          ? 'pointer-events-none absolute left-[12%] right-[12%] top-[66px] z-[1] hidden h-[2px] lg:block'
+          : 'pointer-events-none absolute left-1/2 top-0 hidden h-full w-[2px] -translate-x-1/2 md:block'
+      }
+      style={{
+        scaleX: isH ? scale : undefined,
+        scaleY: isH ? undefined : scale,
+        transformOrigin: isH ? 'left' : 'top',
+        background: isH
+          ? 'linear-gradient(90deg, rgba(214,255,62,0) 0%, #D6FF3E 12%, #D6FF3E 88%, rgba(214,255,62,0) 100%)'
+          : 'linear-gradient(180deg, rgba(214,255,62,0) 0%, #D6FF3E 12%, #D6FF3E 88%, rgba(214,255,62,0) 100%)',
+        boxShadow: '0 0 10px rgba(214,255,62,.6)',
+      }}
+    />
+  )
+}
+
+// Marquee that autoplays left-to-right but scrubs to follow cursor X when
+// hovered. Replaces the CSS-only `.lv2-marquee` in contexts that need the
+// interactive feel.
+export function MarqueeScrub({ children }: { children: ReactNode }) {
+  const reduce = useReducedMotion()
+  const trackRef = useRef<HTMLDivElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const offset = useMotionValue(0)
+  const smooth = useSpring(offset, { stiffness: 120, damping: 28, mass: 0.6 })
+
+  useEffect(() => {
+    const track = trackRef.current
+    if (!track) return
+    let raf = 0
+    let hovering = false
+    let pointerX = 0
+    let speed = reduce ? 0 : 0.35 // px per frame
+
+    const tick = () => {
+      const track = trackRef.current
+      if (!track) return
+      const halfWidth = track.scrollWidth / 2
+      if (hovering && containerRef.current) {
+        const r = containerRef.current.getBoundingClientRect()
+        const norm = (pointerX - r.left) / r.width // 0..1
+        const target = -norm * halfWidth
+        offset.set(target)
+      } else {
+        let cur = offset.get() - speed
+        if (cur <= -halfWidth) cur += halfWidth
+        offset.set(cur)
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+
+    const host = containerRef.current
+    if (host) {
+      const enter = () => (hovering = true)
+      const leave = () => (hovering = false)
+      const move = (e: MouseEvent) => (pointerX = e.clientX)
+      host.addEventListener('mouseenter', enter)
+      host.addEventListener('mouseleave', leave)
+      host.addEventListener('mousemove', move)
+      return () => {
+        cancelAnimationFrame(raf)
+        host.removeEventListener('mouseenter', enter)
+        host.removeEventListener('mouseleave', leave)
+        host.removeEventListener('mousemove', move)
+      }
+    }
+    return () => cancelAnimationFrame(raf)
+  }, [offset, reduce])
+
+  return (
+    <div ref={containerRef} className="relative">
+      <motion.div
+        ref={trackRef}
+        className="flex gap-12 whitespace-nowrap"
+        style={{ x: smooth, willChange: 'transform' }}
+      >
+        {children}
+        {children}
+      </motion.div>
+    </div>
   )
 }
 

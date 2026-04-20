@@ -4,13 +4,16 @@ import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 
 import {
+  CustomCursor,
   FlipNumber,
   HeroSpotlight,
   KineticHeadline,
   MagneticButton,
   MagneticWrap,
+  MarqueeScrub,
   PricingTilt,
   ScrollRail,
+  StepProgressRail,
   TiltWrap,
   WordReveal,
 } from './hero-motion'
@@ -23,6 +26,7 @@ interface NewLandingProps {
 
 export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLandingProps) {
   const rootRef = useRef<HTMLDivElement | null>(null)
+  const stepsRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const root = rootRef.current
@@ -146,6 +150,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
   return (
     <div ref={rootRef} className="lv2-root lv2-paper">
       <ScrollRail />
+      <CustomCursor />
       {/* Scoped design tokens + animations for the landing page only.
           All custom classes prefixed `lv2-` to avoid colliding with the app theme. */}
       <style
@@ -926,8 +931,8 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
       >
         <p className="lv2-mono-label mb-5 text-center">Teams turning long-form into daily posts</p>
         <div className="lv2-edge-fade overflow-hidden">
-          <div className="lv2-marquee">
-            {[0, 1].map((rep) => (
+          <MarqueeScrub>
+            {[0].map((rep) => (
               <div key={rep} className="flex items-center gap-12 px-6">
                 <span className="lv2-display text-[26px]" style={{ color: 'var(--lv2-fg-soft)' }}>
                   Lattice
@@ -976,7 +981,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 </span>
               </div>
             ))}
-          </div>
+          </MarqueeScrub>
         </div>
       </section>
 
@@ -1172,8 +1177,12 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           </p>
         </div>
 
-        <div className="lv2-reveal-stagger relative grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <div
+          ref={stepsRef}
+          className="lv2-reveal-stagger relative grid gap-5 md:grid-cols-2 lg:grid-cols-4"
+        >
           <div className="lv2-rule absolute left-[12%] right-[12%] top-[66px] z-0 hidden lg:block" />
+          <StepProgressRail containerRef={stepsRef} />
 
           {[
             {
