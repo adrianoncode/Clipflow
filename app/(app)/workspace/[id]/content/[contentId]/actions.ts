@@ -690,6 +690,18 @@ export interface BestClip {
   type: 'hook' | 'insight' | 'story' | 'controversial' | 'funny'
   energy: 'high' | 'medium'
   estimated_duration: string
+  /**
+   * Virality prediction 0-100. Optional for backwards compatibility —
+   * clips extracted before the field was introduced have no score and
+   * render as "—" in the UI.
+   */
+  virality_score?: number
+  /**
+   * One-sentence rationale for the virality_score. Distinct from `reason`
+   * (which explains "why clip-worthy at all"). Surfaces on the score
+   * tooltip so users understand the ranking.
+   */
+  why_viral?: string
 }
 
 export type FindBestClipsState =
@@ -726,7 +738,7 @@ export async function findBestClipsAction(
   }
 
   const systemPrompt =
-    'You are a viral content editor. Analyze this transcript and find the 3-5 best clip-worthy moments. For each clip, identify: the exact quote, why it\'s clip-worthy, estimated start position (as percentage 0-100 of total content), and clip type. Return JSON: { "clips": [{ "quote": string (exact words, 10-50 words), "reason": string (why this is clip-worthy), "position_pct": number (0-100), "type": "hook"|"insight"|"story"|"controversial"|"funny", "energy": "high"|"medium", "estimated_duration": string (e.g. "15-30 seconds") }] }'
+    'You are a viral content editor. Analyze this transcript and find the 3-5 best clip-worthy moments. For each clip, identify: the exact quote, why it\'s clip-worthy, estimated start position (as percentage 0-100 of total content), clip type, a virality score 0-100 (how likely to go viral), and a one-sentence reason why the score is that high. Return JSON: { "clips": [{ "quote": string (exact words, 10-50 words), "reason": string (why this is clip-worthy), "position_pct": number (0-100), "type": "hook"|"insight"|"story"|"controversial"|"funny", "energy": "high"|"medium", "estimated_duration": string (e.g. "15-30 seconds"), "virality_score": number (0-100, honest — reserve 85+ for truly shareable moments), "why_viral": string (one sentence explaining the score) }] }'
 
   const userPrompt = item.transcript.slice(0, 8000)
 
@@ -758,17 +770,33 @@ export async function findBestClipsAction(
 
     clips = clipsArr
       .filter((c): c is Record<string, unknown> => typeof c === 'object' && c !== null)
-      .map((c) => ({
-        quote: typeof c.quote === 'string' ? c.quote : '',
-        reason: typeof c.reason === 'string' ? c.reason : '',
-        position_pct: typeof c.position_pct === 'number' ? c.position_pct : 0,
-        type: (['hook', 'insight', 'story', 'controversial', 'funny'] as const).includes(c.type as 'hook')
-          ? (c.type as BestClip['type'])
-          : 'insight',
-        energy: (c.energy === 'high' ? 'high' : 'medium') as BestClip['energy'],
-        estimated_duration: typeof c.estimated_duration === 'string' ? c.estimated_duration : '15-30 seconds',
-      }))
+      .map((c) => {
+        const rawScore = typeof c.virality_score === 'number' ? c.virality_score : undefined
+        const virality_score =
+          rawScore !== undefined
+            ? Math.max(0, Math.min(100, Math.round(rawScore)))
+            : undefined
+        return {
+          quote: typeof c.quote === 'string' ? c.quote : '',
+          reason: typeof c.reason === 'string' ? c.reason : '',
+          position_pct: typeof c.position_pct === 'number' ? c.position_pct : 0,
+          type: (['hook', 'insight', 'story', 'controversial', 'funny'] as const).includes(
+            c.type as 'hook',
+          )
+            ? (c.type as BestClip['type'])
+            : 'insight',
+          energy: (c.energy === 'high' ? 'high' : 'medium') as BestClip['energy'],
+          estimated_duration:
+            typeof c.estimated_duration === 'string' ? c.estimated_duration : '15-30 seconds',
+          virality_score,
+          why_viral: typeof c.why_viral === 'string' ? c.why_viral : undefined,
+        }
+      })
       .filter((c) => c.quote.length > 0)
+      // Sort by virality descending — best clips first. Undefined scores
+      // fall to the bottom so a freshly-mixed batch with legacy + new
+      // entries still puts the scored winners on top.
+      .sort((a, b) => (b.virality_score ?? -1) - (a.virality_score ?? -1))
   } catch {
     return { ok: false, code: 'unknown', error: 'Could not parse clips response.' }
   }
