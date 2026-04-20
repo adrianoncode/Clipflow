@@ -123,6 +123,8 @@ export async function makeVideoPipeline(
     })
   }
 
+  const totalTimeline = introDuration + clipLength + outroDuration
+
   const renderResult = await submitRender({
     clips,
     subtitles,
@@ -131,6 +133,16 @@ export async function makeVideoPipeline(
     captionStyle: input.captionStyle ?? 'tiktok-bold',
     hookText: input.hookText ?? undefined,
     resolution: '1080',
+    workspaceId: input.workspaceId,
+    brandKit: brandKit
+      ? {
+          accentColor: brandKit.accentColor,
+          fontFamily: brandKit.fontFamily,
+          logoUrl: brandKit.logoUrl,
+          watermarkPosition: brandKit.watermarkPosition,
+          timelineDuration: totalTimeline,
+        }
+      : undefined,
   })
 
   if (!renderResult.ok) return { ok: false, error: renderResult.error }

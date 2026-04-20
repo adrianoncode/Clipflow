@@ -61,6 +61,18 @@ function buildCaptionHtml(text: string, style: CaptionStyle): string {
   }
 }
 
+export interface RenderBrandKit {
+  /** Hex colour used as the gradient tint on intro/outro title cards. */
+  accentColor?: string
+  /** Font family string applied to title cards + hook HTML. */
+  fontFamily?: string
+  /** HTTPS logo URL — gets overlaid on every frame as a watermark. */
+  logoUrl?: string
+  watermarkPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+  /** Total timeline duration in seconds — the watermark runs edge-to-edge. */
+  timelineDuration?: number
+}
+
 export interface RenderInput {
   /** Video clips (B-Roll footage) */
   clips: ShotstackClip[]
@@ -82,6 +94,12 @@ export interface RenderInput {
    * falls back to the platform key.
    */
   workspaceId?: string
+  /**
+   * Optional per-workspace brand overrides. When provided, title cards
+   * pick up the accent colour + font, and a persistent logo watermark
+   * is stamped into the requested corner for the whole timeline.
+   */
+  brandKit?: RenderBrandKit
 }
 
 /**
@@ -158,14 +176,16 @@ export async function submitRender(input: RenderInput): Promise<
     })
   }
 
-  // Track 3: Title cards
+  // Track 3: Title cards — respect the workspace brand kit when set.
   const titleClips = input.clips.filter((c) => c.type === 'title')
   if (titleClips.length > 0) {
+    const accent = input.brandKit?.accentColor ?? '#2A1A3D'
+    const font = input.brandKit?.fontFamily ?? 'Arial'
     tracks.push({
       clips: titleClips.map((clip) => ({
         asset: {
           type: 'html',
-          html: `<p style="font-family:Arial;font-size:56px;font-weight:bold;color:white;text-align:center;">${escapeHtml(clip.text ?? '')}</p>`,
+          html: `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(135deg,${accent}CC,${accent}22),#0a0a0b;padding:48px;box-sizing:border-box;"><p style="font-family:'${font}',Arial,sans-serif;font-size:64px;font-weight:800;color:#FFFFFF;text-align:center;line-height:1.15;letter-spacing:-1px;max-width:92%;">${escapeHtml(clip.text ?? '')}</p></div>`,
           width: 1080,
           height: 1920,
           background: '#0a0a0b',
@@ -173,6 +193,35 @@ export async function submitRender(input: RenderInput): Promise<
         start: clip.start,
         length: clip.length,
       })),
+    })
+  }
+
+  // Track 4: Persistent logo watermark — runs the full timeline so it's
+  // always on top of video + subtitles. Positioned via Shotstack's
+  // normalized offset coordinates (x/y -0.5..0.5 from center).
+  if (input.brandKit?.logoUrl && input.brandKit?.timelineDuration && input.brandKit.timelineDuration > 0) {
+    const pos = input.brandKit.watermarkPosition ?? 'bottom-right'
+    // Rough safe-zone anchors so the logo sits in the corner with a
+    // 40-60 px margin from the edges on a 1080×1920 canvas.
+    const offset =
+      pos === 'top-left'
+        ? { x: -0.42, y: 0.45 }
+        : pos === 'top-right'
+          ? { x: 0.42, y: 0.45 }
+          : pos === 'bottom-left'
+            ? { x: -0.42, y: -0.45 }
+            : { x: 0.42, y: -0.45 }
+    tracks.push({
+      clips: [
+        {
+          asset: { type: 'image', src: input.brandKit.logoUrl },
+          start: 0,
+          length: input.brandKit.timelineDuration,
+          fit: 'none',
+          scale: 0.12,
+          offset,
+        },
+      ],
     })
   }
 
