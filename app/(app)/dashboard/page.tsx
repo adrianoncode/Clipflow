@@ -130,6 +130,46 @@ const DASH_STYLES = `
   background: linear-gradient(90deg, transparent, rgba(214,255,62,.7), transparent);
   animation: lv2d-shimmer 2.2s linear infinite;
 }
+@property --lv2d-beam-angle {
+  syntax: '<angle>'; initial-value: 0deg; inherits: false;
+}
+@keyframes lv2d-beam-spin { to { --lv2d-beam-angle: 360deg; } }
+.lv2-dash .lv2d-beam { position: relative; isolation: isolate; }
+.lv2-dash .lv2d-beam::before {
+  content: ''; position: absolute; inset: -1.5px; border-radius: inherit; padding: 1.5px;
+  background: conic-gradient(
+    from var(--lv2d-beam-angle),
+    transparent 0deg, transparent 210deg,
+    rgba(214,255,62,0.0) 240deg, rgba(214,255,62,0.9) 268deg,
+    #FFFFFF 275deg, rgba(214,255,62,0.9) 282deg,
+    rgba(214,255,62,0.0) 310deg, transparent 360deg
+  );
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude; -webkit-mask-composite: xor;
+  animation: lv2d-beam-spin 4.5s linear infinite;
+  pointer-events: none; z-index: 3;
+  filter: drop-shadow(0 0 6px rgba(214,255,62,0.55));
+}
+@keyframes lv2d-fadeup {
+  from { opacity: 0; transform: translateY(8px); filter: blur(6px); }
+  to   { opacity: 1; transform: translateY(0);   filter: blur(0); }
+}
+.lv2-dash .lv2d-enter { animation: lv2d-fadeup .55s cubic-bezier(.2,.8,.2,1) both; }
+.lv2-dash .lv2d-enter-d1 { animation-delay: .06s; }
+.lv2-dash .lv2d-enter-d2 { animation-delay: .12s; }
+.lv2-dash .lv2d-enter-d3 { animation-delay: .18s; }
+.lv2-dash .lv2d-card-lift { transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, border-color .25s; }
+.lv2-dash .lv2d-card-lift:hover {
+  transform: translateY(-3px);
+  border-color: var(--lv2d-border-strong);
+  box-shadow: 0 1px 0 rgba(24,21,17,.04), 0 24px 40px -24px rgba(42,26,61,.25);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lv2-dash .lv2d-beam::before,
+  .lv2-dash .lv2d-enter,
+  .lv2-dash .lv2d-card-lift { animation: none !important; transition: none !important; }
+}
 .lv2-dash .lv2d-thumb {
   background:
     repeating-linear-gradient(115deg, rgba(42,26,61,.1) 0 4px, rgba(42,26,61,.02) 4px 12px),
@@ -523,12 +563,12 @@ export default async function DashboardPage() {
                 })}
                 {workspace?.name ? ` · ${workspace.name}` : ''}
               </p>
-              <h1 className="lv2d-display text-[44px] leading-[1.02]">
+              <h1 className="lv2d-display lv2d-enter text-[44px] leading-[1.02]">
                 {greeting}, {firstName}.
               </h1>
               {hasData && stats ? (
                 <p
-                  className="mt-2 max-w-xl text-sm"
+                  className="lv2d-enter lv2d-enter-d1 mt-2 max-w-xl text-sm"
                   style={{ color: 'var(--lv2d-muted)' }}
                 >
                   <b style={{ color: 'var(--lv2d-fg)' }}>
@@ -1296,7 +1336,7 @@ export default async function DashboardPage() {
                       {plan === 'free' && (
                         <Link
                           href="/billing"
-                          className="lv2d-btn-primary mt-2 w-full justify-center"
+                          className="lv2d-btn-primary lv2d-beam mt-2 w-full justify-center"
                         >
                           <Zap className="h-3 w-3" /> Upgrade <ArrowRight className="h-3 w-3" />
                         </Link>
