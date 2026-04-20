@@ -29,7 +29,7 @@ export default function NewWorkspacePage({ searchParams }: NewWorkspacePageProps
         <p className="text-sm text-muted-foreground">
           {isClientContext
             ? "Give your client their own workspace. Their brand voice, drafts, and schedule stay separate from everyone else's."
-            : 'Create a separate space for a different brand, client, or project.'}
+            : 'Keep brand voice, drafts, and schedules separate per brand or project.'}
         </p>
       </div>
       <NewWorkspaceForm defaultTypeHint={isClientContext ? 'client' : undefined} />

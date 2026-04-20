@@ -36,8 +36,8 @@ export default async function ProfileSettingsPage() {
       <div className="flex max-w-xl items-start gap-3 rounded-xl border border-border/40 bg-muted/20 p-4">
         <Shield className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/50" />
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Your account is secured with Supabase Auth. Passwords are never stored
-          in plain text. Two-factor authentication support is coming soon.
+          Your account is secured with Supabase Auth. Passwords are hashed, never
+          stored in plain text.
         </p>
       </div>
 

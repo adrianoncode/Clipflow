@@ -25,9 +25,9 @@ export default function GlobalError({
         <AlertTriangle className="h-8 w-8 text-destructive" />
       </div>
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight">Something went wrong</h1>
+        <h1 className="text-2xl font-bold tracking-tight">That didn&apos;t work</h1>
         <p className="max-w-md text-sm text-muted-foreground">
-          {error.message || 'An unexpected error occurred. Please try again or go back to the dashboard.'}
+          {error.message || "We've logged the error. Try again, or head back to the dashboard and we'll pick up where you left off."}
         </p>
       </div>
       <div className="flex items-center gap-3">

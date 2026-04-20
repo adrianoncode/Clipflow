@@ -43,7 +43,7 @@ export function SeoPanel({ workspaceId, contentId, initialSeo }: SeoPanelProps) 
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-xs text-muted-foreground">
-          Generate SEO-optimized keywords, title, and meta description for your content.
+          Generate SEO keywords, a page title, and a search-result description for your content.
         </p>
         <form action={formAction} className="flex items-center gap-2">
           <input type="hidden" name="workspace_id" value={workspaceId} />
@@ -99,7 +99,7 @@ export function SeoPanel({ workspaceId, contentId, initialSeo }: SeoPanelProps) 
             {/* Meta description */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-                Meta Description
+                Search Description
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">{seo.meta_description}</p>
             </div>

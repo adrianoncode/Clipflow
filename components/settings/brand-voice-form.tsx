@@ -118,7 +118,7 @@ export function BrandVoiceForm({ workspaceId, existing }: BrandVoiceFormProps) {
         ) : null}
 
         {saveState.ok === true ? (
-          <FormMessage variant="success">Brand voice saved.</FormMessage>
+          <FormMessage variant="success">Voice saved — your next generation will use it.</FormMessage>
         ) : null}
 
         <SaveButton />

@@ -119,7 +119,7 @@ export function PipelineBulkBar({ workspaceId, selected, onClear }: PipelineBulk
         {/* Mark as published */}
         <button
           type="button"
-          onClick={() => runAction('export', bulkExportAction, 'Marked as published:')}
+          onClick={() => runAction('export', bulkExportAction, 'Marked exported:')}
           disabled={isPending}
           className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-blue-700 transition-all hover:bg-blue-50 disabled:opacity-50"
         >
@@ -128,7 +128,7 @@ export function PipelineBulkBar({ workspaceId, selected, onClear }: PipelineBulk
           ) : (
             <Send className="h-3.5 w-3.5" />
           )}
-          Published
+          Mark exported
         </button>
 
         {banner && (

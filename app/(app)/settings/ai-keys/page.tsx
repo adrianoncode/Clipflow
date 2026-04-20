@@ -154,7 +154,7 @@ export default async function ApiKeysPage() {
       <details className="group rounded-xl border border-border/50 bg-card">
         <summary className="flex cursor-pointer items-center gap-1.5 px-4 py-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
           <ChevronRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" />
-          New here? Connect in 2 minutes
+          First time? Walk through it in 2 minutes
         </summary>
         <div className="border-t border-border/40 p-5">
           <ol className="grid gap-4 sm:grid-cols-3">
@@ -172,7 +172,7 @@ export default async function ApiKeysPage() {
               {
                 step: '3',
                 title: 'Paste it here',
-                body: 'Click "Connect" next to the provider, paste the key, done. We encrypt it at rest.',
+                body: 'Hit "Connect" next to the provider and paste your key. We encrypt it at rest.',
               },
             ].map((s) => (
               <li key={s.step} className="flex gap-3">

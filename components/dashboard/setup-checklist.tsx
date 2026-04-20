@@ -66,7 +66,7 @@ export function SetupChecklist({
     {
       id: 'outputs',
       label: 'Generate drafts',
-      description: 'Clipflow creates TikTok, Reels, Shorts & LinkedIn posts for you',
+      description: 'One script in, platform-ready drafts for TikTok, Reels, Shorts & LinkedIn out',
       done: outputCount > 0,
       href: firstReadyContentId
         ? `/workspace/${workspaceId}/content/${firstReadyContentId}/outputs`
@@ -104,9 +104,9 @@ export function SetupChecklist({
             <PartyPopper className="h-6 w-6" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-lg font-bold text-foreground">You&apos;re all set!</h3>
+            <h3 className="text-lg font-bold text-foreground">Setup complete</h3>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              You&apos;ve completed the setup. Start creating amazing content.
+              Everything&apos;s wired up. Time to ship some posts.
             </p>
           </div>
           <button

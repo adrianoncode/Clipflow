@@ -83,7 +83,7 @@ export function EditOutputDialog({ output, open, onOpenChange }: EditOutputDialo
                   id="hook"
                   name="hook"
                   defaultValue={structured.hook}
-                  placeholder="Opening line that stops the scroll"
+                  placeholder="The first line — make it stop the scroll"
                 />
               </div>
 
@@ -93,7 +93,7 @@ export function EditOutputDialog({ output, open, onOpenChange }: EditOutputDialo
                   id="script"
                   name="script"
                   defaultValue={structured.script}
-                  placeholder="Main body of the video script"
+                  placeholder="What you'll say on camera"
                   className="min-h-[120px]"
                 />
               </div>
@@ -106,7 +106,7 @@ export function EditOutputDialog({ output, open, onOpenChange }: EditOutputDialo
               id="caption"
               name="caption"
               defaultValue={structured.caption}
-              placeholder={isLinkedin ? 'Your LinkedIn post…' : 'Caption for this platform'}
+              placeholder={isLinkedin ? 'Your LinkedIn post…' : 'The caption that goes with the clip'}
               className="min-h-[100px]"
             />
           </div>
