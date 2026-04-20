@@ -16,6 +16,22 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
     const root = rootRef.current
     if (!root) return
 
+    // Motion budget: users who opt out of animation (system pref) get no
+    // intervals, no parallax, no reveal observer. Also kills the infinite
+    // progress creep that otherwise runs forever and trips headless-browser
+    // "is the page settled?" heuristics.
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+    // Immediately mark reveal elements as "in" when motion is reduced, so
+    // content is visible without waiting for the fade-in sequence.
+    if (reduceMotion) {
+      root
+        .querySelectorAll<HTMLElement>('.lv2-reveal, .lv2-reveal-stagger')
+        .forEach((el) => el.classList.add('in'))
+    }
+
     const revealEls = root.querySelectorAll<HTMLElement>('.lv2-reveal, .lv2-reveal-stagger')
     const io = new IntersectionObserver(
       (entries) => {
@@ -28,7 +44,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
       },
       { threshold: 0.14, rootMargin: '0px 0px -40px 0px' },
     )
-    revealEls.forEach((el) => io.observe(el))
+    if (!reduceMotion) revealEls.forEach((el) => io.observe(el))
 
     // Count-up
     const countEls = root.querySelectorAll<HTMLElement>('.lv2-countup')
@@ -66,18 +82,23 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
       if (stroke) stroke.style.transform = 'scaleX(1)'
     })
 
-    // Hero progress creep
+    // Hero progress creep — only animates when motion isn't reduced.
+    // Still parked at a plausible "in progress" value otherwise so the
+    // card doesn't look broken.
     let p = 12
     const bar = root.querySelector<HTMLElement>('#lv2-heroProg')
     const txt = root.querySelector<HTMLElement>('#lv2-heroProgTxt')
-    const progInterval = window.setInterval(() => {
-      p = Math.min(96, p + Math.random() * 4)
-      if (bar) bar.style.width = p + '%'
-      if (txt) txt.textContent = Math.round(p) + '%'
-      if (p >= 96) p = 12
-    }, 900)
+    let progInterval: number | undefined
+    if (!reduceMotion) {
+      progInterval = window.setInterval(() => {
+        p = Math.min(96, p + Math.random() * 4)
+        if (bar) bar.style.width = p + '%'
+        if (txt) txt.textContent = Math.round(p) + '%'
+        if (p >= 96) p = 12
+      }, 900)
+    }
 
-    // Hero parallax
+    // Hero parallax — disabled under reduced-motion.
     const stack = root.querySelector<HTMLElement>('#lv2-heroStack')
     const cards = stack ? stack.querySelectorAll<HTMLElement>('.lv2-drift, .lv2-driftR') : []
     const onScroll = () => {
@@ -86,7 +107,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         c.style.translate = `0 ${-y * (0.04 + i * 0.02)}px`
       })
     }
-    window.addEventListener('scroll', onScroll, { passive: true })
+    if (!reduceMotion) window.addEventListener('scroll', onScroll, { passive: true })
 
     // Magnetic hover on step cards
     const stepCards = root.querySelectorAll<HTMLElement>('.lv2-step-card')
@@ -104,7 +125,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
     return () => {
       io.disconnect()
       countObs.disconnect()
-      window.clearInterval(progInterval)
+      if (progInterval !== undefined) window.clearInterval(progInterval)
       window.removeEventListener('scroll', onScroll)
       handlers.forEach((fn) => fn())
     }
@@ -281,6 +302,16 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         }
         .lv2-step-card:hover::before { opacity: 1; }
         .lv2-step-card:hover { border-color: var(--lv2-primary); transform: translateY(-4px); }
+
+        @media (prefers-reduced-motion: reduce) {
+          .lv2-root *,
+          .lv2-root *::before,
+          .lv2-root *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+          }
+        }
 
         .lv2-u-sweep { position: relative; }
         .lv2-u-sweep::after {
