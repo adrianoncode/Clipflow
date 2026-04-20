@@ -76,6 +76,111 @@
     --input: 37 32% 85%;
     --ring: 265 39% 17%;
   }
+
+  /* ───────────────────────────────────────────────────────────────
+     Rainbow neutralization inside the app shell.
+     Individual screens scatter `bg-violet-*`, `bg-blue-*`, `bg-pink-*`,
+     etc. as decorative accents — they all get remapped to the
+     plum/chartreuse family so nothing inside `.lv2-shell` clashes with
+     the shell chrome. Semantic success/warn/danger tones are retightened
+     to the design's editorial palette instead of the default Tailwind
+     saturation. */
+
+  /* Decorative violet/indigo/blue/pink/rose/sky → plum family */
+  .lv2-shell .bg-violet-50,
+  .lv2-shell .bg-indigo-50,
+  .lv2-shell .bg-blue-50,
+  .lv2-shell .bg-sky-50,
+  .lv2-shell .bg-pink-50,
+  .lv2-shell .bg-rose-50 { background-color: #EDE6F5 !important; }
+
+  .lv2-shell .bg-violet-100,
+  .lv2-shell .bg-indigo-100,
+  .lv2-shell .bg-blue-100,
+  .lv2-shell .bg-sky-100,
+  .lv2-shell .bg-pink-100,
+  .lv2-shell .bg-rose-100 { background-color: #DCCFEA !important; }
+
+  .lv2-shell .bg-violet-500,
+  .lv2-shell .bg-violet-600,
+  .lv2-shell .bg-violet-700,
+  .lv2-shell .bg-indigo-500,
+  .lv2-shell .bg-indigo-600,
+  .lv2-shell .bg-blue-500,
+  .lv2-shell .bg-blue-600,
+  .lv2-shell .bg-sky-500,
+  .lv2-shell .bg-sky-600 { background-color: #2A1A3D !important; }
+
+  .lv2-shell .text-violet-500,
+  .lv2-shell .text-violet-600,
+  .lv2-shell .text-violet-700,
+  .lv2-shell .text-indigo-500,
+  .lv2-shell .text-indigo-600,
+  .lv2-shell .text-blue-500,
+  .lv2-shell .text-blue-600,
+  .lv2-shell .text-blue-700,
+  .lv2-shell .text-sky-500,
+  .lv2-shell .text-sky-600,
+  .lv2-shell .text-pink-500,
+  .lv2-shell .text-pink-600 { color: #2A1A3D !important; }
+
+  .lv2-shell .border-violet-200,
+  .lv2-shell .border-indigo-200,
+  .lv2-shell .border-blue-200,
+  .lv2-shell .border-sky-200,
+  .lv2-shell .border-pink-200,
+  .lv2-shell .border-rose-200 { border-color: #DCCFEA !important; }
+
+  /* Semantic success (emerald) retightened */
+  .lv2-shell .bg-emerald-50 { background-color: #E6F4EE !important; }
+  .lv2-shell .bg-emerald-100 { background-color: #CFEADE !important; }
+  .lv2-shell .bg-emerald-500,
+  .lv2-shell .bg-emerald-600,
+  .lv2-shell .bg-emerald-700 { background-color: #0F6B4D !important; }
+  .lv2-shell .text-emerald-500,
+  .lv2-shell .text-emerald-600,
+  .lv2-shell .text-emerald-700,
+  .lv2-shell .text-emerald-800 { color: #0F6B4D !important; }
+  .lv2-shell .border-emerald-200 { border-color: #CFEADE !important; }
+
+  /* Semantic warn (amber) retightened */
+  .lv2-shell .bg-amber-50 { background-color: #FBEDD9 !important; }
+  .lv2-shell .bg-amber-100 { background-color: #F5DCB4 !important; }
+  .lv2-shell .bg-amber-500,
+  .lv2-shell .bg-amber-600,
+  .lv2-shell .bg-amber-700,
+  .lv2-shell .bg-orange-500,
+  .lv2-shell .bg-orange-600 { background-color: #A0530B !important; }
+  .lv2-shell .text-amber-500,
+  .lv2-shell .text-amber-600,
+  .lv2-shell .text-amber-700,
+  .lv2-shell .text-amber-800,
+  .lv2-shell .text-orange-500,
+  .lv2-shell .text-orange-600 { color: #A0530B !important; }
+  .lv2-shell .border-amber-200,
+  .lv2-shell .border-orange-200 { border-color: #F5DCB4 !important; }
+
+  /* Semantic danger (red/rose) retightened */
+  .lv2-shell .bg-red-50 { background-color: #F8E3E0 !important; }
+  .lv2-shell .bg-red-500,
+  .lv2-shell .bg-red-600 { background-color: #9B2018 !important; }
+  .lv2-shell .text-red-500,
+  .lv2-shell .text-red-600,
+  .lv2-shell .text-red-700 { color: #9B2018 !important; }
+
+  /* Gradients: strip the rainbow, use plum → accent for signature emphasis */
+  .lv2-shell [class*="from-violet-"],
+  .lv2-shell [class*="from-indigo-"],
+  .lv2-shell [class*="from-blue-"],
+  .lv2-shell [class*="from-sky-"],
+  .lv2-shell [class*="from-pink-"],
+  .lv2-shell [class*="from-rose-"] { --tw-gradient-from: #2A1A3D !important; --tw-gradient-to: transparent !important; }
+  .lv2-shell [class*="to-violet-"],
+  .lv2-shell [class*="to-indigo-"],
+  .lv2-shell [class*="to-blue-"],
+  .lv2-shell [class*="to-sky-"],
+  .lv2-shell [class*="to-pink-"],
+  .lv2-shell [class*="to-rose-"] { --tw-gradient-to: #D6FF3E !important; }
 }
 
 @layer base {
