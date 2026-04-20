@@ -399,7 +399,7 @@ export function AppShell({
               borderRight: '1px solid var(--lv2s-border)',
             }}
           >
-            <div className="flex flex-1 flex-col overflow-y-auto px-3 py-3">
+            <div className="flex flex-1 flex-col px-3 py-3">
               <Link
                 href={`/workspace/${currentWorkspaceId}/content/new`}
                 className="lv2s-btn-accent mb-3"
