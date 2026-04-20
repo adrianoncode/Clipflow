@@ -1056,7 +1056,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="mx-auto max-w-[1240px] px-6 pb-28 pt-4">
+      <section id="how-it-works" className="mx-auto max-w-[1240px] px-6 pb-28 pt-4">
         <div className="lv2-reveal mb-16 flex flex-wrap items-end justify-between gap-5">
           <div>
             <p className="lv2-mono-label mb-3">How it works</p>
@@ -1775,7 +1775,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
       </section>
 
       {/* PRICING */}
-      <section className="mx-auto max-w-[1240px] px-6 py-28">
+      <section id="pricing" className="mx-auto max-w-[1240px] px-6 py-28">
         <div className="lv2-reveal mb-14 text-center">
           <p className="lv2-mono-label mb-3">Pricing</p>
           <h2
@@ -1922,7 +1922,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
       </section>
 
       {/* FAQ */}
-      <section className="mx-auto max-w-[900px] px-6 py-20">
+      <section id="faq" className="mx-auto max-w-[900px] px-6 py-20">
         <h2
           className="lv2-display lv2-reveal mb-10 text-center text-[44px] leading-[1]"
           style={{ color: 'var(--lv2-primary)' }}
@@ -2114,7 +2114,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
 
 function FeatureGrid() {
   return (
-    <section className="mx-auto max-w-[1240px] px-6 py-28">
+    <section id="features" className="mx-auto max-w-[1240px] px-6 py-28">
       <div className="lv2-reveal mb-14">
         <p className="lv2-mono-label mb-3">Everything else</p>
         <h2

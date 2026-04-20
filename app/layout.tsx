@@ -34,13 +34,18 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 })
 
+// Canonical site description kept to ≤155 chars so Google doesn't truncate
+// mid-sentence in the SERP snippet. Claims drop A/B-hook testing (not yet
+// built) and stick to capabilities that actually ship.
+const SITE_DESCRIPTION =
+  'Turn one recording into TikTok, Reels, Shorts & LinkedIn posts with auto-subtitles, AI reframe, and brand voice. BYOK AI — pay your provider at cost.'
+
 export const metadata: Metadata = {
   title: {
-    default: 'Clipflow — AI Content Repurposing for Creators & Agencies',
+    default: 'Clipflow — One recording. A month of posts.',
     template: '%s | Clipflow',
   },
-  description:
-    'Turn one video into TikTok, Instagram Reels, YouTube Shorts & LinkedIn posts in seconds. AI-powered content repurposing with auto-subtitles, B-Roll, A/B-tested hooks, and social scheduling. BYOK — bring your own AI key.',
+  description: SITE_DESCRIPTION,
   keywords: [
     'content repurposing',
     'AI content creator',
@@ -53,8 +58,8 @@ export const metadata: Metadata = {
     'social media automation',
     'content scheduling tool',
     'auto subtitles',
-    'AI B-Roll',
-    'A/B hook testing',
+    'AI reframe',
+    'brand voice AI',
     'social media management',
     'content marketing tool',
     'BYOK AI',
@@ -71,15 +76,15 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://clipflow.to',
     siteName: 'Clipflow',
-    title: 'Clipflow — AI Content Repurposing for Creators & Agencies',
-    description:
-      'Turn one video into TikTok, Reels, Shorts & LinkedIn posts in seconds. Auto-subtitles, B-Roll, A/B-tested hooks & scheduling.',
+    title: 'Clipflow — One recording. A month of posts.',
+    description: SITE_DESCRIPTION,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Clipflow — AI Content Repurposing',
-    description:
-      'One video → TikTok, Reels, Shorts & LinkedIn. AI-powered with BYOK.',
+    site: '@clipflow',
+    creator: '@clipflow',
+    title: 'Clipflow — One recording. A month of posts.',
+    description: SITE_DESCRIPTION,
   },
   robots: {
     index: true,
