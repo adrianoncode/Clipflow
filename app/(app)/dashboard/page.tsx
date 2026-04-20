@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { cookies } from 'next/headers'
+import { Suspense } from 'react'
 import {
   ArrowRight,
   ArrowUpRight,
@@ -286,7 +287,7 @@ function UsageBar({ used, limit }: { used: number; limit: number }) {
 
 /* ── Page ──────────────────────────────────────────────────────── */
 
-export default async function DashboardPage() {
+async function DashboardBody() {
   const [user, workspaces] = await Promise.all([getUser(), getWorkspaces()])
   const firstName =
     ((typeof user?.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : null) ??
@@ -550,10 +551,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: DASH_STYLES }} />
-      <div className="lv2-dash">
-        <div className="lv2d-fade-in mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-8">
+    <div className="lv2d-fade-in mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-8">
           {/* ── Hero ────────────────────────────────────────────── */}
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
@@ -1469,7 +1467,69 @@ export default async function DashboardPage() {
               </div>
             </>
           )}
+    </div>
+  )
+}
+
+/* ── Outer shell + Suspense boundary ─────────────────────────────── */
+
+function DashboardBodySkeleton() {
+  return (
+    <div className="lv2d-fade-in mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-8">
+      <div className="space-y-3">
+        <div
+          className="h-3 w-40 rounded"
+          style={{ background: 'var(--lv2d-muted-2)' }}
+        />
+        <div
+          className="h-12 w-80 rounded-lg"
+          style={{ background: 'var(--lv2d-muted-2)' }}
+        />
+        <div
+          className="h-4 w-64 rounded"
+          style={{ background: 'var(--lv2d-muted-2)' }}
+        />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-24 rounded-xl"
+            style={{ background: 'var(--lv2d-muted-2)' }}
+          />
+        ))}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div
+          className="h-80 rounded-2xl lg:col-span-2"
+          style={{ background: 'var(--lv2d-muted-2)' }}
+        />
+        <div className="space-y-4">
+          <div
+            className="h-36 rounded-2xl"
+            style={{ background: 'var(--lv2d-muted-2)' }}
+          />
+          <div
+            className="h-36 rounded-2xl"
+            style={{ background: 'var(--lv2d-muted-2)' }}
+          />
         </div>
+      </div>
+    </div>
+  )
+}
+
+export default function DashboardPage() {
+  // Render the dashboard shell (style + themed background) immediately so
+  // the user sees the paper canvas while the heavy data widgets stream in
+  // via Suspense. Everything data-dependent lives inside <DashboardBody />.
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: DASH_STYLES }} />
+      <div className="lv2-dash">
+        <Suspense fallback={<DashboardBodySkeleton />}>
+          <DashboardBody />
+        </Suspense>
       </div>
     </>
   )
