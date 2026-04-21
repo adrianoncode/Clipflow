@@ -186,11 +186,7 @@ export function AppShell({
     if (href === '/settings/integrations') return pathname.startsWith('/settings/integrations')
     if (href === `/workspace/${currentWorkspaceId}`) return pathname === href
     if (href === `/workspace/${currentWorkspaceId}/schedule`) {
-      return (
-        pathname === href ||
-        pathname.startsWith(href + '/') ||
-        pathname === `/workspace/${currentWorkspaceId}/calendar`
-      )
+      return pathname === href || pathname.startsWith(href + '/')
     }
     return pathname === href || pathname.startsWith(href + '/')
   }
