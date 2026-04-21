@@ -136,17 +136,6 @@ export async function cancelScheduledPostAction(
 }
 
 // ---------------------------------------------------------------------------
-// saveManualTokenAction — upsert a social account with a developer token
-// ---------------------------------------------------------------------------
-
-const saveTokenSchema = z.object({
-  workspaceId: z.string().uuid(),
-  platform: z.string().min(1),
-  accessToken: z.string().min(1),
-  username: z.string().min(1),
-})
-
-// ---------------------------------------------------------------------------
 // reschedulePostAction — drag-and-drop: move existing post to a new date/time
 // ---------------------------------------------------------------------------
 
@@ -263,48 +252,3 @@ export async function quickScheduleAction(
   return { ok: true, message: `Scheduled for ${new Date(scheduledFor).toLocaleString()}` }
 }
 
-// ---------------------------------------------------------------------------
-// saveManualTokenAction — upsert a social account with a developer token
-// ---------------------------------------------------------------------------
-
-export async function saveManualTokenAction(
-  _prev: SchedulerActionState,
-  formData: FormData,
-): Promise<SchedulerActionState> {
-  const raw = {
-    workspaceId: formData.get('workspace_id')?.toString() ?? '',
-    platform: formData.get('platform')?.toString() ?? '',
-    accessToken: formData.get('access_token')?.toString() ?? '',
-    username: formData.get('username')?.toString() ?? '',
-  }
-
-  const parsed = saveTokenSchema.safeParse(raw)
-  if (!parsed.success) {
-    return { ok: false, error: parsed.error.errors[0]?.message ?? 'Invalid input.' }
-  }
-
-  const { workspaceId, platform, accessToken, username } = parsed.data
-
-  const user = await getUser()
-  if (!user) redirect('/login')
-
-  const supabase = await createClient()
-
-  // Upsert by (workspace_id, platform, platform_user_id = username)
-  const { error } = await supabase.from('social_accounts').upsert(
-    {
-      workspace_id: workspaceId,
-      user_id: user.id,
-      platform,
-      platform_user_id: username,
-      platform_username: username,
-      access_token: accessToken,
-    },
-    { onConflict: 'workspace_id,platform,platform_user_id' },
-  )
-
-  if (error) return { ok: false, error: error.message }
-
-  revalidatePath(`/workspace/${workspaceId}/schedule/connect`)
-  return { ok: true, message: `${platform} account saved.` }
-}
