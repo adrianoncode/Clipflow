@@ -6,6 +6,8 @@ import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
 import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
+import { AUDIT_ACTIONS } from '@/lib/audit/actions'
+import { writeAuditLog } from '@/lib/audit/write'
 import { createClient } from '@/lib/supabase/server'
 
 // ── Update workspace ──────────────────────────────────────────────────────────
@@ -53,6 +55,14 @@ export async function updateWorkspaceAction(
 
   if (error) return { ok: false, error: error.message }
 
+  await writeAuditLog({
+    workspaceId: parsed.data.workspace_id,
+    action: AUDIT_ACTIONS.workspace_updated,
+    targetType: 'workspace',
+    targetId: parsed.data.workspace_id,
+    metadata: { name: parsed.data.name, type: parsed.data.type },
+  })
+
   revalidatePath(`/workspace/${parsed.data.workspace_id}`)
   revalidatePath('/dashboard')
   return { ok: true }
@@ -84,6 +94,12 @@ export async function deleteWorkspaceAction(
     return { ok: false, error: 'Only the workspace owner can delete it.' }
   }
 
+  // Note: we intentionally don't write a workspace.deleted audit row here
+  // — the audit_log.workspace_id FK is ON DELETE CASCADE, so any row we
+  // insert would be wiped by the delete below. The log output (Sentry +
+  // server logs) in writeAuditLog's error path already captures the
+  // signal we'd want for post-mortems; durable history of the delete
+  // lives in Supabase's deleted-row webhook / WAL if we ever need it.
   const supabase = await createClient()
   const { error } = await supabase
     .from('workspaces')

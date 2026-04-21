@@ -53,6 +53,7 @@ export type RenderKind =
   | 'faceless'
 export type RenderStatus = 'rendering' | 'done' | 'failed'
 export type RenderProvider = 'shotstack' | 'replicate'
+export type RenderPriority = 'normal' | 'high'
 export type SubscriptionStatus =
   | 'trialing'
   | 'active'
@@ -555,6 +556,7 @@ export type Database = {
           provider: RenderProvider
           provider_render_id: string | null
           status: RenderStatus
+          priority: RenderPriority
           url: string | null
           error: string | null
           metadata: Json
@@ -570,6 +572,7 @@ export type Database = {
           provider?: RenderProvider
           provider_render_id?: string | null
           status?: RenderStatus
+          priority?: RenderPriority
           url?: string | null
           error?: string | null
           metadata?: Json
@@ -585,12 +588,55 @@ export type Database = {
           provider?: RenderProvider
           provider_render_id?: string | null
           status?: RenderStatus
+          priority?: RenderPriority
           url?: string | null
           error?: string | null
           metadata?: Json
           created_by?: string | null
           created_at?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      audit_log: {
+        Row: {
+          id: string
+          workspace_id: string
+          actor_id: string | null
+          actor_email: string | null
+          action: string
+          target_type: string | null
+          target_id: string | null
+          metadata: Json
+          ip: string | null
+          user_agent: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          workspace_id: string
+          actor_id?: string | null
+          actor_email?: string | null
+          action: string
+          target_type?: string | null
+          target_id?: string | null
+          metadata?: Json
+          ip?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          workspace_id?: string
+          actor_id?: string | null
+          actor_email?: string | null
+          action?: string
+          target_type?: string | null
+          target_id?: string | null
+          metadata?: Json
+          ip?: string | null
+          user_agent?: string | null
+          created_at?: string
         }
         Relationships: []
       }
@@ -991,6 +1037,7 @@ export type Database = {
       render_kind: RenderKind
       render_status: RenderStatus
       render_provider: RenderProvider
+      render_priority: RenderPriority
       scraper_feature: ScraperFeature
     }
     CompositeTypes: {

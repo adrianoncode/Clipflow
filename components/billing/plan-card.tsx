@@ -88,6 +88,7 @@ export function PlanCard({ planId, interval, workspaceId, currentPlan, feature }
   if (plan.features.whiteLabelReview)
     bullets.push('White-label review links (your brand, not ours)')
   if (plan.features.priorityRenders) bullets.push('Priority render queue')
+  if (plan.features.auditLog) bullets.push('Workspace audit log')
 
   return (
     <Card

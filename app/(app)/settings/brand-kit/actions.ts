@@ -5,6 +5,8 @@ import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
 import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
+import { AUDIT_ACTIONS } from '@/lib/audit/actions'
+import { writeAuditLog } from '@/lib/audit/write'
 import { createClient } from '@/lib/supabase/server'
 import type { BrandKit } from '@/lib/brand-kit/types'
 import { FONT_CHOICES, WATERMARK_POSITIONS } from '@/lib/brand-kit/types'
@@ -78,6 +80,14 @@ export async function saveBrandKitAction(
     .update({ branding: branding as never })
     .eq('id', parsed.data.workspace_id)
   if (error) return { ok: false, error: error.message }
+
+  await writeAuditLog({
+    workspaceId: parsed.data.workspace_id,
+    action: AUDIT_ACTIONS.brand_kit_updated,
+    targetType: 'workspace',
+    targetId: parsed.data.workspace_id,
+    metadata: { fields: Object.keys(branding) },
+  })
 
   revalidatePath('/settings/brand-kit')
   return { ok: true, message: 'Brand kit saved. It will apply to every new render.' }

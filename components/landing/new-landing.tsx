@@ -2014,7 +2014,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 '30 video renders / month',
                 '1 workspace',
                 'Brand voice + Brand Kit (logo, color, intro/outro)',
-                'Auto-publish to TikTok, Reels, Shorts, LinkedIn',
+                'Auto-publish to TikTok, Instagram, YouTube, LinkedIn',
                 'A/B hook testing · Virality Score · Creator research',
               ].map((f) => (
                 <li key={f} className="flex items-start gap-2">

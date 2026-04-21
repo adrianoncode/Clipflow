@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
-import type { RenderKind, RenderProvider } from '@/lib/supabase/types'
+import type { RenderKind, RenderPriority, RenderProvider } from '@/lib/supabase/types'
 import { log } from '@/lib/log'
 
 export interface InsertRenderParams {
@@ -10,6 +10,11 @@ export interface InsertRenderParams {
   kind: RenderKind
   provider?: RenderProvider
   providerRenderId: string | null
+  /** Dispatch priority captured at submit time — 'high' is the Studio
+   *  benefit. Recording it on the row (not derived from the current
+   *  plan at read-time) means a plan downgrade mid-render doesn't
+   *  retroactively demote an in-flight job. */
+  priority?: RenderPriority
   /** Freeform — aspect ratio, source URL, etc. Shown in the history card. */
   metadata?: Record<string, unknown>
 }
@@ -34,6 +39,7 @@ export async function insertRender(params: InsertRenderParams): Promise<string |
         provider: params.provider ?? 'shotstack',
         provider_render_id: params.providerRenderId,
         status: 'rendering',
+        priority: params.priority ?? 'normal',
         metadata: (params.metadata ?? {}) as never,
       })
       .select('id')

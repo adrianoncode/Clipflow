@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CheckCircle2, Loader2, AlertCircle, Download, ExternalLink } from 'lucide-react'
+import { CheckCircle2, Loader2, AlertCircle, Download, ExternalLink, Zap } from 'lucide-react'
 
 import { formatRenderKind } from '@/lib/video/renders/types'
 import type { RenderRow } from '@/lib/video/renders/types'
@@ -16,14 +16,20 @@ interface RenderHistoryPanelProps {
  * a download link + external-open button. The DB is the source of
  * truth — the /api/video/render-status poll updates it server-side,
  * and we re-fetch the row locally so the user sees the change.
+ *
+ * Priority queue (Studio): when any in-flight render is priority='high'
+ * we drop the poll cadence from 4s → 2s for the whole panel. Studio
+ * users see their video flip to "Ready" roughly twice as fast — the
+ * real end-to-end latency is dominated by Shotstack, but the time-to-
+ * surface-the-result is ours to control.
  */
 export function RenderHistoryPanel({ initialRenders }: RenderHistoryPanelProps) {
   const [renders, setRenders] = useState(initialRenders)
 
-  // Poll each 'rendering' row every 4s until it resolves.
   useEffect(() => {
     const pending = renders.filter((r) => r.status === 'rendering')
     if (pending.length === 0) return
+    const pollMs = pending.some((r) => r.priority === 'high') ? 2000 : 4000
 
     const interval = setInterval(async () => {
       const results = await Promise.all(
@@ -63,7 +69,7 @@ export function RenderHistoryPanel({ initialRenders }: RenderHistoryPanelProps) 
           }
         }),
       )
-    }, 4000)
+    }, pollMs)
 
     return () => clearInterval(interval)
   }, [renders])
@@ -136,6 +142,19 @@ function RenderRow({ render: r }: { render: RenderRow }) {
                 ? 'Ready'
                 : 'Failed'}
           </span>
+          {r.priority === 'high' ? (
+            <>
+              <span className="text-muted-foreground/40">·</span>
+              <span
+                className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5"
+                style={{ background: '#F3FFD6', color: '#495C0F' }}
+                title="Studio priority queue — polled twice as fast"
+              >
+                <Zap className="h-2.5 w-2.5" />
+                Priority
+              </span>
+            </>
+          ) : null}
         </p>
       </div>
       {isDone && r.url ? (

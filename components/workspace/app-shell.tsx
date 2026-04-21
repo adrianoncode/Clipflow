@@ -22,6 +22,7 @@ import {
   Plug,
   Plus,
   Radio,
+  ScrollText,
   Search,
   Send,
   Settings as SettingsIcon,
@@ -190,10 +191,12 @@ export function AppShell({
       return (
         pathname.startsWith('/settings') &&
         !pathname.startsWith('/settings/integrations') &&
-        !pathname.startsWith('/settings/channels')
+        !pathname.startsWith('/settings/channels') &&
+        !pathname.startsWith('/settings/audit-log')
       )
     if (href === '/settings/integrations') return pathname.startsWith('/settings/integrations')
     if (href === '/settings/channels') return pathname.startsWith('/settings/channels')
+    if (href === '/settings/audit-log') return pathname.startsWith('/settings/audit-log')
     if (href === `/workspace/${currentWorkspaceId}`) return pathname === href
     if (href === `/workspace/${currentWorkspaceId}/schedule`) {
       return pathname === href || pathname.startsWith(href + '/')
@@ -247,6 +250,12 @@ export function AppShell({
                 label: 'Team',
                 icon: Users2,
                 requires: 'teamSeats' as const,
+              },
+              {
+                href: '/settings/audit-log',
+                label: 'Audit log',
+                icon: ScrollText,
+                requires: 'auditLog' as const,
               },
             ],
           },

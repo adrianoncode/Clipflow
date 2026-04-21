@@ -71,6 +71,8 @@ export interface PlanFeatures {
   clientReviewLink: boolean
   /** Remove Clipflow branding from the review portal. */
   whiteLabelReview: boolean
+  /** Workspace audit log — owners see every action across the team. */
+  auditLog: boolean
 
   /* ── Legacy flags kept for back-compat with existing code ──── */
   /** @deprecated renamed to `scheduling` — leave wired for now. */
@@ -144,6 +146,7 @@ export const PLANS: Record<BillingPlan, PlanDefinition> = {
       teamSeats: false,
       clientReviewLink: false,
       whiteLabelReview: false,
+      auditLog: false,
       ...DISABLED_LEGACY_FLAGS,
     },
   },
@@ -179,6 +182,7 @@ export const PLANS: Record<BillingPlan, PlanDefinition> = {
       teamSeats: false,
       clientReviewLink: false,
       whiteLabelReview: false,
+      auditLog: false,
       ...DISABLED_LEGACY_FLAGS,
     },
     highlight: true,
@@ -215,6 +219,7 @@ export const PLANS: Record<BillingPlan, PlanDefinition> = {
       teamSeats: true,
       clientReviewLink: false,
       whiteLabelReview: false,
+      auditLog: false,
       ...DISABLED_LEGACY_FLAGS,
     },
     hidden: true,
@@ -251,6 +256,7 @@ export const PLANS: Record<BillingPlan, PlanDefinition> = {
       teamSeats: true,
       clientReviewLink: true,
       whiteLabelReview: true,
+      auditLog: true,
       ...DISABLED_LEGACY_FLAGS,
     },
   },
@@ -293,6 +299,7 @@ export const FEATURE_MIN_PLAN: Record<keyof PlanFeatures, BillingPlan> = {
   teamSeats: 'agency',
   clientReviewLink: 'agency',
   whiteLabelReview: 'agency',
+  auditLog: 'agency',
   // Legacy — kept so the type stays total.
   backgroundMusic: 'solo',
   trendingSounds: 'agency',

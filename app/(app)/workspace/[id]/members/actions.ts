@@ -6,6 +6,8 @@ import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
 import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
+import { AUDIT_ACTIONS } from '@/lib/audit/actions'
+import { writeAuditLog } from '@/lib/audit/write'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { checkPlanAccess } from '@/lib/billing/plans'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -68,6 +70,14 @@ export async function createInviteAction(
     .single()
 
   if (error || !data) return { ok: false, error: error?.message ?? 'Failed to create invite.' }
+
+  await writeAuditLog({
+    workspaceId: parsed.data.workspace_id,
+    action: AUDIT_ACTIONS.member_invited,
+    targetType: 'invite',
+    targetId: data.token,
+    metadata: { email: parsed.data.email ?? null, role: parsed.data.role },
+  })
 
   // Fire-and-forget invite email when we have a target address.
   // Failures log but don't block — the owner can always copy the link
@@ -152,6 +162,14 @@ export async function updateMemberRoleAction(
   }
 
   const supabase = await createClient()
+  // Read prior role so we can include it in the audit row
+  const { data: prior } = await supabase
+    .from('workspace_members')
+    .select('role')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', userId)
+    .maybeSingle()
+
   const { error } = await supabase
     .from('workspace_members')
     .update({ role: role as WorkspaceRole })
@@ -159,6 +177,14 @@ export async function updateMemberRoleAction(
     .eq('user_id', userId)
 
   if (error) return { ok: false, error: error.message }
+
+  await writeAuditLog({
+    workspaceId,
+    action: AUDIT_ACTIONS.member_role_changed,
+    targetType: 'member',
+    targetId: userId,
+    metadata: { old_role: prior?.role ?? null, new_role: role },
+  })
 
   revalidatePath(`/workspace/${workspaceId}/members`)
   return { ok: true }
@@ -194,6 +220,13 @@ export async function removeMemberAction(
     .eq('user_id', userId)
 
   if (error) return { ok: false, error: error.message }
+
+  await writeAuditLog({
+    workspaceId,
+    action: AUDIT_ACTIONS.member_removed,
+    targetType: 'member',
+    targetId: userId,
+  })
 
   revalidatePath(`/workspace/${workspaceId}/members`)
   return { ok: true }

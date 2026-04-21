@@ -13,6 +13,7 @@ import {
   Palette,
   Plug,
   Radio,
+  ScrollText,
   Shield,
   LayoutTemplate,
 } from 'lucide-react'
@@ -35,6 +36,7 @@ const aiGroup = [
 const connectGroup = [
   { href: '/settings/channels', label: 'Channels', icon: Radio },
   { href: '/settings/integrations', label: 'Integrations', icon: Plug },
+  { href: '/settings/audit-log', label: 'Audit log', icon: ScrollText },
   { href: '/help', label: 'Help', icon: HelpCircle },
 ]
 

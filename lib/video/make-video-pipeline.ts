@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { getBrandKit } from '@/lib/brand-kit/get-brand-kit'
+import { getRenderPriorityForWorkspace } from '@/lib/billing/get-render-priority'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getSignedUrl } from '@/lib/content/get-signed-url'
 import {
@@ -125,6 +126,10 @@ export async function makeVideoPipeline(
 
   const totalTimeline = introDuration + clipLength + outroDuration
 
+  // Studio (agency) gets 'high' — both passed to Shotstack as a hint
+  // and recorded on the renders row so the client can poll faster.
+  const priority = await getRenderPriorityForWorkspace(input.workspaceId)
+
   const renderResult = await submitRender({
     clips,
     subtitles,
@@ -134,6 +139,7 @@ export async function makeVideoPipeline(
     hookText: input.hookText ?? undefined,
     resolution: '1080',
     workspaceId: input.workspaceId,
+    priority,
     brandKit: brandKit
       ? {
           accentColor: brandKit.accentColor,
@@ -153,6 +159,7 @@ export async function makeVideoPipeline(
     kind: 'branded_video',
     provider: 'shotstack',
     providerRenderId: renderResult.renderId,
+    priority,
     metadata: {
       aspectRatio: input.aspectRatio ?? '9:16',
       captionStyle: input.captionStyle ?? 'tiktok-bold',

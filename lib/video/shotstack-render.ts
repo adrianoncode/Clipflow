@@ -100,6 +100,14 @@ export interface RenderInput {
    * is stamped into the requested corner for the whole timeline.
    */
   brandKit?: RenderBrandKit
+  /**
+   * Dispatch priority — Studio tier submits with 'high'. We pass this
+   * through to Shotstack as a hint; if Shotstack ignores it (free tier),
+   * no harm done. The real enforcement is on our polling side (faster
+   * status checks for high-priority renders, see `pollIntervalMs` on
+   * the client components).
+   */
+  priority?: 'normal' | 'high'
 }
 
 /**
@@ -266,6 +274,11 @@ export async function submitRender(input: RenderInput): Promise<
       size: outputSize,
       ...(callbackUrl ? { callback: callbackUrl } : {}),
     },
+    // Optional top-level priority hint. Shotstack accepts `priority`
+    // on higher-tier accounts; on free/dev accounts it's silently
+    // ignored. We always include it for Studio renders so the moment
+    // they upgrade their Shotstack plan the queue advantage kicks in.
+    ...(input.priority === 'high' ? { priority: 'high' } : {}),
   }
 
   try {

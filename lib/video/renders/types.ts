@@ -1,4 +1,9 @@
-import type { RenderKind, RenderProvider, RenderStatus } from '@/lib/supabase/types'
+import type {
+  RenderKind,
+  RenderPriority,
+  RenderProvider,
+  RenderStatus,
+} from '@/lib/supabase/types'
 
 /** Shape of a renders row returned from Supabase. Safe to import in client components. */
 export interface RenderRow {
@@ -9,6 +14,7 @@ export interface RenderRow {
   provider: RenderProvider
   provider_render_id: string | null
   status: RenderStatus
+  priority: RenderPriority
   url: string | null
   error: string | null
   metadata: Record<string, unknown>

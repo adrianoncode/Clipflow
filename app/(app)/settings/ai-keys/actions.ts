@@ -5,6 +5,8 @@ import { z } from 'zod'
 
 import { insertAiKey } from '@/lib/ai/insert-ai-key'
 import { getUser } from '@/lib/auth/get-user'
+import { AUDIT_ACTIONS } from '@/lib/audit/actions'
+import { writeAuditLog } from '@/lib/audit/write'
 import { createClient } from '@/lib/supabase/server'
 import type { AiKeyFormState } from '@/components/ai-keys/ai-key-form'
 import { log } from '@/lib/log'
@@ -60,6 +62,13 @@ export async function saveAiKeySettingsAction(
     return { ok: false, error: result.error }
   }
 
+  await writeAuditLog({
+    workspaceId: parsed.data.workspace_id,
+    action: AUDIT_ACTIONS.ai_key_added,
+    targetType: 'ai_key',
+    metadata: { provider: parsed.data.provider, label: parsed.data.label },
+  })
+
   revalidatePath('/settings/ai-keys')
   revalidatePath('/dashboard')
   return { ok: true }
@@ -84,6 +93,15 @@ export async function deleteAiKeyAction(formData: FormData): Promise<void> {
   }
 
   const supabase = createClient()
+  // Pull the provider so the audit row carries "which key was removed"
+  // instead of just an opaque UUID.
+  const { data: prior } = await supabase
+    .from('ai_keys')
+    .select('provider')
+    .eq('id', parsed.data.key_id)
+    .eq('workspace_id', parsed.data.workspace_id)
+    .maybeSingle()
+
   const { error } = await supabase
     .from('ai_keys')
     .delete()
@@ -92,6 +110,14 @@ export async function deleteAiKeyAction(formData: FormData): Promise<void> {
 
   if (error) {
     log.error('deleteAiKey failed', error)
+  } else {
+    await writeAuditLog({
+      workspaceId: parsed.data.workspace_id,
+      action: AUDIT_ACTIONS.ai_key_removed,
+      targetType: 'ai_key',
+      targetId: parsed.data.key_id,
+      metadata: { provider: prior?.provider ?? null },
+    })
   }
 
   revalidatePath('/settings/ai-keys')
