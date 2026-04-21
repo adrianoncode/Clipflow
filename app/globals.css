@@ -75,6 +75,31 @@
     --border: 37 32% 85%;              /* #E5DDCE */
     --input: 37 32% 85%;
     --ring: 265 39% 17%;
+
+    /* ── Extended palette tokens ─────────────────────────────────────
+       Filled the three gaps the palette audit surfaced:
+         - Plum-Soft: lighter tints of the primary plum for secondary
+           surfaces and hover washes that previously fell back to
+           raw violet-100.
+         - Lime-Soft: a calmer chartreuse for highlight bands and
+           "live" chips that would otherwise blast the page with the
+           pure #D6FF3E accent.
+         - Data-Viz 1–5: categorical chart palette, ordered for
+           colorblind-safe contrast (plum → teal → ochre → rose → lime).
+           Use these for analytics bars/lines instead of ad-hoc hex. */
+    --plum-soft: 265 39% 96%;          /* #F2EEF7 wash */
+    --plum-soft-2: 265 30% 88%;        /* #DCCFEA chip */
+    --plum-ink: 265 39% 28%;           /* #463163 readable text on paper */
+
+    --lime-soft: 73 100% 92%;          /* #F3FFD6 highlight band */
+    --lime-soft-2: 73 80% 80%;         /* #E3F59D active chip */
+    --lime-ink: 73 60% 22%;            /* #495C0F text on lime */
+
+    --dataviz-1: 265 39% 17%;          /* #2A1A3D plum      */
+    --dataviz-2: 185 58% 35%;          /* #25808E teal      */
+    --dataviz-3: 32 70% 48%;           /* #CC8425 ochre     */
+    --dataviz-4: 350 55% 55%;          /* #BF4E63 rose      */
+    --dataviz-5: 73 70% 48%;           /* #95CE21 lime-deep */
   }
 
   /* ───────────────────────────────────────────────────────────────
@@ -402,6 +427,31 @@
   }
   .animate-float { animation: float-subtle 6s ease-in-out infinite; }
 
+  /* Skeleton shimmer — subtle diagonal sheen across placeholder blocks.
+     Uses a pseudo-layer so it doesn't depend on bg-image on the target.
+     Apply via `.lv2-skeleton` to any placeholder div. */
+  @keyframes skeleton-shimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .lv2-skeleton {
+    position: relative;
+    overflow: hidden;
+  }
+  .lv2-skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 253, 248, 0.55) 50%,
+      transparent 100%
+    );
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+    will-change: transform;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-marquee,
     .animate-soft-pulse,
@@ -410,7 +460,22 @@
       animation: none !important;
     }
     .conic-glow::before { animation: none !important; }
+    .lv2-skeleton::after { animation: none !important; }
   }
+}
+
+/* ── Landing anchor scroll offset ──────────────────────────────────────
+   The landing header is sticky (~64px); without scroll-margin-top anchor
+   links (#features, #pricing, etc.) land with their headline hidden
+   behind the nav. Scoped to sections with id so we don't accidentally
+   push every section in the app. */
+section[id="features"],
+section[id="how-it-works"],
+section[id="creators"],
+section[id="pricing"],
+section[id="faq"],
+section[id="social-proof"] {
+  scroll-margin-top: 80px;
 }
 
 /* ── Sonner toast palette override (paper/plum/lime) ───────────────── */

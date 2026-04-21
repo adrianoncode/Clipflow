@@ -50,6 +50,23 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        plum: {
+          soft: 'hsl(var(--plum-soft))',
+          'soft-2': 'hsl(var(--plum-soft-2))',
+          ink: 'hsl(var(--plum-ink))',
+        },
+        lime: {
+          soft: 'hsl(var(--lime-soft))',
+          'soft-2': 'hsl(var(--lime-soft-2))',
+          ink: 'hsl(var(--lime-ink))',
+        },
+        dataviz: {
+          1: 'hsl(var(--dataviz-1))',
+          2: 'hsl(var(--dataviz-2))',
+          3: 'hsl(var(--dataviz-3))',
+          4: 'hsl(var(--dataviz-4))',
+          5: 'hsl(var(--dataviz-5))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

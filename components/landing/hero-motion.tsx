@@ -59,8 +59,8 @@ export function HeroSpotlight() {
         width: 520,
         height: 520,
         background:
-          'radial-gradient(circle, rgba(214,255,62,0.55) 0%, rgba(214,255,62,0.18) 28%, rgba(214,255,62,0) 65%)',
-        filter: 'blur(8px)',
+          'radial-gradient(circle, rgba(214,255,62,0.38) 0%, rgba(214,255,62,0.12) 32%, rgba(214,255,62,0) 68%)',
+        filter: 'blur(10px)',
         mixBlendMode: 'multiply',
       }}
     />
@@ -84,7 +84,13 @@ export function KineticHeadline() {
         <motion.span
           key={i}
           className={`inline-block ${w.italic ? 'italic' : ''}`}
-          style={{ marginRight: '0.26em', willChange: 'transform, opacity, filter' }}
+          style={{
+            marginRight: '0.26em',
+            willChange: 'transform, opacity, filter',
+            // Italic accent words get a warmer muted plum to emphasize
+            // the editorial-rhythm read without adding a second color.
+            ...(w.italic ? { color: 'rgba(42, 26, 61, 0.55)' } : null),
+          }}
           variants={{
             hidden: { opacity: 0, y: '0.6em', filter: 'blur(6px)' },
             visible: {

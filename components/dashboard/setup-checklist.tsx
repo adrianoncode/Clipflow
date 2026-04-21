@@ -98,9 +98,9 @@ export function SetupChecklist({
   // All done celebration
   if (allDone) {
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 via-background to-background p-6">
+      <div className="relative overflow-hidden rounded-2xl border border-lime-soft-2/60 bg-gradient-to-br from-lime-soft via-card to-card p-6">
         <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-lime-soft-2 text-lime-ink">
             <PartyPopper className="h-6 w-6" />
           </div>
           <div className="min-w-0 flex-1">
@@ -164,7 +164,7 @@ export function SetupChecklist({
                 {i < steps.length - 1 && (
                   <div
                     className={`absolute left-[17px] top-[36px] h-[calc(100%-16px)] w-[2px] ${
-                      step.done ? 'bg-emerald-300' : 'bg-border/50'
+                      step.done ? 'bg-lime-soft-2' : 'bg-border/50'
                     }`}
                   />
                 )}
@@ -172,7 +172,7 @@ export function SetupChecklist({
                 {/* Circle indicator */}
                 <div className="relative z-10 flex shrink-0 pt-1">
                   {step.done ? (
-                    <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm shadow-emerald-200">
+                    <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-[#0F6B4D] text-white shadow-sm shadow-[#0F6B4D]/20">
                       <Check className="h-4 w-4" strokeWidth={3} />
                     </div>
                   ) : isCurrent ? (
@@ -199,7 +199,7 @@ export function SetupChecklist({
                   <div
                     className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
                       step.done
-                        ? 'bg-emerald-50 text-emerald-500'
+                        ? 'bg-lime-soft text-lime-ink'
                         : isCurrent
                           ? 'bg-primary/10 text-primary'
                           : 'bg-muted text-muted-foreground/40'
@@ -222,7 +222,7 @@ export function SetupChecklist({
                     <p className="mt-0.5 text-xs text-muted-foreground">{step.description}</p>
                   </div>
                   {step.done ? (
-                    <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-600">
+                    <span className="shrink-0 rounded-full bg-lime-soft px-2.5 py-1 text-[10px] font-bold text-lime-ink">
                       Done
                     </span>
                   ) : isCurrent ? (

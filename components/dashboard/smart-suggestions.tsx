@@ -27,52 +27,51 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Trophy,
 }
 
-const TYPE_STYLES: Record<
-  Suggestion['type'],
-  { gradient: string; iconBg: string; iconColor: string; ring: string }
+// Semantic bucket → design-token styling.
+// The .lv2-shell palette only admits 4 colors beyond neutral: plum (primary),
+// lime-ink (positive), ochre/#A0530B (warn), bordeaux/#9B2018 (danger). Each
+// suggestion maps to exactly one bucket so the dashboard stays visually
+// calm instead of a seven-color rainbow.
+type Tone = 'urgent' | 'warn' | 'info' | 'positive'
+
+const TONE_STYLES: Record<
+  Tone,
+  { wash: string; iconBg: string; iconColor: string; ring: string }
 > = {
-  posting_gap: {
-    gradient: 'from-red-500/10 via-orange-500/5 to-transparent',
-    iconBg: 'bg-red-50',
-    iconColor: 'text-red-600',
-    ring: 'ring-red-200/60',
+  urgent: {
+    wash: 'bg-[#F8E3E0]/40',
+    iconBg: 'bg-[#F8E3E0]',
+    iconColor: 'text-[#9B2018]',
+    ring: 'ring-[#9B2018]/15',
   },
-  platform_neglected: {
-    gradient: 'from-amber-500/10 via-yellow-500/5 to-transparent',
-    iconBg: 'bg-amber-50',
-    iconColor: 'text-amber-600',
-    ring: 'ring-amber-200/60',
+  warn: {
+    wash: 'bg-[#FBEDD9]/40',
+    iconBg: 'bg-[#FBEDD9]',
+    iconColor: 'text-[#A0530B]',
+    ring: 'ring-[#A0530B]/15',
   },
-  content_stale: {
-    gradient: 'from-violet-500/10 via-purple-500/5 to-transparent',
-    iconBg: 'bg-violet-50',
-    iconColor: 'text-violet-600',
-    ring: 'ring-violet-200/60',
+  info: {
+    wash: 'bg-primary/[0.04]',
+    iconBg: 'bg-primary/10',
+    iconColor: 'text-primary',
+    ring: 'ring-primary/15',
   },
-  pipeline_stuck: {
-    gradient: 'from-orange-500/10 via-amber-500/5 to-transparent',
-    iconBg: 'bg-orange-50',
-    iconColor: 'text-orange-600',
-    ring: 'ring-orange-200/60',
+  positive: {
+    wash: 'bg-lime-soft/50',
+    iconBg: 'bg-lime-soft',
+    iconColor: 'text-lime-ink',
+    ring: 'ring-lime-ink/15',
   },
-  recycle: {
-    gradient: 'from-emerald-500/10 via-green-500/5 to-transparent',
-    iconBg: 'bg-emerald-50',
-    iconColor: 'text-emerald-600',
-    ring: 'ring-emerald-200/60',
-  },
-  milestone: {
-    gradient: 'from-violet-500/10 via-indigo-500/5 to-transparent',
-    iconBg: 'bg-violet-50',
-    iconColor: 'text-violet-600',
-    ring: 'ring-violet-200/60',
-  },
-  streak: {
-    gradient: 'from-orange-500/10 via-red-500/5 to-transparent',
-    iconBg: 'bg-orange-50',
-    iconColor: 'text-orange-600',
-    ring: 'ring-orange-200/60',
-  },
+}
+
+const TYPE_TO_TONE: Record<Suggestion['type'], Tone> = {
+  posting_gap: 'urgent',
+  pipeline_stuck: 'urgent',
+  platform_neglected: 'warn',
+  content_stale: 'info',
+  milestone: 'info',
+  recycle: 'positive',
+  streak: 'positive',
 }
 
 function getDismissed(): Set<string> {
@@ -124,7 +123,7 @@ export function SmartSuggestions({ suggestions }: { suggestions: Suggestion[] })
   return (
     <div className="space-y-2.5">
       <div className="flex items-center gap-2">
-        <div className="h-1.5 w-1.5 rounded-full bg-violet-500 animate-pulse" />
+        <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
         <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           Smart suggestions
         </p>
@@ -132,7 +131,7 @@ export function SmartSuggestions({ suggestions }: { suggestions: Suggestion[] })
 
       <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
         {visible.map((suggestion, i) => {
-          const styles = TYPE_STYLES[suggestion.type]
+          const styles = TONE_STYLES[TYPE_TO_TONE[suggestion.type]]
           const Icon = ICON_MAP[suggestion.icon]
 
           return (
@@ -144,9 +143,9 @@ export function SmartSuggestions({ suggestions }: { suggestions: Suggestion[] })
                 animationFillMode: 'both',
               }}
             >
-              {/* Gradient accent strip */}
+              {/* Tone wash */}
               <div
-                className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${styles.gradient} opacity-60`}
+                className={`pointer-events-none absolute inset-0 ${styles.wash}`}
               />
 
               {/* Dismiss button */}
@@ -170,7 +169,7 @@ export function SmartSuggestions({ suggestions }: { suggestions: Suggestion[] })
                   <div className="min-w-0 flex-1 pt-0.5">
                     <div className="flex items-center gap-2">
                       {suggestion.priority === 'high' && (
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#9B2018]" />
                       )}
                       <p className="text-[13px] font-semibold leading-tight text-foreground">
                         {suggestion.title}

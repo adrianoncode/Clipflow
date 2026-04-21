@@ -388,8 +388,11 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         .lv2-step-card { transition: transform .4s cubic-bezier(.2,.8,.2,1), border-color .3s; position: relative; }
         .lv2-step-card::before {
           content: ""; position: absolute; inset: 0; border-radius: inherit;
-          background: radial-gradient(600px circle at var(--mx,50%) var(--my,50%), rgba(214,255,62,.15), transparent 40%);
-          opacity: 0; transition: opacity .3s; pointer-events: none;
+          background: radial-gradient(600px circle at var(--mx,50%) var(--my,50%), rgba(214,255,62,.18), transparent 40%);
+          /* Baseline opacity so the card always shows a hint of the lime
+             glow — without it the card reads flat until hovered, which
+             makes the "magnetic" interaction feel hidden. */
+          opacity: .28; transition: opacity .3s; pointer-events: none;
         }
         .lv2-step-card:hover::before { opacity: 1; }
         .lv2-step-card:hover { border-color: var(--lv2-primary); transform: translateY(-4px); }
@@ -434,7 +437,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
       {/* Referral ribbon (retained from previous landing) */}
       {hasValidRef ? (
         <div
-          className="flex items-center justify-center gap-2 px-4 py-2 text-center text-sm font-medium"
+          className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 px-3 py-1.5 text-center text-[11px] font-medium sm:px-4 sm:py-2 sm:text-sm"
           style={{ background: 'var(--lv2-primary)', color: 'var(--lv2-accent)' }}
         >
           <span aria-hidden>★</span>

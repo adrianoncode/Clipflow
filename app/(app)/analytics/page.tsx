@@ -603,7 +603,7 @@ export default async function AnalyticsPage() {
             </p>
           </div>
           <div className="p-5">
-            <BarChart data={analytics.outputsByMonth} color="bg-blue-500" />
+            <BarChart data={analytics.outputsByMonth} color="bg-dataviz-2" />
           </div>
         </section>
       </div>

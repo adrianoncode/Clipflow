@@ -56,12 +56,12 @@ export function ReferralSidebarCard({ link, pending, confirmed, currentPlan }: R
   }
 
   return (
-    <div className="mx-2 mb-2 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 p-3">
+    <div className="mx-2 mb-2 rounded-xl border border-primary/15 bg-gradient-to-br from-lime-soft/60 via-primary/[0.04] to-transparent p-3">
       <Link
         href="/settings/referrals"
         className="flex items-center gap-1.5 text-xs font-semibold text-foreground hover:text-primary"
       >
-        <Gift className="h-3.5 w-3.5 text-primary" />
+        <Gift className="h-3.5 w-3.5 text-lime-ink" />
         Give 20%, get 20%
       </Link>
       <p className="mt-1 text-[11px] leading-tight text-muted-foreground">

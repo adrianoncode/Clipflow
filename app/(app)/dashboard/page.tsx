@@ -94,17 +94,31 @@ const DASH_STYLES = `
   font-weight: 800; font-size: 13px;
   padding: 9px 14px; border-radius: 10px;
   box-shadow: 0 2px 0 rgba(100,125,0,.25), inset 0 0 0 1px rgba(0,0,0,.06);
-  transition: transform .15s ease;
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
 }
-.lv2-dash .lv2d-btn-accent:hover { transform: translateY(-1px); }
+.lv2-dash .lv2d-btn-accent:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+  box-shadow:
+    0 3px 0 rgba(100,125,0,.25),
+    0 12px 24px -12px rgba(42,26,61,.32),
+    inset 0 0 0 1px rgba(0,0,0,.08);
+}
+.lv2-dash .lv2d-btn-accent:active { transform: translateY(0); filter: brightness(.98); }
 .lv2-dash .lv2d-btn-ghost {
   display: inline-flex; align-items: center; gap: .5rem;
   background: var(--lv2d-card); border: 1px solid var(--lv2d-border);
   color: var(--lv2d-fg); font-weight: 600; font-size: 13px;
   padding: 8px 12px; border-radius: 10px;
-  transition: background .15s ease, border-color .15s ease;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease, box-shadow .18s ease;
 }
-.lv2-dash .lv2d-btn-ghost:hover { background: var(--lv2d-bg-2); border-color: var(--lv2d-border-strong); }
+.lv2-dash .lv2d-btn-ghost:hover {
+  background: var(--lv2d-bg-2);
+  border-color: var(--lv2d-border-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px -12px rgba(42,26,61,.18);
+}
+.lv2-dash .lv2d-btn-ghost:active { transform: translateY(0); }
 .lv2-dash .lv2d-step-line {
   height: 2px;
   background-image: linear-gradient(to right, var(--lv2d-border-strong) 60%, transparent 0);
@@ -121,7 +135,22 @@ const DASH_STYLES = `
   transform: translateY(-2px); border-color: var(--lv2d-border-strong);
   box-shadow: 0 10px 24px -16px rgba(42,26,61,.22);
 }
-.lv2-dash .lv2d-funnel-cta { outline: 2px solid var(--lv2d-primary); outline-offset: 2px; }
+/* Active funnel step — the bucket that needs user action. Outline alone
+   reads as "focused", not "attention here". A warm plum wash + lime
+   halo gives it the visual weight it deserves. */
+.lv2-dash .lv2d-funnel-cta {
+  outline: 2px solid var(--lv2d-primary);
+  outline-offset: 2px;
+  background: linear-gradient(180deg, var(--lv2d-primary-soft) 0%, var(--lv2d-card) 70%);
+  box-shadow:
+    0 10px 28px -16px rgba(42,26,61,.28),
+    0 0 0 4px rgba(214,255,62,.14);
+}
+.lv2-dash .lv2d-funnel-cta:hover {
+  box-shadow:
+    0 18px 40px -20px rgba(42,26,61,.32),
+    0 0 0 4px rgba(214,255,62,.22);
+}
 @keyframes lv2d-pulse { 0%,100% { opacity: 1 } 50% { opacity: .5 } }
 .lv2-dash .lv2d-pulse { animation: lv2d-pulse 2.4s ease-in-out infinite; }
 @keyframes lv2d-shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
@@ -1232,6 +1261,12 @@ async function DashboardBody() {
                           >
                             <span className="lv2d-sans-d lv2d-tabular text-[20px] font-bold leading-none">
                               {bvScore}
+                              <span
+                                className="lv2d-mono text-[10px] font-medium"
+                                style={{ color: 'var(--lv2d-muted)' }}
+                              >
+                                /100
+                              </span>
                             </span>
                             <span
                               className="lv2d-mono mt-0.5 text-[8px]"
@@ -1478,15 +1513,15 @@ function DashboardBodySkeleton() {
     <div className="lv2d-fade-in mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-8">
       <div className="space-y-3">
         <div
-          className="h-3 w-40 rounded"
+          className="lv2-skeleton h-3 w-40 rounded"
           style={{ background: 'var(--lv2d-muted-2)' }}
         />
         <div
-          className="h-12 w-80 rounded-lg"
+          className="lv2-skeleton h-12 w-80 rounded-lg"
           style={{ background: 'var(--lv2d-muted-2)' }}
         />
         <div
-          className="h-4 w-64 rounded"
+          className="lv2-skeleton h-4 w-64 rounded"
           style={{ background: 'var(--lv2d-muted-2)' }}
         />
       </div>
@@ -1494,23 +1529,23 @@ function DashboardBodySkeleton() {
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
-            className="h-24 rounded-xl"
+            className="lv2-skeleton h-24 rounded-xl"
             style={{ background: 'var(--lv2d-muted-2)' }}
           />
         ))}
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
         <div
-          className="h-80 rounded-2xl lg:col-span-2"
+          className="lv2-skeleton h-80 rounded-2xl lg:col-span-2"
           style={{ background: 'var(--lv2d-muted-2)' }}
         />
         <div className="space-y-4">
           <div
-            className="h-36 rounded-2xl"
+            className="lv2-skeleton h-36 rounded-2xl"
             style={{ background: 'var(--lv2d-muted-2)' }}
           />
           <div
-            className="h-36 rounded-2xl"
+            className="lv2-skeleton h-36 rounded-2xl"
             style={{ background: 'var(--lv2d-muted-2)' }}
           />
         </div>
