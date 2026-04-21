@@ -313,7 +313,15 @@ export function AppShell({
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: SHELL_STYLES }} />
-      <div className="lv2-shell flex min-h-screen flex-col">
+      {/* h-screen + overflow-hidden pins the entire shell to exactly one
+          viewport. Without this, a tall page (e.g. the Dashboard with
+          its Suspense body + stats + pipeline + analytics) grew past
+          100vh and the body itself scrolled, dragging the sidebar along
+          for the ride. Now the sidebar stays put and only <main> scrolls
+          via its own overflow-y-auto. The mobile bottom nav is
+          fixed-positioned, so it sits outside this flex context and
+          isn't affected. */}
+      <div className="lv2-shell flex h-screen flex-col overflow-hidden">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:shadow-lg"
