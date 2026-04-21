@@ -1947,7 +1947,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             </p>
             <div className="lv2-rule my-5" />
             <ul className="space-y-2.5 text-[13px]">
-              {['5 videos / month', '40 AI minutes', '2 platforms', 'Clipflow watermark'].map(
+              {['3 videos / month', '10 posts / month', '1 workspace', 'Clipflow watermark'].map(
                 (f) => (
                   <li key={f} className="flex items-start gap-2">
                     <span className="mt-0.5" style={{ color: 'var(--lv2-primary)' }}>
@@ -2009,13 +2009,13 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             <div className="lv2-rule my-5" />
             <ul className="space-y-2.5 text-[13px]">
               {[
-                '100 videos / month',
-                '500 AI minutes',
-                'All 5 platforms',
+                '30 videos / month',
+                '150 posts / month',
+                '30 video renders / month',
+                '1 workspace',
                 'Brand voice + Brand Kit (logo, color, intro/outro)',
-                'Virality Score on every clip',
-                'Scheduler + 3-hour analytics refresh',
-                'A/B hook testing',
+                'Auto-publish to TikTok, Reels, Shorts, LinkedIn',
+                'A/B hook testing · Virality Score · Creator research',
               ].map((f) => (
                 <li key={f} className="flex items-start gap-2">
                   <span className="mt-0.5" style={{ color: 'var(--lv2-primary)' }}>
@@ -2034,25 +2034,37 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           <PricingTilt className="lv2-card lv2-ring-soft lv2-card-hover lv2-beam p-6">
           <div>
             <p className="lv2-mono-label mb-2">Studio</p>
-            <p
-              className="lv2-display text-[52px] leading-none"
-              style={{ color: 'var(--lv2-primary)' }}
-            >
-              $89<span className="align-top text-[20px]">/mo</span>
-            </p>
+            <div className="flex items-baseline gap-1.5">
+              <p
+                className="lv2-display text-[52px] leading-none"
+                style={{ color: 'var(--lv2-primary)' }}
+              >
+                $99
+              </p>
+              <p className="text-[13px]" style={{ color: 'var(--lv2-muted)' }}>
+                /mo
+              </p>
+              <span
+                className="lv2-chip ml-auto"
+                style={{ background: 'var(--lv2-primary-soft)', color: 'var(--lv2-primary)' }}
+              >
+                2 mo free yearly
+              </span>
+            </div>
             <p className="mt-1 text-[12.5px]" style={{ color: 'var(--lv2-muted)' }}>
-              For teams &amp; agencies
+              For social-media managers &amp; agencies
             </p>
             <div className="lv2-rule my-5" />
             <ul className="space-y-2.5 text-[13px]">
               {[
-                'Unlimited videos',
-                '2,000 AI minutes',
-                'Everything in Creator',
+                'Unlimited videos + posts',
+                '300 video renders / month',
+                'Unlimited client workspaces',
+                'Unlimited team seats with roles',
                 'White-label review links (your brand, not ours)',
-                'Unlimited client workspaces · team roles',
-                'Dubbing, avatars, priority renders',
-                'Audit log + priority support',
+                'AI avatars · auto-dub · voice cloning',
+                'Priority render queue + audit log',
+                'Everything in Creator',
               ].map((f) => (
                 <li key={f} className="flex items-start gap-2">
                   <span className="mt-0.5" style={{ color: 'var(--lv2-primary)' }}>
@@ -2062,13 +2074,11 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 </li>
               ))}
             </ul>
-            <a
-              className="lv2-btn-ghost mt-6 w-full justify-center border"
+            <Link href={signupHref} className="lv2-btn-ghost mt-6 w-full justify-center border"
               style={{ borderColor: 'var(--lv2-border)' }}
-              href="mailto:sales@clipflow.to"
             >
-              Contact sales
-            </a>
+              Start 14-day trial <span className="lv2-arrow">→</span>
+            </Link>
           </div>
           </PricingTilt>
         </div>

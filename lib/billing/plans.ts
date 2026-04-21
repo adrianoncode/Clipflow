@@ -234,7 +234,7 @@ export const PLANS: Record<BillingPlan, PlanDefinition> = {
       videoRendersPerMonth: 300,
       avatarVideosPerMonth: 50,
       dubVideosPerMonth: 50,
-      workspaces: 25, // = up to 25 client brands
+      workspaces: -1, // unlimited client brands — "Studio" tier's whole pitch
       voiceClonesMax: 10,
       teamMembersMax: -1,
     },
