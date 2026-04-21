@@ -1507,9 +1507,15 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           being a specific "this is who we built it for" signal. */}
       <Testimonials />
 
-      {/* COMPARISON MATRIX — direct side-by-side vs OpusClip + Klap.
-          Positions Clipflow as the superset, not the "also-ran". */}
-      <ComparisonMatrix />
+      {/* COMPARISON MATRIX — direct side-by-side vs OpusClip + Klap + Descript.
+          Positions Clipflow as the superset, not the "also-ran".
+          The "See full comparison" link deep-links into the dedicated
+          /compare/clipflow-vs-opusclip page — our biggest SEO lever
+          for "opusclip alternative" queries. */}
+      <ComparisonMatrix
+        seeMoreHref="/compare/clipflow-vs-opusclip"
+        seeMoreLabel="See Clipflow vs OpusClip"
+      />
 
       {/* BIG STATS STRIP */}
       <section
@@ -2344,7 +2350,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
       {/* FOOTER */}
       <footer style={{ borderTop: '1px solid var(--lv2-border)' }}>
         <div className="mx-auto max-w-[1240px] px-6 py-14">
-          <div className="grid gap-8 md:grid-cols-[1.5fr_1fr_1fr_1fr_1fr]">
+          <div className="grid gap-8 md:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1fr]">
             <div>
               <div className="mb-4 flex items-center gap-2">
                 <span
@@ -2385,7 +2391,25 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                     { label: 'Features', href: '#features' },
                     { label: 'How it works', href: '#how-it-works' },
                     { label: 'Pricing', href: '#pricing' },
+                    { label: 'See it in action', href: '#bento' },
                     { label: 'Changelog', href: '/changelog' },
+                  ],
+                },
+                {
+                  title: 'COMPARE',
+                  items: [
+                    { label: 'Clipflow vs OpusClip', href: '/compare/clipflow-vs-opusclip' },
+                    { label: 'Clipflow vs Klap', href: '/compare/clipflow-vs-klap' },
+                    { label: 'Clipflow vs Descript', href: '/compare/clipflow-vs-descript' },
+                    { label: 'All comparisons', href: '/compare' },
+                  ],
+                },
+                {
+                  title: 'ALTERNATIVES',
+                  items: [
+                    { label: 'OpusClip alternative', href: '/opusclip-alternative' },
+                    { label: 'Klap alternative', href: '/klap-alternative' },
+                    { label: 'Descript alternative', href: '/descript-alternative' },
                   ],
                 },
                 {
@@ -2393,16 +2417,16 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                   items: [
                     { label: 'Creators', href: '#creators' },
                     { label: 'FAQ', href: '#faq' },
+                    { label: 'Help center', href: '/help' },
                     { label: 'Contact', href: 'mailto:hi@clipflow.to' },
                     { label: 'Imprint', href: '/imprint' },
                   ],
                 },
                 {
-                  title: 'RESOURCES',
+                  title: 'ACCOUNT',
                   items: [
-                    { label: 'Help center', href: '/help' },
-                    { label: 'Sign in', href: '/login' },
                     { label: 'Start free', href: signupHref },
+                    { label: 'Sign in', href: '/login' },
                   ],
                 },
                 {

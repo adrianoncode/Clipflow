@@ -1,105 +1,48 @@
 'use client'
 
-import { Check, Minus } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowRight, Check, Minus } from 'lucide-react'
+
+import {
+  type CompetitorId,
+  type MatrixRow,
+  COMPETITORS,
+  MATRIX_ROWS,
+} from '@/lib/landing/competitors'
 
 /**
- * Comparison matrix against the two dominant incumbents — OpusClip
- * (clip-finder leader) and Klap (cheaper video-repurposing play).
+ * Comparison matrix — single source of truth is `lib/landing/competitors.ts`.
  *
- * Positioning strategy: we don't play the "we're cheaper" game
- * head-on; we frame the real differentiators (BYOK pricing, Brand
- * Voice, Agency features, White-label review) so the prospect sees
- * Clipflow as a superset of what they're leaving behind.
- *
- * Each row is a capability the prospect actually feels — no
- * marketing-speak bullet points like "AI-powered" or "cloud-native".
- * If we can't defend the claim honestly, the row doesn't ship.
+ * Used on the landing (all competitors visible) AND on each
+ * /compare/clipflow-vs-<competitor> page (filtered to one). The
+ * filtered version shows a single competitor column beside Clipflow
+ * so the side-by-side is easier to scan.
  */
-export function ComparisonMatrix() {
-  const rows: Array<{
-    label: string
-    detail?: string
-    clipflow: boolean | string
-    opus: boolean | string
-    klap: boolean | string
-    highlight?: boolean
-  }> = [
-    {
-      label: 'Clip Finder with virality scoring',
-      detail: 'Ranks clips by hook strength, not just length.',
-      clipflow: true,
-      opus: true,
-      klap: true,
-    },
-    {
-      label: 'Writes in your brand voice',
-      detail: 'Reads your past posts, matches tone + vocabulary + hooks.',
-      clipflow: true,
-      opus: false,
-      klap: false,
-      highlight: true,
-    },
-    {
-      label: 'Brand Kit on every render',
-      detail: 'Logo, color, custom font, intro/outro — automatic.',
-      clipflow: true,
-      opus: 'Logo only',
-      klap: false,
-      highlight: true,
-    },
-    {
-      label: 'Scheduler with auto-publish',
-      detail: 'TikTok, Instagram, YouTube, LinkedIn on a calendar.',
-      clipflow: true,
-      opus: 'Via Zapier',
-      klap: false,
-    },
-    {
-      label: 'A/B test hooks before publish',
-      detail: 'Three variants, pick the winner, track performance.',
-      clipflow: true,
-      opus: false,
-      klap: false,
-      highlight: true,
-    },
-    {
-      label: 'White-label client review links',
-      detail: 'Your agency brand on the client-facing surface, not theirs.',
-      clipflow: true,
-      opus: false,
-      klap: false,
-      highlight: true,
-    },
-    {
-      label: 'Unlimited client workspaces',
-      detail: 'One account, separate context per client.',
-      clipflow: true,
-      opus: '1 workspace',
-      klap: '1 workspace',
-    },
-    {
-      label: 'Team seats with roles',
-      detail: 'Owner / editor / reviewer / client — audit log included.',
-      clipflow: true,
-      opus: '+$25/seat',
-      klap: false,
-    },
-    {
-      label: 'BYOK — you pay your AI provider at cost',
-      detail: 'No markup on OpenAI / Anthropic / Google tokens.',
-      clipflow: true,
-      opus: false,
-      klap: false,
-      highlight: true,
-    },
-    {
-      label: 'Creator research across platforms',
-      detail: 'What\u2019s working in your niche, aggregated.',
-      clipflow: true,
-      opus: false,
-      klap: false,
-    },
-  ]
+
+interface ComparisonMatrixProps {
+  /** Which competitor columns to render. Defaults to all three. */
+  competitors?: CompetitorId[]
+  /** Optional heading override — detail pages customize this. */
+  headline?: React.ReactNode
+  eyebrow?: string
+  /** Optional "See full comparison" link from the landing — only set
+   *  when the matrix is embedded on the landing, NOT on detail pages. */
+  seeMoreHref?: string
+  seeMoreLabel?: string
+}
+
+export function ComparisonMatrix({
+  competitors = ['opusclip', 'klap', 'descript'],
+  headline,
+  eyebrow = 'Switching from?',
+  seeMoreHref,
+  seeMoreLabel,
+}: ComparisonMatrixProps) {
+  const competitorMetas = competitors.map((id) => COMPETITORS[id])
+  const cols = competitorMetas.length
+  const gridCols = `2fr ${Array.from({ length: cols + 1 })
+    .map(() => '0.8fr')
+    .join(' ')}`
 
   return (
     <section
@@ -108,16 +51,20 @@ export function ComparisonMatrix() {
     >
       <div className="lv2-reveal mb-12 flex flex-wrap items-end justify-between gap-5">
         <div>
-          <p className="lv2-mono-label mb-3">Switching from?</p>
+          <p className="lv2-mono-label mb-3">{eyebrow}</p>
           <h2
             className="lv2-display max-w-[640px] text-[44px] leading-[1.02] sm:text-[56px]"
             style={{ color: 'var(--lv2-primary)' }}
           >
-            What OpusClip and Klap don&apos;t do.
+            {headline ?? (
+              <>
+                What {competitorMetas.map((c) => c.name).join(' and ')} don&apos;t do.
+              </>
+            )}
           </h2>
         </div>
         <p className="max-w-[340px] text-[15px]" style={{ color: 'var(--lv2-muted)' }}>
-          Honest side-by-side. If a row isn\u2019t checked for us, it\u2019s not in this
+          Honest side-by-side. If a row isn&rsquo;t checked for us, it&rsquo;s not in this
           matrix — we only list what we ship.
         </p>
       </div>
@@ -129,16 +76,16 @@ export function ComparisonMatrix() {
           background: 'var(--lv2-card)',
         }}
       >
-        {/* Column header row */}
+        {/* Header row */}
         <div
-          className="grid grid-cols-[1.6fr_0.7fr_0.7fr_0.7fr] items-center border-b text-[12.5px] font-bold sm:grid-cols-[2fr_0.7fr_0.7fr_0.7fr]"
-          style={{ borderColor: 'var(--lv2-border)' }}
+          className="grid items-center border-b text-[12.5px] font-bold"
+          style={{ borderColor: 'var(--lv2-border)', gridTemplateColumns: gridCols }}
         >
           <div className="px-5 py-4">
             <span className="lv2-mono-label">Capability</span>
           </div>
           <div
-            className="relative flex items-center justify-center gap-1.5 px-3 py-4 text-center"
+            className="flex items-center justify-center gap-1.5 px-3 py-4 text-center"
             style={{
               background: 'var(--lv2-primary)',
               color: 'var(--lv2-accent)',
@@ -155,26 +102,23 @@ export function ComparisonMatrix() {
             </span>
             <span className="text-[13px]">Clipflow</span>
           </div>
-          <div
-            className="flex items-center justify-center px-3 py-4 text-center"
-            style={{ color: 'var(--lv2-muted)' }}
-          >
-            OpusClip
-          </div>
-          <div
-            className="flex items-center justify-center px-3 py-4 text-center"
-            style={{ color: 'var(--lv2-muted)' }}
-          >
-            Klap
-          </div>
+          {competitorMetas.map((c) => (
+            <div
+              key={c.id}
+              className="flex items-center justify-center px-3 py-4 text-center"
+              style={{ color: 'var(--lv2-muted)' }}
+            >
+              {c.name}
+            </div>
+          ))}
         </div>
 
         {/* Rows */}
-        {rows.map((row, i) => (
+        {MATRIX_ROWS.map((row: MatrixRow) => (
           <div
             key={row.label}
-            className="grid grid-cols-[1.6fr_0.7fr_0.7fr_0.7fr] items-stretch border-b text-[13px] transition-colors last:border-b-0 hover:bg-black/[.02] sm:grid-cols-[2fr_0.7fr_0.7fr_0.7fr]"
-            style={{ borderColor: 'var(--lv2-border)' }}
+            className="grid items-stretch border-b text-[13px] transition-colors last:border-b-0 hover:bg-black/[.02]"
+            style={{ borderColor: 'var(--lv2-border)', gridTemplateColumns: gridCols }}
           >
             <div className="flex flex-col justify-center px-5 py-4">
               <p
@@ -186,7 +130,7 @@ export function ComparisonMatrix() {
                 {row.label}
                 {row.highlight && (
                   <span
-                    className="lv2-mono ml-2 align-middle"
+                    className="lv2-mono ml-2 inline-block align-middle"
                     style={{
                       background: 'var(--lv2-accent)',
                       color: 'var(--lv2-accent-ink)',
@@ -211,24 +155,31 @@ export function ComparisonMatrix() {
               ) : null}
             </div>
             <CellValue value={row.clipflow} strong />
-            <CellValue value={row.opus} />
-            <CellValue value={row.klap} />
-            {/* Alternating row tint for scanability */}
-            <style jsx>{`
-              div[data-row-i='${i}']:nth-child(even) {
-                background: rgba(0, 0, 0, 0.015);
-              }
-            `}</style>
+            {competitorMetas.map((c) => (
+              <CellValue key={c.id} value={row.values[c.id] ?? false} />
+            ))}
           </div>
         ))}
       </div>
 
-      <p
-        className="lv2-mono mt-6 text-center text-[10.5px]"
-        style={{ color: 'var(--lv2-muted)', letterSpacing: '0.04em' }}
-      >
-        PUBLIC PRICING + DOCS OF EACH TOOL · APRIL 2026 · UPDATES WELCOME
-      </p>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+        <p
+          className="lv2-mono text-[10.5px]"
+          style={{ color: 'var(--lv2-muted)', letterSpacing: '0.04em' }}
+        >
+          PUBLIC PRICING + DOCS OF EACH TOOL · APRIL 2026 · UPDATES WELCOME
+        </p>
+        {seeMoreHref ? (
+          <Link
+            href={seeMoreHref}
+            className="group inline-flex items-center gap-1.5 text-[13px] font-semibold"
+            style={{ color: 'var(--lv2-primary)' }}
+          >
+            {seeMoreLabel ?? 'See the full comparison'}
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        ) : null}
+      </div>
     </section>
   )
 }
