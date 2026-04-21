@@ -2003,8 +2003,10 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 '100 videos / month',
                 '500 AI minutes',
                 'All 5 platforms',
-                'Brand voice engine',
-                'Scheduler + analytics',
+                'Brand voice + Brand Kit (logo, color, intro/outro)',
+                'Virality Score on every clip',
+                'Scheduler + 3-hour analytics refresh',
+                'A/B hook testing',
               ].map((f) => (
                 <li key={f} className="flex items-start gap-2">
                   <span className="mt-0.5" style={{ color: 'var(--lv2-primary)' }}>
@@ -2037,9 +2039,11 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               {[
                 'Unlimited videos',
                 '2,000 AI minutes',
-                'Roles + audit log',
-                'Dubbing & reframe',
-                'Priority support',
+                'Everything in Creator',
+                'White-label review links (your brand, not ours)',
+                'Unlimited client workspaces · team roles',
+                'Dubbing, avatars, priority renders',
+                'Audit log + priority support',
               ].map((f) => (
                 <li key={f} className="flex items-start gap-2">
                   <span className="mt-0.5" style={{ color: 'var(--lv2-primary)' }}>
@@ -2570,6 +2574,167 @@ function FeatureGrid() {
             <span>WED</span>
             <span>FRI</span>
             <span>SUN</span>
+          </div>
+        </div>
+
+        {/* Virality Score */}
+        <div className="lv2-card lv2-ring-soft lv2-card-hover p-6">
+          <p className="lv2-mono-label mb-3" style={{ fontSize: 9 }}>
+            VIRALITY SCORE
+          </p>
+          <h3 className="lv2-sans-d mb-2 text-[20px] font-bold">
+            Post the clips that actually fire
+          </h3>
+          <p
+            className="text-[13px] leading-relaxed"
+            style={{ color: 'var(--lv2-muted)' }}
+          >
+            Every clip lands with a 0–100 virality score and a one-line why.
+            Stop guessing which take to ship.
+          </p>
+          <div className="mt-5 space-y-2">
+            {[
+              { score: 92, label: 'FIRE', bg: 'linear-gradient(135deg,#D6FF3E,#B8E02E)', fg: '#1a2000' },
+              { score: 74, label: 'STRONG', bg: 'var(--lv2-primary)', fg: 'var(--lv2-accent)' },
+              { score: 51, label: 'OK', bg: 'var(--lv2-muted-2)', fg: 'var(--lv2-fg-soft)' },
+            ].map((b) => (
+              <div
+                key={b.label}
+                className="flex items-center gap-3 rounded-lg p-2"
+                style={{ background: 'var(--lv2-bg-2)' }}
+              >
+                <div
+                  className="flex h-10 w-10 flex-col items-center justify-center rounded-lg"
+                  style={{ background: b.bg, color: b.fg }}
+                >
+                  <span className="lv2-tabular text-[13px] font-bold leading-none">
+                    {b.score}
+                  </span>
+                  <span className="lv2-mono text-[7px] font-bold" style={{ letterSpacing: '.1em' }}>
+                    {b.label}
+                  </span>
+                </div>
+                <span className="text-[11.5px]" style={{ color: 'var(--lv2-muted)' }}>
+                  {b.label === 'FIRE'
+                    ? 'Punchy hook, pays off in 7s'
+                    : b.label === 'STRONG'
+                      ? 'Clear insight, good pacing'
+                      : 'Solid — if on-topic'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Brand Kit */}
+        <div className="lv2-card lv2-ring-soft lv2-card-hover p-6">
+          <p className="lv2-mono-label mb-3" style={{ fontSize: 9 }}>
+            BRAND KIT
+          </p>
+          <h3 className="lv2-sans-d mb-2 text-[20px] font-bold">
+            Set your logo once, stamp it everywhere
+          </h3>
+          <p
+            className="text-[13px] leading-relaxed"
+            style={{ color: 'var(--lv2-muted)' }}
+          >
+            Logo, colors, intro, outro. Applied automatically to every Clipflow
+            render. No more manual branding per clip.
+          </p>
+          <div className="mt-5 grid grid-cols-3 gap-2">
+            {/* intro frame */}
+            <div
+              className="aspect-[9/16] overflow-hidden rounded-md"
+              style={{ background: 'linear-gradient(135deg, var(--lv2-primary), #5a4470)' }}
+            >
+              <div className="flex h-full items-center justify-center p-1 text-center">
+                <span className="text-[8px] font-extrabold text-white">Nora&rsquo;s Podcast</span>
+              </div>
+            </div>
+            {/* body frame */}
+            <div
+              className="relative aspect-[9/16] overflow-hidden rounded-md"
+              style={{
+                backgroundImage:
+                  "url('https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=200&q=60')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              <span
+                className="absolute right-1 bottom-1 flex h-3 w-3 items-center justify-center rounded-sm"
+                style={{ background: 'white' }}
+              >
+                <span
+                  className="block h-1.5 w-1.5 rounded-sm"
+                  style={{ background: 'var(--lv2-primary)' }}
+                />
+              </span>
+            </div>
+            {/* outro frame */}
+            <div
+              className="aspect-[9/16] overflow-hidden rounded-md"
+              style={{ background: 'linear-gradient(135deg, var(--lv2-primary), #5a4470)' }}
+            >
+              <div className="flex h-full items-center justify-center p-1 text-center">
+                <span className="text-[8px] font-extrabold text-white">Follow → @nora</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* White-label Review */}
+        <div className="lv2-card lv2-ring-soft lv2-card-hover p-6">
+          <p className="lv2-mono-label mb-3" style={{ fontSize: 9 }}>
+            WHITE-LABEL REVIEW
+          </p>
+          <h3 className="lv2-sans-d mb-2 text-[20px] font-bold">
+            Your clients see your brand, not ours
+          </h3>
+          <p
+            className="text-[13px] leading-relaxed"
+            style={{ color: 'var(--lv2-muted)' }}
+          >
+            Share a review link. Your logo, your color, your workspace name in
+            the tab. Clipflow is a single-line footer credit.
+          </p>
+          <div
+            className="lv2-card mt-5 overflow-hidden"
+            style={{ background: 'var(--lv2-bg-2)', borderColor: 'var(--lv2-border)' }}
+          >
+            <div
+              className="flex items-center gap-2 border-b px-3 py-2"
+              style={{ borderColor: 'var(--lv2-border)' }}
+            >
+              <span
+                className="flex h-5 w-5 items-center justify-center rounded-md text-[8px] font-bold text-white"
+                style={{ background: '#E8756B' }}
+              >
+                AT
+              </span>
+              <div className="min-w-0 flex-1">
+                <p
+                  className="lv2-mono text-[8px] font-semibold uppercase"
+                  style={{ letterSpacing: '.15em', color: 'var(--lv2-muted)' }}
+                >
+                  Atlas Agency · Review
+                </p>
+                <p
+                  className="lv2-display truncate text-[13px]"
+                  style={{ color: 'var(--lv2-primary)' }}
+                >
+                  &ldquo;Shipping faster&rdquo;
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between px-3 py-2">
+              <span className="lv2-chip" style={{ background: 'var(--lv2-primary-soft)', color: 'var(--lv2-primary)', fontSize: 9 }}>
+                4 drafts
+              </span>
+              <span className="lv2-mono text-[9px]" style={{ color: 'var(--lv2-muted)' }}>
+                powered by clipflow
+              </span>
+            </div>
           </div>
         </div>
       </div>

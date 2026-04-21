@@ -72,6 +72,23 @@ export function PlanCard({ planId, interval, workspaceId, currentPlan, feature }
   if (limits.voiceClonesMax !== 0) bullets.push(`${formatLimit(limits.voiceClonesMax)} voice clone${limits.voiceClonesMax !== 1 ? 's' : ''}`)
   bullets.push(`${formatLimit(limits.workspaces)} workspace${limits.workspaces !== 1 ? 's' : ''}`)
 
+  // Feature bullets — surface the flags each plan flips on so users
+  // can see the actual differentiators between tiers at a glance. Keep
+  // the copy short; one line each.
+  if (plan.features.customBranding)
+    bullets.push('Brand Kit — logo, colors, intro/outro on every render')
+  if (plan.features.scheduling) bullets.push('Auto-publish to 4 platforms')
+  if (plan.features.abHookTesting) bullets.push('A/B hook testing')
+  if (plan.features.creatorResearch) bullets.push('Creator research across YouTube / TikTok / IG')
+  if (plan.features.brollAutomation) bullets.push('AI B-roll + captions')
+  if (plan.features.avatarVideos) bullets.push('AI avatar videos')
+  if (plan.features.autoDub) bullets.push('Auto-dub + voice cloning')
+  if (plan.features.multiWorkspace) bullets.push('Unlimited client workspaces')
+  if (plan.features.teamSeats) bullets.push('Team seats + roles')
+  if (plan.features.whiteLabelReview)
+    bullets.push('White-label review links (your brand, not ours)')
+  if (plan.features.priorityRenders) bullets.push('Priority render queue')
+
   return (
     <Card
       className={cn(
