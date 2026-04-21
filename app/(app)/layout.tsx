@@ -19,12 +19,23 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/login')
   }
 
-  const [profile, workspaces, referralCode, referralStats] = await Promise.all([
-    getProfile(),
-    getWorkspaces(),
-    getOwnReferralCode(),
-    getReferralStats(user.id),
-  ])
+  // Read the cookie BEFORE the parallel batch so we can kick off
+  // getWorkspacePlan for the user's active workspace in the same
+  // Promise.all. Was previously sequential after the batch, adding
+  // ~150ms of wait-time to every single authed page load.
+  const cookieStore = cookies()
+  const cookieWorkspaceId = cookieStore.get(CURRENT_WORKSPACE_COOKIE)?.value
+
+  const [profile, workspaces, referralCode, referralStats, speculativePlan] =
+    await Promise.all([
+      getProfile(),
+      getWorkspaces(),
+      getOwnReferralCode(),
+      getReferralStats(user.id),
+      cookieWorkspaceId
+        ? getWorkspacePlan(cookieWorkspaceId)
+        : Promise.resolve(null),
+    ])
 
   // Onboarding gate: newly signed-up users must run the wizard before they
   // can reach the main app shell. Profile may also be null if RLS or timing
@@ -41,8 +52,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/onboarding/role')
   }
 
-  const cookieStore = cookies()
-  const cookieWorkspaceId = cookieStore.get(CURRENT_WORKSPACE_COOKIE)?.value
   const personal = workspaces.find((w) => w.type === 'personal') ?? workspaces[0]!
   const currentWorkspace =
     workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal
@@ -50,9 +59,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://clipflow.to'
   const referralLink = referralCode ? `${baseUrl}/signup?ref=${referralCode}` : null
 
-  // Know the plan so the referral card can tailor its wording — free users
-  // have earned a discount that's waiting for them to upgrade.
-  const currentPlan = await getWorkspacePlan(currentWorkspace.id)
+  // If the cookie-based speculative plan targeted the same workspace we
+  // ended up rendering, reuse it — zero extra round-trip. Otherwise
+  // (stale cookie, workspace rotated) fall back to a fresh fetch.
+  // Thanks to React.cache() on getWorkspacePlan, the duplicate call
+  // during this render still deduplicates with any later consumers.
+  const currentPlan =
+    speculativePlan !== null && cookieWorkspaceId === currentWorkspace.id
+      ? speculativePlan
+      : await getWorkspacePlan(currentWorkspace.id)
 
   return (
     <PostHogProvider userId={user.id} email={user.email ?? ''}>
