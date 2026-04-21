@@ -29,6 +29,22 @@ const WATERMARK_LABEL: Record<NonNullable<BrandKit['watermarkPosition']>, string
   'bottom-right': 'Bottom right',
 }
 
+// Relative luminance per WCAG — used to warn when a user picks an accent
+// that'll make the white subtitle text on the intro/outro slide
+// unreadable.
+function hasLowContrast(hex: string): boolean {
+  const m = /^#([0-9a-fA-F]{6})$/.exec(hex)
+  if (!m) return false
+  const h = m[1]!
+  const channels = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) / 255)
+  const [r, g, b] = channels.map((c) =>
+    c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4),
+  ) as [number, number, number]
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  const contrastVsWhite = 1.05 / (luminance + 0.05)
+  return contrastVsWhite < 4.5
+}
+
 function SaveButton({ disabled }: { disabled: boolean }) {
   const { pending } = useFormStatus()
   return (
@@ -113,7 +129,7 @@ export function BrandKitForm({ workspaceId, initial, canEdit }: BrandKitFormProp
 
         {/* Logo */}
         <section>
-          <Label eyebrow="Step 1" title="Logo" desc="PNG, JPG, SVG, or WebP up to 2 MB." />
+          <Label eyebrow="Logo" title="Logo" desc="PNG, JPG, SVG, or WebP up to 2 MB." />
           <div className="mt-3 flex items-start gap-4">
             <div
               className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border"
@@ -176,7 +192,7 @@ export function BrandKitForm({ workspaceId, initial, canEdit }: BrandKitFormProp
         <section className="grid gap-4 sm:grid-cols-2">
           <div>
             <Label
-              eyebrow="Step 2"
+              eyebrow="Color"
               title="Accent color"
               desc="Used on intro/outro slides and subtle accents."
             />
@@ -207,11 +223,18 @@ export function BrandKitForm({ workspaceId, initial, canEdit }: BrandKitFormProp
                 maxLength={7}
               />
             </div>
+            {hasLowContrast(accentColor) ? (
+              <p className="mt-2 text-[11px]" style={{ color: '#A0530B' }}>
+                Warning: this colour has low contrast against white text.
+                Captions on the intro/outro slides may be hard to read. Pick
+                a darker shade for best results.
+              </p>
+            ) : null}
           </div>
 
           <div>
             <Label
-              eyebrow="Step 3"
+              eyebrow="Font"
               title="Font"
               desc="Applied to every intro/outro card."
             />
@@ -241,7 +264,7 @@ export function BrandKitForm({ workspaceId, initial, canEdit }: BrandKitFormProp
         {/* Watermark position */}
         <section>
           <Label
-            eyebrow="Step 4"
+            eyebrow="Watermark"
             title="Logo watermark position"
             desc="Where the logo sits on the final rendered clip."
           />
@@ -281,7 +304,7 @@ export function BrandKitForm({ workspaceId, initial, canEdit }: BrandKitFormProp
         <section className="grid gap-4 sm:grid-cols-2">
           <div>
             <Label
-              eyebrow="Step 5"
+              eyebrow="Intro"
               title="Intro slide"
               desc="2-second opener. Optional."
             />
@@ -306,7 +329,7 @@ export function BrandKitForm({ workspaceId, initial, canEdit }: BrandKitFormProp
 
           <div>
             <Label
-              eyebrow="Step 6"
+              eyebrow="Outro"
               title="Outro slide"
               desc="3-second closer. Optional."
             />
@@ -421,6 +444,13 @@ function WatermarkDot({
   )
 }
 
+/**
+ * Three-frame storyboard preview — one mini 9:16 card for intro, body,
+ * outro. Matches what the Shotstack render pipeline actually produces
+ * so users don't design against a lie. The watermark scales to 12% of
+ * the frame (same as render) and sits in the configured corner with
+ * the same safe-zone anchor used by the real pipeline.
+ */
 function BrandPreview({
   logoUrl,
   accentColor,
@@ -436,78 +466,132 @@ function BrandPreview({
   introText: string
   outroText: string
 }) {
-  const wmTop = watermarkPosition?.startsWith('top') ? '12px' : 'auto'
-  const wmBottom = watermarkPosition?.startsWith('bottom') ? '12px' : 'auto'
-  const wmLeft = watermarkPosition?.endsWith('left') ? '12px' : 'auto'
-  const wmRight = watermarkPosition?.endsWith('right') ? '12px' : 'auto'
+  const frames: Array<{
+    kind: 'intro' | 'body' | 'outro'
+    label: string
+  }> = [
+    ...(introText ? [{ kind: 'intro' as const, label: 'Intro · 2s' }] : []),
+    { kind: 'body' as const, label: 'Body · your clip' },
+    ...(outroText ? [{ kind: 'outro' as const, label: 'Outro · 3s' }] : []),
+  ]
+
+  return (
+    <div className="space-y-3">
+      {frames.map((f, i) => (
+        <div key={i} className="space-y-1.5">
+          <p
+            className="font-mono text-[9px] uppercase tracking-[0.18em]"
+            style={{ color: '#7c7468' }}
+          >
+            {f.label}
+          </p>
+          <MiniFrame
+            kind={f.kind}
+            accentColor={accentColor}
+            fontFamily={fontFamily}
+            introText={introText}
+            outroText={outroText}
+            logoUrl={logoUrl}
+            watermarkPosition={watermarkPosition}
+          />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function MiniFrame({
+  kind,
+  accentColor,
+  fontFamily,
+  introText,
+  outroText,
+  logoUrl,
+  watermarkPosition,
+}: {
+  kind: 'intro' | 'body' | 'outro'
+  accentColor: string
+  fontFamily: string
+  introText: string
+  outroText: string
+  logoUrl: string
+  watermarkPosition?: BrandKit['watermarkPosition']
+}) {
+  const wmTop = watermarkPosition?.startsWith('top') ? '6%' : 'auto'
+  const wmBottom = watermarkPosition?.startsWith('bottom') ? '6%' : 'auto'
+  const wmLeft = watermarkPosition?.endsWith('left') ? '6%' : 'auto'
+  const wmRight = watermarkPosition?.endsWith('right') ? '6%' : 'auto'
+
+  // Intro + outro: full-frame gradient card with accent tint — matches
+  // the Shotstack buildCaptionHtml gradient pattern. Body frame: fake
+  // subject with a subtitle pill.
+  const bg =
+    kind === 'intro' || kind === 'outro'
+      ? `linear-gradient(135deg, ${accentColor}DD, ${accentColor}33), #0a0a0b`
+      : 'linear-gradient(180deg, #3a342c 0%, #181511 50%, #3a342c 100%)'
 
   return (
     <div
-      className="relative mx-auto flex aspect-[9/16] w-full max-w-[240px] overflow-hidden rounded-2xl border"
-      style={{ borderColor: '#E5DDCE', background: '#181511' }}
+      className="relative mx-auto aspect-[9/16] w-full max-w-[200px] overflow-hidden rounded-xl border"
+      style={{ borderColor: '#E5DDCE', background: '#0a0a0b' }}
     >
-      {/* Mock video frame */}
-      <div
-        className="relative flex-1"
-        style={{
-          background:
-            'linear-gradient(180deg, #3a342c 0%, #181511 50%, #3a342c 100%)',
-        }}
-      >
-        {/* Intro slide simulation at top third */}
-        {introText ? (
-          <div
-            className="absolute inset-x-0 top-0 flex h-1/3 items-center justify-center px-4 text-center"
-            style={{
-              background: `linear-gradient(135deg, ${accentColor}88, ${accentColor}22)`,
-            }}
-          >
-            <p
-              className="text-[11px] font-extrabold leading-tight text-white"
-              style={{ fontFamily: `${fontFamily}, sans-serif` }}
-            >
-              {introText}
-            </p>
-          </div>
-        ) : null}
+      <div className="absolute inset-0" style={{ background: bg }} />
 
-        {/* Simulated subtitle */}
+      {/* Intro or outro copy — full-frame, centered, large. */}
+      {kind === 'intro' && introText ? (
+        <div className="absolute inset-0 flex items-center justify-center px-5 text-center">
+          <p
+            className="text-[12px] font-extrabold leading-tight text-white"
+            style={{ fontFamily: `${fontFamily}, sans-serif` }}
+          >
+            {introText}
+          </p>
+        </div>
+      ) : null}
+      {kind === 'outro' && outroText ? (
+        <div className="absolute inset-0 flex items-center justify-center px-5 text-center">
+          <p
+            className="text-[12px] font-extrabold leading-tight text-white"
+            style={{ fontFamily: `${fontFamily}, sans-serif` }}
+          >
+            {outroText}
+          </p>
+        </div>
+      ) : null}
+
+      {/* Body frame only: simulated bottom subtitle pill. */}
+      {kind === 'body' ? (
         <div
-          className="absolute inset-x-3 bottom-14 rounded bg-black/50 px-2 py-1 text-center text-[9px] font-bold text-white"
+          className="absolute inset-x-3 bottom-8 rounded bg-black/50 px-2 py-1 text-center text-[9px] font-bold text-white"
           style={{ fontFamily: `${fontFamily}, sans-serif` }}
         >
           &ldquo;sample caption…&rdquo;
         </div>
+      ) : null}
 
-        {/* Outro strip at bottom */}
-        {outroText ? (
-          <div
-            className="absolute inset-x-0 bottom-0 flex h-8 items-center justify-center px-2"
-            style={{ background: `${accentColor}` }}
-          >
-            <p
-              className="truncate text-[9px] font-bold text-white"
-              style={{ fontFamily: `${fontFamily}, sans-serif` }}
-            >
-              {outroText}
-            </p>
-          </div>
-        ) : null}
-
-        {/* Watermark */}
-        {logoUrl ? (
-          <span
-            className="absolute flex h-8 w-8 items-center justify-center rounded bg-white/90 p-1"
-            style={{ top: wmTop, bottom: wmBottom, left: wmLeft, right: wmRight }}
-          >
-            <img
-              src={logoUrl}
-              alt=""
-              className="max-h-full max-w-full object-contain"
-            />
-          </span>
-        ) : null}
-      </div>
+      {/* Watermark — scales to 12 % of frame width, same as renders.
+          Intro/outro are always unwatermarked in the pipeline (title
+          cards are a separate track). */}
+      {logoUrl && kind === 'body' ? (
+        <span
+          className="absolute flex items-center justify-center rounded-sm bg-white/90 p-[2px]"
+          style={{
+            top: wmTop,
+            bottom: wmBottom,
+            left: wmLeft,
+            right: wmRight,
+            width: '22%',
+            aspectRatio: '1 / 1',
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={logoUrl}
+            alt=""
+            className="max-h-full max-w-full object-contain"
+          />
+        </span>
+      ) : null}
     </div>
   )
 }

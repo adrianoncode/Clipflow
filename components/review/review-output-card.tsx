@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { CheckCircle2 } from 'lucide-react'
 
 import { ReviewCommentForm } from '@/components/review/review-comment-form'
 import type { ReviewComment, ReviewOutput } from '@/lib/review/get-review-page-data'
@@ -19,6 +20,20 @@ export function ReviewOutputCard({
   reviewLinkId,
 }: ReviewOutputCardProps) {
   const [showForm, setShowForm] = useState(false)
+  const [recentlySent, setRecentlySent] = useState(false)
+
+  // Collapses the form shortly after the server confirms the comment
+  // was saved. Keeps the green "Feedback sent" state up long enough to
+  // read, then snaps back to the clean "+ Leave feedback" affordance so
+  // the card doesn't sit open with a stale form. The Next revalidate
+  // will have re-rendered with the new comment in the list by then.
+  function handleSent() {
+    setRecentlySent(true)
+    window.setTimeout(() => {
+      setShowForm(false)
+      setRecentlySent(false)
+    }, 1800)
+  }
 
   return (
     <div
@@ -73,11 +88,25 @@ export function ReviewOutputCard({
 
       <div className="p-4 pt-2">
         {showForm ? (
-          <ReviewCommentForm
-            reviewLinkId={reviewLinkId}
-            outputId={output.id}
-            label={`Feedback on ${platformLabel}`}
-          />
+          recentlySent ? (
+            <p
+              className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-[12px] font-semibold"
+              style={{
+                borderColor: '#0F6B4D',
+                background: '#E6F4EE',
+                color: '#0F6B4D',
+              }}
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" /> Feedback sent
+            </p>
+          ) : (
+            <ReviewCommentForm
+              reviewLinkId={reviewLinkId}
+              outputId={output.id}
+              label={`Feedback on ${platformLabel}`}
+              onSent={handleSent}
+            />
+          )
         ) : (
           <button
             type="button"

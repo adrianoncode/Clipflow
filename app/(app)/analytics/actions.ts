@@ -18,6 +18,9 @@ export interface RefreshStatsResult {
   fetched?: number
   failed?: number
   cooldownMs?: number
+  /** ISO timestamp of the most recent stats fetch — used by the UI to
+   *  tell the user when the current numbers were last pulled. */
+  lastFetchedAt?: string | null
   error?: string
 }
 
@@ -54,12 +57,18 @@ export async function refreshWorkspaceStatsAction(
   if (lastFetch?.stats_fetched_at) {
     const elapsed = Date.now() - new Date(lastFetch.stats_fetched_at).getTime()
     if (elapsed < MANUAL_COOLDOWN_MS) {
+      // Pinpoint who/what triggered the last pull so the user doesn't
+      // assume they clicked themselves. Could be: this user manually,
+      // a teammate manually, or the 3-hour cron.
+      const whenSec = Math.round(elapsed / 1000)
+      const whenLabel = whenSec < 60 ? `${whenSec}s ago` : `${Math.round(whenSec / 60)} min ago`
       return {
         ok: false,
-        error: `Just refreshed — try again in ${Math.ceil(
+        error: `Stats were pulled ${whenLabel} (either by a teammate or the 3-hour cron). Next manual refresh in ${Math.ceil(
           (MANUAL_COOLDOWN_MS - elapsed) / 1000,
         )}s.`,
         cooldownMs: MANUAL_COOLDOWN_MS - elapsed,
+        lastFetchedAt: lastFetch.stats_fetched_at,
       }
     }
   }
@@ -172,5 +181,5 @@ export async function refreshWorkspaceStatsAction(
   log.info('manual stats refresh', { workspaceId, fetched, failed })
   revalidatePath('/analytics')
 
-  return { ok: true, fetched, failed }
+  return { ok: true, fetched, failed, lastFetchedAt: new Date().toISOString() }
 }

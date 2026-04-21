@@ -9,6 +9,9 @@ interface ReviewCommentFormProps {
   reviewLinkId: string
   outputId: string | null
   label?: string
+  /** Fires once the server confirms the comment landed — used by the
+   *  parent card to collapse the form after a short confirmation blip. */
+  onSent?: () => void
 }
 
 function SubmitButton() {
@@ -39,12 +42,20 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 10,
 }
 
-export function ReviewCommentForm({ reviewLinkId, outputId, label }: ReviewCommentFormProps) {
+export function ReviewCommentForm({
+  reviewLinkId,
+  outputId,
+  label,
+  onSent,
+}: ReviewCommentFormProps) {
   const formRef = useRef<HTMLFormElement>(null)
   const [state, action] = useFormState(
     async (prev: SubmitCommentState, formData: FormData) => {
       const result = await submitReviewCommentAction(prev, formData)
-      if (result.ok === true) formRef.current?.reset()
+      if (result.ok === true) {
+        formRef.current?.reset()
+        onSent?.()
+      }
       return result
     },
     initial,

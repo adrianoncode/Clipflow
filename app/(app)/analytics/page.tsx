@@ -238,6 +238,7 @@ export default async function AnalyticsPage() {
         <RefreshStatsButton
           workspaceId={currentWorkspace.id}
           lastFetchedAt={lastStatsFetchedAt}
+          role={currentWorkspace.role}
         />
       </div>
 

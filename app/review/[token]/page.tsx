@@ -11,8 +11,15 @@ interface ReviewPageProps {
   params: { token: string }
 }
 
-export async function generateMetadata({ params: _params }: ReviewPageProps) {
-  return { title: 'Review Drafts' }
+export async function generateMetadata({ params }: ReviewPageProps) {
+  // White-label the browser tab too — agencies don't want "Clipflow" in
+  // the title bar of a link they sent their client.
+  const data = await getReviewPageData(params.token)
+  if (!data) return { title: 'Review' }
+  const owner = data.workspaceName ?? 'Review'
+  return {
+    title: data.contentTitle ? `${data.contentTitle} · ${owner}` : `${owner} · Review`,
+  }
 }
 
 export default async function ReviewPage({ params }: ReviewPageProps) {
@@ -28,6 +35,17 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
   // name, not ours. Clipflow attribution moves to a tiny footer link.
   const accent = brandKit?.accentColor ?? '#2A1A3D'
   const showLogo = Boolean(brandKit?.logoUrl)
+  // White-label fallback when no logo is uploaded — derive initials from
+  // the workspace name so the public page shows a mark that belongs to
+  // the client, not a Clipflow-shaped dot. Falls through to "C" only
+  // when workspaceName itself is missing.
+  const initials = (workspaceName ?? 'C')
+    .split(/\s+/)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 
   // Group comments by output_id
   const commentsByOutput = new Map<string | null, typeof comments>()
@@ -71,13 +89,10 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
               </span>
             ) : (
               <span
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                style={{ background: accent }}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-mono text-[13px] font-bold tracking-tight"
+                style={{ background: accent, color: '#FFFFFF' }}
               >
-                <span
-                  className="block h-3.5 w-3.5 rounded"
-                  style={{ background: '#D6FF3E' }}
-                />
+                {initials}
               </span>
             )}
             <div className="min-w-0">

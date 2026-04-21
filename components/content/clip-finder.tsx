@@ -1,6 +1,7 @@
 'use client'
 
-import { Flame, Scissors } from 'lucide-react'
+import { useState } from 'react'
+import { Check, Flame, RefreshCcw, Scissors } from 'lucide-react'
 import { useFormState, useFormStatus } from 'react-dom'
 
 import { findBestClipsAction } from '@/app/(app)/workspace/[id]/content/[contentId]/actions'
@@ -27,11 +28,15 @@ const ENERGY_BADGE: Record<BestClip['energy'], string> = {
 
 // Three tiers only — too many buckets reads as noise. 80+ is "post this
 // right now", 60-79 is "worth posting", <60 is "only if on-topic".
+// OK bucket got a visible border in the last polish pass so it stops
+// reading as "disabled". FIRE + STRONG don't need one — their fills are
+// loud enough. We model `border` as optional to keep callers tidy.
 function scoreBucket(score: number): {
   label: string
   bg: string
   fg: string
   ring: string
+  border?: string
 } {
   if (score >= 80) {
     return {
@@ -51,9 +56,10 @@ function scoreBucket(score: number): {
   }
   return {
     label: 'OK',
-    bg: '#ECE5D8',
-    fg: '#3a342c',
-    ring: 'rgba(124,116,104,.2)',
+    bg: '#F3EDE3',
+    fg: '#2A1A3D',
+    ring: 'rgba(42,26,61,.18)',
+    border: '#CFC4AF',
   }
 }
 
@@ -86,10 +92,11 @@ function ViralityBadge({ clip }: { clip: BestClip }) {
       className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl border text-center"
       style={{
         background: bucket.bg,
-        borderColor: 'transparent',
+        borderColor: bucket.border ?? 'transparent',
         boxShadow: `0 4px 16px -6px ${bucket.ring}`,
       }}
       title={clip.why_viral ?? 'Predicted virality — 0 to 100.'}
+      aria-label={`Virality ${bucket.label} — ${clip.virality_score} out of 100. ${clip.why_viral ?? ''}`.trim()}
     >
       <span
         className="lv2-tabular text-[22px] font-bold leading-none"
@@ -107,8 +114,14 @@ function ViralityBadge({ clip }: { clip: BestClip }) {
   )
 }
 
-function SubmitButton() {
+function SubmitButton({ hasExistingClips }: { hasExistingClips: boolean }) {
   const { pending } = useFormStatus()
+  const label = pending
+    ? 'Analyzing…'
+    : hasExistingClips
+      ? 'Re-analyze'
+      : 'Find best clips'
+  const Icon = hasExistingClips ? RefreshCcw : Scissors
   return (
     <button
       type="submit"
@@ -120,15 +133,22 @@ function SubmitButton() {
         boxShadow: 'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(42,26,61,.35)',
       }}
     >
-      <Scissors className="h-3.5 w-3.5" />
-      {pending ? 'Analyzing…' : 'Find best clips'}
+      <Icon className="h-3.5 w-3.5" />
+      {label}
     </button>
   )
 }
 
 function ClipCard({ clip, rank }: { clip: BestClip; rank: number }) {
+  const [copied, setCopied] = useState(false)
   function copyToClipboard() {
-    navigator.clipboard.writeText(clip.quote).catch(() => {})
+    navigator.clipboard
+      .writeText(clip.quote)
+      .then(() => {
+        setCopied(true)
+        window.setTimeout(() => setCopied(false), 1500)
+      })
+      .catch(() => {})
   }
 
   const isTopFire = clip.virality_score !== undefined && clip.virality_score >= 80
@@ -213,10 +233,21 @@ function ClipCard({ clip, rank }: { clip: BestClip; rank: number }) {
         <button
           type="button"
           onClick={copyToClipboard}
-          className="shrink-0 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-colors hover:bg-black/[.03]"
-          style={{ borderColor: '#E5DDCE', color: '#3a342c' }}
+          aria-live="polite"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-colors hover:bg-black/[.03]"
+          style={{
+            borderColor: copied ? '#0F6B4D' : '#E5DDCE',
+            color: copied ? '#0F6B4D' : '#3a342c',
+            background: copied ? '#E6F4EE' : 'transparent',
+          }}
         >
-          Copy quote
+          {copied ? (
+            <>
+              <Check className="h-3 w-3" /> Copied
+            </>
+          ) : (
+            'Copy quote'
+          )}
         </button>
       </div>
     </div>
@@ -255,8 +286,16 @@ export function ClipFinder({ workspaceId, contentId, initialClips }: ClipFinderP
       <form action={formAction}>
         <input type="hidden" name="workspace_id" value={workspaceId} />
         <input type="hidden" name="content_id" value={contentId} />
-        <SubmitButton />
+        <SubmitButton hasExistingClips={Boolean(clips && clips.length > 0)} />
       </form>
+      {clips && clips.length > 0 ? (
+        <p
+          className="font-mono text-[10px]"
+          style={{ color: '#7c7468', letterSpacing: '.05em' }}
+        >
+          Re-analyzing replaces the clips below and uses one AI call.
+        </p>
+      ) : null}
 
       {state.ok === false && (
         <p className="text-sm" style={{ color: '#9B2018' }}>
