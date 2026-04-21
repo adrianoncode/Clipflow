@@ -43,22 +43,27 @@ create index if not exists outputs_workspace_current_state_idx
 -- ── Backfill: set current_state to the most recent state per output ─────
 -- One-time sync for every existing output. Runs fast because of the new
 -- composite index above.
+--
+-- output_states.state is the output_state enum; outputs.current_state
+-- is plain text (so we can evolve it without rewriting rows). Cast on
+-- both comparison and assignment so postgres doesn't trip on the
+-- missing text↔enum operator.
 update public.outputs o
-set current_state = latest.state
+set current_state = latest.state::text
 from (
   select distinct on (output_id) output_id, state
   from public.output_states
   order by output_id, created_at desc
 ) as latest
 where latest.output_id = o.id
-  and o.current_state <> latest.state;
+  and o.current_state <> latest.state::text;
 
 -- ── Trigger: keep current_state in sync on every new state insert ──────
 create or replace function public.sync_output_current_state()
 returns trigger as $$
 begin
   update public.outputs
-  set current_state = new.state
+  set current_state = new.state::text
   where id = new.output_id;
   return new;
 end;
