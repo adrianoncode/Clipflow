@@ -8,8 +8,9 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { log } from '@/lib/log'
 
 // Rate-limit per workspace so users can't hammer Upload-Post. The cron
-// runs every 3 hours; manual refresh gives them a safety valve at most
-// once every 5 minutes per workspace.
+// runs daily (Vercel Hobby tier cap is 1/day until we move to Pro);
+// manual refresh gives users a safety valve at most once every 5 minutes
+// per workspace.
 const MANUAL_COOLDOWN_MS = 5 * 60 * 1000
 const UPLOAD_POST_API = 'https://upload-post.com/api/v1'
 
@@ -59,12 +60,12 @@ export async function refreshWorkspaceStatsAction(
     if (elapsed < MANUAL_COOLDOWN_MS) {
       // Pinpoint who/what triggered the last pull so the user doesn't
       // assume they clicked themselves. Could be: this user manually,
-      // a teammate manually, or the 3-hour cron.
+      // a teammate manually, or the daily cron.
       const whenSec = Math.round(elapsed / 1000)
       const whenLabel = whenSec < 60 ? `${whenSec}s ago` : `${Math.round(whenSec / 60)} min ago`
       return {
         ok: false,
-        error: `Stats were pulled ${whenLabel} (either by a teammate or the 3-hour cron). Next manual refresh in ${Math.ceil(
+        error: `Stats were pulled ${whenLabel} (either by a teammate or the daily cron). Next manual refresh in ${Math.ceil(
           (MANUAL_COOLDOWN_MS - elapsed) / 1000,
         )}s.`,
         cooldownMs: MANUAL_COOLDOWN_MS - elapsed,
