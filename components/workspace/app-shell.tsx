@@ -21,6 +21,7 @@ import {
   MoreHorizontal,
   Plug,
   Plus,
+  Radio,
   Search,
   Send,
   Settings as SettingsIcon,
@@ -181,9 +182,18 @@ export function AppShell({
 
   function isActive(href: string): boolean {
     if (href === '/dashboard') return pathname === href
+    // /settings stays highlighted for every settings sub-route EXCEPT the
+    // two that get their own top-level sidebar entries (Channels and
+    // Integrations). Otherwise clicking e.g. "Channels" would light both
+    // the Channels row AND the Settings row simultaneously.
     if (href === '/settings')
-      return pathname.startsWith('/settings') && !pathname.startsWith('/settings/integrations')
+      return (
+        pathname.startsWith('/settings') &&
+        !pathname.startsWith('/settings/integrations') &&
+        !pathname.startsWith('/settings/channels')
+      )
     if (href === '/settings/integrations') return pathname.startsWith('/settings/integrations')
+    if (href === '/settings/channels') return pathname.startsWith('/settings/channels')
     if (href === `/workspace/${currentWorkspaceId}`) return pathname === href
     if (href === `/workspace/${currentWorkspaceId}/schedule`) {
       return pathname === href || pathname.startsWith(href + '/')
@@ -246,6 +256,7 @@ export function AppShell({
       label: 'Insights',
       items: [
         { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+        { href: '/settings/channels', label: 'Channels', icon: Radio },
         { href: '/settings/integrations', label: 'Integrations', icon: Plug },
       ],
     },

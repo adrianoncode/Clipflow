@@ -95,7 +95,7 @@ export async function refreshWorkspaceStatsAction(
       authTag: keyRow.auth_tag,
     })
   } catch {
-    return { ok: false, error: 'Stored key failed to decrypt — re-add it in AI Connections.' }
+    return { ok: false, error: 'Stored key failed to decrypt — re-add it in Channels.' }
   }
 
   // Only posts from the last 30 days with a platform post id — beyond

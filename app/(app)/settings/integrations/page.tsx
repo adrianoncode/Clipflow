@@ -33,10 +33,10 @@ const WORKSPACE_COOKIE = 'clipflow.current_workspace'
  *
  * Note on LinkedIn: there are two LinkedIn paths in the product.
  * Composio LinkedIn here posts to your personal feed when a draft is
- * exported. Upload-Post (AI Connections) publishes to LinkedIn as
- * part of the TikTok/Reels/Shorts/LinkedIn bundle on schedule. The
- * pointer-card below points heavy social-publishing users to that
- * instead.
+ * exported. Upload-Post (Settings → Channels) publishes to LinkedIn as
+ * part of the TikTok / Instagram / YouTube / LinkedIn bundle on a
+ * schedule. The pointer-card below routes heavy social-publishing
+ * users there instead.
  */
 
 type ConnectionType = 'webhook' | 'api_key' | 'oauth' | 'coming_soon' | 'managed'
@@ -220,7 +220,7 @@ export default async function IntegrationsPage({
            your personal feed on single-export; Upload-Post does the full
            multi-platform publish on schedule. Two different jobs. ── */}
       <Link
-        href="/settings/ai-keys"
+        href="/settings/channels"
         className="group flex items-start gap-3 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/[0.06] to-background p-4 transition-all hover:-translate-y-px hover:border-primary/30 hover:shadow-md"
       >
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -228,10 +228,10 @@ export default async function IntegrationsPage({
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold">
-            Auto-publish to TikTok, Reels, Shorts &amp; LinkedIn at scheduled times
+            Auto-publish to TikTok, Instagram, YouTube &amp; LinkedIn on schedule
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            That lives in AI Connections — one Upload-Post key covers all four platforms on a schedule.
+            That lives in Channels — one Upload-Post key covers all four platforms on a schedule.
           </p>
         </div>
         <span className="self-center text-sm font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">

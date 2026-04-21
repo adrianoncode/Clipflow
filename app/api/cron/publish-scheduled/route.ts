@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
     if (!apiKey) {
       await supabase
         .from('scheduled_posts')
-        .update({ status: 'failed', error_message: 'Upload-Post not connected. Add it in Settings → AI Connections.' })
+        .update({ status: 'failed', error_message: 'Upload-Post not connected. Add it in Settings → Channels.' })
         .eq('id', post.id)
       results.push({ id: post.id, platform: post.platform, ok: false, error: 'No Upload-Post key' })
       continue

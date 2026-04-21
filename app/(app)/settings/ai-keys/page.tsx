@@ -8,23 +8,23 @@ import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 
 export const metadata = {
-  title: 'AI Connections',
+  title: 'AI Keys',
 }
 
 const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
 
 /**
- * AI Connections.
+ * AI Keys.
  *
- * Earlier versions showed an 18-row "What each key unlocks" grid at
- * the top on top of three full sections of service cards — roughly
- * three views of the same information stacked vertically. Users came
- * here to connect a key and had to scroll past all of that first.
+ * Only AI-provider + media-stack keys live here (OpenAI, Anthropic,
+ * Google, Shotstack, ElevenLabs, etc.). Social publishing (Upload-Post)
+ * used to share this page but was split out to /settings/channels —
+ * creators searching for "connect my TikTok" found it confusing to see
+ * their social accounts alongside OpenAI tokens.
  *
- * Now the page is three scannable sections — Required, then Optional,
- * then Publishing — each with one short description and their cards.
- * The cards do the "what you get" explaining. A single "How this
- * works" disclosure at the bottom covers first-timers.
+ * Two sections: AI Provider (required, one of), Media Stack (optional,
+ * unlocks renders/avatars/dub). Help disclosure at the bottom covers
+ * the 3-step onboarding for new users.
  */
 export default async function ApiKeysPage() {
   const workspaces = await getWorkspaces()
@@ -36,7 +36,7 @@ export default async function ApiKeysPage() {
   if (!currentWorkspace) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">AI Connections</h1>
+        <h1 className="text-2xl font-semibold">AI Keys</h1>
         <p className="text-sm text-muted-foreground">No workspace selected.</p>
       </div>
     )
@@ -45,9 +45,10 @@ export default async function ApiKeysPage() {
   const keys = await getAiKeys(currentWorkspace.id)
   const isOwner = currentWorkspace.role === 'owner'
 
+  // Publishing services (Upload-Post) live on /settings/channels now,
+  // so we filter them out of this page's directory.
   const llmServices = SERVICE_DIRECTORY.filter((s) => s.category === 'llm')
   const mediaServices = SERVICE_DIRECTORY.filter((s) => s.category === 'media')
-  const publishServices = SERVICE_DIRECTORY.filter((s) => s.category === 'publish')
 
   const keysByProvider = keys.reduce<Record<string, typeof keys>>((acc, k) => {
     ;(acc[k.provider] = acc[k.provider] ?? []).push(k)
@@ -57,7 +58,6 @@ export default async function ApiKeysPage() {
   const connectedProviderSet = new Set(keys.map((k) => k.provider))
   const hasLlm = llmServices.some((s) => connectedProviderSet.has(s.provider))
   const hasMedia = mediaServices.some((s) => connectedProviderSet.has(s.provider))
-  const hasPublish = publishServices.some((s) => connectedProviderSet.has(s.provider))
 
   return (
     <div className="space-y-8">
@@ -68,7 +68,7 @@ export default async function ApiKeysPage() {
         </div>
         <PageHeading
           eyebrow="Settings · AI"
-          title="AI connections."
+          title="AI keys."
           body="Bring your own AI keys — one connects scripts, captions, hooks, and transcription. You pay your provider directly at cost, no markup. Keys are encrypted at rest."
         />
       </div>
@@ -92,7 +92,7 @@ export default async function ApiKeysPage() {
 
       {!isOwner && (
         <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 p-6 text-center text-sm text-muted-foreground">
-          Only workspace owners can manage AI connections.
+          Only workspace owners can manage AI keys.
         </div>
       )}
 
@@ -120,23 +120,6 @@ export default async function ApiKeysPage() {
         status={hasMedia ? 'connected' : 'optional'}
       >
         {mediaServices.map((spec) => (
-          <ServiceCard
-            key={spec.provider}
-            spec={spec}
-            connectedKeys={keysByProvider[spec.provider] ?? []}
-            workspaceId={currentWorkspace.id}
-            isOwner={isOwner}
-          />
-        ))}
-      </Section>
-
-      {/* ── 3. Publishing (Optional) ── */}
-      <Section
-        title="Publishing"
-        description="One-click post to TikTok, Reels, Shorts, and LinkedIn. Without this you can still export drafts and post manually."
-        status={hasPublish ? 'connected' : 'optional'}
-      >
-        {publishServices.map((spec) => (
           <ServiceCard
             key={spec.provider}
             spec={spec}

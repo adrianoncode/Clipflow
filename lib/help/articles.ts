@@ -52,7 +52,7 @@ export const HELP_ARTICLES: Record<string, HelpArticle> = {
   <li><strong>Anthropic</strong> (Claude) — strong on tone and voice</li>
   <li><strong>Google</strong> (Gemini) — generous free tier</li>
 </ul>
-<p>All three return identical output quality for our prompts. Go to <strong>Settings → AI Connections</strong>, click Connect next to a provider, paste your API key, done. Keys are encrypted at rest and never leave your workspace.</p>
+<p>All three return identical output quality for our prompts. Go to <strong>Settings → AI Keys</strong>, click Connect next to a provider, paste your API key, done. Keys are encrypted at rest and never leave your workspace.</p>
     `,
   },
 
@@ -112,7 +112,7 @@ export const HELP_ARTICLES: Record<string, HelpArticle> = {
     summary: 'Calendar view, drag-and-drop, fires at the right time.',
     body: `
 <p>Open <strong>Schedule</strong> in the sidebar. You&apos;ll see a calendar with all approved drafts on the left, waiting to be dropped onto a day.</p>
-<p>Drag a draft onto a slot, set a time, done. If you&apos;ve connected Upload-Post (<strong>Settings → AI Connections</strong>), the post fires automatically at the scheduled time. Without Upload-Post, Clipflow still tracks the schedule but reminds you to post manually.</p>
+<p>Drag a draft onto a slot, set a time, done. If you&apos;ve connected Upload-Post (<strong>Settings → Channels</strong>), the post fires automatically at the scheduled time. Without Upload-Post, Clipflow still tracks the schedule but reminds you to post manually.</p>
     `,
   },
 

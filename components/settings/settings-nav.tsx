@@ -12,6 +12,7 @@ import {
   Mic2,
   Palette,
   Plug,
+  Radio,
   Shield,
   LayoutTemplate,
 } from 'lucide-react'
@@ -25,13 +26,14 @@ const accountGroup = [
 ]
 
 const aiGroup = [
-  { href: '/settings/ai-keys', label: 'AI Connections', icon: Key },
+  { href: '/settings/ai-keys', label: 'AI Keys', icon: Key },
   { href: '/settings/brand-voice', label: 'Brand Voice', icon: Mic2 },
   { href: '/settings/brand-kit', label: 'Brand Kit', icon: Palette },
   { href: '/settings/templates', label: 'Templates', icon: LayoutTemplate },
 ]
 
 const connectGroup = [
+  { href: '/settings/channels', label: 'Channels', icon: Radio },
   { href: '/settings/integrations', label: 'Integrations', icon: Plug },
   { href: '/help', label: 'Help', icon: HelpCircle },
 ]
