@@ -15,7 +15,7 @@ import { useReducedMotion } from 'framer-motion'
  */
 export function BentoShowcase() {
   return (
-    <section className="mx-auto max-w-[1240px] px-6 py-20">
+    <section id="bento" className="mx-auto max-w-[1240px] px-6 py-20" style={{ scrollMarginTop: 80 }}>
       <div className="lv2-reveal mb-10 text-center">
         <p className="lv2-mono-label mb-3">Under the hood</p>
         <h2

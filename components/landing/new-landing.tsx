@@ -19,6 +19,9 @@ import {
 } from './hero-motion'
 import { CaptionTypewriter } from './caption-typewriter'
 import { BentoShowcase } from './bento-showcase'
+import { Testimonials } from './testimonials'
+import { ComparisonMatrix } from './comparison-matrix'
+import { StickyCta } from './sticky-cta'
 
 interface NewLandingProps {
   signupHref: string
@@ -673,7 +676,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               >
                 <MagneticButton href={signupHref}>Start free — no card</MagneticButton>
                 <MagneticWrap radius={110} strength={0.25}>
-                <a className="lv2-btn-ghost group">
+                <a href="#bento" className="lv2-btn-ghost group">
                   <span
                     className="relative flex h-8 w-8 items-center justify-center rounded-full transition-transform group-hover:scale-110"
                     style={{ background: 'var(--lv2-primary)' }}
@@ -682,7 +685,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   </span>
-                  Watch 90-sec demo
+                  See it in action
                 </a>
                 </MagneticWrap>
               </div>
@@ -1499,6 +1502,15 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           claims) before the pricing wall. */}
       <BentoShowcase />
 
+      {/* TESTIMONIALS — metric-led quotes from early-access creators +
+          agencies, so social proof stops being a star rating and starts
+          being a specific "this is who we built it for" signal. */}
+      <Testimonials />
+
+      {/* COMPARISON MATRIX — direct side-by-side vs OpusClip + Klap.
+          Positions Clipflow as the superset, not the "also-ran". */}
+      <ComparisonMatrix />
+
       {/* BIG STATS STRIP */}
       <section
         className="relative overflow-hidden text-white"
@@ -2131,6 +2143,12 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             <Link href={signupHref} className="lv2-btn-primary mt-6 w-full justify-center">
               Start 14-day trial <span className="lv2-arrow">→</span>
             </Link>
+            <p
+              className="lv2-mono mt-3 text-center text-[10px]"
+              style={{ color: 'var(--lv2-muted)', letterSpacing: '0.04em' }}
+            >
+              NO CARD · CANCEL IN 2 CLICKS · FULL REFUND IN 14 DAYS
+            </p>
           </div>
           </PricingTilt>
 
@@ -2182,6 +2200,12 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             >
               Start 14-day trial <span className="lv2-arrow">→</span>
             </Link>
+            <p
+              className="lv2-mono mt-3 text-center text-[10px]"
+              style={{ color: 'var(--lv2-muted)', letterSpacing: '0.04em' }}
+            >
+              NO CARD · UNLIMITED CLIENTS · CANCEL ANYTIME
+            </p>
           </div>
           </PricingTilt>
         </div>
@@ -2431,6 +2455,11 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           </div>
         </div>
       </footer>
+
+      {/* Floating "Start free" CTA — appears after hero scrolls out,
+          hides near pricing so it doesn't stack on top of in-flow
+          buttons. */}
+      <StickyCta href={signupHref} />
     </div>
   )
 }
