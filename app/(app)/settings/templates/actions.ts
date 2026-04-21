@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
+import { ALL_NICHE_IDS } from '@/lib/niche/presets'
 import { createClient } from '@/lib/supabase/server'
 
 const saveTemplateSchema = z.object({
@@ -62,6 +64,66 @@ export async function saveTemplateAction(
   } catch {
     return { ok: false, error: 'Run database migration to enable custom templates.' }
   }
+
+  revalidatePath('/settings/templates')
+  return { ok: true }
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Niche preset selection — persists the active niche on the
+ * workspace row. Passing an empty string clears the preset (falls
+ * back to pure platform templates at generation time).
+ * ──────────────────────────────────────────────────────────────── */
+
+const setNicheSchema = z.object({
+  workspace_id: z.string().uuid(),
+  niche: z
+    .string()
+    .optional()
+    .refine(
+      (v) => !v || v === '' || ALL_NICHE_IDS.includes(v as (typeof ALL_NICHE_IDS)[number]),
+      { message: 'Unknown niche preset.' },
+    ),
+})
+
+export type SetNicheState =
+  | { ok?: undefined }
+  | { ok: true }
+  | { ok: false; error: string }
+
+export async function setActiveNicheAction(
+  _prev: SetNicheState,
+  formData: FormData,
+): Promise<SetNicheState> {
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const parsed = setNicheSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    niche: formData.get('niche')?.toString() ?? '',
+  })
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  // Only owners + editors touch shared workspace settings — reviewers
+  // are read-only.
+  const check = await requireWorkspaceMember(parsed.data.workspace_id)
+  if (!check.ok) return { ok: false, error: check.message }
+  if (check.role !== 'owner' && check.role !== 'editor') {
+    return { ok: false, error: 'Only owners or editors can change the workspace niche.' }
+  }
+
+  const supabase = createClient()
+  const nextValue =
+    parsed.data.niche && parsed.data.niche.length > 0 ? parsed.data.niche : null
+
+  const { error } = await supabase
+    .from('workspaces')
+    .update({ active_niche: nextValue } as never)
+    .eq('id', parsed.data.workspace_id)
+
+  if (error) return { ok: false, error: error.message }
 
   revalidatePath('/settings/templates')
   return { ok: true }

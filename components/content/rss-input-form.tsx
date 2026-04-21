@@ -41,6 +41,29 @@ export function RssInputForm({ workspaceId }: { workspaceId: string }) {
         </p>
       </div>
 
+      {/* Auto-poll opt-in — when checked, the daily poll-rss cron
+          imports new episodes as they drop. Unchecked keeps the old
+          behavior of a one-shot import. */}
+      <label className="flex cursor-pointer items-start gap-3 rounded-lg border bg-muted/20 px-3 py-2.5 transition-colors hover:bg-muted/30">
+        <input
+          type="checkbox"
+          name="watch_feed"
+          value="on"
+          defaultChecked
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-primary focus:ring-primary"
+        />
+        <span className="text-xs leading-relaxed">
+          <span className="font-semibold text-foreground">
+            Auto-import new episodes
+          </span>
+          <br />
+          <span className="text-muted-foreground">
+            Clipflow checks this feed once a day and imports new episodes
+            automatically. Uncheck for a one-shot import.
+          </span>
+        </span>
+      </label>
+
       {state.error ? <FormMessage variant="error">{state.error}</FormMessage> : null}
 
       <SubmitButton />

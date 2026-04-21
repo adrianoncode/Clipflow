@@ -111,6 +111,7 @@ export type Database = {
           type: WorkspaceType
           owner_id: string
           branding: Json
+          active_niche: string | null
           created_at: string
           updated_at: string
         }
@@ -121,6 +122,7 @@ export type Database = {
           type: WorkspaceType
           owner_id: string
           branding?: Json
+          active_niche?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -131,6 +133,46 @@ export type Database = {
           type?: WorkspaceType
           owner_id?: string
           branding?: Json
+          active_niche?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      rss_subscriptions: {
+        Row: {
+          id: string
+          workspace_id: string
+          feed_url: string
+          channel_title: string | null
+          last_seen_guid: string | null
+          last_polled_at: string | null
+          last_error: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          workspace_id: string
+          feed_url: string
+          channel_title?: string | null
+          last_seen_guid?: string | null
+          last_polled_at?: string | null
+          last_error?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          workspace_id?: string
+          feed_url?: string
+          channel_title?: string | null
+          last_seen_guid?: string | null
+          last_polled_at?: string | null
+          last_error?: string | null
+          created_by?: string | null
           created_at?: string
           updated_at?: string
         }

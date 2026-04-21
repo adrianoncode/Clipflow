@@ -36,6 +36,22 @@ export interface ExploreEntry {
   description: string
   /** Emoji used as a lightweight visual marker in nav + cards. */
   emoji: string
+  /** Optional visual slot id. Maps to components in `components/explore/
+   *  feature-visual.tsx`. Rendered near the hero so the detail page
+   *  isn't a wall of text. */
+  visual?:
+    | 'clip-finder'
+    | 'brand-kit'
+    | 'schedule'
+    | 'hook-test'
+    | 'review-link'
+    | 'analytics'
+    | 'thumbnail'
+    | 'idea-generator'
+    | 'brand-voice'
+    | 'pipeline-flow'
+    | 'rss-flow'
+    | 'agency-flow'
   /** Sections rendered on the detail page — structured so the page
    *  layout stays identical while content varies. */
   sections: Array<{
@@ -70,6 +86,7 @@ export const FEATURES: Record<FeatureId, ExploreEntry> = {
     description:
       'Clipflow\u2019s Brand Voice engine reads your existing captions, hooks, and writing style to match tone, vocabulary, and rhythm on every new draft. Stop editing AI output into your own voice every time.',
     emoji: '🎙️',
+    visual: 'brand-voice',
     availability: 'Available on Creator and Studio plans',
     ctaText: 'Train your Brand Voice',
     highlights: [
@@ -114,6 +131,7 @@ export const FEATURES: Record<FeatureId, ExploreEntry> = {
     description:
       'Clipflow\u2019s Clip Finder scans transcripts for hook strength, emotional peaks, and information density — then ranks clips 0-100 with a plain-English explanation of why each one works.',
     emoji: '✂️',
+    visual: 'clip-finder',
     availability: 'Available on all plans',
     ctaText: 'See clip finder in action',
     highlights: [
@@ -158,6 +176,7 @@ export const FEATURES: Record<FeatureId, ExploreEntry> = {
     description:
       'Define your Brand Kit once — logo, accent color, font family, intro and outro cards, watermark position. Clipflow applies it to every rendered video without a single manual step.',
     emoji: '🎨',
+    visual: 'brand-kit',
     availability: 'Available on Creator and Studio plans',
     ctaText: 'Set up your Brand Kit',
     highlights: [
@@ -202,6 +221,7 @@ export const FEATURES: Record<FeatureId, ExploreEntry> = {
     description:
       'Drag approved drafts onto a calendar, set a time, and Clipflow publishes automatically via the Upload-Post gateway — one connection for all four platforms.',
     emoji: '📅',
+    visual: 'schedule',
     availability: 'Creator (via BYO Upload-Post key) and Studio plans',
     ctaText: 'Open the scheduler',
     highlights: [
@@ -246,6 +266,7 @@ export const FEATURES: Record<FeatureId, ExploreEntry> = {
     description:
       'Clipflow generates three alternative hooks for every draft — each using a different psychological trigger — so you pick the strongest opener before committing to a post.',
     emoji: '🎯',
+    visual: 'hook-test',
     availability: 'Available on Creator and Studio plans',
     ctaText: 'Test your next hook',
     highlights: [
@@ -290,6 +311,7 @@ export const FEATURES: Record<FeatureId, ExploreEntry> = {
     description:
       'Generate a no-login review URL scoped to one content item. Your agency\u2019s logo and accent color take over the page — the client never sees Clipflow\u2019s branding.',
     emoji: '🔗',
+    visual: 'review-link',
     availability: 'Studio plan only',
     ctaText: 'See a sample review link',
     highlights: [
@@ -334,6 +356,7 @@ export const FEATURES: Record<FeatureId, ExploreEntry> = {
     description:
       'Pick a layout, tweak the headline, download. Clipflow renders a clean, brand-kit-aware thumbnail on the edge in <200ms — no Canva tab required.',
     emoji: '🖼️',
+    visual: 'thumbnail',
     availability: 'Available on Creator and Studio plans',
     ctaText: 'Generate a thumbnail',
     highlights: [
@@ -378,6 +401,7 @@ export const FEATURES: Record<FeatureId, ExploreEntry> = {
     description:
       'Feed Clipflow a rough topic. Get back a structured set of content ideas — each with a working title, a hook, a 3-5 bullet outline, and suggested platforms — all tuned to your Brand Voice.',
     emoji: '💡',
+    visual: 'idea-generator',
     availability: 'Available on Creator and Studio plans',
     ctaText: 'Generate ideas',
     highlights: [
@@ -429,6 +453,7 @@ export const USE_CASES: Record<UseCaseId, ExploreEntry> = {
     description:
       'Podcasters are Clipflow\u2019s sweet spot. Long-form conversation converts into short-form clips better than any other content type — and we\u2019ve tuned the pipeline specifically for the dynamics of interview-style audio.',
     emoji: '🎙️',
+    visual: 'rss-flow',
     availability: 'Creator plan fits most podcasters; Studio for agencies running podcast clients',
     ctaText: 'See the podcast workflow',
     highlights: [
@@ -473,6 +498,7 @@ export const USE_CASES: Record<UseCaseId, ExploreEntry> = {
     description:
       'Clipflow\u2019s Studio plan is built for agencies: unlimited client workspaces, team seats with roles, white-label review links, audit log, priority render queue. One account, sealed-off per-client context, zero leakage.',
     emoji: '🏢',
+    visual: 'agency-flow',
     availability: 'Studio plan required',
     ctaText: 'See the agency workflow',
     highlights: [
@@ -518,6 +544,7 @@ export const USE_CASES: Record<UseCaseId, ExploreEntry> = {
     description:
       'The Coach niche template is pre-tuned for the coach voice: frameworks, contrarian takes, and concrete actions over engagement questions. Built for 1-person expertise brands shipping weekly.',
     emoji: '🎯',
+    visual: 'brand-voice',
     availability: 'Creator plan is enough for most solo coaches',
     ctaText: 'See the coach workflow',
     highlights: [
@@ -562,6 +589,7 @@ export const USE_CASES: Record<UseCaseId, ExploreEntry> = {
     description:
       'Founders have 2-4 hours per week for content, total. Clipflow compresses the pipeline so one recording becomes a week of founder-voice posts across LinkedIn, Twitter-style shorts, and YouTube long-form SEO.',
     emoji: '💼',
+    visual: 'pipeline-flow',
     availability: 'Creator plan; Studio if running with a content lead',
     ctaText: 'See the founder workflow',
     highlights: [
@@ -606,6 +634,7 @@ export const USE_CASES: Record<UseCaseId, ExploreEntry> = {
     description:
       'If your job is being the face in the frame, you don\u2019t have time to be the editor too. Clipflow handles everything between record and publish — while keeping the voice that made your audience follow you.',
     emoji: '🎬',
+    visual: 'pipeline-flow',
     availability: 'Creator plan — BYOK keeps costs at true AI cost',
     ctaText: 'See the creator workflow',
     highlights: [

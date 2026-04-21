@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react'
 
 import type { ExploreEntry, FeatureId } from '@/lib/landing/features'
 import { FEATURES } from '@/lib/landing/features'
+import { FeatureVisual } from './feature-visual'
 
 interface ExploreDetailProps {
   entry: ExploreEntry
@@ -86,6 +87,13 @@ export function ExploreDetail({ entry, kind }: ExploreDetailProps) {
           </Link>
         </div>
       </header>
+
+      {/* ── Visual — live demo / flow diagram / static preview ── */}
+      {entry.visual ? (
+        <section>
+          <FeatureVisual id={entry.visual} />
+        </section>
+      ) : null}
 
       {/* ── Long-form sections ── */}
       {entry.sections.map((section, i) => (

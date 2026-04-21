@@ -111,7 +111,7 @@ function BentoCell({
 
 /** Clip Finder — scrolling list of clips with virality scores that
  *  pulse as the "active" one rotates. */
-function ClipFinderDemo() {
+export function ClipFinderDemo() {
   const reduce = useReducedMotion()
   const [active, setActive] = useState(0)
   const clips = [
@@ -174,7 +174,7 @@ function ClipFinderDemo() {
 
 /** Brand Kit — 4 color-swap tiles that demo how the same clip
  *  adopts the client's brand palette. */
-function BrandKitDemo() {
+export function BrandKitDemo() {
   const reduce = useReducedMotion()
   const palettes = [
     { bg: '#2A1A3D', fg: '#D6FF3E', label: 'Clipflow' },
@@ -229,7 +229,7 @@ function BrandKitDemo() {
 }
 
 /** Schedule — draft drops onto Wednesday with a small motion bob. */
-function ScheduleDemo() {
+export function ScheduleDemo() {
   const reduce = useReducedMotion()
   const [dropped, setDropped] = useState(false)
   useEffect(() => {
@@ -298,7 +298,7 @@ function ScheduleDemo() {
 }
 
 /** Hook A/B Test — three hook variants with the winner highlighting. */
-function HookTestDemo() {
+export function HookTestDemo() {
   const reduce = useReducedMotion()
   const hooks = [
     { text: 'Why most creators plateau at 10K followers.', score: 76 },
@@ -367,7 +367,7 @@ function HookTestDemo() {
 }
 
 /** White-label Review — shows a review link header swap. */
-function ReviewLinkDemo() {
+export function ReviewLinkDemo() {
   const reduce = useReducedMotion()
   const [white, setWhite] = useState(false)
   useEffect(() => {
@@ -434,7 +434,7 @@ function ReviewLinkDemo() {
 }
 
 /** Analytics — three sparkline bars that grow in. */
-function AnalyticsDemo() {
+export function AnalyticsDemo() {
   const reduce = useReducedMotion()
   const [tick, setTick] = useState(0)
   useEffect(() => {

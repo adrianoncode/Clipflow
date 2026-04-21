@@ -507,6 +507,7 @@ export async function createRssContentAction(
   const parsed = createRssSchema.safeParse({
     workspace_id: formData.get('workspace_id'),
     url: formData.get('url'),
+    watch_feed: formData.get('watch_feed') ?? '',
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
@@ -537,6 +538,34 @@ export async function createRssContentAction(
 
   if (!result.ok) {
     return { error: result.error }
+  }
+
+  // Optional subscription — if the user ticked "watch this feed", we
+  // upsert an rss_subscriptions row so the daily poll-rss cron imports
+  // new episodes automatically. Uses the feed's current latest guid as
+  // the initial high-water mark so we don't re-import the episode we
+  // just created above.
+  if (parsed.data.watch_feed) {
+    try {
+      const { fetchRssFeedAll } = await import('@/lib/content/fetch-rss-feed')
+      const supabase = createClient()
+      const all = await fetchRssFeedAll(parsed.data.url)
+      const latestGuid = all.ok ? all.episodes[0]?.guid ?? null : null
+
+      await supabase.from('rss_subscriptions').upsert(
+        {
+          workspace_id: parsed.data.workspace_id,
+          feed_url: parsed.data.url,
+          channel_title: fetched.title,
+          last_seen_guid: latestGuid,
+          created_by: user.id,
+        } as never,
+        { onConflict: 'workspace_id,feed_url' },
+      )
+    } catch {
+      // Subscription is optional — don't fail the import if the upsert
+      // errors. User can retry from a future import.
+    }
   }
 
   revalidatePath(`/workspace/${parsed.data.workspace_id}`)

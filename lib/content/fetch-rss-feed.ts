@@ -1,6 +1,17 @@
 import 'server-only'
 import { isPublicUrl } from '@/lib/security/is-public-url'
 
+export interface RssEpisode {
+  title: string
+  text: string
+  audioUrl: string | null
+  /** Stable identifier from the feed item — prefers <guid>, falls back
+   *  to <pubDate>, else the title. Used by the auto-poll cron to detect
+   *  new episodes without re-importing old ones. */
+  guid: string
+  pubDate: string | null
+}
+
 export type RssFetchResult =
   | {
       ok: true
@@ -9,6 +20,10 @@ export type RssFetchResult =
       episodeTitle: string
       audioUrl: string | null
     }
+  | { ok: false; error: string }
+
+export type RssFetchAllResult =
+  | { ok: true; channelTitle: string; episodes: RssEpisode[] }
   | { ok: false; error: string }
 
 /**
@@ -86,4 +101,74 @@ export async function fetchRssFeed(url: string): Promise<RssFetchResult> {
         : `[Audio episode: ${episodeTitle}. No transcript in feed — add an OpenAI key to transcribe.]`,
     audioUrl,
   }
+}
+
+/**
+ * Same fetch + parse path as `fetchRssFeed`, but returns every episode
+ * in the feed (newest first) instead of just the latest. Used by the
+ * auto-poll cron to diff against the last-seen guid and import only
+ * genuinely new episodes.
+ */
+export async function fetchRssFeedAll(url: string): Promise<RssFetchAllResult> {
+  const check = await isPublicUrl(url)
+  if (!check.ok) return { ok: false, error: check.reason }
+
+  let res: Response
+  try {
+    res = await fetch(check.url.toString(), {
+      headers: { 'User-Agent': 'Clipflow/1.0 (+https://clipflow.to)' },
+      next: { revalidate: 0 },
+      signal: AbortSignal.timeout(15_000),
+    })
+  } catch {
+    return { ok: false, error: 'Could not fetch the RSS feed.' }
+  }
+
+  if (!res.ok) return { ok: false, error: `RSS feed returned HTTP ${res.status}.` }
+
+  const xml = await res.text()
+
+  const channelTitle =
+    xml
+      .match(/<channel[^>]*>[\s\S]*?<title[^>]*>\s*(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?\s*<\/title>/)?.[1]
+      ?.trim() ?? 'Podcast'
+
+  const itemMatches = xml.match(/<item[\s\S]*?<\/item>/g) ?? []
+  const episodes: RssEpisode[] = itemMatches.map((item) => {
+    const title =
+      item
+        .match(/<title[^>]*>\s*(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?\s*<\/title>/)?.[1]
+        ?.trim() ?? 'Episode'
+    const audioUrl = item.match(/<enclosure[^>]+url=["']([^"']+)["']/)?.[1] ?? null
+    const guidRaw =
+      item.match(/<guid[^>]*>\s*(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?\s*<\/guid>/)?.[1]?.trim() ?? ''
+    const pubDate =
+      item.match(/<pubDate[^>]*>\s*(.*?)\s*<\/pubDate>/)?.[1]?.trim() ?? null
+    const guid = guidRaw || pubDate || title
+    const desc =
+      item.match(/<description[^>]*>\s*(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?\s*<\/description>/)?.[1] ??
+      item.match(/<itunes:summary[^>]*>([\s\S]*?)<\/itunes:summary>/)?.[1] ??
+      ''
+    const text = desc
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 50_000)
+    return {
+      title,
+      text:
+        text.length > 0
+          ? text
+          : `[Audio episode: ${title}. No transcript in feed.]`,
+      audioUrl,
+      guid,
+      pubDate,
+    }
+  })
+
+  if (episodes.length === 0) {
+    return { ok: false, error: 'No episodes found in this RSS feed.' }
+  }
+
+  return { ok: true, channelTitle, episodes }
 }

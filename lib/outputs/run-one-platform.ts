@@ -7,6 +7,8 @@ import { getPromptBuilder } from '@/lib/ai/prompts/get-prompt'
 import { getLanguageInstruction } from '@/lib/ai/prompts/languages'
 import { getActiveBrandVoice, buildBrandVoiceInstruction } from '@/lib/brand-voice/get-active-brand-voice'
 import { getActivePersona, buildPersonaInstruction } from '@/lib/personas/get-active-persona'
+import { getActiveNiche } from '@/lib/niche/get-active-niche'
+import { getNicheInstruction } from '@/lib/niche/presets'
 import { getWorkspaceTemplates, type OutputTemplate } from '@/lib/templates/get-templates'
 import { insertOutputWithDraftState } from '@/lib/outputs/insert-output'
 import { renderOutputMarkdown } from '@/lib/outputs/render-markdown'
@@ -58,10 +60,23 @@ export async function runOnePlatform(
   const persona = await getActivePersona(workspaceId)
   const personaInstruction = buildPersonaInstruction(persona)
 
+  // Inject industry-niche preset (Creator / Podcaster / Coach / SaaS /
+  // Ecommerce / Agency) if the workspace has one selected. Placed
+  // between persona and custom template so a custom template can still
+  // override niche tone when the user wants full control.
+  const niche = await getActiveNiche(workspaceId)
+  const nicheInstruction = getNicheInstruction(niche)
+
   // Inject custom output template if one exists for this platform.
   const templateInstruction = await buildTemplateInstruction(workspaceId, platform)
 
-  const system = prompt.system + (langInstruction ?? '') + brandVoiceInstruction + personaInstruction + templateInstruction
+  const system =
+    prompt.system +
+    (langInstruction ?? '') +
+    brandVoiceInstruction +
+    personaInstruction +
+    nicheInstruction +
+    templateInstruction
 
   const gen = await generate({ provider, apiKey, model, system, user: prompt.user })
   if (!gen.ok) {

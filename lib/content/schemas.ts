@@ -84,4 +84,12 @@ export const createUrlSchema = z.object({
 export const createRssSchema = z.object({
   workspace_id: z.string().uuid(),
   url: z.string().trim().url('Enter a valid RSS feed URL (including https://).').max(500),
+  /** If true, register the feed in rss_subscriptions so the daily
+   *  poll-rss cron imports new episodes automatically. Omitting this
+   *  field is treated as a one-shot import (backward compatible with
+   *  the existing form submit). */
+  watch_feed: z
+    .union([z.literal('on'), z.literal('true'), z.literal('1'), z.literal('')])
+    .optional()
+    .transform((v) => v === 'on' || v === 'true' || v === '1'),
 })
