@@ -50,10 +50,33 @@ export default async function ClientsPage() {
       </div>
 
       {clientWorkspaces.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="text-muted-foreground">No client workspaces yet.</p>
-          <Button asChild className="mt-4" variant="outline">
-            <Link href="/workspace/new?as=client">Create client workspace</Link>
+        <div className="flex flex-col items-center gap-5 rounded-2xl border border-dashed border-border/60 bg-muted/[0.06] py-16 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/[0.06] text-primary/30">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-7 w-7"
+              aria-hidden
+            >
+              <path d="M18 21a8 8 0 0 0-16 0" />
+              <circle cx="10" cy="8" r="5" />
+              <path d="M22 20v-2a4 4 0 0 0-3-3.87" />
+              <path d="M17 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <div className="max-w-md space-y-2 px-4">
+            <p className="text-lg font-bold text-foreground">No client workspaces yet</p>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Create a dedicated workspace per client — each one gets its own
+              brand kit, content library, review links, and team seats.
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/workspace/new?as=client">+ Create client workspace</Link>
           </Button>
         </div>
       ) : (

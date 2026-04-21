@@ -134,7 +134,7 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
                 <Wand2 className="h-4 w-4" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-primary">Generate outputs</p>
+                <p className="text-xs font-bold text-primary">Generate drafts</p>
                 <p className="truncate text-[10px] text-muted-foreground">
                   {firstReady.title ?? 'Untitled'}
                 </p>

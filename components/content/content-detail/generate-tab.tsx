@@ -51,13 +51,13 @@ export function GenerateTab({
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-foreground">
             {hasExistingOutputs
-              ? 'View & regenerate outputs'
-              : 'Generate outputs for 4 platforms'}
+              ? 'View & regenerate drafts'
+              : 'Generate drafts for 4 platforms'}
           </p>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {hasExistingOutputs
               ? 'Review your existing drafts or regenerate new ones.'
-              : 'Create TikTok, Reels, Shorts & LinkedIn drafts in one pass.'}
+              : 'Create TikTok, Instagram, YouTube & LinkedIn drafts in one pass.'}
           </p>
         </div>
         <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all group-hover:shadow-md">

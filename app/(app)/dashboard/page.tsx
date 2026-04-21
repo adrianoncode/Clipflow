@@ -10,7 +10,6 @@ import {
   Clock,
   Layers,
   MessageSquare,
-  MoreHorizontal,
   Plug,
   Send,
   Sparkles,
@@ -208,6 +207,8 @@ const DASH_STYLES = `
 }
 .lv2-dash .lv2d-row-hover { transition: background .15s ease; }
 .lv2-dash .lv2d-row-hover:hover { background: rgba(42,26,61,.035); }
+.lv2-dash .lv2d-row-hover:hover .lv2d-row-hover-target { opacity: 1; transform: translateX(2px); }
+.lv2-dash .lv2d-row-hover-target { transition: opacity .15s ease, transform .15s ease; }
 .lv2-dash .lv2d-divide > * + * { border-top: 1px solid var(--lv2d-border); }
 @keyframes lv2d-fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .lv2-dash .lv2d-fade-in { animation: lv2d-fade-in .3s cubic-bezier(.2,.8,.2,1) both; }
@@ -394,28 +395,20 @@ async function DashboardBody() {
     ? workspaces.filter((w) => w.id !== workspace.id).slice(0, 6)
     : []
 
-  // Brand voice ring score: blend of tone/voice completeness. If no
-  // brand voice is set up the card hides its ring and nudges setup.
-  const bvScore = brandVoice
-    ? Math.min(
-        100,
-        ((brandVoice.tone ? 1 : 0) +
-          (brandVoice.avoid ? 1 : 0) +
-          (brandVoice.example_hook ? 1 : 0)) *
-          33 +
-          ((brandVoice.tone && brandVoice.avoid && brandVoice.example_hook) ? 1 : 0),
-      )
-    : 0
-
-  // Brand voice 3-metric breakdown — derived from which fields are filled.
-  // Fully populated fields score higher than missing ones. Intentionally
-  // simple: we don't run live AI scoring here, just surface how complete
-  // the voice definition is across its three dimensions.
-  const bvMetrics = [
-    { label: 'Tone match', value: brandVoice?.tone ? 92 : 40 },
-    { label: 'Vocabulary', value: brandVoice?.avoid ? 88 : 55 },
-    { label: 'Hook strength', value: brandVoice?.example_hook ? 86 : 62 },
-  ]
+  // Brand voice setup-completeness — how many of the three fields
+  // (tone, avoid-list, example hook) are filled. We used to render this
+  // as a 0-100 "AI quality score" with fake per-metric percentages,
+  // which implied live scoring we don't actually do; the card is now
+  // an honest "setup X of 3" view with a checklist of fields.
+  const bvFields = brandVoice
+    ? [
+        { label: 'Tone of voice', done: Boolean(brandVoice.tone) },
+        { label: 'Words to avoid', done: Boolean(brandVoice.avoid) },
+        { label: 'Example hook', done: Boolean(brandVoice.example_hook) },
+      ]
+    : []
+  const bvDoneCount = bvFields.filter((f) => f.done).length
+  const bvTotalCount = bvFields.length || 3
 
   // ── Upcoming Schedule — group scheduled outputs by day label.
   const upcoming = (() => {
@@ -1033,15 +1026,24 @@ async function DashboardBody() {
                       </Link>
                     </div>
                     {recentOutputs.length === 0 ? (
-                      <div
-                        className="px-5 py-10 text-center"
-                        style={{ color: 'var(--lv2d-muted)' }}
-                      >
-                        <p className="text-[13px]">No drafts yet.</p>
-                        <p className="mt-1 text-[11.5px]">
+                      <div className="flex flex-col items-center px-5 py-10 text-center">
+                        <p className="text-[13px]" style={{ color: 'var(--lv2d-fg)' }}>
+                          No drafts yet.
+                        </p>
+                        <p
+                          className="mt-1 max-w-sm text-[11.5px]"
+                          style={{ color: 'var(--lv2d-muted)' }}
+                        >
                           Drop in a video and we&apos;ll have platform-ready cuts in about 30
                           seconds.
                         </p>
+                        <Link
+                          href={`/workspace/${workspace.id}/content/new`}
+                          className="lv2d-btn-accent mt-4"
+                        >
+                          <span className="text-base leading-none">+</span> Import a video
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </Link>
                       </div>
                     ) : (
                       <div className="lv2d-divide">
@@ -1073,14 +1075,11 @@ async function DashboardBody() {
                                   </span>
                                 </div>
                               </div>
-                              <button
-                                type="button"
-                                className="h-7 w-7 rounded-md"
+                              <ArrowRight
+                                className="h-3.5 w-3.5 shrink-0 opacity-0 transition-opacity lv2d-row-hover-target"
                                 style={{ color: 'var(--lv2d-muted)' }}
-                                aria-label="More"
-                              >
-                                <MoreHorizontal className="mx-auto h-3.5 w-3.5" />
-                              </button>
+                                aria-hidden
+                              />
                             </Link>
                           )
                         })}
@@ -1252,57 +1251,65 @@ async function DashboardBody() {
                         <div
                           className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full"
                           style={{
-                            background: `conic-gradient(var(--lv2d-primary) ${bvScore * 3.6}deg, var(--lv2d-muted-2) 0deg)`,
+                            background: `conic-gradient(var(--lv2d-primary) ${(bvDoneCount / bvTotalCount) * 360}deg, var(--lv2d-muted-2) 0deg)`,
                           }}
+                          title={`${bvDoneCount} of ${bvTotalCount} brand-voice fields filled`}
                         >
                           <div
                             className="flex h-16 w-16 flex-col items-center justify-center rounded-full"
                             style={{ background: 'var(--lv2d-card)' }}
                           >
-                            <span className="lv2d-sans-d lv2d-tabular text-[20px] font-bold leading-none">
-                              {bvScore}
+                            <span className="lv2d-sans-d lv2d-tabular text-[22px] font-bold leading-none">
+                              {bvDoneCount}
                               <span
-                                className="lv2d-mono text-[10px] font-medium"
+                                className="lv2d-mono text-[11px] font-medium"
                                 style={{ color: 'var(--lv2d-muted)' }}
                               >
-                                /100
+                                /{bvTotalCount}
                               </span>
                             </span>
                             <span
                               className="lv2d-mono mt-0.5 text-[8px]"
                               style={{ color: 'var(--lv2d-muted)' }}
                             >
-                              ON BRAND
+                              SETUP
                             </span>
                           </div>
                         </div>
-                        <div className="min-w-0 flex-1 space-y-2">
-                          {bvMetrics.map((r) => (
-                            <div key={r.label}>
-                              <div className="flex items-center justify-between text-[11px]">
-                                <span className="font-semibold">{r.label}</span>
-                                <span
-                                  className="lv2d-mono lv2d-tabular"
-                                  style={{ color: 'var(--lv2d-muted)' }}
-                                >
-                                  {r.value}%
-                                </span>
-                              </div>
-                              <div
-                                className="mt-1 h-1.5 w-full overflow-hidden rounded-full"
-                                style={{ background: 'var(--lv2d-muted-2)' }}
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          {bvFields.map((f) => (
+                            <div
+                              key={f.label}
+                              className="flex items-center gap-2 text-[12px]"
+                              style={{
+                                color: f.done ? 'var(--lv2d-fg)' : 'var(--lv2d-muted)',
+                              }}
+                            >
+                              <span
+                                className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full"
+                                style={{
+                                  background: f.done
+                                    ? 'var(--lv2d-primary)'
+                                    : 'var(--lv2d-muted-2)',
+                                  color: f.done ? 'var(--lv2d-accent)' : 'transparent',
+                                  fontSize: 9,
+                                  fontWeight: 900,
+                                }}
                               >
-                                <div
-                                  className="h-full rounded-full"
-                                  style={{
-                                    width: `${r.value}%`,
-                                    background: 'var(--lv2d-primary)',
-                                    transition: 'width .9s cubic-bezier(.2,.8,.2,1)',
-                                  }}
-                                />
-                              </div>
+                                ✓
+                              </span>
+                              <span className="font-medium">{f.label}</span>
                             </div>
                           ))}
+                          {bvDoneCount < bvTotalCount ? (
+                            <Link
+                              href="/settings/brand-voice"
+                              className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold hover:underline"
+                              style={{ color: 'var(--lv2d-primary)' }}
+                            >
+                              Finish setup <ArrowRight className="h-3 w-3" />
+                            </Link>
+                          ) : null}
                         </div>
                       </div>
                     ) : (

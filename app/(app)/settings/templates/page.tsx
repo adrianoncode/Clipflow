@@ -9,7 +9,7 @@ import { TemplatesClient } from './templates-client'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Output Templates',
+  title: 'Draft Templates',
 }
 
 const BUILT_IN_TEMPLATES = [
@@ -64,7 +64,7 @@ export default async function TemplatesPage({
           <LayoutTemplate className="h-5 w-5 text-teal-600" />
         </div>
         <div>
-          <h1 className="text-lg font-bold tracking-tight">Output Templates</h1>
+          <h1 className="text-lg font-bold tracking-tight">Draft Templates</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             Customize the AI prompts used to generate content for each platform.
           </p>

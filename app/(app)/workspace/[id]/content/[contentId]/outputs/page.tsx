@@ -154,7 +154,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
             <GenerateOutputsForm
               workspaceId={params.id}
               contentId={params.contentId}
-              submitLabel="Generate 4 outputs"
+              submitLabel="Generate 4 drafts"
             />
           </div>
         </div>

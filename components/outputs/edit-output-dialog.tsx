@@ -64,7 +64,7 @@ export function EditOutputDialog({ output, open, onOpenChange }: EditOutputDialo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Edit output</DialogTitle>
+          <DialogTitle>Edit draft</DialogTitle>
           <DialogDescription>
             Changes are saved immediately and update the rendered card.
           </DialogDescription>

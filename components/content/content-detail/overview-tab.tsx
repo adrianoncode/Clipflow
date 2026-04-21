@@ -30,7 +30,7 @@ export function OverviewTab({
 
   return (
     <div className="space-y-6">
-      {/* What's Next: Generate outputs CTA */}
+      {/* What's Next: Generate drafts CTA */}
       {isReady && !hasExistingOutputs && (
         <Link
           href={`/workspace/${workspaceId}/content/${item.id}/outputs`}
@@ -41,10 +41,10 @@ export function OverviewTab({
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-foreground">
-              Ready! Generate outputs for 4 platforms
+              Ready! Generate drafts for 4 platforms
             </p>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Create TikTok, Reels, Shorts &amp; LinkedIn drafts in one pass.
+              Create TikTok, Instagram, YouTube &amp; LinkedIn drafts in one pass.
             </p>
           </div>
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all group-hover:shadow-md">

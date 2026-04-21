@@ -34,7 +34,7 @@ export function DeleteContentButton({ workspaceId, contentId }: DeleteContentBut
       <form
         action={action}
         onSubmit={(e) => {
-          if (!window.confirm('Delete this content item? All outputs and states will also be deleted. This cannot be undone.')) {
+          if (!window.confirm('Delete this content? All drafts and history will also be deleted. This cannot be undone.')) {
             e.preventDefault()
           }
         }}

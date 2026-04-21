@@ -31,10 +31,17 @@ interface PipelineCardProps {
 
 const STATE_ORDER: OutputState[] = ['draft', 'review', 'approved', 'exported']
 
+// Labels for the step-forward button on each column. On the "approved"
+// column we deliberately hide the forward button — the real next step is
+// Schedule or Publish (shown inline), not a state-flip to `exported`.
+// Keeping `approved → exported` as an auto-CTA used to read as "Mark as
+// published" which implied an actual publish to socials; the flag is
+// just bookkeeping, so users would click it and wonder why nothing
+// happened on TikTok.
 const NEXT_STATE_LABELS: Record<OutputState, string | null> = {
   draft: 'Move to review',
   review: 'Approve',
-  approved: 'Mark as published',
+  approved: null,
   exported: null,
 }
 
@@ -42,7 +49,7 @@ const PREV_STATE_LABELS: Record<OutputState, string | null> = {
   draft: null,
   review: 'Back to draft',
   approved: 'Back to review',
-  exported: 'Undo',
+  exported: 'Back to approved',
 }
 
 function nextState(state: OutputState): OutputState | null {
@@ -218,7 +225,10 @@ export function PipelineCard({
         )}
       </div>
 
-      {/* Quick actions for approved/exported outputs */}
+      {/* Publish actions — the real "next step" once a draft is approved.
+          Schedule (primary) + Render MP4 (secondary). Users who land here
+          expecting to "publish" get an obvious path instead of having to
+          navigate away to the Schedule page. */}
       {(currentState === 'approved' || currentState === 'exported') && (
         <div className="flex flex-wrap items-stretch gap-1.5 border-t border-border/30 pt-2">
           <ScheduleOutputDialog
@@ -230,7 +240,7 @@ export function PipelineCard({
           />
           <Link
             href={`/workspace/${workspaceId}/content/${contentId}/outputs#video-studio`}
-            className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-pink-50 px-2 py-1.5 text-[10px] font-semibold text-pink-700 transition-all hover:bg-pink-100"
+            className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 px-2 py-1.5 text-[10px] font-semibold text-primary transition-all hover:bg-primary hover:text-primary-foreground"
           >
             <Clapperboard className="h-3 w-3" />
             Render MP4

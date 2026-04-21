@@ -221,11 +221,11 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
         <EmptyState
           icon={GitBranch}
           title="No drafts yet"
-          description="Import a video and generate drafts. They land here for review and approval."
-          actionLabel="Go to videos"
-          actionHref={`/workspace/${workspaceId}`}
-          secondaryLabel="Import a video"
-          secondaryHref={`/workspace/${workspaceId}/content/new`}
+          description="Import a video and generate drafts — they land here for review, approval, and scheduling."
+          actionLabel="Import a video"
+          actionHref={`/workspace/${workspaceId}/content/new`}
+          secondaryLabel="Back to library"
+          secondaryHref={`/workspace/${workspaceId}`}
         />
       ) : (
         <PipelineBoard

@@ -177,7 +177,8 @@ export default async function IntegrationsPage({
           <h1 className="text-lg font-bold tracking-tight">Integrations</h1>
           <p className="mt-0.5 max-w-2xl text-sm text-muted-foreground">
             Send events from Clipflow into the tools you already use. Social
-            auto-publishing (TikTok, Reels, Shorts) is set up separately.
+            auto-publishing (TikTok, Instagram, YouTube, LinkedIn) lives in
+            Channels.
           </p>
         </div>
       </div>

@@ -129,7 +129,7 @@ export function AutoGenerateTrigger({
               Auto-generation skipped
             </p>
             <p className="mt-0.5 text-xs text-amber-700">
-              {errorMessage ?? 'You can generate outputs manually from the outputs tab.'}
+              {errorMessage ?? 'You can generate drafts manually from the Drafts tab.'}
             </p>
           </div>
         </div>

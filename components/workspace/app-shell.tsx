@@ -118,7 +118,23 @@ const SHELL_STYLES = `
   width: 3px; height: 16px; background: var(--lv2s-accent); border-radius: 2px;
 }
 .lv2-shell .lv2s-nav-item > * { position: relative; z-index: 1; }
-.lv2-shell .lv2s-nav-item.locked { color: color-mix(in srgb, var(--lv2s-muted) 65%, transparent); }
+.lv2-shell .lv2s-nav-item.locked { color: color-mix(in srgb, var(--lv2s-muted) 75%, transparent); }
+/* Plan-gate badge — shows the required plan name next to locked items
+   so users don't wonder why a row looks dim. Lime accent keeps it
+   aligned with the rest of the value-bearing UI (CTAs, streaks, etc.)
+   instead of reading as a warning. */
+.lv2-shell .lv2s-plan-badge {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 2px 6px; border-radius: 999px;
+  background: var(--lv2s-accent); color: var(--lv2s-accent-ink);
+  line-height: 1.3;
+}
+.lv2-shell .lv2s-nav-item.locked:hover .lv2s-plan-badge {
+  transform: translateX(-1px);
+  transition: transform .15s ease;
+}
 .lv2-shell .lv2s-btn-accent {
   display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
   background: var(--lv2s-accent); color: var(--lv2s-accent-ink);
@@ -320,12 +336,14 @@ export function AppShell({
         )}
         <Icon className="h-[15px] w-[15px] shrink-0" />
         <span className="flex-1 leading-none">{item.label}</span>
-        {locked && (
-          <Lock
-            className="h-3 w-3 shrink-0 opacity-60"
+        {locked && requiredPlanName ? (
+          <span
+            className="lv2s-plan-badge shrink-0"
             aria-label={`Requires ${requiredPlanName} plan`}
-          />
-        )}
+          >
+            {requiredPlanName}
+          </span>
+        ) : null}
       </Link>
     )
   }

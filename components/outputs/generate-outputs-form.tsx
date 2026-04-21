@@ -150,7 +150,7 @@ function PlatformCardsRow({
 export function GenerateOutputsForm({
   workspaceId,
   contentId,
-  submitLabel = 'Generate 4 outputs',
+  submitLabel = 'Generate 4 drafts',
 }: GenerateOutputsFormProps) {
   const [state, formAction] = useFormState(generateOutputsAction, initialState)
 

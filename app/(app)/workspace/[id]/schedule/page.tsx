@@ -266,11 +266,11 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
               Auto-posting is on
             </p>
             <p className="text-[11px] text-emerald-700/70">
-              We&apos;ll post straight to TikTok, Reels, Shorts &amp; LinkedIn.
+              We&apos;ll publish straight to TikTok, Instagram, YouTube &amp; LinkedIn.
             </p>
           </div>
           <Link
-            href="/settings/ai-keys"
+            href="/settings/channels"
             className="shrink-0 text-[11px] font-semibold text-emerald-700 underline-offset-2 hover:underline"
           >
             Manage →
@@ -282,13 +282,13 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
             <Send className="h-4 w-4 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold">Let Clipflow post for you</p>
+            <p className="text-sm font-semibold">Let Clipflow publish for you</p>
             <p className="text-[11px] text-muted-foreground">
-              Hook up your TikTok, Reels, Shorts &amp; LinkedIn so posts go live on their own. Until then they wait here.
+              Connect your TikTok, Instagram, YouTube &amp; LinkedIn so posts go live on their own. Until then they wait here.
             </p>
           </div>
           <Link
-            href="/settings/ai-keys"
+            href="/settings/channels"
             className="shrink-0 rounded-xl bg-primary px-4 py-2 text-[11px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md"
           >
             Connect

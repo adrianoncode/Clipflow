@@ -1,14 +1,7 @@
 import Link from 'next/link'
-import { FileText, Globe, Rss, Video, Youtube } from 'lucide-react'
+import { FileText, Globe, Rss, Upload, Video, Youtube } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/empty-state'
 import { ContentStatusBadge } from '@/components/content/content-status-badge'
 import type { ContentItemListRow } from '@/lib/content/get-content-items'
 
@@ -36,19 +29,13 @@ function formatRelative(iso: string): string {
 export function ContentList({ items, workspaceId }: ContentListProps) {
   if (items.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>No content yet</CardTitle>
-          <CardDescription>
-            Upload a video or paste a script to get started.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild>
-            <Link href={`/workspace/${workspaceId}/content/new`}>New content</Link>
-          </Button>
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={Upload}
+        title="No content yet"
+        description="Paste a YouTube link, upload a video, or drop in a script. Clipflow transcribes it and spins out platform-ready drafts in about 30 seconds."
+        actionLabel="+ Import a video"
+        actionHref={`/workspace/${workspaceId}/content/new`}
+      />
     )
   }
 
