@@ -415,13 +415,18 @@ export function AppShell({
         <div className="flex flex-1 overflow-hidden">
           {/* ── Sidebar ──────────────────────────────────────────── */}
           <aside
-            className="hidden w-52 shrink-0 flex-col lg:flex"
+            className="hidden w-52 shrink-0 flex-col overflow-hidden lg:flex"
             style={{
               background: 'var(--lv2s-sidebar)',
               borderRight: '1px solid var(--lv2s-border)',
             }}
           >
-            <div className="flex flex-1 flex-col px-3 py-3">
+            {/* Scrollable only when short viewports force it — nav groups
+                can flex-shrink without pushing the referral card + bottom
+                items off-screen, so Settings is always reachable. The
+                min-h-0 lets the flex child actually shrink instead of
+                preferring its intrinsic content height. */}
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-3">
               <NewContentMagnet href={`/workspace/${currentWorkspaceId}/content/new`} />
 
               <LayoutGroup>
@@ -437,7 +442,7 @@ export function AppShell({
             </div>
 
             {referralLink && (
-              <div className="m-3">
+              <div className="shrink-0 m-3">
                 <ReferralSidebarCard
                   link={referralLink}
                   pending={referralStats.pending}
@@ -448,7 +453,7 @@ export function AppShell({
             )}
 
             <div
-              className="px-3 py-2"
+              className="shrink-0 px-3 py-2"
               style={{ borderTop: '1px solid var(--lv2s-border)' }}
             >
               <LayoutGroup id="bottom-nav">
