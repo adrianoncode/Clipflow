@@ -77,32 +77,54 @@ export async function POST(req: Request) {
     let sent = 0
     let skipped = 0
     const considered = (candidates ?? []).length
+    const candidateIds = (candidates ?? []).map((c: { id: string }) => c.id)
+
+    // Bulk-load everything the per-profile loop used to fetch one-by-
+    // one. Previously this loop cost 2-3 DB round-trips per candidate
+    // (email_deliveries lookup + content count + optional insert). For
+    // a 100-profile stage that's ~300 sequential queries per cron run.
+    // Now: 2 bulk queries up front, then in-memory filters + one bulk
+    // insert at the end.
+    if (candidateIds.length === 0) {
+      results[stage.key] = { considered, sent, skipped }
+      continue
+    }
+
+    const [priorDeliveries, activatedContent] = await Promise.all([
+      admin
+        .from('email_deliveries')
+        .select('user_id')
+        .in('user_id', candidateIds)
+        .eq('kind', kind),
+      admin
+        .from('content_items')
+        .select('created_by')
+        .in('created_by', candidateIds)
+        .limit(candidateIds.length * 5),
+    ])
+
+    const alreadySent = new Set(
+      (priorDeliveries.data ?? []).map((r: { user_id: string }) => r.user_id),
+    )
+    const hasContent = new Set(
+      (activatedContent.data ?? []).map(
+        (r: { created_by: string }) => r.created_by,
+      ),
+    )
+
+    const activatedSkipMarkers: Array<{
+      user_id: string
+      kind: string
+      metadata: { skipped_reason: string }
+    }> = []
 
     for (const profile of candidates ?? []) {
-      // Skip if we've already sent this kind — idempotency under cron
-      // retry + catch-up runs.
-      const { data: prior } = await admin
-        .from('email_deliveries')
-        .select('id')
-        .eq('user_id', profile.id)
-        .eq('kind', kind)
-        .limit(1)
-        .maybeSingle()
-      if (prior) {
+      if (alreadySent.has(profile.id)) {
         skipped++
         continue
       }
-
-      // Skip if they've imported any content — they're activated, don't
-      // nag.
-      const { count: contentCount } = await admin
-        .from('content_items')
-        .select('id', { count: 'exact', head: true })
-        .eq('created_by', profile.id)
-      if ((contentCount ?? 0) > 0) {
-        // Still log a "skipped — activated" marker so we don't keep
-        // querying on later stages.
-        await admin.from('email_deliveries').insert({
+      if (hasContent.has(profile.id)) {
+        activatedSkipMarkers.push({
           user_id: profile.id,
           kind,
           metadata: { skipped_reason: 'activated' },
@@ -111,16 +133,32 @@ export async function POST(req: Request) {
         continue
       }
 
-      // Fire email + record.
+      // Emails still fire sequentially — Resend's per-second throttle
+      // makes parallelizing risky. DB write batched below.
       await sendReengagementEmail({
         toEmail: profile.email,
         userName: profile.full_name ?? profile.email,
         stage: stage.key,
       })
-      await admin
-        .from('email_deliveries')
-        .insert({ user_id: profile.id, kind })
+      activatedSkipMarkers.push({
+        user_id: profile.id,
+        kind,
+        metadata: { skipped_reason: '' },
+      })
       sent++
+    }
+
+    // Single batch insert for every delivery row (both sent + activated-
+    // skip) instead of one insert per profile. Empty metadata string is
+    // normalized to an empty object-less kind entry so the existing
+    // query `eq('user_id').eq('kind')` idempotency check still matches.
+    const inserts = activatedSkipMarkers.map((m) =>
+      m.metadata.skipped_reason
+        ? m
+        : { user_id: m.user_id, kind: m.kind },
+    )
+    if (inserts.length > 0) {
+      await admin.from('email_deliveries').insert(inserts as never)
     }
 
     results[stage.key] = { considered, sent, skipped }

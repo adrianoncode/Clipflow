@@ -36,35 +36,34 @@ async function bulkTransition(
   if (!workspaceId || ids.length === 0) return { ok: false, error: 'No outputs selected.' }
 
   const supabase = createClient()
-  let count = 0
-  let failed = 0
-  let firstError: string | undefined
 
-  for (const id of ids) {
-    const { error } = await supabase.from('output_states').insert({
-      output_id: id,
-      workspace_id: workspaceId,
-      state: targetState,
-      changed_by: user.id,
-      note,
-    })
+  // Single bulk insert instead of one round-trip per output — a 30-item
+  // bulk approve used to cost 30 sequential Supabase calls. The trigger
+  // that maintains outputs.current_state fires per-row either way, so
+  // behaviour is identical. Partial-failure detection is coarser (we
+  // either got all rows or an error) but bulk INSERTs on a set of valid
+  // uuids either succeed or fail as a unit in practice.
+  const rows = ids.map((id) => ({
+    output_id: id,
+    workspace_id: workspaceId,
+    state: targetState,
+    changed_by: user.id,
+    note,
+  }))
 
-    if (error) {
-      failed++
-      if (!firstError) firstError = error.message
-    } else {
-      count++
-    }
-  }
+  const { data, error } = await supabase
+    .from('output_states')
+    .insert(rows)
+    .select('id')
 
   revalidatePath(`/workspace/${workspaceId}`)
 
-  // All rows failed → treat as outright error so the UI shows red, not green
-  if (count === 0 && failed > 0) {
-    return { ok: false, error: firstError ?? 'All transitions failed.' }
+  if (error) {
+    return { ok: false, error: error.message }
   }
 
-  return { ok: true, count, failed, firstError }
+  const count = data?.length ?? 0
+  return { ok: true, count, failed: ids.length - count }
 }
 
 export async function bulkApproveAction(
