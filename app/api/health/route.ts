@@ -31,11 +31,20 @@ export async function GET() {
 
   const healthy = Object.values(checks).every((v) => v === 'ok')
 
+  // Previously echoed the names of missing env vars in the public
+  // response — that leaked internal config structure to anyone who
+  // could curl the endpoint. Now the names only appear in server logs;
+  // external callers just see `{ env: 'fail' }`.
+  if (missingVars.length > 0) {
+    console.warn(
+      '[health] missing env vars: ' + missingVars.join(', '),
+    )
+  }
+
   return NextResponse.json(
     {
       status: healthy ? 'healthy' : 'degraded',
       checks,
-      ...(missingVars.length > 0 ? { missing_env: missingVars } : {}),
       timestamp: new Date().toISOString(),
     },
     { status: healthy ? 200 : 503 },

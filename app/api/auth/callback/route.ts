@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
+import { safeNextPath } from '@/lib/auth/safe-next-path'
 import { REFERRAL_COOKIE, REFERRAL_SOURCE_COOKIE } from '@/lib/referrals/constants'
 import { trackSignupReferral } from '@/lib/referrals/track-signup'
 
@@ -50,5 +51,5 @@ export async function GET(request: NextRequest) {
     cookieStore.delete(REFERRAL_SOURCE_COOKIE)
   }
 
-  return NextResponse.redirect(`${origin}${next.startsWith('/') ? next : '/dashboard'}`)
+  return NextResponse.redirect(`${origin}${safeNextPath(next)}`)
 }

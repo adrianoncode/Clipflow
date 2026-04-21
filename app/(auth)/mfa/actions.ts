@@ -7,6 +7,7 @@ import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
 import { verifyChallenge, isMfaSatisfied, unenroll, listFactors } from '@/lib/auth/mfa'
+import { safeNextPath } from '@/lib/auth/safe-next-path'
 import { consumeRecoveryCode } from '@/lib/auth/recovery-codes'
 import { checkRateLimit, extractClientIp } from '@/lib/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -53,7 +54,7 @@ export async function verifyMfaAction(
 
   const status = await isMfaSatisfied()
   if (status.satisfied) {
-    redirect(parsed.data.next && parsed.data.next.startsWith('/') ? parsed.data.next : '/dashboard')
+    redirect(safeNextPath(parsed.data.next))
   }
   if (!status.verifiedFactorId) {
     return { error: 'No verified MFA factor found. Contact support.' }
@@ -67,11 +68,7 @@ export async function verifyMfaAction(
     if (!res.ok) return { error: res.error }
 
     revalidatePath('/', 'layout')
-    redirect(
-      parsed.data.next && parsed.data.next.startsWith('/')
-        ? parsed.data.next
-        : '/dashboard',
-    )
+    redirect(safeNextPath(parsed.data.next))
   }
 
   // Recovery-code path — user lost their authenticator, consuming one
@@ -108,9 +105,5 @@ export async function verifyMfaAction(
   })
 
   revalidatePath('/', 'layout')
-  const next =
-    parsed.data.next && parsed.data.next.startsWith('/')
-      ? parsed.data.next
-      : '/dashboard'
-  redirect(`${next}?mfa_recovery=1`)
+  redirect(`${safeNextPath(parsed.data.next)}?mfa_recovery=1`)
 }

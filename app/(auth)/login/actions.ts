@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
+import { safeNextPath } from '@/lib/auth/safe-next-path'
 import { checkRateLimit, extractClientIp, RATE_LIMITS } from '@/lib/rate-limit'
 
 const loginSchema = z.object({
@@ -55,5 +56,5 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
   }
 
   revalidatePath('/', 'layout')
-  redirect(parsed.data.next && parsed.data.next.startsWith('/') ? parsed.data.next : '/dashboard')
+  redirect(safeNextPath(parsed.data.next))
 }

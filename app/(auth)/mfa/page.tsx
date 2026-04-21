@@ -4,6 +4,7 @@ import { Shield } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { getUser } from '@/lib/auth/get-user'
 import { isMfaSatisfied } from '@/lib/auth/mfa'
+import { safeNextPath } from '@/lib/auth/safe-next-path'
 import { MfaChallengeForm } from '@/components/auth/mfa-challenge-form'
 
 export const dynamic = 'force-dynamic'
@@ -20,8 +21,7 @@ export default async function MfaChallengePage({ searchParams }: Props) {
   const status = await isMfaSatisfied()
   // Already satisfied OR not required — send to dashboard / original target.
   if (status.satisfied || !status.requiresMfa) {
-    const next = searchParams.next && searchParams.next.startsWith('/') ? searchParams.next : '/dashboard'
-    redirect(next)
+    redirect(safeNextPath(searchParams.next))
   }
 
   return (

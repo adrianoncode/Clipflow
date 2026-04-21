@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { createClient } from '@/lib/supabase/server'
 
 // ── Update workspace ──────────────────────────────────────────────────────────
@@ -36,6 +37,14 @@ export async function updateWorkspaceAction(
   const user = await getUser()
   if (!user) redirect('/login')
 
+  // Owner-only rename — explicit gate complements the RLS owner policy
+  // so the intent is visible at the entry point.
+  const check = await requireWorkspaceMember(parsed.data.workspace_id)
+  if (!check.ok) return { ok: false, error: check.message }
+  if (check.role !== 'owner') {
+    return { ok: false, error: 'Only the workspace owner can rename it.' }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('workspaces')
@@ -65,6 +74,15 @@ export async function deleteWorkspaceAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  // Owner-only deletion. The RLS policy on workspaces allows delete to
+  // the owner only, but checking explicitly here gives us a clean error
+  // message instead of a silent RLS-no-op.
+  const check = await requireWorkspaceMember(workspaceId)
+  if (!check.ok) return { ok: false, error: check.message }
+  if (check.role !== 'owner') {
+    return { ok: false, error: 'Only the workspace owner can delete it.' }
+  }
 
   const supabase = await createClient()
   const { error } = await supabase
