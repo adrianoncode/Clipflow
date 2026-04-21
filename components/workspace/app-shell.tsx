@@ -287,7 +287,7 @@ export function AppShell({
       <Link
         key={item.href}
         href={href}
-        title={locked ? `${item.label} — ${requiredPlanName} plan` : undefined}
+        title={locked ? `Unlock ${item.label} with the ${requiredPlanName} plan` : undefined}
         className={`lv2s-nav-item ${active ? 'active' : ''} ${locked ? 'locked' : ''}`}
       >
         {active && (
@@ -487,6 +487,9 @@ export function AppShell({
             const active = isActive(item.href)
             const Icon = item.icon
             const locked = item.requires ? !checkPlanAccess(currentPlan, item.requires) : false
+            const requiredPlanName = item.requires
+              ? PLANS[FEATURE_MIN_PLAN[item.requires]].name
+              : null
             const href =
               locked && item.requires
                 ? `/billing?plan=${FEATURE_MIN_PLAN[item.requires]}&feature=${item.requires}`
@@ -495,6 +498,7 @@ export function AppShell({
               <Link
                 key={item.href}
                 href={href}
+                title={locked ? `Unlock ${item.label} with the ${requiredPlanName} plan` : undefined}
                 className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-all"
                 style={{
                   color: active

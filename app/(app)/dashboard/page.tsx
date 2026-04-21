@@ -580,7 +580,7 @@ async function DashboardBody() {
   }
 
   return (
-    <div className="lv2d-fade-in mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-8">
+    <div className="lv2d-fade-in mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-8 2xl:max-w-[1440px]">
           {/* ── Hero ────────────────────────────────────────────── */}
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
@@ -1510,7 +1510,7 @@ async function DashboardBody() {
 
 function DashboardBodySkeleton() {
   return (
-    <div className="lv2d-fade-in mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-8">
+    <div className="lv2d-fade-in mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-8 2xl:max-w-[1440px]">
       <div className="space-y-3">
         <div
           className="lv2-skeleton h-3 w-40 rounded"

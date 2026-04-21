@@ -385,6 +385,12 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         .lv2-num-stamp { font-family: var(--font-instrument-serif), serif; font-size: 52px; line-height: 1; color: var(--lv2-primary); letter-spacing: -.02em; }
         .lv2-rule { height: 1px; background: repeating-linear-gradient(to right, var(--lv2-border-strong) 0 6px, transparent 6px 12px); }
 
+        /* FAQ toggle — plus sign rotates 45° to read as an × when the
+           row is open, so the row's state is obvious without hovering. */
+        .lv2-faq summary { list-style: none; }
+        .lv2-faq[open] > summary .lv2-faq-toggle { transform: rotate(45deg); }
+        .lv2-faq:hover .lv2-faq-toggle { background: var(--lv2-accent); color: var(--lv2-accent-ink); }
+
         .lv2-step-card { transition: transform .4s cubic-bezier(.2,.8,.2,1), border-color .3s; position: relative; }
         .lv2-step-card::before {
           content: ""; position: absolute; inset: 0; border-radius: inherit;
@@ -2099,10 +2105,19 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               a: `Two clicks. No "hold on, let me transfer you." Your clips stay; billing stops immediately.`,
             },
           ].map((f) => (
-            <details key={f.q} className="lv2-card cursor-pointer p-5 transition-colors">
-              <summary className="flex items-center justify-between text-[15px] font-semibold">
+            <details key={f.q} className="lv2-faq lv2-card cursor-pointer p-5 transition-colors">
+              <summary className="flex items-center justify-between gap-4 text-[15px] font-semibold [&::-webkit-details-marker]:hidden">
                 <span>{f.q}</span>
-                <span style={{ color: 'var(--lv2-muted)' }}>+</span>
+                <span
+                  aria-hidden
+                  className="lv2-faq-toggle inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[18px] leading-none transition-transform duration-200"
+                  style={{
+                    color: 'var(--lv2-primary)',
+                    background: 'var(--lv2-primary-soft)',
+                  }}
+                >
+                  +
+                </span>
               </summary>
               <p
                 className="mt-3 text-[13.5px] leading-relaxed"
