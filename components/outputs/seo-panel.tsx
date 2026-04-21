@@ -1,13 +1,14 @@
 'use client'
 
-import { useFormState } from 'react-dom'
-import { useFormStatus } from 'react-dom'
-import { Search } from 'lucide-react'
+import { useState } from 'react'
+import { useFormState, useFormStatus } from 'react-dom'
+import { Check, Copy, Search, Smile, Sparkles } from 'lucide-react'
 
 import { getSeoSuggestionsAction } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/ai-actions'
 import type { SeoResult } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/ai-actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { copyToClipboard } from '@/lib/utils/copy-to-clipboard'
 
 interface SeoPanelProps {
   workspaceId: string
@@ -111,9 +112,130 @@ export function SeoPanel({ workspaceId, contentId, initialSeo }: SeoPanelProps) 
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">{seo.hashtag_strategy}</p>
             </div>
+
+            {/* Per-platform hashtag sets — added in the hashtag UI pass.
+                Each platform gets a collapsible-style block with a
+                copy-all button so drafters can paste a whole set. */}
+            {seo.hashtags ? (
+              <div className="space-y-2 pt-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Hashtags per platform
+                </p>
+                {(['tiktok', 'instagram', 'youtube', 'linkedin'] as const).map((p) => {
+                  const tags = seo.hashtags?.[p] ?? []
+                  if (tags.length === 0) return null
+                  return <HashtagRow key={p} platform={p} tags={tags} />
+                })}
+              </div>
+            ) : null}
+
+            {/* Per-platform emoji suggestions — compact row, tappable
+                to copy a single emoji to clipboard. */}
+            {seo.emojis ? (
+              <div className="space-y-2 pt-1">
+                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <Smile className="h-3 w-3" />
+                  Emoji suggestions
+                </p>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {(['tiktok', 'instagram', 'youtube', 'linkedin'] as const).map((p) => {
+                    const emojis = seo.emojis?.[p] ?? []
+                    if (emojis.length === 0) return null
+                    return (
+                      <div
+                        key={p}
+                        className="flex flex-col gap-1 rounded-lg border bg-background p-2"
+                      >
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                          {p}
+                        </span>
+                        <div className="flex flex-wrap gap-0.5">
+                          {emojis.map((e) => (
+                            <EmojiChip key={e} emoji={e} />
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ) : null}
           </div>
         )}
       </CardContent>
     </Card>
+  )
+}
+
+function HashtagRow({ platform, tags }: { platform: string; tags: string[] }) {
+  const [copied, setCopied] = useState(false)
+  const joined = tags.map((t) => `#${t}`).join(' ')
+
+  async function handleCopy() {
+    const ok = await copyToClipboard(joined)
+    if (ok) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    }
+  }
+
+  return (
+    <div className="rounded-lg border bg-background p-2.5">
+      <div className="mb-1 flex items-center justify-between">
+        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+          {platform}
+        </span>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          title={`Copy ${platform} hashtags`}
+        >
+          {copied ? (
+            <>
+              <Check className="h-2.5 w-2.5" />
+              Copied
+            </>
+          ) : (
+            <>
+              <Copy className="h-2.5 w-2.5" />
+              Copy all
+            </>
+          )}
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-1">
+        {tags.map((tag) => (
+          <span
+            key={tag}
+            className="rounded-full bg-muted px-2 py-0.5 font-mono text-[10.5px] text-muted-foreground"
+          >
+            #{tag}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function EmojiChip({ emoji }: { emoji: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        const ok = await copyToClipboard(emoji)
+        if (ok) {
+          setCopied(true)
+          setTimeout(() => setCopied(false), 1200)
+        }
+      }}
+      title={copied ? 'Copied' : 'Click to copy'}
+      className="flex h-8 w-8 items-center justify-center rounded-lg border text-[17px] transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted"
+      style={{ background: copied ? 'var(--lv2d-accent, #D6FF3E)' : undefined }}
+    >
+      {emoji}
+      <Sparkles className="sr-only h-3 w-3" />
+    </button>
   )
 }

@@ -32,6 +32,23 @@ export interface SeoResult {
   seo_title: string
   meta_description: string
   hashtag_strategy: string
+  /** Ready-to-paste hashtag sets, organized per platform. Added in the
+   *  hashtag-UI pass — older outputs may not carry this field, callers
+   *  should treat it as optional. */
+  hashtags?: {
+    tiktok: string[]
+    instagram: string[]
+    youtube: string[]
+    linkedin: string[]
+  }
+  /** Platform-tuned emoji suggestions to sprinkle into captions. Low
+   *  count per platform (2-4) so they stay tasteful. */
+  emojis?: {
+    tiktok: string[]
+    instagram: string[]
+    youtube: string[]
+    linkedin: string[]
+  }
 }
 
 export type GetSeoSuggestionsState =
@@ -69,8 +86,34 @@ export async function getSeoSuggestionsAction(
   const pick = await pickGenerationProvider(workspaceId)
   if (!pick.ok) return { ok: false, error: pick.message }
 
-  const systemPrompt =
-    'You are an SEO expert for social media content. Analyze the provided content and return a JSON object with: { "primary_keyword": string, "secondary_keywords": string[] (3-5 items), "seo_title": string (max 60 chars, SEO-optimized), "meta_description": string (max 155 chars), "hashtag_strategy": string (brief advice on hashtag usage) }. Return only valid JSON.'
+  const systemPrompt = `You are an SEO expert for social media content. Analyze the provided content and return a JSON object with these exact keys:
+
+{
+  "primary_keyword": string,
+  "secondary_keywords": string[] (3-5 items),
+  "seo_title": string (max 60 chars, SEO-optimized),
+  "meta_description": string (max 155 chars),
+  "hashtag_strategy": string (one or two sentences — broad advice),
+  "hashtags": {
+    "tiktok": string[] (3-5 items, NO # prefix, mix of broad + niche),
+    "instagram": string[] (15-25 items, NO # prefix, tiered),
+    "youtube": string[] (3-5 items, NO # prefix),
+    "linkedin": string[] (3-5 items, NO # prefix, professional)
+  },
+  "emojis": {
+    "tiktok": string[] (2-4 emoji characters, no text, fitting the vibe),
+    "instagram": string[] (2-4 emoji characters),
+    "youtube": string[] (2-3 emoji characters, subdued),
+    "linkedin": string[] (1-2 emoji characters, professional)
+  }
+}
+
+Rules:
+- Never include the # character in hashtags — the UI adds it.
+- Avoid banned or shadowbanned hashtags.
+- Emojis should be single unicode characters only (e.g. "🎬", not "🎬 film").
+- LinkedIn emojis: one, maybe two. Professional only.
+- Return only valid JSON, no markdown fences.`
   const userPrompt =
     item.transcript.slice(0, 3000) +
     '\n\nGenerated outputs summary: ' +

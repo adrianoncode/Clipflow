@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   CheckCheck,
   Loader2,
+  RefreshCw,
   Send,
   Star,
   X,
@@ -15,6 +16,7 @@ import {
 import {
   bulkApproveAction,
   bulkExportAction,
+  bulkRegenerateAction,
   bulkStarAction,
 } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/bulk-actions'
 
@@ -114,6 +116,32 @@ export function PipelineBulkBar({ workspaceId, selected, onClear }: PipelineBulk
             <CheckCheck className="h-3.5 w-3.5" />
           )}
           Approve
+        </button>
+
+        {/* Regenerate — reruns the AI pipeline on each selected draft.
+            Agencies use this after updating brand voice to refresh
+            existing drafts without clicking through each one. */}
+        <button
+          type="button"
+          onClick={() => {
+            const n = selected.size
+            if (
+              !window.confirm(
+                `Regenerate ${n} ${n === 1 ? 'draft' : 'drafts'}? Existing captions will be replaced.`,
+              )
+            )
+              return
+            runAction('regen', bulkRegenerateAction, 'Regenerated')
+          }}
+          disabled={isPending}
+          className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-primary transition-all hover:bg-primary/10 disabled:opacity-50"
+        >
+          {activeAction === 'regen' ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <RefreshCw className="h-3.5 w-3.5" />
+          )}
+          Regenerate
         </button>
 
         {/* Mark as published */}
