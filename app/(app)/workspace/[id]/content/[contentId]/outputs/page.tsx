@@ -15,6 +15,8 @@ import {
 
 import { Badge } from '@/components/ui/badge'
 import { SeoPanel } from '@/components/outputs/seo-panel'
+import { ThumbnailStudio } from '@/components/outputs/thumbnail-studio'
+import { getBrandKit } from '@/lib/brand-kit/get-brand-kit'
 import { ExportAllButton } from '@/components/outputs/export-all-button'
 import { GenerateOutputsForm } from '@/components/outputs/generate-outputs-form'
 import { OutputsGrid } from '@/components/outputs/outputs-grid'
@@ -76,7 +78,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
     redirect(`/workspace/${params.id}/content/${params.contentId}`)
   }
 
-  const [outputs, reviewLinks, reviewComments, renders, plan, aiKeys, longLivedSourceUrl] =
+  const [outputs, reviewLinks, reviewComments, renders, plan, aiKeys, longLivedSourceUrl, brandKit] =
     await Promise.all([
       getOutputs(params.contentId, params.id),
       getReviewLinksForContent(params.contentId, params.id),
@@ -85,6 +87,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
       getWorkspacePlan(params.id),
       getAiKeys(params.id),
       getLongLivedSourceUrl(item.source_url),
+      getBrandKit(params.id),
     ])
   const planFeatures = getPlanFeatures(plan)
   const hasPublishKey = aiKeys.some((k) => k.provider === 'upload-post')
@@ -230,6 +233,17 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
                 initialSeo={
                   ((outputs[0]?.metadata as Record<string, unknown> | null)?.seo as null | { primary_keyword: string; secondary_keywords: string[]; seo_title: string; meta_description: string; hashtag_strategy: string }) ?? null
                 }
+              />
+
+              {/* Thumbnail Studio — generates YouTube / LinkedIn / Square
+                  thumbnails from this content's title using the brand kit
+                  (if set) for color + logo text. Closes the "no thumbnail
+                  feature" gap called out in the audit. */}
+              <ThumbnailStudio
+                defaultTitle={item.title ?? 'Your headline goes here'}
+                defaultSub={`${kindCfg.label.toUpperCase()}${item.title ? '' : ' · Draft'}`}
+                brandAccent={brandKit?.accentColor}
+                brandName={brandKit?.introText ?? 'Clipflow'}
               />
               {/* Client review links are Studio-only. On Creator/Free
                   we show a locked card that points to /billing with the

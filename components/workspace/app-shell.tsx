@@ -243,6 +243,11 @@ export function AppShell({
       label: 'Research',
       items: [
         {
+          href: `/workspace/${currentWorkspaceId}/ideas`,
+          label: 'Ideas',
+          icon: Sparkles,
+        },
+        {
           href: `/workspace/${currentWorkspaceId}/research`,
           label: 'Creators',
           icon: Search,
