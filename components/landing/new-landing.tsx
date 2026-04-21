@@ -17,6 +17,8 @@ import {
   TiltWrap,
   WordReveal,
 } from './hero-motion'
+import { CaptionTypewriter } from './caption-typewriter'
+import { BentoShowcase } from './bento-showcase'
 
 interface NewLandingProps {
   signupHref: string
@@ -44,7 +46,9 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
     // content is visible without waiting for the fade-in sequence.
     if (reduceMotion) {
       root
-        .querySelectorAll<HTMLElement>('.lv2-reveal, .lv2-reveal-stagger')
+        .querySelectorAll<HTMLElement>(
+          '.lv2-reveal, .lv2-reveal-stagger, .lv2-hero-assemble',
+        )
         .forEach((el) => el.classList.add('in'))
     }
 
@@ -61,6 +65,19 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
       { threshold: 0.14, rootMargin: '0px 0px -40px 0px' },
     )
     if (!reduceMotion) revealEls.forEach((el) => io.observe(el))
+
+    const heroTimers: number[] = []
+    // Hero mockup assembly fires on mount (not waiting for IO) because
+    // the stack sits above the fold. A small delay lets the browser
+    // paint the initial state (blur + y-offset) before the transition
+    // kicks in, otherwise the cards jump in with no visible motion.
+    const heroStack = root.querySelector<HTMLElement>('#lv2-heroStack')
+    if (heroStack && !reduceMotion) {
+      const heroTimer = window.setTimeout(() => heroStack.classList.add('in'), 120)
+      heroTimers.push(heroTimer)
+    } else if (heroStack) {
+      heroStack.classList.add('in')
+    }
 
     // Count-up
     const countEls = root.querySelectorAll<HTMLElement>('.lv2-countup')
@@ -144,6 +161,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
       if (progInterval !== undefined) window.clearInterval(progInterval)
       window.removeEventListener('scroll', onScroll)
       handlers.forEach((fn) => fn())
+      heroTimers.forEach((t) => window.clearTimeout(t))
     }
   }, [])
 
@@ -366,6 +384,33 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         .lv2-reveal-stagger.in > *:nth-child(2) { transition-delay: .12s; }
         .lv2-reveal-stagger.in > *:nth-child(3) { transition-delay: .19s; }
         .lv2-reveal-stagger.in > *:nth-child(4) { transition-delay: .26s; }
+
+        /* Hero mockup assembly — the scattered cards (source, TikTok,
+           LinkedIn, analytics, etc.) enter one-by-one with a soft blur
+           clear and a small translate from their final position. Each
+           card's initial state is set inline so the page has zero flash
+           of stacked-up-at-origin before JS runs. The ".in" class is
+           toggled by the hero-reveal observer below. */
+        .lv2-hero-assemble > * {
+          opacity: 0;
+          filter: blur(10px);
+          transform: translateY(28px) scale(.96);
+          transition: opacity .9s cubic-bezier(.2,.8,.2,1),
+                      filter .9s cubic-bezier(.2,.8,.2,1),
+                      transform .9s cubic-bezier(.2,.8,.2,1);
+        }
+        .lv2-hero-assemble.in > * {
+          opacity: 1;
+          filter: blur(0);
+          transform: translateY(0) scale(1);
+        }
+        .lv2-hero-assemble.in > *:nth-child(1) { transition-delay: .15s; }
+        .lv2-hero-assemble.in > *:nth-child(2) { transition-delay: .30s; }
+        .lv2-hero-assemble.in > *:nth-child(3) { transition-delay: .45s; }
+        .lv2-hero-assemble.in > *:nth-child(4) { transition-delay: .60s; }
+        .lv2-hero-assemble.in > *:nth-child(5) { transition-delay: .75s; }
+        .lv2-hero-assemble.in > *:nth-child(6) { transition-delay: .90s; }
+        .lv2-hero-assemble.in > *:nth-child(7) { transition-delay: 1.05s; }
         .lv2-reveal-stagger.in > *:nth-child(5) { transition-delay: .33s; }
         .lv2-reveal-stagger.in > *:nth-child(6) { transition-delay: .4s; }
 
@@ -580,8 +625,42 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               >
                 <KineticHeadline />
               </h1>
+
+              {/* Caption typewriter — a live preview of what Clipflow
+                  actually produces. Cycles through example hooks so
+                  visitors see the quality of output before they read
+                  any feature copy. */}
+              <div
+                className="lv2-reveal mt-7 inline-flex max-w-[560px] items-start gap-2 rounded-2xl border px-4 py-3"
+                style={{
+                  transitionDelay: '.35s',
+                  borderColor: 'var(--lv2-border)',
+                  background: 'var(--lv2-card)',
+                }}
+              >
+                <span
+                  className="lv2-mono-label mt-0.5 shrink-0"
+                  style={{ color: 'var(--lv2-muted)', fontSize: 10 }}
+                >
+                  TikTok · Draft
+                </span>
+                <p
+                  className="text-[15.5px] leading-snug"
+                  style={{ color: 'var(--lv2-fg)', fontFamily: 'inherit' }}
+                >
+                  <CaptionTypewriter
+                    lines={[
+                      'The algorithm doesn\u2019t care how long you worked on this.',
+                      'Stop posting the same hook your competitor posted yesterday.',
+                      'Here\u2019s why most creators plateau at 10K followers.',
+                      'Your best idea is probably buried in a 40-minute recording.',
+                    ]}
+                  />
+                </p>
+              </div>
+
               <p
-                className="lv2-reveal mt-8 max-w-[560px] text-[18px] leading-relaxed"
+                className="lv2-reveal mt-6 max-w-[560px] text-[18px] leading-relaxed"
                 style={{ transitionDelay: '.4s', color: 'var(--lv2-fg-soft)' }}
               >
                 Drop in a podcast, Zoom recording, or 40-minute rant. Clipflow pulls out the
@@ -640,7 +719,11 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             </div>
 
             {/* Hero visual stack */}
-            <div id="lv2-heroStack" className="relative h-[560px]" style={{ perspective: 1200 }}>
+            <div
+              id="lv2-heroStack"
+              className="lv2-hero-assemble relative h-[560px]"
+              style={{ perspective: 1200 }}
+            >
               <TiltWrap>
               {/* Source card */}
               <div
@@ -1196,11 +1279,26 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
 
       {/* HOW IT WORKS */}
       <section id="how-it-works" className="mx-auto max-w-[1240px] px-6 pb-28 pt-4">
-        <div className="lv2-reveal mb-16 flex flex-wrap items-end justify-between gap-5">
+        {/* Sticky header — stays pinned at the top of the viewport
+            while the step cards scroll past underneath. Gives the
+            "Linear / Stripe" feel of a single orienting label above a
+            changing body. Scoped to the section so it releases once
+            the user scrolls out. */}
+        <div
+          className="lv2-reveal mb-16 flex flex-wrap items-end justify-between gap-5"
+          style={{
+            position: 'sticky',
+            top: 80,
+            zIndex: 5,
+            background: 'var(--lv2-bg)',
+            paddingTop: '1rem',
+            paddingBottom: '1rem',
+          }}
+        >
           <div>
             <p className="lv2-mono-label mb-3">How it works</p>
             <h2
-              className="lv2-display max-w-[520px] text-[52px] leading-[1]"
+              className="lv2-display max-w-[520px] text-[44px] leading-[1] sm:text-[52px]"
               style={{ color: 'var(--lv2-primary)' }}
             >
               Four steps. The first is the only one you&apos;ll do.
@@ -1395,6 +1493,11 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           ))}
         </div>
       </section>
+
+      {/* BENTO FEATURE SHOWCASE — six mini-demos of real Clipflow
+          mechanics, so visitors see the product behavior (not just
+          claims) before the pricing wall. */}
+      <BentoShowcase />
 
       {/* BIG STATS STRIP */}
       <section

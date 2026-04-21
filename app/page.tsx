@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { NewLanding } from '@/components/landing/new-landing'
+import { SmoothScroll } from '@/components/landing/smooth-scroll'
 import { normalizeReferralCode } from '@/lib/referrals/normalize-code'
 import { lookupReferrerUserId } from '@/lib/referrals/lookup-referrer'
 import { REFERRAL_DISCOUNT_PERCENT } from '@/lib/referrals/constants'
@@ -136,6 +137,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_LD) }}
       />
+      <SmoothScroll />
       <NewLanding
         signupHref={signupHref}
         hasValidRef={hasValidRef}
