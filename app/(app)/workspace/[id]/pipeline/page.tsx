@@ -78,25 +78,32 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
 
   const supabase = createClient()
 
-  // Verify workspace membership
-  const { data: membership } = await supabase
-    .from('workspace_members')
-    .select('role')
-    .eq('workspace_id', workspaceId)
-    .eq('user_id', user.id)
-    .maybeSingle()
+  // Parallelize the membership verify + outputs fetch. Previously the
+  // membership check ran first, adding one sequential round-trip before
+  // outputs could load. We already know the user id, so we can kick both
+  // off together and validate membership when results return. If the
+  // user isn't a member, RLS hides the outputs rows anyway — membership
+  // check is defence in depth plus the 404 affordance.
+  const [membershipResult, outputsResult] = await Promise.all([
+    supabase
+      .from('workspace_members')
+      .select('role')
+      .eq('workspace_id', workspaceId)
+      .eq('user_id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('outputs')
+      .select(
+        'id, platform, created_at, content_id, body, current_state, content_items(title)',
+      )
+      .eq('workspace_id', workspaceId)
+      .order('created_at', { ascending: false })
+      .limit(200),
+  ])
 
-  if (!membership) notFound()
+  if (!membershipResult.data) notFound()
 
-  // Single query using the denormalized `current_state` column populated
-  // by the trigger on output_states insert. Replaces the previous 2-query
-  // pattern that fetched every state transition and scanned in JS.
-  const { data: outputs } = await supabase
-    .from('outputs')
-    .select('id, platform, created_at, content_id, body, current_state, content_items(title)')
-    .eq('workspace_id', workspaceId)
-    .order('created_at', { ascending: false })
-    .limit(200)
+  const { data: outputs } = outputsResult
 
   const enriched: PipelineOutputItem[] = (outputs ?? []).map((o) => {
     const contentItem = o.content_items as unknown as { title: string | null } | null

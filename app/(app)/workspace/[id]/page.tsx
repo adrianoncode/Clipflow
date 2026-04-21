@@ -22,14 +22,20 @@ interface WorkspaceHomePageProps {
 const PAGE_SIZE = 50
 
 export default async function WorkspaceHomePage({ params, searchParams }: WorkspaceHomePageProps) {
-  const workspaces = await getWorkspaces()
-  const workspace = workspaces.find((w) => w.id === params.id)
-  if (!workspace) notFound()
-
   const page = Math.max(1, parseInt(searchParams.page ?? '1', 10) || 1)
   const offset = (page - 1) * PAGE_SIZE
 
-  const items = await getContentItems(params.id, { limit: PAGE_SIZE, offset })
+  // Parallelize the workspace-list lookup and the content-items fetch.
+  // getWorkspaces is cached via React.cache so downstream callers in
+  // the layout share the same result. The items fetch doesn't depend
+  // on membership — RLS hides rows for non-members anyway.
+  const [workspaces, items] = await Promise.all([
+    getWorkspaces(),
+    getContentItems(params.id, { limit: PAGE_SIZE, offset }),
+  ])
+
+  const workspace = workspaces.find((w) => w.id === params.id)
+  if (!workspace) notFound()
   const canCreate = workspace.role === 'owner' || workspace.role === 'editor'
   const duplicateIds = findDuplicateIds(items)
 

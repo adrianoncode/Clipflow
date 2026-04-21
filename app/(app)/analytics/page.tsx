@@ -136,20 +136,22 @@ export default async function AnalyticsPage() {
     )
   }
 
-  const analytics = await getAnalytics(currentWorkspace.id)
-
-  // Last stats refresh timestamp — used in the header to tell the user
-  // how stale the published-post analytics are right now.
+  // Analytics aggregate + last-fetched lookup run in parallel. Previously
+  // the lastStatsRow query awaited after getAnalytics, adding one RTT
+  // before the header could render.
   const supabaseForStats = createClient()
-  const { data: lastStatsRow } = await supabaseForStats
-    .from('scheduled_posts')
-    .select('stats_fetched_at')
-    .eq('workspace_id', currentWorkspace.id)
-    .not('stats_fetched_at', 'is', null)
-    .order('stats_fetched_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-  const lastStatsFetchedAt = lastStatsRow?.stats_fetched_at ?? null
+  const [analytics, lastStatsRowResult] = await Promise.all([
+    getAnalytics(currentWorkspace.id),
+    supabaseForStats
+      .from('scheduled_posts')
+      .select('stats_fetched_at')
+      .eq('workspace_id', currentWorkspace.id)
+      .not('stats_fetched_at', 'is', null)
+      .order('stats_fetched_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ])
+  const lastStatsFetchedAt = lastStatsRowResult.data?.stats_fetched_at ?? null
 
   const maxPlatform = Math.max(...Object.values(analytics.platformBreakdown), 1)
   const totalItemsWithCoverage =

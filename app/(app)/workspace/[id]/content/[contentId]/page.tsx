@@ -47,23 +47,28 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
     item.source_url != null &&
     !item.source_url.startsWith('http')
 
-  const [hasExistingOutputs, signedUrl, currentPlan] = await Promise.all([
-    item.status === 'ready' ? hasOutputs(params.contentId, params.id) : Promise.resolve(false),
-    needsSignedUrl ? getSignedUrl(item.source_url!) : Promise.resolve(null),
-    getWorkspacePlan(params.id),
-  ])
+  // The output-count query used to run sequentially after the main
+  // Promise.all, adding one RTT to every content-detail page load when
+  // outputs exist. Fold it in — the query is cheap (index-only count)
+  // and we just ignore the result when hasExistingOutputs=false.
+  const supabase = createClient()
+  const [hasExistingOutputs, signedUrl, currentPlan, outputCountResult] =
+    await Promise.all([
+      item.status === 'ready'
+        ? hasOutputs(params.contentId, params.id)
+        : Promise.resolve(false),
+      needsSignedUrl ? getSignedUrl(item.source_url!) : Promise.resolve(null),
+      getWorkspacePlan(params.id),
+      item.status === 'ready'
+        ? supabase
+            .from('outputs')
+            .select('id', { count: 'exact', head: true })
+            .eq('content_id', params.contentId)
+            .eq('workspace_id', params.id)
+        : Promise.resolve({ count: 0 }),
+    ])
 
-  // Get output count for the "next step" banner
-  let outputCount = 0
-  if (hasExistingOutputs) {
-    const supabase = createClient()
-    const { count } = await supabase
-      .from('outputs')
-      .select('id', { count: 'exact', head: true })
-      .eq('content_id', params.contentId)
-      .eq('workspace_id', params.id)
-    outputCount = count ?? 0
-  }
+  const outputCount = hasExistingOutputs ? outputCountResult.count ?? 0 : 0
 
   return (
     <>

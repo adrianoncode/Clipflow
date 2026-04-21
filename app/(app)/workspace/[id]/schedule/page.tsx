@@ -67,7 +67,21 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
   const user = await getUser()
   if (!user) redirect('/login')
 
-  const workspaces = await getWorkspaces()
+  const isCalendarView = searchParams.view === 'calendar'
+
+  // Fold every per-workspace fetch into a single Promise.all — previously
+  // getWorkspaces, getWorkspacePlan, and the posts/aiKeys batch each
+  // awaited in sequence, costing three round-trips on every Schedule
+  // render. Membership + plan-gate redirects happen after the batch.
+  const [workspaces, currentPlan, posts, aiKeys, unscheduledOutputs] =
+    await Promise.all([
+      getWorkspaces(),
+      getWorkspacePlan(params.id),
+      getScheduledPosts(params.id),
+      getAiKeys(params.id),
+      isCalendarView ? getUnscheduledOutputs(params.id) : Promise.resolve([]),
+    ])
+
   const workspace = workspaces.find((w) => w.id === params.id)
   if (!workspace) notFound()
 
@@ -75,18 +89,9 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
   // the billing upsell before we render any "Schedule" UI — otherwise
   // the Pipeline's "Schedule N" button lands the user on a page that
   // silently does nothing on submit.
-  const currentPlan = await getWorkspacePlan(params.id)
   if (!checkPlanAccess(currentPlan, 'scheduling')) {
     redirect(`/billing?workspace_id=${params.id}&plan=solo&feature=scheduling`)
   }
-
-  const isCalendarView = searchParams.view === 'calendar'
-
-  const [posts, aiKeys, unscheduledOutputs] = await Promise.all([
-    getScheduledPosts(params.id),
-    getAiKeys(params.id),
-    isCalendarView ? getUnscheduledOutputs(params.id) : Promise.resolve([]),
-  ])
 
   const hasUploadPostKey = aiKeys.some((k) => k.provider === 'upload-post')
 
