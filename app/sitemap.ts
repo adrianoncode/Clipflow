@@ -1,10 +1,30 @@
 import type { MetadataRoute } from 'next'
 
 import { ALL_COMPETITOR_IDS, COMPETITORS } from '@/lib/landing/competitors'
+import {
+  ALL_FEATURE_IDS,
+  ALL_USE_CASE_IDS,
+  FEATURES,
+  USE_CASES,
+} from '@/lib/landing/features'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = 'https://clipflow.to'
   const now = new Date()
+
+  const featurePages: MetadataRoute.Sitemap = ALL_FEATURE_IDS.map((id) => ({
+    url: `${base}/features/${FEATURES[id].slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }))
+
+  const useCasePages: MetadataRoute.Sitemap = ALL_USE_CASE_IDS.map((id) => ({
+    url: `${base}/for/${USE_CASES[id].slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }))
 
   const competitorPages: MetadataRoute.Sitemap = ALL_COMPETITOR_IDS.flatMap((id) => {
     const c = COMPETITORS[id]
@@ -51,6 +71,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     ...competitorPages,
+
+    // Feature + use-case library — docs-style landing surfaces that
+    // target mid-intent queries like "brand voice AI captions" or
+    // "short-form for podcasters". Priority 0.7 so they're weighted
+    // below the homepage and competitor landings.
+    {
+      url: `${base}/features`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    ...featurePages,
+    {
+      url: `${base}/for`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    ...useCasePages,
 
     // Legal
     { url: `${base}/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },

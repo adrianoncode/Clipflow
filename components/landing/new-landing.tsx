@@ -2388,10 +2388,11 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 {
                   title: 'PRODUCT',
                   items: [
-                    { label: 'Features', href: '#features' },
-                    { label: 'How it works', href: '#how-it-works' },
+                    { label: 'All features', href: '/features' },
+                    { label: 'For podcasters', href: '/for/podcasters' },
+                    { label: 'For agencies', href: '/for/agencies' },
+                    { label: 'For coaches', href: '/for/coaches' },
                     { label: 'Pricing', href: '#pricing' },
-                    { label: 'See it in action', href: '#bento' },
                     { label: 'Changelog', href: '/changelog' },
                   ],
                 },
