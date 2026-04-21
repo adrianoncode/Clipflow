@@ -141,6 +141,16 @@ export async function updateMemberRoleAction(
   const user = await getUser()
   if (!user) redirect('/login')
 
+  // Role changes are owner-only. Previously the action trusted the
+  // workspace_members RLS "owner-only update" policy as the sole check;
+  // an accidental policy relaxation would otherwise let any editor
+  // silently promote themselves.
+  const check = await requireWorkspaceMember(workspaceId)
+  if (!check.ok) return { ok: false, error: check.message }
+  if (check.role !== 'owner') {
+    return { ok: false, error: 'Only workspace owners can change member roles.' }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('workspace_members')
@@ -168,6 +178,13 @@ export async function removeMemberAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  // Same defense as updateMemberRoleAction — removals are owner-only.
+  const check = await requireWorkspaceMember(workspaceId)
+  if (!check.ok) return { ok: false, error: check.message }
+  if (check.role !== 'owner') {
+    return { ok: false, error: 'Only workspace owners can remove members.' }
+  }
 
   const supabase = await createClient()
   const { error } = await supabase

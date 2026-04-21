@@ -26,11 +26,18 @@ import { verifyEnvSecret } from '@/lib/security/verify-cron-secret'
  */
 export async function POST(request: Request): Promise<NextResponse> {
   // ── Secret verification ──────────────────────────────────────────────────
-  // Fail closed: if SHOTSTACK_WEBHOOK_SECRET is unset, the endpoint is
-  // unauthorized. Previously a missing env var let anyone POST fake
-  // render-completion callbacks.
+  // Prefer the x-webhook-secret header so the secret never leaks into
+  // access logs, Sentry breadcrumbs, or browser history. The legacy
+  // ?secret=… query param is still accepted so in-flight renders
+  // triggered before this change don't start failing, but new renders
+  // should use the header — see callbackUrl builder in
+  // lib/video/shotstack-render.ts.
+  //
+  // Fails closed when SHOTSTACK_WEBHOOK_SECRET is unset.
+  const headerSecret = request.headers.get('x-webhook-secret')
   const { searchParams } = new URL(request.url)
-  const provided = searchParams.get('secret')
+  const querySecret = searchParams.get('secret')
+  const provided = headerSecret ?? querySecret
   if (!verifyEnvSecret('SHOTSTACK_WEBHOOK_SECRET', provided)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

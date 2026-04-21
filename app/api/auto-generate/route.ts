@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { DEFAULT_MODELS } from '@/lib/ai/generate/models'
 import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { checkLimit } from '@/lib/billing/check-limit'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { deleteOutputsForContent } from '@/lib/outputs/delete-outputs-for-content'
@@ -64,6 +65,16 @@ export async function POST(request: Request) {
   }
 
   const { workspaceId, contentId, targetLanguage } = parsed.data
+
+  // Explicit workspace-member gate — defense in depth. RLS already
+  // blocks cross-tenant reads on content_items, but relying on that
+  // alone means a single policy regression would let any logged-in
+  // user burn another workspace's BYOK quota by posting this endpoint
+  // with someone else's workspaceId.
+  const check = await requireWorkspaceMember(workspaceId)
+  if (!check.ok) {
+    return NextResponse.json({ error: check.message }, { status: check.status })
+  }
 
   // Check output limit
   const outputLimit = await checkLimit(workspaceId, 'outputs')

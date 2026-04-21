@@ -1,6 +1,7 @@
 'use server'
 
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { notifyPostPublished } from '@/lib/notifications/triggers'
 import { publishVideo, type PublishPlatform } from '@/lib/publish/upload-post'
 import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
@@ -34,6 +35,17 @@ export async function publishOutputAction(
   const platformsRaw = formData.get('platforms') as string
 
   if (!workspaceId) return { ok: false, error: 'Missing workspace.' }
+
+  // Verify the caller actually belongs to this workspace + has write
+  // access before firing webhooks, notifications, or integration
+  // dispatches — all three accept the raw workspaceId and would
+  // otherwise fan out to another tenant's systems.
+  const check = await requireWorkspaceMember(workspaceId)
+  if (!check.ok) return { ok: false, error: check.message }
+  if (check.role !== 'owner' && check.role !== 'editor') {
+    return { ok: false, error: 'Only owners or editors can publish.' }
+  }
+
   if (!videoUrl?.startsWith('http')) {
     return { ok: false, error: 'Paste a valid video URL (must start with https://).' }
   }

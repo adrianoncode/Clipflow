@@ -239,6 +239,14 @@ export async function submitRender(input: RenderInput): Promise<
 
   // Shotstack webhook callback — only set when the app URL + secret are
   // both configured in the environment (i.e. production deployments).
+  //
+  // Known limit: Shotstack's callback API accepts only a plain URL, no
+  // custom headers or HMAC. The secret therefore has to travel in the
+  // query string, which exposes it to Vercel access logs and CDN edges.
+  // Mitigation is operational — rotate SHOTSTACK_WEBHOOK_SECRET on a
+  // schedule or when rotating infra. The webhook handler itself still
+  // accepts an `x-webhook-secret` header as the primary check, so any
+  // renderer we swap to later can move off the query-string path.
   const webhookSecret = process.env.SHOTSTACK_WEBHOOK_SECRET
   const appUrl = process.env.NEXT_PUBLIC_APP_URL
   const callbackUrl =
