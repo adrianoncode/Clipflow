@@ -11,6 +11,12 @@ import { useRouter } from 'next/navigation'
  * - Cmd/Ctrl + K → Focus global search
  * - Cmd/Ctrl + N → New content
  * - Cmd/Ctrl + / → Show shortcuts help
+ * - ?            → Show shortcuts help (GitHub/Linear convention)
+ * - Esc          → Close help
+ *
+ * A custom event ("clipflow:open-shortcuts") also toggles the help —
+ * the header's "?" button dispatches it, so a click opens the same
+ * overlay the keyboard shortcut opens.
  */
 export function KeyboardShortcuts({ workspaceId }: { workspaceId: string }) {
   const router = useRouter()
@@ -18,12 +24,34 @@ export function KeyboardShortcuts({ workspaceId }: { workspaceId: string }) {
 
   useEffect(() => {
     function handler(e: KeyboardEvent) {
+      // Don't steal keystrokes while the user is typing
+      const tag = (e.target as HTMLElement)?.tagName
+      const typing =
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        tag === 'SELECT' ||
+        (e.target as HTMLElement)?.isContentEditable === true
+
+      // Esc always closes help, even mid-typing
+      if (e.key === 'Escape' && showHelp) {
+        setShowHelp(false)
+        return
+      }
+
+      // Bare "?" opens help (GitHub / Linear convention) — only when
+      // not typing. We check the character rather than the key code so
+      // shift-/ on non-QWERTY layouts still works.
+      if (!typing && e.key === '?' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault()
+        setShowHelp((prev) => !prev)
+        return
+      }
+
+      // Remaining shortcuts require a modifier, and we block them while
+      // typing so Cmd+K in a search field still selects-all, etc.
+      if (typing) return
       const mod = e.metaKey || e.ctrlKey
       if (!mod) return
-
-      // Don't trigger when typing in inputs
-      const tag = (e.target as HTMLElement)?.tagName
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
 
       switch (e.key) {
         case 'k': {
@@ -46,9 +74,17 @@ export function KeyboardShortcuts({ workspaceId }: { workspaceId: string }) {
       }
     }
 
+    function openHandler() {
+      setShowHelp(true)
+    }
+
     window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [router, workspaceId])
+    window.addEventListener('clipflow:open-shortcuts', openHandler)
+    return () => {
+      window.removeEventListener('keydown', handler)
+      window.removeEventListener('clipflow:open-shortcuts', openHandler)
+    }
+  }, [router, workspaceId, showHelp])
 
   if (!showHelp) return null
 
@@ -66,7 +102,8 @@ export function KeyboardShortcuts({ workspaceId }: { workspaceId: string }) {
           {[
             { keys: ['⌘', 'K'], desc: 'Search' },
             { keys: ['⌘', 'N'], desc: 'New content' },
-            { keys: ['⌘', '/'], desc: 'Show this help' },
+            { keys: ['?'], desc: 'Show this help' },
+            { keys: ['Esc'], desc: 'Close this help' },
           ].map((shortcut) => (
             <div key={shortcut.desc} className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">{shortcut.desc}</span>

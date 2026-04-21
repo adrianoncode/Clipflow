@@ -419,6 +419,19 @@ export function AppShell({
 
           <div className="flex items-center gap-1.5">
             <NotificationBell initialCount={0} workspaceId={currentWorkspaceId} />
+            {/* Keyboard-shortcut help — hidden on mobile where kbd isn't
+                really a thing. Dispatches a custom event that the
+                <KeyboardShortcuts> component listens for. */}
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('clipflow:open-shortcuts'))}
+              title="Keyboard shortcuts (?)"
+              aria-label="Keyboard shortcuts"
+              className="hidden h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-black/[.04] sm:flex"
+              style={{ color: 'var(--lv2s-muted)' }}
+            >
+              <span className="font-mono text-[13px] font-bold">?</span>
+            </button>
             <Link
               href="/settings"
               className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-black/[.04] sm:hidden"

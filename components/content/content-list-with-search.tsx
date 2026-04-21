@@ -116,6 +116,15 @@ const FILTER_TABS = [
   { value: 'failed', label: 'Failed' },
 ] as const
 
+const KIND_TABS = [
+  { value: 'all', label: 'Any kind' },
+  { value: 'video', label: 'Video' },
+  { value: 'youtube', label: 'YouTube' },
+  { value: 'url', label: 'URL' },
+  { value: 'rss', label: 'RSS' },
+  { value: 'text', label: 'Text' },
+] as const
+
 export function ContentListWithSearch({
   items,
   workspaceId,
@@ -123,6 +132,7 @@ export function ContentListWithSearch({
 }: ContentListWithSearchProps) {
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [kindFilter, setKindFilter] = useState<string>('all')
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
   const filtered = useMemo(() => {
@@ -130,9 +140,10 @@ export function ContentListWithSearch({
     return items.filter((item) => {
       const matchesQuery = !q || (item.title ?? 'untitled').toLowerCase().includes(q)
       const matchesStatus = statusFilter === 'all' || item.status === statusFilter
-      return matchesQuery && matchesStatus
+      const matchesKind = kindFilter === 'all' || item.kind === kindFilter
+      return matchesQuery && matchesStatus && matchesKind
     })
-  }, [items, query, statusFilter])
+  }, [items, query, statusFilter, kindFilter])
 
   const counts = useMemo(() => {
     return items.reduce<Record<string, number>>((acc, item) => {
@@ -140,6 +151,22 @@ export function ContentListWithSearch({
       return acc
     }, {})
   }, [items])
+
+  const kindCounts = useMemo(() => {
+    return items.reduce<Record<string, number>>((acc, item) => {
+      acc[item.kind] = (acc[item.kind] ?? 0) + 1
+      return acc
+    }, {})
+  }, [items])
+
+  // Keep the kind filter list tight: only show chips for kinds that
+  // actually exist in this library (plus "Any kind"). Avoids showing
+  // an empty "RSS · 0" chip on accounts that never used RSS.
+  const visibleKindTabs = KIND_TABS.filter(
+    (tab) => tab.value === 'all' || (kindCounts[tab.value] ?? 0) > 0,
+  )
+  const hasAnyActiveFilter =
+    query.trim().length > 0 || statusFilter !== 'all' || kindFilter !== 'all'
 
   function toggleItem(id: string) {
     setSelected((prev) => {
@@ -226,6 +253,47 @@ export function ContentListWithSearch({
         </div>
       </div>
 
+      {/* ── Kind filter chips (second row) ── only shown when the
+          library has more than one kind of import; a pure video user
+          shouldn't get a cluttered "URL · RSS · Text" row. */}
+      {visibleKindTabs.length > 2 ? (
+        <div className="flex items-center gap-1.5 overflow-x-auto">
+          <span className="shrink-0 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
+            Kind
+          </span>
+          {visibleKindTabs.map((tab) => {
+            const isActive = kindFilter === tab.value
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => setKindFilter(tab.value)}
+                className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors ${
+                  isActive
+                    ? 'bg-foreground text-background'
+                    : 'bg-muted/60 text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                {tab.label}
+              </button>
+            )
+          })}
+          {hasAnyActiveFilter ? (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('')
+                setStatusFilter('all')
+                setKindFilter('all')
+              }}
+              className="ml-auto shrink-0 rounded-full border border-dashed border-border/60 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-border hover:text-foreground"
+            >
+              Clear filters
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
       {/* ── Select-all row (only visible when list is populated) ── */}
       {filtered.length > 0 && (
         <div className="flex items-center justify-between px-1">
@@ -258,12 +326,15 @@ export function ContentListWithSearch({
       {filtered.length === 0 && (
         <div className="py-10 text-center">
           <p className="text-sm font-medium text-muted-foreground">
-            No results for &ldquo;{query}&rdquo;
+            {query.trim()
+              ? `No matches for "${query.trim()}"`
+              : 'No items match the current filters.'}
           </p>
           <button
             onClick={() => {
               setQuery('')
               setStatusFilter('all')
+              setKindFilter('all')
             }}
             className="mt-2 text-xs font-semibold text-primary hover:underline"
           >
