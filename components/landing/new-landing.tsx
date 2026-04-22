@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import {
   CustomCursor,
@@ -33,6 +33,20 @@ interface NewLandingProps {
 export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLandingProps) {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const stepsRef = useRef<HTMLDivElement | null>(null)
+
+  // Scroll-detected navbar state. At the top of the hero the nav is
+  // fully transparent so the headline owns the fold. Past 60px the
+  // nav gets a subtle paper-tinted backdrop-blur + a hairline border
+  // so it reads cleanly over any section below. 300ms ease transition
+  // between the two states.
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    // Initial state — page might be loaded mid-scroll on reload.
+    const update = () => setScrolled(window.scrollY > 60)
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    return () => window.removeEventListener('scroll', update)
+  }, [])
 
   useEffect(() => {
     const root = rootRef.current
@@ -515,10 +529,26 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         </div>
       ) : null}
 
-      {/* NAV */}
+      {/* NAV — glass-on-scroll.
+          • At the top of the page: fully transparent, no border, no
+            blur. Hero headline + the workspace demo own the fold.
+          • Past 60px: backdrop-blur(14px) + 72% paper tint + hairline
+            plum border + soft bottom shadow. Restrained "paper glass"
+            look — no icy cybersite vibe, stays on-brand.
+          Transition 300ms so the switch feels intentional, not jumpy. */}
       <header
-        className="sticky top-0 z-40 backdrop-blur-md"
-        style={{ background: 'rgba(250,247,242,0.85)', borderBottom: '1px solid var(--lv2-border)' }}
+        className="sticky top-0 z-40 transition-all duration-300"
+        style={{
+          background: scrolled ? 'rgba(250,247,242,0.72)' : 'transparent',
+          backdropFilter: scrolled ? 'saturate(180%) blur(14px)' : 'none',
+          WebkitBackdropFilter: scrolled ? 'saturate(180%) blur(14px)' : 'none',
+          borderBottom: scrolled
+            ? '1px solid rgba(42,26,61,0.06)'
+            : '1px solid transparent',
+          boxShadow: scrolled
+            ? '0 4px 18px -8px rgba(42,26,61,0.08)'
+            : 'none',
+        }}
       >
         <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between px-6">
           <Link href="/" className="group flex items-center gap-2">
