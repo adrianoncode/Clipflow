@@ -7,6 +7,7 @@ import {
   FEATURES,
   USE_CASES,
 } from '@/lib/landing/features'
+import { GUIDES } from '@/lib/landing/playbook'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = 'https://clipflow.to'
@@ -22,6 +23,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const useCasePages: MetadataRoute.Sitemap = ALL_USE_CASE_IDS.map((id) => ({
     url: `${base}/for/${USE_CASES[id].slug}`,
     lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }))
+
+  const playbookGuides: MetadataRoute.Sitemap = GUIDES.map((g) => ({
+    url: `${base}/playbook/${g.slug}`,
+    lastModified: new Date(g.updatedAt),
     changeFrequency: 'monthly' as const,
     priority: 0.7,
   }))
@@ -90,6 +98,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     ...useCasePages,
+
+    // Playbook — operational / craft content. Each guide is a long-
+    // form article with its own article-schema JSON-LD, so rich-card
+    // rankings are the target here rather than raw keyword SEO.
+    {
+      url: `${base}/playbook`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    ...playbookGuides,
 
     // Legal
     { url: `${base}/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },

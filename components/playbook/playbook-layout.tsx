@@ -1,20 +1,29 @@
 import Link from 'next/link'
 
-import { ALL_FEATURE_IDS, ALL_USE_CASE_IDS, FEATURES, USE_CASES } from '@/lib/landing/features'
 import { SmoothScroll } from '@/components/landing/smooth-scroll'
-import { ExploreSidebar } from '@/components/explore/explore-sidebar'
+import { PlaybookSidebar } from '@/components/playbook/playbook-sidebar'
+import { GUIDES, GUIDE_CATEGORIES } from '@/lib/landing/playbook'
 
 /**
- * Shared chrome for every /features/* and /for/* page.
+ * Shared chrome for every /playbook/* route. Three-column layout on
+ * wide screens: left sidebar (grouped guide nav), center content,
+ * right-rail TOC (mounted per-page). Mobile collapses the sidebar
+ * into a <details> drawer at the top.
  *
- * Renders: top header (Clipflow + pricing + signup), a desktop left
- * sidebar listing every feature and use-case (docs-style), and the
- * body content in the right column. On mobile the sidebar collapses
- * into a details/summary expander at the top.
+ * Matches the ExploreLayout visual language but a separate surface
+ * on purpose — Playbook content is operational ("how to use this"),
+ * Explore content is marketing ("what does this do"). Keeping them
+ * separate lets us evolve each independently.
  */
-export function ExploreLayout({ children }: { children: React.ReactNode }) {
-  const features = ALL_FEATURE_IDS.map((id) => FEATURES[id])
-  const useCases = ALL_USE_CASE_IDS.map((id) => USE_CASES[id])
+export function PlaybookLayout({
+  children,
+  right,
+}: {
+  children: React.ReactNode
+  /** Optional right rail — the detail page slots its TOC here. */
+  right?: React.ReactNode
+}) {
+  const categories = Object.values(GUIDE_CATEGORIES)
 
   return (
     <>
@@ -29,7 +38,7 @@ export function ExploreLayout({ children }: { children: React.ReactNode }) {
           minHeight: '100vh',
         }}
       >
-        {/* ── Header ── */}
+        {/* Header */}
         <header
           className="sticky top-0 z-40"
           style={{
@@ -65,13 +74,6 @@ export function ExploreLayout({ children }: { children: React.ReactNode }) {
                 Features
               </Link>
               <Link
-                href="/for"
-                className="rounded-lg px-3 py-1.5 hover:bg-black/[.04]"
-                style={{ color: 'var(--lv2-fg-soft)' }}
-              >
-                Use cases
-              </Link>
-              <Link
                 href="/playbook"
                 className="rounded-lg px-3 py-1.5 hover:bg-black/[.04]"
                 style={{ color: 'var(--lv2-fg-soft)' }}
@@ -99,10 +101,13 @@ export function ExploreLayout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        {/* ── Body: sidebar + content ── */}
-        <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-8 px-6 py-10 lg:grid-cols-[260px_1fr]">
-          <ExploreSidebar features={features} useCases={useCases} />
+        {/* Body: sidebar + content + optional right rail */}
+        <div
+          className="mx-auto grid max-w-[1400px] gap-8 px-6 py-10 lg:grid-cols-[260px_minmax(0,1fr)_220px]"
+        >
+          <PlaybookSidebar categories={categories} guides={GUIDES} />
           <main className="min-w-0">{children}</main>
+          <div className="hidden lg:block">{right ?? null}</div>
         </div>
       </div>
     </>
@@ -124,6 +129,7 @@ function InlineVars() {
         font-family: var(--font-inter), system-ui, sans-serif;
       }
       .lv2-root .lv2-display { font-family: var(--font-instrument-serif), 'Times New Roman', serif; letter-spacing: -.015em; }
+      .lv2-root .lv2-sans-d { font-family: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif; letter-spacing: -.015em; }
       .lv2-root .lv2-mono { font-family: var(--font-jetbrains-mono), monospace; }
       .lv2-root .lv2-mono-label {
         font-family: var(--font-jetbrains-mono), monospace;

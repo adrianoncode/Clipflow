@@ -13,6 +13,7 @@ import {
 } from 'framer-motion'
 import {
   BarChart3,
+  BookOpen,
   CheckSquare,
   FileVideo,
   Home,
@@ -252,6 +253,11 @@ export function AppShell({
           label: 'Creators',
           icon: Search,
           requires: 'creatorResearch',
+        },
+        {
+          href: '/playbook',
+          label: 'Playbook',
+          icon: BookOpen,
         },
       ],
     },

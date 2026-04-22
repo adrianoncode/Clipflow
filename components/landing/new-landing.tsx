@@ -547,6 +547,12 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             >
               Creators
             </a>
+            <Link
+              href="/playbook"
+              className="lv2-u-sweep rounded-lg px-3 py-1.5 hover:bg-black/[.04]"
+            >
+              Playbook
+            </Link>
             <a
               href="#pricing"
               className="lv2-u-sweep rounded-lg px-3 py-1.5 hover:bg-black/[.04]"
@@ -2389,9 +2395,8 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                   title: 'PRODUCT',
                   items: [
                     { label: 'All features', href: '/features' },
-                    { label: 'For podcasters', href: '/for/podcasters' },
-                    { label: 'For agencies', href: '/for/agencies' },
-                    { label: 'For coaches', href: '/for/coaches' },
+                    { label: 'Use cases', href: '/for' },
+                    { label: 'Playbook', href: '/playbook' },
                     { label: 'Pricing', href: '#pricing' },
                     { label: 'Changelog', href: '/changelog' },
                   ],
