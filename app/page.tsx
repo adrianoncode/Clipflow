@@ -56,17 +56,14 @@ const SOFTWARE_LD = {
     {
       '@type': 'Offer',
       name: 'Studio',
-      price: '89',
+      price: '99',
       priceCurrency: 'USD',
     },
   ],
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '4.9',
-    ratingCount: '2183',
-    bestRating: '5',
-    worstRating: '1',
-  },
+  // aggregateRating intentionally omitted — Google treats synthetic
+  // review counts as review-spam and can issue a manual penalty that
+  // affects the whole site. Re-add only when we have ≥20 real reviews
+  // from a verified source (Trustpilot, Capterra, G2).
 }
 
 const FAQ_LD = {

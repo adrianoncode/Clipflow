@@ -19,7 +19,7 @@ import {
 } from './hero-motion'
 import { CaptionTypewriter } from './caption-typewriter'
 import { BentoShowcase } from './bento-showcase'
-import { Testimonials } from './testimonials'
+// import { Testimonials } from './testimonials' // removed with fake-quote cleanup; see comment at former use-site
 import { ComparisonMatrix } from './comparison-matrix'
 import { StickyCta } from './sticky-cta'
 
@@ -349,7 +349,19 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           box-shadow: 0 1px 0 rgba(24,21,17,.04), 0 30px 50px -20px rgba(42,26,61,.28);
         }
 
-        .lv2-face { background-size: cover; background-position: center; background-color: #d9cfc0; }
+        /* .lv2-face paints soft plum gradient circles as avatar
+           photos — dropped because (1) external dependency, (2) FTC
+           issues when a recognizable face implies endorsement, (3)
+           not in next.config remotePatterns. Any backgroundImage
+           set inline by a call site takes precedence over the
+           gradient, so self-hosted avatars can still be swapped in
+           per-instance. */
+        .lv2-face {
+          background-image: linear-gradient(135deg, rgba(42,26,61,.25), rgba(214,255,62,.15));
+          background-color: #d9cfc0;
+          background-size: cover;
+          background-position: center;
+        }
         .lv2-face-ring { box-shadow: 0 0 0 2px var(--lv2-card), 0 0 0 3px var(--lv2-border); }
         .lv2-thumb { position: relative; overflow: hidden; background-size: cover; background-position: center; }
         .lv2-thumb::after {
@@ -577,6 +589,72 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             <Link href={signupHref} className="lv2-btn-primary py-2.5 text-[13px]">
               Start free <span className="lv2-arrow">→</span>
             </Link>
+            {/* Mobile menu — native <details> is reflex-lightweight,
+                needs zero JS, and works even if the page's client
+                chunk hasn't hydrated yet. md:hidden hides it on
+                desktop where the <nav> above takes over. */}
+            <details className="relative md:hidden">
+              <summary
+                aria-label="Open navigation"
+                className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-lg transition-colors hover:bg-black/[.04] [&::-webkit-details-marker]:hidden"
+                style={{ color: 'var(--lv2-fg-soft)' }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  aria-hidden
+                >
+                  <line x1="4" y1="7" x2="20" y2="7" />
+                  <line x1="4" y1="12" x2="20" y2="12" />
+                  <line x1="4" y1="17" x2="20" y2="17" />
+                </svg>
+              </summary>
+              <div
+                className="absolute right-0 top-[calc(100%+8px)] flex w-56 flex-col gap-0.5 rounded-xl border bg-white p-2 text-[14px] font-semibold shadow-xl"
+                style={{
+                  borderColor: 'var(--lv2-border)',
+                  color: 'var(--lv2-fg)',
+                }}
+              >
+                <a href="#features" className="rounded-md px-3 py-2 hover:bg-black/[.04]">
+                  Product
+                </a>
+                <a
+                  href="#how-it-works"
+                  className="rounded-md px-3 py-2 hover:bg-black/[.04]"
+                >
+                  How it works
+                </a>
+                <a href="#creators" className="rounded-md px-3 py-2 hover:bg-black/[.04]">
+                  Creators
+                </a>
+                <Link
+                  href="/playbook"
+                  className="rounded-md px-3 py-2 hover:bg-black/[.04]"
+                >
+                  Playbook
+                </Link>
+                <a href="#pricing" className="rounded-md px-3 py-2 hover:bg-black/[.04]">
+                  Pricing
+                </a>
+                <Link
+                  href="/changelog"
+                  className="rounded-md px-3 py-2 hover:bg-black/[.04]"
+                >
+                  Changelog
+                </Link>
+                <div className="my-1 h-px bg-[var(--lv2-border)]" />
+                <Link href="/login" className="rounded-md px-3 py-2 hover:bg-black/[.04]">
+                  Sign in
+                </Link>
+              </div>
+            </details>
           </div>
         </div>
       </header>
@@ -706,7 +784,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                       className="lv2-face h-7 w-7 rounded-full border-2"
                       style={{
                         borderColor: 'var(--lv2-bg)',
-                        backgroundImage: `url('https://i.pravatar.cc/80?img=${i}')`,
+                        
                       }}
                     />
                   ))}
@@ -715,22 +793,30 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                   className="flex items-center gap-1.5 font-semibold"
                   style={{ color: 'var(--lv2-fg)' }}
                 >
+                  {/* Stars kept as a visual affordance — but no
+                      fabricated "4.9 · 2183 creators" count. Swap
+                      back to a real rating once we have 20+ reviews
+                      from Trustpilot / Capterra / G2. */}
                   <span style={{ color: '#E4B63A' }}>★★★★★</span>
                   <span style={{ color: 'var(--lv2-muted)', fontWeight: 400 }}>
-                    4.9 ·{' '}
-                    <span className="lv2-countup lv2-tabular" data-to="2183">
-                      0
-                    </span>{' '}
-                    creators
+                    Backed by early creators
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Hero visual stack */}
+            {/* Hero visual stack — decorative app-mockup with tiny
+                9-11px labels inside fake cards. aria-hidden so screen
+                readers skip it (the headline/CTA carry the meaning)
+                and axe-core stops flagging the stylized low-contrast
+                chips inside the illustration. Hidden below lg so
+                mobile visitors don't see the 560px absolute-positioned
+                card stack pushing the CTA below the fold. */}
             <div
               id="lv2-heroStack"
-              className="lv2-hero-assemble relative h-[560px]"
+              role="presentation"
+              aria-hidden
+              className="lv2-hero-assemble relative hidden h-[560px] lg:block"
               style={{ perspective: 1200 }}
             >
               <TiltWrap>
@@ -781,7 +867,6 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 <div className="mt-2 flex items-center gap-2">
                   <span
                     className="lv2-face lv2-face-ring h-6 w-6 rounded-full"
-                    style={{ backgroundImage: "url('https://i.pravatar.cc/80?img=53')" }}
                   />
                   <p className="text-[12px] font-semibold leading-snug">
                     Nora · &ldquo;How to ship faster without burning out&rdquo;
@@ -943,7 +1028,6 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 <div className="mt-2 flex items-center gap-2">
                   <span
                     className="lv2-face lv2-face-ring h-6 w-6 rounded-full"
-                    style={{ backgroundImage: "url('https://i.pravatar.cc/80?img=25')" }}
                   />
                   <p
                     className="text-[11.5px] italic leading-snug"
@@ -1508,10 +1592,12 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           claims) before the pricing wall. */}
       <BentoShowcase />
 
-      {/* TESTIMONIALS — metric-led quotes from early-access creators +
-          agencies, so social proof stops being a star rating and starts
-          being a specific "this is who we built it for" signal. */}
-      <Testimonials />
+      {/* TESTIMONIAL SECTION temporarily removed — shipping without
+          fabricated quotes while we collect real early-user feedback.
+          The post-launch promise block further down (single quote +
+          "Early access" badge) fills the proof slot honestly. Re-add
+          <Testimonials /> once we have 3+ signed quotes from real
+          users with photos they own. */}
 
       {/* COMPARISON MATRIX — direct side-by-side vs OpusClip + Klap + Descript.
           Positions Clipflow as the superset, not the "also-ran".
@@ -1554,7 +1640,9 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         <div className="lv2-reveal-stagger relative mx-auto grid max-w-[1240px] gap-10 px-6 py-20 md:grid-cols-3">
           {[
             { big: 47, unit: '×', small: false, label: 'more posts from the same hour of recording than a human editor.' },
-            { big: 6, unit: ' min', small: true, label: 'from upload to first approved draft. Average across 2,183 workspaces.' },
+            // Upload-to-draft window is measured, the sample size
+            // stays honest ("early workspaces" not a fixed fake count).
+            { big: 6, unit: ' min', small: true, label: 'from upload to first approved draft. Early workspaces, no staged demos.' },
             { big: 218, unit: '%', prefix: '+', small: true, label: 'lift in monthly impressions for teams who post daily with Clipflow vs. weekly.' },
           ].map((s, i) => (
             <div key={i} className={i > 0 ? 'md:border-l md:border-white/15 md:pl-10' : ''}>
@@ -1622,7 +1710,6 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               <div className="flex items-center gap-2.5">
                 <span
                   className="lv2-face lv2-face-ring h-10 w-10 rounded-full"
-                  style={{ backgroundImage: "url('https://i.pravatar.cc/80?img=26')" }}
                 />
                 <div>
                   <p className="text-[13px] font-bold">Acme Studio</p>
@@ -1744,7 +1831,6 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                       <div className="flex items-center gap-1">
                         <span
                           className="lv2-face h-3.5 w-3.5 rounded-full"
-                          style={{ backgroundImage: "url('https://i.pravatar.cc/40?img=32')" }}
                         />
                         <span
                           className="lv2-mono text-[8px]"
@@ -1799,7 +1885,6 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                       <div className="flex items-center gap-1">
                         <span
                           className="lv2-face h-3.5 w-3.5 rounded-full"
-                          style={{ backgroundImage: "url('https://i.pravatar.cc/40?img=47')" }}
                         />
                         <span
                           className="lv2-mono text-[8px]"
@@ -1980,66 +2065,40 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
       >
         <div className="mx-auto max-w-[1100px] px-6 py-28">
           <p className="lv2-mono-label mb-6 text-center">What creators say</p>
+          {/*
+            Pre-launch. No named-customer testimonials with real company
+            attributions until we have signed quotes — FTC endorsement
+            rules + simple trust-hygiene. What's below is a short
+            product-promise block in the same visual slot so the page
+            doesn't feel structurally broken. Swap back to the three-
+            card testimonial grid the moment we have real quotes.
+          */}
           <blockquote
             className="lv2-display lv2-reveal mx-auto max-w-[900px] text-center text-[44px] leading-[1.05] sm:text-[56px]"
             style={{ color: 'var(--lv2-primary)' }}
           >
-            &quot;I stopped hiring editors. Clipflow ships in the time it took me to brief
-            one.&quot;
+            &quot;Post every platform this week, without rehiring an editor.&quot;
           </blockquote>
-          <div className="lv2-reveal mt-10 flex items-center justify-center gap-4">
+          <p
+            className="lv2-reveal mx-auto mt-6 max-w-[640px] text-center text-[15.5px] leading-relaxed"
+            style={{ color: 'var(--lv2-muted)' }}
+          >
+            That&rsquo;s the promise. 14-day refund — no questions, no phone call. If Clipflow
+            doesn&rsquo;t replace at least one workflow you&rsquo;re paying for now, we send the money back.
+          </p>
+          <div className="lv2-reveal mt-10 flex flex-wrap items-center justify-center gap-2">
             <span
-              className="lv2-face lv2-face-ring h-14 w-14 rounded-full"
-              style={{ backgroundImage: "url('https://i.pravatar.cc/80?img=32')" }}
-            />
-            <div>
-              <p className="lv2-sans-d text-[16px] font-bold">Nora Vos</p>
-              <p className="text-[12.5px]" style={{ color: 'var(--lv2-muted)' }}>
-                Head of Content · Lattice · 840K subscribers
-              </p>
-            </div>
-          </div>
-
-          <div className="lv2-reveal-stagger mt-16 grid gap-4 md:grid-cols-3">
-            {[
-              {
-                q: 'Replaced three tools and a freelancer. Pipeline paid for itself in week one.',
-                name: 'Colin M.',
-                role: 'CREATOR · 1.9M SUBS',
-                img: 47,
-              },
-              {
-                q: 'Brand voice actually sounds like us. Took two prompts to train. That\'s it.',
-                name: 'Cassey W.',
-                role: 'FOUNDER · SAAS',
-                img: 26,
-              },
-              {
-                q: 'We went from 2 posts a week to 14. Views tripled. Same team.',
-                name: 'Ellis R.',
-                role: 'MARKETING · DEV TOOLS',
-                img: 68,
-              },
-            ].map((t) => (
-              <div key={t.name} className="lv2-tcard lv2-card p-5">
-                <p className="text-[13.5px] leading-relaxed">&quot;{t.q}&quot;</p>
-                <div className="mt-4 flex items-center gap-2.5">
-                  <span
-                    className="lv2-face lv2-face-ring h-9 w-9 rounded-full"
-                    style={{ backgroundImage: `url('https://i.pravatar.cc/80?img=${t.img}')` }}
-                  />
-                  <div>
-                    <p className="text-[12.5px] font-bold">{t.name}</p>
-                    <p className="lv2-mono text-[10.5px]" style={{ color: 'var(--lv2-muted)' }}>
-                      {t.role}
-                    </p>
-                  </div>
-                  <span className="ml-auto text-[11px]" style={{ color: '#E4B63A' }}>
-                    ★★★★★
-                  </span>
-                </div>
-              </div>
-            ))}
+              className="lv2-chip"
+              style={{
+                background: 'var(--lv2-primary-soft)',
+                color: 'var(--lv2-primary)',
+              }}
+            >
+              Early access
+            </span>
+            <span className="lv2-mono text-[11px]" style={{ color: 'var(--lv2-muted)' }}>
+              Testimonials from founding users land here once we&rsquo;re out of beta.
+            </span>
           </div>
         </div>
       </section>
@@ -2321,7 +2380,14 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               <Link href={signupHref} className="lv2-btn-accent px-6 py-4 text-[15px]">
                 Start free — 14 days <span>→</span>
               </Link>
-              <a className="lv2-btn-ghost text-white/80" style={{ paddingLeft: 0 }}>
+              {/* Demo link is a mailto until we stand up a /demo
+                  Calendly surface — previously had no href at all,
+                  which silently broke every click. */}
+              <a
+                href="mailto:hi@clipflow.to?subject=Clipflow%20demo"
+                className="lv2-btn-ghost text-white/80 cursor-pointer"
+                style={{ paddingLeft: 0 }}
+              >
                 Book a 15-min demo
               </a>
               <div className="mt-4 flex items-center gap-2">
@@ -2332,13 +2398,13 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                       className="lv2-face h-8 w-8 rounded-full border-2"
                       style={{
                         borderColor: 'var(--lv2-primary)',
-                        backgroundImage: `url('https://i.pravatar.cc/80?img=${i}')`,
+                        
                       }}
                     />
                   ))}
                 </div>
                 <p className="lv2-mono text-[11.5px] text-white/60">
-                  2,183 CREATORS ALREADY ONBOARD
+                  EARLY ACCESS \u00b7 FOUNDING MEMBER PRICING
                 </p>
               </div>
               <div className="lv2-mono mt-2 flex items-center gap-3 text-[11.5px] text-white/50">
@@ -2356,7 +2422,10 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
       {/* FOOTER */}
       <footer style={{ borderTop: '1px solid var(--lv2-border)' }}>
         <div className="mx-auto max-w-[1240px] px-6 py-14">
-          <div className="grid gap-8 md:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1fr]">
+          {/* 6-col layout needs ~1000px to not crowd column labels
+              like "Clipflow vs OpusClip". Below lg, collapse to 2
+              cols so the link labels can breathe. */}
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1fr]">
             <div>
               <div className="mb-4 flex items-center gap-2">
                 <span
@@ -2481,7 +2550,9 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             style={{ color: 'var(--lv2-muted)' }}
           >
             <span>© 2026 CLIPFLOW GMBH</span>
-            <span>v4.2.1 · shipped 6 min ago</span>
+            <Link href="/changelog" className="hover:text-[var(--lv2-fg)]">
+              Changelog
+            </Link>
           </div>
         </div>
       </footer>
@@ -2611,7 +2682,6 @@ function FeatureGrid() {
             >
               <span
                 className="lv2-face h-6 w-6 rounded-full"
-                style={{ backgroundImage: "url('https://i.pravatar.cc/40?img=53')" }}
               />
               <span className="lv2-mono flex-1 text-[11px]">
                 🇬🇧 &quot;Speed isn&apos;t effort...&quot;
@@ -2632,7 +2702,6 @@ function FeatureGrid() {
             >
               <span
                 className="lv2-face h-6 w-6 rounded-full"
-                style={{ backgroundImage: "url('https://i.pravatar.cc/40?img=53')" }}
               />
               <span className="lv2-mono flex-1 text-[11px]">
                 🇩🇪 &quot;Geschwindigkeit ist...&quot;
@@ -2702,7 +2771,6 @@ function FeatureGrid() {
               <div key={m.name} className="flex items-center gap-2 text-[11.5px]">
                 <span
                   className="lv2-face h-7 w-7 rounded-full"
-                  style={{ backgroundImage: `url('https://i.pravatar.cc/40?img=${m.img}')` }}
                 />
                 <span className="font-semibold">{m.name}</span>
                 <span
