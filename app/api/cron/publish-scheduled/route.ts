@@ -140,7 +140,15 @@ export async function POST(req: NextRequest) {
         publishOk = true
       } else {
         let detail = ''
-        try { const b = await response.json(); detail = b?.message ?? b?.error ?? '' } catch {}
+        try {
+          const b = await response.json()
+          detail = b?.message ?? b?.error ?? ''
+        } catch (parseErr) {
+          log.error('publish-cron: failed to parse upload-post error body', parseErr, {
+            postId: post.id,
+            status: response.status,
+          })
+        }
         publishError = detail || `Upload-Post returned ${response.status}`
       }
     } catch (err) {
@@ -181,25 +189,30 @@ export async function POST(req: NextRequest) {
         platform_post_id: platformPostId,
       })
 
-      // Fire-and-forget notification
-      try {
-        void (async () => {
-          try {
-            const { data: ws } = await supabase
-              .from('workspaces')
-              .select('owner_id')
-              .eq('id', post.workspace_id)
-              .maybeSingle()
-            if (!ws?.owner_id) return
-            notifyPostPublished({
-              userId: ws.owner_id,
-              workspaceId: post.workspace_id,
-              platform: post.platform,
-              contentTitle: outputData.title,
-            })
-          } catch {}
-        })()
-      } catch {}
+      // Fire-and-forget notification. Failures here must NOT bubble
+      // into the publish-cron result — but we still log so a broken
+      // notifier doesn't go unnoticed.
+      void (async () => {
+        try {
+          const { data: ws } = await supabase
+            .from('workspaces')
+            .select('owner_id')
+            .eq('id', post.workspace_id)
+            .maybeSingle()
+          if (!ws?.owner_id) return
+          notifyPostPublished({
+            userId: ws.owner_id,
+            workspaceId: post.workspace_id,
+            platform: post.platform,
+            contentTitle: outputData.title,
+          })
+        } catch (notifyErr) {
+          log.error('publish-cron: notification delivery failed', notifyErr, {
+            postId: post.id,
+            platform: post.platform,
+          })
+        }
+      })()
 
       results.push({ id: post.id, platform: post.platform, ok: true })
     } else {

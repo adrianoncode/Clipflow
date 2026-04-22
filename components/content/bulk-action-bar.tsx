@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   AlertCircle,
@@ -33,6 +33,14 @@ export function BulkActionBar({
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [banner, setBanner] = useState<Banner>(null)
+  const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(
+    () => () => {
+      if (clearTimerRef.current) clearTimeout(clearTimerRef.current)
+    },
+    [],
+  )
 
   const count = selected.size
   if (count === 0) return null
@@ -66,7 +74,8 @@ export function BulkActionBar({
       } else if (result.ok === false) {
         setBanner({ kind: 'error', text: result.error })
       }
-      setTimeout(() => setBanner(null), 3000)
+      if (clearTimerRef.current) clearTimeout(clearTimerRef.current)
+      clearTimerRef.current = setTimeout(() => setBanner(null), 3000)
     })
   }
 

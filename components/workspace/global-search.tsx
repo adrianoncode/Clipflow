@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, FileText, Layers, Loader2 } from 'lucide-react'
 
@@ -58,32 +58,42 @@ export function GlobalSearch({ workspaceId }: GlobalSearchProps) {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  // Fetch results
-  const fetchResults = useCallback(async (q: string) => {
+  // Fetch results — aborts the in-flight request whenever the query
+  // changes so a slow older request can't overwrite a fresher one.
+  // AbortController also makes the fetch a clean no-op on unmount.
+  useEffect(() => {
+    const q = debouncedQuery
     if (!q.trim() || q.length < 2) {
       setResults([])
       setLoading(false)
       return
     }
-    setLoading(true)
-    try {
-      const res = await fetch(
-        `/api/search?q=${encodeURIComponent(q)}&workspaceId=${encodeURIComponent(workspaceId)}`,
-      )
-      if (res.ok) {
-        const data = await res.json() as SearchResult[]
-        setResults(data)
-      }
-    } catch {
-      setResults([])
-    } finally {
-      setLoading(false)
-    }
-  }, [workspaceId])
 
-  useEffect(() => {
-    void fetchResults(debouncedQuery)
-  }, [debouncedQuery, fetchResults])
+    const controller = new AbortController()
+    setLoading(true)
+    ;(async () => {
+      try {
+        const res = await fetch(
+          `/api/search?q=${encodeURIComponent(q)}&workspaceId=${encodeURIComponent(workspaceId)}`,
+          { signal: controller.signal },
+        )
+        if (res.ok) {
+          const data = (await res.json()) as SearchResult[]
+          setResults(data)
+        }
+      } catch (err) {
+        // AbortError is expected when the user keeps typing — skip it.
+        if ((err as { name?: string })?.name !== 'AbortError') {
+          setResults([])
+        }
+      } finally {
+        // Only flip loading off if this request wasn't superseded.
+        if (!controller.signal.aborted) setLoading(false)
+      }
+    })()
+
+    return () => controller.abort()
+  }, [debouncedQuery, workspaceId])
 
   function handleSelect(result: SearchResult) {
     router.push(result.url)

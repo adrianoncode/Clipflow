@@ -44,6 +44,20 @@ export function VoiceRecorder({ workspaceId, onCreated }: VoiceRecorderProps) {
   const chunksRef = useRef<Blob[]>([])
   const streamRef = useRef<MediaStream | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  // Tracks whether the component is still mounted — `uploadRecording`
+  // runs through three async steps and any of them can resolve after
+  // the user navigates away. Without this we get "setState on
+  // unmounted component" warnings and the upload proceeds orphaned.
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
+  const safeSetState = (next: RecorderState) => {
+    if (mountedRef.current) setState(next)
+  }
 
   // Tick timer while recording
   useEffect(() => {
@@ -131,14 +145,12 @@ export function VoiceRecorder({ workspaceId, onCreated }: VoiceRecorderProps) {
 
   const uploadRecording = useCallback(
     async (blob: Blob, mimeType: string) => {
-      setState({ kind: 'processing' })
+      safeSetState({ kind: 'processing' })
 
-      // Determine extension from mimeType
       const ext = mimeType.includes('ogg') ? 'ogg' : 'webm'
       const filename = `recording.${ext}`
       const file = new File([blob], filename, { type: mimeType || 'audio/webm' })
 
-      // Step 1: Create content item
       const createForm = new FormData()
       createForm.set('workspace_id', workspaceId)
       createForm.set('filename', filename)
@@ -148,11 +160,10 @@ export function VoiceRecorder({ workspaceId, onCreated }: VoiceRecorderProps) {
 
       const created = await createVideoContentAction(initialCreateState, createForm)
       if (!created.ok) {
-        setState({ kind: 'error', message: created.error })
+        safeSetState({ kind: 'error', message: created.error })
         return
       }
 
-      // Step 2: Upload to Supabase Storage
       const supabase = createClient()
       const path = `${workspaceId}/${created.contentId}/source.${ext}`
       const { error: uploadError } = await supabase.storage
@@ -160,11 +171,10 @@ export function VoiceRecorder({ workspaceId, onCreated }: VoiceRecorderProps) {
         .upload(path, file, { upsert: false, contentType: file.type || undefined })
 
       if (uploadError) {
-        setState({ kind: 'error', message: `Upload failed: ${uploadError.message}` })
+        safeSetState({ kind: 'error', message: `Upload failed: ${uploadError.message}` })
         return
       }
 
-      // Step 3: Start transcription
       const startForm = new FormData()
       startForm.set('workspace_id', workspaceId)
       startForm.set('content_id', created.contentId)
@@ -173,13 +183,19 @@ export function VoiceRecorder({ workspaceId, onCreated }: VoiceRecorderProps) {
       const started = await startTranscriptionAction(initialStartState, startForm)
 
       if (started.ok) {
-        setState({ kind: 'done', contentId: created.contentId })
+        safeSetState({ kind: 'done', contentId: created.contentId })
+        // Fire the callback even if unmounted — the parent may have
+        // navigated intentionally (e.g. to the new content page) and
+        // still wants to know the ID for analytics / reveal logic.
         onCreated?.(created.contentId)
         return
       }
 
-      setState({ kind: 'error', message: started.error })
+      safeSetState({ kind: 'error', message: started.error })
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- safeSetState
+    // is stable (wraps mountedRef) and can't be memoized without breaking
+    // the closure-over-latest-mounted semantics.
     [workspaceId, onCreated],
   )
 

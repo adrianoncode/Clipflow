@@ -12,6 +12,7 @@ import {
   type RevokeReviewLinkState,
 } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/review-link-actions'
 import type { ReviewLinkRow } from '@/lib/review/get-review-links-for-content'
+import { copyToClipboard } from '@/lib/ui/copy-to-clipboard'
 
 interface ReviewLinkPanelProps {
   workspaceId: string
@@ -46,12 +47,13 @@ export function ReviewLinkPanel({ workspaceId, contentId, links }: ReviewLinkPan
   const [createState, createAction] = useFormState(createReviewLinkAction, initialCreate)
   const [revokeState, revokeAction] = useFormState(revokeReviewLinkAction, initialRevoke)
 
-  function copyLink(token: string) {
+  async function copyLink(token: string) {
     const url = `${window.location.origin}/review/${token}`
-    navigator.clipboard.writeText(url).then(() => {
+    const ok = await copyToClipboard(url)
+    if (ok) {
       setCopied(token)
       setTimeout(() => setCopied(null), 2000)
-    })
+    }
   }
 
   // Show newly created link immediately

@@ -48,15 +48,16 @@ export function HighlightsList({
   const [editingId, setEditingId] = useState<string | null>(null)
   const editing = items.find((h) => h.id === editingId) ?? null
 
-  // Poll for any items in the `rendering` state — the Shotstack
-  // webhook flips them to ready/failed but a user staring at the page
-  // won't see it unless we refresh.
+  // Poll while any card is in `rendering`. We key the effect on a
+  // boolean-signature instead of the full `items` array so a parent
+  // re-render (unrelated prop churn) can't tear down and rebuild the
+  // 8s interval mid-cycle, skewing the poll cadence indefinitely.
+  const hasPending = items.some((i) => i.status === 'rendering')
   useEffect(() => {
-    const hasPending = items.some((i) => i.status === 'rendering')
     if (!hasPending) return
     const interval = setInterval(() => router.refresh(), 8_000)
     return () => clearInterval(interval)
-  }, [items, router])
+  }, [hasPending, router])
 
   const draftCount = items.filter(
     (h) => h.status === 'draft' || h.status === 'failed',

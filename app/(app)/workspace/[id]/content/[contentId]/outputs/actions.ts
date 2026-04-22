@@ -200,7 +200,9 @@ export async function generateOutputsAction(
         contentId,
         platformCount: generated.length,
       })
-    } catch {}
+    } catch (err) {
+      log.error('notifyOutputsGenerated failed', err, { workspaceId, contentId })
+    }
   }
 
   return { ok: true, generated, failed }
@@ -315,9 +317,16 @@ export async function transitionOutputStateAction(
             contentTitle: ci?.title ?? 'Untitled',
             contentId: out.content_id,
           })
-        } catch {}
+        } catch (err) {
+          log.error('notifyOutputApproved failed', err, {
+            workspaceId: workspace_id,
+            outputId: output_id,
+          })
+        }
       })()
-    } catch {}
+    } catch (outerErr) {
+      log.error('notifyOutputApproved dispatch failed', outerErr)
+    }
   }
 
   if (new_state === 'approved' || new_state === 'exported') {
@@ -345,9 +354,17 @@ export async function transitionOutputStateAction(
             platform: out.platform ?? undefined,
             workspaceUrl: `/workspace/${workspace_id}/content/${out.content_id}/outputs`,
           })
-        } catch {}
+        } catch (err) {
+          log.error('dispatchIntegrations failed', err, {
+            workspaceId: workspace_id,
+            event: new_state,
+            outputId: output_id,
+          })
+        }
       })()
-    } catch {}
+    } catch (outerErr) {
+      log.error('dispatchIntegrations dispatch failed', outerErr)
+    }
   }
 
   return { ok: true }

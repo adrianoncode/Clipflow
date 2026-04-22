@@ -65,43 +65,47 @@ export function ReframeClient({
     }
   }, [actionState])
 
-  // Polling loop
+  // Polling loop. Only depends on `jobId` + terminal flag so the
+  // interval isn't torn down every time `jobStatus` transitions
+  // between 'starting' and 'processing'. The terminal exit triggers
+  // a final cleanup re-run when status flips to succeeded/failed.
+  const isTerminal = jobStatus === 'succeeded' || jobStatus === 'failed'
   useEffect(() => {
-    if (!jobId) return
-    if (jobStatus === 'succeeded' || jobStatus === 'failed') return
+    if (!jobId || isTerminal) return
 
-    const poll = async () => {
+    let cancelled = false
+
+    async function poll() {
       try {
         const res = await fetch(
-          `/api/reframe?jobId=${encodeURIComponent(jobId)}&workspace_id=${encodeURIComponent(workspaceId)}&content_id=${encodeURIComponent(contentId)}`,
+          `/api/reframe?jobId=${encodeURIComponent(jobId!)}&workspace_id=${encodeURIComponent(workspaceId)}&content_id=${encodeURIComponent(contentId)}`,
         )
-        const data = await res.json() as PollResult
+        if (cancelled) return
+        const data = (await res.json()) as PollResult
+        if (cancelled) return
         if (!data.ok) {
           setPollError(data.error ?? 'Failed to poll job status.')
-          clearInterval(intervalRef.current!)
           return
         }
         setJobStatus(data.status ?? null)
         if (data.status === 'succeeded') {
           setOutputUrl(data.outputUrl ?? null)
-          clearInterval(intervalRef.current!)
         } else if (data.status === 'failed') {
           setPollError('Reframing job failed on Replicate. Please try again.')
-          clearInterval(intervalRef.current!)
         }
       } catch {
-        setPollError('Network error while polling job status.')
-        clearInterval(intervalRef.current!)
+        if (!cancelled) setPollError('Network error while polling job status.')
       }
     }
 
-    // Poll immediately then every 3s
     void poll()
-    intervalRef.current = setInterval(poll, 3000)
+    const interval = setInterval(poll, 3000)
+    intervalRef.current = interval
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
+      cancelled = true
+      clearInterval(interval)
     }
-  }, [jobId, jobStatus])
+  }, [jobId, isTerminal, workspaceId, contentId])
 
   const isProcessing = jobStatus === 'starting' || jobStatus === 'processing'
   const isDone = jobStatus === 'succeeded'

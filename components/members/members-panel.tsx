@@ -16,6 +16,7 @@ import {
   type RemoveMemberState,
 } from '@/app/(app)/workspace/[id]/members/actions'
 import type { WorkspaceMember, WorkspaceInvite } from '@/lib/members/get-workspace-members'
+import { copyToClipboard } from '@/lib/ui/copy-to-clipboard'
 
 interface MembersPanelProps {
   workspaceId: string
@@ -70,12 +71,13 @@ export function MembersPanel({ workspaceId, members, invites, isOwner }: Members
   const [updateRoleState, updateRoleAction] = useFormState(updateMemberRoleAction, initialUpdateRole)
   const [removeState, removeAction] = useFormState(removeMemberAction, initialRemove)
 
-  function copyLink(token: string) {
+  async function copyLink(token: string) {
     const url = `${window.location.origin}/invite/${token}`
-    navigator.clipboard.writeText(url).then(() => {
+    const ok = await copyToClipboard(url)
+    if (ok) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    })
+    }
   }
 
   return (

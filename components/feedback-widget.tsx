@@ -17,34 +17,38 @@ export function FeedbackWidget() {
   const [message, setMessage] = useState('')
   const [sent, setSent] = useState(false)
   const [sending, setSending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit() {
     if (!message.trim()) return
     setSending(true)
+    setError(null)
 
     try {
-      // For MVP: store in console / send to webhook
-      // In production: POST to /api/feedback → store in DB or send to Slack
-      console.log('[feedback]', { type, message })
-
-      // Try to send to a Slack webhook if configured
-      const webhookUrl = process.env.NEXT_PUBLIC_FEEDBACK_WEBHOOK
-      if (webhookUrl) {
-        await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: `*${type.toUpperCase()}*: ${message}`,
-          }),
-        }).catch(() => {})
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type,
+          message: message.trim(),
+          path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        }),
+      })
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string }
+        throw new Error(body.error ?? 'Could not send feedback. Please try again.')
       }
 
       setSent(true)
       setMessage('')
+      // 2s "thank you" then close. Guarded so a rapid reopen doesn't
+      // collide with the pending clear.
       setTimeout(() => {
         setSent(false)
         setOpen(false)
       }, 2000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not send feedback.')
     } finally {
       setSending(false)
     }
@@ -114,6 +118,11 @@ export function FeedbackWidget() {
                 className="mb-3 w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
 
+              {error ? (
+                <p className="mb-2 rounded-md bg-destructive/10 px-3 py-1.5 text-[11px] text-destructive">
+                  {error}
+                </p>
+              ) : null}
               <button
                 onClick={handleSubmit}
                 disabled={!message.trim() || sending}

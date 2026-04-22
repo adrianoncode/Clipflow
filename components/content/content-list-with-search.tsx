@@ -408,7 +408,14 @@ export function ContentListWithSearch({
                     <p className="mt-0.5 text-xs text-muted-foreground">
                       {kindCfg.label}
                       <span className="mx-1.5 text-muted-foreground/30">·</span>
-                      {formatRelative(item.created_at)}
+                      {/* suppressHydrationWarning — the SSR snapshot
+                          uses server-time, the client rehydrates with
+                          client-time. Minor drift ("just now" vs
+                          "1m ago") is harmless and not worth the JS
+                          to keep them locked. */}
+                      <span suppressHydrationWarning>
+                        {formatRelative(item.created_at)}
+                      </span>
                     </p>
                   </div>
 

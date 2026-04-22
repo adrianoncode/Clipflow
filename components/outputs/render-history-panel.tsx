@@ -26,7 +26,22 @@ interface RenderHistoryPanelProps {
 export function RenderHistoryPanel({ initialRenders }: RenderHistoryPanelProps) {
   const [renders, setRenders] = useState(initialRenders)
 
+  // Depend on a *signature* of the pending renders rather than the
+  // whole `renders` array. Previously, every `setRenders(prev => prev.map…)`
+  // created a fresh array reference, which re-ran this effect and
+  // tore down + rebuilt the poll timer on every poll. Skew-skew-skew.
+  // Now the effect only restarts when the set of ids/statuses we care
+  // about actually changes.
+  const pendingSignature = renders
+    .filter((r) => r.status === 'rendering')
+    .map((r) => `${r.id}:${r.priority}`)
+    .sort()
+    .join(',')
+
   useEffect(() => {
+    if (!pendingSignature) return
+    // Reconstruct the pending subset inside the effect so we don't
+    // capture a stale snapshot across re-runs.
     const pending = renders.filter((r) => r.status === 'rendering')
     if (pending.length === 0) return
     const pollMs = pending.some((r) => r.priority === 'high') ? 2000 : 4000
@@ -72,7 +87,9 @@ export function RenderHistoryPanel({ initialRenders }: RenderHistoryPanelProps) 
     }, pollMs)
 
     return () => clearInterval(interval)
-  }, [renders])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pendingSignature
+    // is the semantic key; `renders` is only read inside the closure.
+  }, [pendingSignature])
 
   if (renders.length === 0) return null
 

@@ -55,6 +55,7 @@ export type RenderStatus = 'rendering' | 'done' | 'failed'
 export type RenderProvider = 'shotstack' | 'replicate'
 export type RenderPriority = 'normal' | 'high'
 export type HighlightStatus = 'draft' | 'rendering' | 'ready' | 'failed'
+export type FeedbackType = 'bug' | 'feature' | 'feedback'
 export type SubscriptionStatus =
   | 'trialing'
   | 'active'
@@ -458,6 +459,33 @@ export type Database = {
           created_by?: string | null
           created_at?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_feedback: {
+        Row: {
+          id: string
+          user_id: string | null
+          type: FeedbackType
+          message: string
+          metadata: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          type: FeedbackType
+          message: string
+          metadata?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          type?: FeedbackType
+          message?: string
+          metadata?: Json
+          created_at?: string
         }
         Relationships: []
       }

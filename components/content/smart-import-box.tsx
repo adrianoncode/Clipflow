@@ -1,13 +1,7 @@
 'use client'
 
-import { useRef, useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
-import { ArrowRight, Link2, Loader2, Sparkles, Upload } from 'lucide-react'
-
-interface SmartImportBoxProps {
-  workspaceId: string
-  hasOpenAiKey: boolean
-}
+import { useState, useTransition } from 'react'
+import { ArrowRight, Link2, Loader2, Sparkles } from 'lucide-react'
 
 type DetectedType = 'youtube' | 'url' | 'text' | null
 
@@ -46,23 +40,29 @@ const DETECT_LABELS: Record<DetectedType & string, string> = {
   text: 'Paste more text or press Enter to import as script',
 }
 
+interface SmartImportBoxProps {
+  workspaceId: string
+  /** When false we show an inline "no key" hint — text imports need an
+   *  OpenAI key downstream to generate drafts, and we'd rather warn
+   *  up-front than let the user find out after submitting. */
+  hasOpenAiKey: boolean
+}
+
 /**
  * Universal import box — paste anything and Clipflow figures it out.
  *
  * - YouTube URL → auto-fetches transcript
  * - Website URL → auto-scrapes content
  * - Text → imports as script (no transcription needed)
- * - File drop → triggers video upload
  *
- * Eliminates the need to choose between 4 tabs + 3 sub-tabs.
+ * File upload lives in the "More options" expand below — the dedicated
+ * video form there handles the multi-step upload + storage path + the
+ * Whisper trigger, which isn't worth duplicating inside this box.
  */
 export function SmartImportBox({ workspaceId, hasOpenAiKey }: SmartImportBoxProps) {
-  const router = useRouter()
   const [value, setValue] = useState('')
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const detected = detectInputType(value)
   const canSubmit = detected !== null && !isPending
@@ -124,16 +124,6 @@ export function SmartImportBox({ workspaceId, hasOpenAiKey }: SmartImportBoxProp
     })
   }
 
-  function handleFileDrop(files: FileList | null) {
-    if (!files || files.length === 0) return
-    // Redirect to the video tab with the file — we can't auto-upload
-    // because the VideoUploadForm handles the full upload + transcription flow.
-    // Instead, just switch to the video tab section below.
-    const event = new CustomEvent('clipflow:switch-to-video-tab')
-    window.dispatchEvent(event)
-    setIsDragging(false)
-  }
-
   function handleKeyDown(e: React.KeyboardEvent) {
     // Cmd/Ctrl+Enter or Enter (for URLs) to submit
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey || detected === 'youtube' || detected === 'url')) {
@@ -144,22 +134,7 @@ export function SmartImportBox({ workspaceId, hasOpenAiKey }: SmartImportBoxProp
 
   return (
     <div className="space-y-3">
-      <div
-        className={`relative rounded-2xl border-2 border-dashed transition-all ${
-          isDragging
-            ? 'border-primary bg-primary/5'
-            : 'border-border/60 hover:border-primary/30'
-        }`}
-        onDragOver={(e) => {
-          e.preventDefault()
-          setIsDragging(true)
-        }}
-        onDragLeave={() => setIsDragging(false)}
-        onDrop={(e) => {
-          e.preventDefault()
-          handleFileDrop(e.dataTransfer.files)
-        }}
-      >
+      <div className="relative rounded-2xl border-2 border-dashed border-border/60 transition-all hover:border-primary/30">
         <div className="flex items-start gap-3 p-4">
           <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
             {isPending ? (
@@ -210,30 +185,23 @@ export function SmartImportBox({ workspaceId, hasOpenAiKey }: SmartImportBoxProp
           </div>
         )}
 
-        {/* Drag overlay */}
-        {isDragging && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-primary/5 backdrop-blur-sm">
-            <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-              <Upload className="h-5 w-5" />
-              Drop your video file
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* OpenAI-key warning — text imports silently skip draft
+          generation when there's no key, so surface it up front. */}
+      {!hasOpenAiKey && detected === 'text' ? (
+        <p className="rounded-lg bg-amber-50/70 px-3 py-2 text-xs text-amber-900">
+          Heads up: no OpenAI key saved. You can still import the script, but
+          draft generation won&rsquo;t run until you connect one in Settings &rarr;
+          AI Keys.
+        </p>
+      ) : null}
 
       {error && (
         <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">
           {error}
         </p>
       )}
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="video/*,audio/*"
-        className="hidden"
-        onChange={(e) => handleFileDrop(e.target.files)}
-      />
     </div>
   )
 }
