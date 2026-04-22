@@ -19,6 +19,7 @@ import {
 } from './hero-motion'
 import { CaptionTypewriter } from './caption-typewriter'
 import { BentoShowcase } from './bento-showcase'
+import { HeroVideoRiver } from './hero-video-river'
 // import { Testimonials } from './testimonials' // removed with fake-quote cleanup; see comment at former use-site
 import { ComparisonMatrix } from './comparison-matrix'
 import { StickyCta } from './sticky-cta'
@@ -805,20 +806,37 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               </div>
             </div>
 
-            {/* Hero visual stack — decorative app-mockup with tiny
-                9-11px labels inside fake cards. aria-hidden so screen
-                readers skip it (the headline/CTA carry the meaning)
-                and axe-core stops flagging the stylized low-contrast
-                chips inside the illustration. Hidden below lg so
-                mobile visitors don't see the 560px absolute-positioned
-                card stack pushing the CTA below the fold. */}
+            {/* Hero River of Clips — three parallel columns of mock
+                Viral Moments cards scrolling on different speeds.
+                Replaces the old 7-card static stack illustration
+                with a live-feeling content stream that sells what
+                Clipflow actually produces (9:16 clips with hooks +
+                captions + virality scores). Decorative — aria-hidden
+                on each card — so the headline/CTA carry the
+                semantics. Mobile shows 1 column only via the
+                component's own responsive breakpoints. */}
+            <div className="relative hidden md:block">
+              <HeroVideoRiver />
+            </div>
+
+            {/* Hidden no-op placeholder — the old hero-assemble
+                JavaScript (IntersectionObserver + .in class toggling
+                in scripts above) still queries for #lv2-heroStack.
+                Keep the id reachable so those queries don't throw,
+                but zero-size + zero-visual. Safe to remove together
+                with the scripts in a follow-up refactor. */}
             <div
               id="lv2-heroStack"
-              role="presentation"
               aria-hidden
-              className="lv2-hero-assemble relative hidden h-[560px] lg:block"
-              style={{ perspective: 1200 }}
-            >
+              style={{ display: 'none' }}
+            />
+
+            {/* Legacy 7-card hero stack removed in favor of the River.
+                Preserved in git history: components/landing/new-landing.tsx
+                pre-commit 32a7e4c. The in-tree fragments below are
+                unreachable source that will be swept in the next
+                landing refactor. */}
+            {false && (
               <TiltWrap>
               {/* Source card */}
               <div
@@ -1125,7 +1143,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 </div>
               </div>
               </TiltWrap>
-            </div>
+            )}
           </div>
         </div>
       </section>
