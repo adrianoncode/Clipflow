@@ -1,37 +1,15 @@
 'use client'
 
-import { useState } from 'react'
-import { useFormState, useFormStatus } from 'react-dom'
+import { useRef, useState } from 'react'
+import { useFormState } from 'react-dom'
 import { KeyRound, RefreshCw } from 'lucide-react'
 
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
   regenerateRecoveryCodesAction,
   type RegenerateCodesState,
 } from '@/app/(app)/settings/security/actions'
 import { RecoveryCodesDisplay } from './recovery-codes-display'
-
-function RegenerateBtn() {
-  const { pending } = useFormStatus()
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-background px-3 py-1.5 text-xs font-medium hover:border-primary/40 disabled:opacity-60"
-      onClick={(e) => {
-        if (
-          !window.confirm(
-            'Regenerate codes? Your existing recovery codes stop working immediately.',
-          )
-        ) {
-          e.preventDefault()
-        }
-      }}
-    >
-      <RefreshCw className={`h-3.5 w-3.5 ${pending ? 'animate-spin' : ''}`} />
-      {pending ? 'Generating…' : 'Regenerate codes'}
-    </button>
-  )
-}
 
 /**
  * Panel on /settings/security showing the count of unused recovery
@@ -44,6 +22,7 @@ export function RecoveryCodesPanel({ unusedCount }: { unusedCount: number }) {
     {},
   )
   const [dismissed, setDismissed] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
 
   if (state.ok === true && !dismissed) {
     return (
@@ -75,12 +54,29 @@ export function RecoveryCodesPanel({ unusedCount }: { unusedCount: number }) {
         </div>
       </div>
 
-      <form action={action}>
-        <RegenerateBtn />
+      <div>
+        <form ref={formRef} action={action} />
+        <ConfirmDialog
+          tone="destructive"
+          title="Regenerate recovery codes?"
+          description="Your existing recovery codes stop working the moment new ones are issued. Print or save the new set somewhere safe."
+          confirmLabel="Regenerate codes"
+          onConfirm={() => formRef.current?.requestSubmit()}
+          trigger={(open) => (
+            <button
+              type="button"
+              onClick={open}
+              className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-background px-3 py-1.5 text-xs font-medium hover:border-primary/40"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Regenerate codes
+            </button>
+          )}
+        />
         {state.ok === false && (
           <p className="mt-1 text-xs text-destructive">{state.error}</p>
         )}
-      </form>
+      </div>
     </div>
   )
 }

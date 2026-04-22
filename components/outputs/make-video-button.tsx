@@ -2,9 +2,16 @@
 
 import { useEffect, useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
-import { Loader2, Play, Sparkles, X } from 'lucide-react'
+import { Loader2, Play, Sparkles } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import {
   makeVideoAction,
   type MakeVideoState,
@@ -98,33 +105,19 @@ export function MakeVideoButton({
         Make video
       </Button>
 
-      {open ? (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/50 p-4 backdrop-blur-sm sm:items-center"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setOpen(false)
-          }}
-        >
-          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
-            <div className="flex items-center justify-between border-b border-border/60 px-5 py-4">
-              <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  Make video
-                </p>
-                <h3 className="mt-0.5 text-base font-semibold">
-                  One-click render
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              Make video
+            </p>
+            <DialogTitle>One-click render</DialogTitle>
+            <DialogDescription className="sr-only">
+              Pick an aspect ratio and submit the render to Shotstack.
+            </DialogDescription>
+          </DialogHeader>
 
-            <form action={formAction} className="space-y-5 px-5 py-5">
+          <form action={formAction} className="space-y-5">
               <input type="hidden" name="workspace_id" value={workspaceId} />
               <input type="hidden" name="content_id" value={contentId} />
               <input type="hidden" name="aspect_ratio" value={aspect} />
@@ -180,11 +173,10 @@ export function MakeVideoButton({
                 </div>
               ) : null}
 
-              <SubmitButton disabled={state.ok === true} />
-            </form>
-          </div>
-        </div>
-      ) : null}
+            <SubmitButton disabled={state.ok === true} />
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 
 import { Button } from '@/components/ui/button'
@@ -17,6 +17,7 @@ import {
 } from '@/app/(app)/workspace/[id]/members/actions'
 import type { WorkspaceMember, WorkspaceInvite } from '@/lib/members/get-workspace-members'
 import { copyToClipboard } from '@/lib/ui/copy-to-clipboard'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface MembersPanelProps {
   workspaceId: string
@@ -47,6 +48,53 @@ function SmallSubmitButton({ label, pendingLabel }: { label: string; pendingLabe
     <Button type="submit" variant="ghost" size="sm" disabled={pending} className="text-xs">
       {pending ? pendingLabel : label}
     </Button>
+  )
+}
+
+/**
+ * Remove-member row with ConfirmDialog. We keep the form (so the
+ * server-action wiring + useFormState machinery stays intact) and use
+ * a hidden submit driven by `formRef.current?.requestSubmit()` from
+ * the confirm handler. Paints a destructive-tone button so users can
+ * tell "Remove" apart from safe actions like "Revoke invite".
+ */
+function RemoveMemberRow({
+  workspaceId,
+  userId,
+  email,
+  formAction,
+}: {
+  workspaceId: string
+  userId: string
+  email: string | null
+  formAction: (fd: FormData) => void
+}) {
+  const formRef = useRef<HTMLFormElement>(null)
+  return (
+    <>
+      <form ref={formRef} action={formAction}>
+        <input type="hidden" name="workspace_id" value={workspaceId} />
+        <input type="hidden" name="user_id" value={userId} />
+      </form>
+      <ConfirmDialog
+        tone="destructive"
+        title={`Remove ${email ?? 'this member'}?`}
+        description="They will lose access to the workspace immediately. You can re-invite them later."
+        confirmLabel="Remove"
+        onConfirm={() => formRef.current?.requestSubmit()}
+        trigger={(open) => (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={open}
+            className="text-xs text-destructive hover:bg-destructive/10"
+          >
+            Remove
+          </Button>
+        )}
+      />
+    </>
   )
 }
 
@@ -119,18 +167,12 @@ export function MembersPanel({ workspaceId, members, invites, isOwner }: Members
               )}
 
               {isOwner && member.role !== 'owner' && (
-                <form
-                  action={removeAction}
-                  onSubmit={(e) => {
-                    if (!window.confirm(`Remove ${member.email ?? 'this member'} from the workspace?`)) {
-                      e.preventDefault()
-                    }
-                  }}
-                >
-                  <input type="hidden" name="workspace_id" value={workspaceId} />
-                  <input type="hidden" name="user_id" value={member.user_id} />
-                  <SmallSubmitButton label="Remove" pendingLabel="…" />
-                </form>
+                <RemoveMemberRow
+                  workspaceId={workspaceId}
+                  userId={member.user_id}
+                  email={member.email}
+                  formAction={removeAction}
+                />
               )}
             </li>
           ))}

@@ -1,8 +1,10 @@
 'use client'
 
+import { useRef } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { FormMessage } from '@/components/ui/form-message'
 import {
   updateWorkspaceAction,
@@ -26,21 +28,13 @@ function SaveButton() {
   )
 }
 
-function DeleteButton() {
-  const { pending } = useFormStatus()
-  return (
-    <Button type="submit" variant="destructive" disabled={pending}>
-      {pending ? 'Deleting…' : 'Delete workspace'}
-    </Button>
-  )
-}
-
 const initialUpdate: UpdateWorkspaceState = {}
 const initialDelete: DeleteWorkspaceState = {}
 
 export function WorkspaceSettingsForm({ workspace, isOwner }: WorkspaceSettingsFormProps) {
   const [updateState, updateAction] = useFormState(updateWorkspaceAction, initialUpdate)
   const [deleteState, deleteAction] = useFormState(deleteWorkspaceAction, initialDelete)
+  const deleteFormRef = useRef<HTMLFormElement>(null)
 
   return (
     <div className="space-y-8">
@@ -113,21 +107,26 @@ export function WorkspaceSettingsForm({ workspace, isOwner }: WorkspaceSettingsF
             <FormMessage variant="error">{deleteState.error}</FormMessage>
           ) : null}
 
-          <form
-            action={deleteAction}
-            onSubmit={(e) => {
-              if (
-                !window.confirm(
-                  `Delete "${workspace.name}"?\n\nThis will permanently delete all content, outputs, and projects in this workspace. There is no undo.`,
-                )
-              ) {
-                e.preventDefault()
-              }
-            }}
-          >
+          <form ref={deleteFormRef} action={deleteAction}>
             <input type="hidden" name="workspace_id" value={workspace.id} />
-            <DeleteButton />
           </form>
+          <ConfirmDialog
+            tone="destructive"
+            title={`Delete "${workspace.name}"?`}
+            description="Every content item, draft, render, and project in this workspace will be permanently deleted. There is no undo."
+            confirmLabel="Delete workspace"
+            onConfirm={() => deleteFormRef.current?.requestSubmit()}
+            trigger={(open) => (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={open}
+                disabled={deleteState.ok === false && !deleteState.error}
+              >
+                Delete workspace
+              </Button>
+            )}
+          />
         </div>
       )}
     </div>

@@ -1,10 +1,16 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { ExternalLink, X } from 'lucide-react'
+import { useCallback } from 'react'
+import { ExternalLink } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { FormMessage } from '@/components/ui/form-message'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -51,14 +57,12 @@ export function AddServiceKeyDialog({
   )
 
   const [state, formAction] = useFormState(action, {} as AiKeyFormState)
-  // Portal target — rendering into document.body takes the dialog out of
-  // the ServiceCard's `.group` subtree so its hover effects (shine-sweep,
+  // Radix Dialog handles: portal, overlay, focus trap, Escape-to-close,
+  // aria-modal, labeled title. Previously this was a hand-rolled modal
+  // with a backdrop-click close and no keyboard accessibility. Radix
+  // also renders into document.body so the card's hover state (shine,
   // translate-y) don't retrigger every time the pointer crosses a form
   // field. That was the 'flickering on Connect click' bug.
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const errorMessage =
     state && state.ok === false
@@ -67,18 +71,20 @@ export function AddServiceKeyDialog({
         ? state.error
         : undefined
 
-  const modal = (
-    <div
-      // Apply the app shell's token remap so this portaled modal inherits
-      // Clipflow's paper / plum / lime palette instead of falling back to
-      // the shadcn violet defaults on the root element.
-      className="lv2-shell fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/50 p-4 backdrop-blur-sm sm:items-center"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
+  return (
+    <Dialog
+      open
+      onOpenChange={(next) => {
+        if (!next) onClose()
       }}
     >
-      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
-        <div className="flex items-start justify-between gap-4 border-b border-border/60 px-5 py-4">
+      <DialogContent
+        // Apply the app shell's token remap so the portaled dialog
+        // inherits Clipflow's paper/plum/lime palette instead of
+        // falling back to shadcn violet defaults.
+        className="lv2-shell sm:max-w-md p-0 overflow-hidden"
+      >
+        <DialogHeader className="flex-row items-start justify-between gap-4 border-b border-border/60 px-5 py-4 space-y-0 text-left">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-mono text-sm font-bold shadow-sm bg-primary text-primary-foreground">
               {spec.monogram}
@@ -87,17 +93,14 @@ export function AddServiceKeyDialog({
               <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
                 Connect service
               </p>
-              <h3 className="text-base font-semibold">{spec.name}</h3>
+              <DialogTitle className="text-base">{spec.name}</DialogTitle>
+              <DialogDescription className="sr-only">
+                Paste your {spec.name} API key to connect it to this
+                workspace. We validate the key before saving.
+              </DialogDescription>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+        </DialogHeader>
 
         {/* Self-serve links */}
         <div className="border-b border-border/60 bg-muted/20 px-5 py-3 space-y-3">
@@ -168,10 +171,7 @@ export function AddServiceKeyDialog({
 
           <SubmitButton />
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
-
-  if (!mounted) return null
-  return createPortal(modal, document.body)
 }

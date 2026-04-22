@@ -90,6 +90,9 @@ export function KeyboardShortcuts({ workspaceId }: { workspaceId: string }) {
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="keyboard-shortcuts-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={() => setShowHelp(false)}
     >
@@ -97,7 +100,9 @@ export function KeyboardShortcuts({ workspaceId }: { workspaceId: string }) {
         className="w-full max-w-sm rounded-2xl border border-border/50 bg-card p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="mb-4 text-base font-bold">Keyboard Shortcuts</h3>
+        <h3 id="keyboard-shortcuts-title" className="mb-4 text-base font-bold">
+          Keyboard Shortcuts
+        </h3>
         <div className="space-y-3">
           {[
             { keys: ['⌘', 'K'], desc: 'Search' },

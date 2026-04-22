@@ -1,8 +1,9 @@
 'use client'
 
-import { useFormStatus } from 'react-dom'
+import { useRef } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { deleteAiKeyAction } from '@/app/(app)/settings/ai-keys/actions'
 
 interface DeleteAiKeyButtonProps {
@@ -11,28 +12,27 @@ interface DeleteAiKeyButtonProps {
   label: string
 }
 
-function SubmitButton() {
-  const { pending } = useFormStatus()
-  return (
-    <Button type="submit" variant="ghost" size="sm" disabled={pending}>
-      {pending ? 'Deleting…' : 'Delete'}
-    </Button>
-  )
-}
-
 export function DeleteAiKeyButton({ keyId, workspaceId, label }: DeleteAiKeyButtonProps) {
+  const formRef = useRef<HTMLFormElement>(null)
+
   return (
-    <form
-      action={deleteAiKeyAction}
-      onSubmit={(event) => {
-        if (!window.confirm(`Delete the key "${label}"? This cannot be undone.`)) {
-          event.preventDefault()
-        }
-      }}
-    >
-      <input type="hidden" name="key_id" value={keyId} />
-      <input type="hidden" name="workspace_id" value={workspaceId} />
-      <SubmitButton />
-    </form>
+    <>
+      <form ref={formRef} action={deleteAiKeyAction}>
+        <input type="hidden" name="key_id" value={keyId} />
+        <input type="hidden" name="workspace_id" value={workspaceId} />
+      </form>
+      <ConfirmDialog
+        tone="destructive"
+        title={`Delete "${label}"?`}
+        description="This cannot be undone. Any workflow using this key will start failing until you add a replacement."
+        confirmLabel="Delete key"
+        onConfirm={() => formRef.current?.requestSubmit()}
+        trigger={(open) => (
+          <Button type="button" variant="ghost" size="sm" onClick={open}>
+            Delete
+          </Button>
+        )}
+      />
+    </>
   )
 }

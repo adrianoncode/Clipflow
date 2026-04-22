@@ -341,12 +341,37 @@ export function CalendarClient({
                 const todayCell = isCurrentMonth && isToday(dayNumber)
                 const isDragTarget = isCurrentMonth && dayNumber === dragOverDay
 
+                const toggleDay = () => {
+                  if (!isCurrentMonth) return
+                  setSelectedDay(dayNumber === selectedDay ? null : dayNumber)
+                }
+
                 return (
                   <div
                     key={idx}
-                    onClick={() =>
-                      isCurrentMonth && setSelectedDay(dayNumber === selectedDay ? null : dayNumber)
+                    // Native <button> would kill drag-and-drop (buttons
+                    // don't receive drop events reliably across browsers).
+                    // Instead: role="gridcell" semantics + tabIndex + an
+                    // explicit keydown handler so keyboard users can
+                    // select days with Enter/Space.
+                    role={isCurrentMonth ? 'gridcell' : undefined}
+                    tabIndex={isCurrentMonth ? 0 : -1}
+                    aria-selected={isSelected ? true : undefined}
+                    aria-label={
+                      isCurrentMonth
+                        ? `${year}-${String(month + 1).padStart(2, '0')}-${String(
+                            dayNumber,
+                          ).padStart(2, '0')}${todayCell ? ' — today' : ''}`
+                        : undefined
                     }
+                    onClick={toggleDay}
+                    onKeyDown={(e) => {
+                      if (!isCurrentMonth) return
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        toggleDay()
+                      }
+                    }}
                     onDragOver={
                       isCurrentMonth ? (e) => handleDragOver(e, dayNumber) : undefined
                     }
@@ -355,7 +380,7 @@ export function CalendarClient({
                       isCurrentMonth ? (e) => handleDrop(e, dayNumber) : undefined
                     }
                     className={[
-                      'relative min-h-[72px] rounded-md border p-1 text-left transition-colors',
+                      'relative min-h-[72px] rounded-md border p-1 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       isCurrentMonth
                         ? 'cursor-pointer hover:bg-accent/50'
                         : 'pointer-events-none opacity-0',

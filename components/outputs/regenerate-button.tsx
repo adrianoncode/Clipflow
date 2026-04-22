@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useFormState, useFormStatus } from 'react-dom'
+import { useRef } from 'react'
+import { useFormState } from 'react-dom'
 
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { FormMessage } from '@/components/ui/form-message'
 import {
   generateOutputsAction,
@@ -17,17 +19,9 @@ interface RegenerateButtonProps {
   contentId: string
 }
 
-function SubmitButton() {
-  const { pending } = useFormStatus()
-  return (
-    <Button type="submit" variant="outline" disabled={pending}>
-      {pending ? 'Regenerating…' : 'Regenerate all'}
-    </Button>
-  )
-}
-
 export function RegenerateButton({ workspaceId, contentId }: RegenerateButtonProps) {
   const [state, formAction] = useFormState(generateOutputsAction, initialState)
+  const formRef = useRef<HTMLFormElement>(null)
 
   const hardError =
     state && state.ok === false
@@ -37,18 +31,23 @@ export function RegenerateButton({ workspaceId, contentId }: RegenerateButtonPro
         : null
 
   return (
-    <form
-      action={formAction}
-      onSubmit={(event) => {
-        if (!window.confirm('This replaces all existing drafts. Continue?')) {
-          event.preventDefault()
-        }
-      }}
-      className="space-y-3"
-    >
-      <input type="hidden" name="workspace_id" value={workspaceId} />
-      <input type="hidden" name="content_id" value={contentId} />
-      <SubmitButton />
+    <div className="space-y-3">
+      <form ref={formRef} action={formAction}>
+        <input type="hidden" name="workspace_id" value={workspaceId} />
+        <input type="hidden" name="content_id" value={contentId} />
+      </form>
+      <ConfirmDialog
+        tone="destructive"
+        title="Regenerate every draft?"
+        description="Every existing platform draft for this content item will be replaced. Manual edits that haven't been approved yet will be lost."
+        confirmLabel="Regenerate"
+        onConfirm={() => formRef.current?.requestSubmit()}
+        trigger={(open) => (
+          <Button type="button" variant="outline" onClick={open}>
+            Regenerate all
+          </Button>
+        )}
+      />
       {hardError ? (
         <FormMessage variant="error">
           {hardError.message}
@@ -63,6 +62,6 @@ export function RegenerateButton({ workspaceId, contentId }: RegenerateButtonPro
           ) : null}
         </FormMessage>
       ) : null}
-    </form>
+    </div>
   )
 }

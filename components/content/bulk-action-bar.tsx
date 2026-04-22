@@ -13,6 +13,7 @@ import {
 import {
   bulkDeleteContentAction,
 } from '@/app/(app)/workspace/[id]/content/bulk-actions'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface BulkActionBarProps {
   workspaceId: string
@@ -55,29 +56,31 @@ export function BulkActionBar({
     return fd
   }
 
-  function handleDelete() {
-    const label = count === 1 ? '1 video' : `${count} videos`
-    if (!window.confirm(`Delete ${label}? This cannot be undone.`)) return
-
-    startTransition(async () => {
-      const result = await bulkDeleteContentAction({}, buildFormData({}))
-      if (result.ok === true) {
-        setBanner({
-          kind: 'success',
-          text:
-            result.failed && result.failed > 0
-              ? `Deleted ${result.count} · ${result.failed} failed`
-              : `Deleted ${result.count} ${result.count === 1 ? 'video' : 'videos'}`,
-        })
-        onClear()
-        router.refresh()
-      } else if (result.ok === false) {
-        setBanner({ kind: 'error', text: result.error })
-      }
-      if (clearTimerRef.current) clearTimeout(clearTimerRef.current)
-      clearTimerRef.current = setTimeout(() => setBanner(null), 3000)
+  function runDelete() {
+    return new Promise<void>((resolve) => {
+      startTransition(async () => {
+        const result = await bulkDeleteContentAction({}, buildFormData({}))
+        if (result.ok === true) {
+          setBanner({
+            kind: 'success',
+            text:
+              result.failed && result.failed > 0
+                ? `Deleted ${result.count} · ${result.failed} failed`
+                : `Deleted ${result.count} ${result.count === 1 ? 'video' : 'videos'}`,
+          })
+          onClear()
+          router.refresh()
+        } else if (result.ok === false) {
+          setBanner({ kind: 'error', text: result.error })
+        }
+        if (clearTimerRef.current) clearTimeout(clearTimerRef.current)
+        clearTimerRef.current = setTimeout(() => setBanner(null), 3000)
+        resolve()
+      })
     })
   }
+
+  const deleteLabel = count === 1 ? '1 video' : `${count} videos`
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 sm:bottom-6">
@@ -99,19 +102,28 @@ export function BulkActionBar({
         <span aria-hidden className="mx-0.5 h-5 w-px bg-border/60" />
 
         {/* Delete */}
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={isPending}
-          className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-destructive transition-all hover:bg-destructive/10 disabled:opacity-50"
-        >
-          {isPending ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Trash2 className="h-3.5 w-3.5" />
+        <ConfirmDialog
+          tone="destructive"
+          title={`Delete ${deleteLabel}?`}
+          description="Drafts, transcripts, and render history for the selected items will be removed. This cannot be undone."
+          confirmLabel="Delete"
+          onConfirm={runDelete}
+          trigger={(open) => (
+            <button
+              type="button"
+              onClick={open}
+              disabled={isPending}
+              className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-destructive transition-all hover:bg-destructive/10 disabled:opacity-50"
+            >
+              {isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="h-3.5 w-3.5" />
+              )}
+              Delete
+            </button>
           )}
-          Delete
-        </button>
+        />
 
         {/* Status banner — slides in next to the bar */}
         {banner && (

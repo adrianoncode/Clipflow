@@ -19,6 +19,7 @@ import {
   bulkRegenerateAction,
   bulkStarAction,
 } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/bulk-actions'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface PipelineBulkBarProps {
   workspaceId: string
@@ -133,28 +134,33 @@ export function PipelineBulkBar({ workspaceId, selected, onClear }: PipelineBulk
         {/* Regenerate — reruns the AI pipeline on each selected draft.
             Agencies use this after updating brand voice to refresh
             existing drafts without clicking through each one. */}
-        <button
-          type="button"
-          onClick={() => {
-            const n = selected.size
-            if (
-              !window.confirm(
-                `Regenerate ${n} ${n === 1 ? 'draft' : 'drafts'}? Existing captions will be replaced.`,
-              )
-            )
-              return
-            runAction('regen', bulkRegenerateAction, 'Regenerated')
-          }}
-          disabled={isPending}
-          className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-primary transition-all hover:bg-primary/10 disabled:opacity-50"
-        >
-          {activeAction === 'regen' ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <RefreshCw className="h-3.5 w-3.5" />
+        <ConfirmDialog
+          tone="destructive"
+          title={`Regenerate ${count} ${count === 1 ? 'draft' : 'drafts'}?`}
+          description="The existing captions will be replaced. Any manual edits you haven't approved yet will be lost."
+          confirmLabel="Regenerate"
+          onConfirm={() =>
+            new Promise<void>((resolve) => {
+              runAction('regen', bulkRegenerateAction, 'Regenerated')
+              resolve()
+            })
+          }
+          trigger={(open) => (
+            <button
+              type="button"
+              onClick={open}
+              disabled={isPending}
+              className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-primary transition-all hover:bg-primary/10 disabled:opacity-50"
+            >
+              {activeAction === 'regen' ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RefreshCw className="h-3.5 w-3.5" />
+              )}
+              Regenerate
+            </button>
           )}
-          Regenerate
-        </button>
+        />
 
         {/* Mark as published */}
         <button

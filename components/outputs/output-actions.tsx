@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { FormMessage } from '@/components/ui/form-message'
 import { EditOutputDialog } from '@/components/outputs/edit-output-dialog'
 import { PublishPanel } from '@/components/outputs/publish-panel'
@@ -26,12 +27,45 @@ const initialRegenerateState: RegenerateOutputState = {}
 const initialStarState: StarOutputState = {}
 const initialScheduleState: ScheduleOutputState = {}
 
-function RegenerateSubmitButton() {
-  const { pending } = useFormStatus()
+/**
+ * Single-platform regenerate with confirm-before-destroy. Keeps the
+ * form + useFormState wiring via a hidden ref + requestSubmit.
+ */
+function RegenerateOne({
+  workspaceId,
+  contentId,
+  outputId,
+  platform,
+  formAction,
+}: {
+  workspaceId: string
+  contentId: string
+  outputId: string
+  platform: string
+  formAction: (fd: FormData) => void
+}) {
+  const formRef = useRef<HTMLFormElement>(null)
   return (
-    <Button type="submit" variant="ghost" size="sm" disabled={pending}>
-      {pending ? 'Regenerating…' : 'Regenerate'}
-    </Button>
+    <>
+      <form ref={formRef} action={formAction}>
+        <input type="hidden" name="workspace_id" value={workspaceId} />
+        <input type="hidden" name="content_id" value={contentId} />
+        <input type="hidden" name="output_id" value={outputId} />
+        <input type="hidden" name="platform" value={platform} />
+      </form>
+      <ConfirmDialog
+        tone="destructive"
+        title="Regenerate this platform?"
+        description="The current draft will be replaced. Any manual edits you haven't approved yet will be lost."
+        confirmLabel="Regenerate"
+        onConfirm={() => formRef.current?.requestSubmit()}
+        trigger={(open) => (
+          <Button type="button" variant="ghost" size="sm" onClick={open}>
+            Regenerate
+          </Button>
+        )}
+      />
+    </>
   )
 }
 
@@ -105,20 +139,13 @@ export function OutputActions({ output, contentId, hasPublishKey = false }: Outp
           {publishOpen ? 'Hide publish' : '↑ Publish'}
         </Button>
 
-        <form
-          action={regenFormAction}
-          onSubmit={(e) => {
-            if (!window.confirm('Regenerate this platform? The current draft will be replaced.')) {
-              e.preventDefault()
-            }
-          }}
-        >
-          <input type="hidden" name="workspace_id" value={output.workspace_id} />
-          <input type="hidden" name="content_id" value={contentId} />
-          <input type="hidden" name="output_id" value={output.id} />
-          <input type="hidden" name="platform" value={output.platform} />
-          <RegenerateSubmitButton />
-        </form>
+        <RegenerateOne
+          workspaceId={output.workspace_id}
+          contentId={contentId}
+          outputId={output.id}
+          platform={output.platform}
+          formAction={regenFormAction}
+        />
       </div>
 
       {scheduleOpen && (
