@@ -11,6 +11,7 @@ import {
 import { ThumbnailVisual } from './thumbnail-visual'
 import { IdeaGeneratorVisual } from './idea-generator-visual'
 import { BrandVoiceVisual } from './brand-voice-visual'
+import { ViralMomentsVisual } from './viral-moments-visual'
 import { PipelineFlowDiagram, RssFlowDiagram, AgencyFlowDiagram } from './flow-diagrams'
 
 /**
@@ -36,6 +37,7 @@ export type VisualId =
   | 'pipeline-flow'
   | 'rss-flow'
   | 'agency-flow'
+  | 'viral-moments'
 
 export function FeatureVisual({ id }: { id: VisualId }) {
   const Cmp = VISUAL_MAP[id]
@@ -68,4 +70,5 @@ const VISUAL_MAP: Record<VisualId, React.ComponentType> = {
   'pipeline-flow': PipelineFlowDiagram,
   'rss-flow': RssFlowDiagram,
   'agency-flow': AgencyFlowDiagram,
+  'viral-moments': ViralMomentsVisual,
 }

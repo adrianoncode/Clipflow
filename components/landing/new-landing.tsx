@@ -2835,20 +2835,40 @@ function FeatureGrid() {
           </div>
         </div>
 
-        {/* Virality Score */}
-        <div className="lv2-card lv2-ring-soft lv2-card-hover p-6">
-          <p className="lv2-mono-label mb-3" style={{ fontSize: 9 }}>
-            VIRALITY SCORE
-          </p>
+        {/* Viral Moments — the full detection + render + publish
+            pipeline. The old "Virality Score" card is folded into
+            this since the score is the engine, Viral Moments is the
+            product. Deep-link to /features/viral-moments for the
+            long-form explainer. */}
+        <Link
+          href="/features/viral-moments"
+          className="lv2-card lv2-ring-soft lv2-card-hover group block p-6"
+        >
+          <div className="mb-3 flex items-center justify-between">
+            <p className="lv2-mono-label" style={{ fontSize: 9 }}>
+              VIRAL MOMENTS
+            </p>
+            <span
+              className="lv2-chip"
+              style={{
+                background: 'var(--lv2-accent)',
+                color: 'var(--lv2-accent-ink, #1a2000)',
+                fontSize: 9,
+              }}
+            >
+              NEW
+            </span>
+          </div>
           <h3 className="lv2-sans-d mb-2 text-[20px] font-bold">
-            Post the clips that actually fire
+            AI picks the 3\u20138 clips worth posting
           </h3>
           <p
             className="text-[13px] leading-relaxed"
             style={{ color: 'var(--lv2-muted)' }}
           >
-            Every clip lands with a 0–100 virality score and a one-line why.
-            Stop guessing which take to ship.
+            Drop a 60-minute podcast. Clipflow returns 3\u20138 ranked clips
+            with hooks, scores, and a one-line reason \u2014 render with
+            karaoke captions in one click.
           </p>
           <div className="mt-5 space-y-2">
             {[
@@ -2882,7 +2902,13 @@ function FeatureGrid() {
               </div>
             ))}
           </div>
-        </div>
+          <p
+            className="lv2-mono mt-4 text-[10.5px] underline-offset-4 group-hover:underline"
+            style={{ color: 'var(--lv2-primary)' }}
+          >
+            See the full Viral Moments flow &rarr;
+          </p>
+        </Link>
 
         {/* Brand Kit */}
         <div className="lv2-card lv2-ring-soft lv2-card-hover p-6">

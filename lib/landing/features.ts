@@ -8,6 +8,7 @@
  */
 
 export type FeatureId =
+  | 'viral-moments'
   | 'brand-voice'
   | 'clip-finder'
   | 'brand-kit'
@@ -52,6 +53,7 @@ export interface ExploreEntry {
     | 'pipeline-flow'
     | 'rss-flow'
     | 'agency-flow'
+    | 'viral-moments'
   /** Sections rendered on the detail page — structured so the page
    *  layout stays identical while content varies. */
   sections: Array<{
@@ -77,6 +79,64 @@ export interface ExploreEntry {
  * ──────────────────────────────────────────────────────────────── */
 
 export const FEATURES: Record<FeatureId, ExploreEntry> = {
+  'viral-moments': {
+    id: 'viral-moments',
+    slug: 'viral-moments',
+    name: 'Viral Moments',
+    tagline:
+      'AI scans your long-form content and pulls the 3\u20138 most postable 20\u201360s clips \u2014 with hooks, scores, and karaoke captions, ready to publish.',
+    description:
+      'Upload a podcast, livestream, or YouTube video. Clipflow\u2019s Viral Moments detection reads the transcript, picks the 3\u20138 segments most likely to land on TikTok / Reels / Shorts, and returns each one with a hook, a virality score (0\u2013100), and a short explanation of why it works. One click renders a 9:16 clip with burned-in karaoke captions, hook overlay, and optional direct-publish to all four platforms.',
+    emoji: '\u2728',
+    visual: 'viral-moments',
+    availability: 'Available on all plans \u2014 BYOK pricing',
+    ctaText: 'Try Viral Moments free',
+    highlights: [
+      { value: '3\u20138', label: 'Clips detected per upload, each with a hook and a reason' },
+      { value: '0\u2013100', label: 'Virality score per clip \u2014 color-coded in the UI' },
+      { value: '\u2248 60s', label: 'From click to rendered 9:16 MP4 (Shotstack render)' },
+    ],
+    sections: [
+      {
+        eyebrow: 'The problem',
+        title: 'The clip worth posting is buried in 47 minutes of context.',
+        body:
+          'You recorded an hour. You know there\u2019s one banger in there. OpusClip-style tools give you 20 generic "clips" sliced by silence \u2014 most are filler. Finding the real moment takes 30 minutes of scrubbing, and by then your posting window has closed. The bottleneck isn\u2019t editing. It\u2019s selection.',
+      },
+      {
+        eyebrow: 'How we solve it',
+        title: 'AI reads the transcript, not the waveform.',
+        body:
+          'Viral Moments runs your transcript through a producer-style prompt that weighs hook strength, emotional peaks, quotability, and pacing. Each candidate clip gets a 20\u201360s window, snapped to word boundaries so nothing cuts mid-sentence. The scoring is transparent \u2014 you see the hook, the reason, the score, and can delete anything that doesn\u2019t fit before spending a render credit.',
+        bullets: [
+          'Hook strength (40%) \u2014 does the first 2s earn the next 58?',
+          'Emotional peak (30%) \u2014 is there a moment worth remembering?',
+          'Quotability (20%) \u2014 can it stand alone as a caption?',
+          'Pacing (10%) \u2014 does the segment end clean, not mid-thought?',
+        ],
+      },
+      {
+        eyebrow: 'The output',
+        title: 'Render once, ship to every platform.',
+        body:
+          'Click render \u2014 Clipflow trims the clip via Shotstack, adds karaoke captions (2\u20133 word chunks synced to Whisper word-timings, not guessed line-breaks), burns a hook overlay for the first 2.5 seconds, and crops to 9:16 with a manual override if the speaker isn\u2019t centered. The rendered MP4 sits in your library with a thumbnail, ready for the built-in "Post to TikTok / Reels / Shorts / LinkedIn" button.',
+        bullets: [
+          'Four caption styles: TikTok Bold, Minimal, Neon Yellow, White Bar',
+          'Manual crop-x override with a drag-to-reposition 9:16 guide',
+          'Batch render every draft with one click',
+          'Direct publish via Upload-Post \u2014 no download/upload cycle',
+        ],
+      },
+      {
+        eyebrow: 'Why not OpusClip / Klap',
+        title: 'Because selection beats volume.',
+        body:
+          'The incumbents give you 40 auto-sliced clips and let you sort. Viral Moments gives you 3\u20138 ranked clips with a hook and a reason. You spend render credits only on the ones you\u2019d actually post. Combined with Brand Voice, Brand Kit, and white-label review links, it\u2019s the full content-repurposing pipeline \u2014 not a clip grinder.',
+      },
+    ],
+    relatedFeatures: ['brand-voice', 'brand-kit', 'ab-hook-testing', 'thumbnail-studio'],
+  },
+
   'brand-voice': {
     id: 'brand-voice',
     slug: 'brand-voice',
@@ -127,9 +187,9 @@ export const FEATURES: Record<FeatureId, ExploreEntry> = {
     slug: 'clip-finder',
     name: 'Clip Finder',
     tagline:
-      'Virality-ranked clip extraction — finds the moments worth posting, not just the ones with sound.',
+      'The transcript-ranking engine behind Viral Moments \u2014 0\u2013100 scores, plain-English reasons, zero silence-slicing.',
     description:
-      'Clipflow\u2019s Clip Finder scans transcripts for hook strength, emotional peaks, and information density — then ranks clips 0-100 with a plain-English explanation of why each one works.',
+      'Clip Finder is the detection engine that powers Viral Moments. It scans transcripts for hook strength, emotional peaks, and information density \u2014 then ranks clips 0\u2013100 with a plain-English explanation of why each one works. Available standalone, or run automatically as part of the Viral Moments pipeline.',
     emoji: '✂️',
     visual: 'clip-finder',
     availability: 'Available on all plans',
@@ -164,7 +224,7 @@ export const FEATURES: Record<FeatureId, ExploreEntry> = {
           'Each clip surfaces a short "why this works" note so you know whether to trust the score. Example: opens with a surprising claim — "Speed isn\u2019t about effort" — and delivers the reversal within 12 seconds. Classic pattern-interrupt hook. You get intuition and pattern recognition, not just ranking.',
       },
     ],
-    relatedFeatures: ['brand-voice', 'ab-hook-testing', 'thumbnail-studio'],
+    relatedFeatures: ['viral-moments', 'brand-voice', 'ab-hook-testing', 'thumbnail-studio'],
   },
 
   'brand-kit': {

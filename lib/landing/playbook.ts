@@ -1596,6 +1596,163 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+
+  /* ──────────────────────────────────────────────────────────────
+   * 8. Find viral moments in a long recording
+   * ────────────────────────────────────────────────────────────── */
+  {
+    id: 'find-viral-moments',
+    slug: 'find-viral-moments-in-2-minutes',
+    category: 'workflows',
+    title: 'Find viral moments in a long recording — 2 minutes end-to-end',
+    subtitle: 'From 60-minute podcast to 5 ranked clips with hooks, captions, and a ready-to-post MP4.',
+    description: 'Walkthrough of the Viral Moments feature — upload, detect, preview, render, publish. Covers what the virality score actually means, how to tune the crop when the speaker is off-center, and when to skip a clip even if the AI ranked it high.',
+    emoji: '\u2728',
+    readTimeMinutes: 6,
+    difficulty: 'beginner',
+    updatedAt: '2026-04-22',
+    relatedGuides: ['first-24-hours', 'hook-formulas-that-convert', 'train-your-brand-voice'],
+    sections: [
+      {
+        id: 'when-to-use',
+        title: 'When Viral Moments beats Clip Finder alone',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Clip Finder scores every clip-worthy segment in your transcript and gives you a list. Viral Moments is the same detection engine plus a full render pipeline \u2014 one click produces a 9:16 MP4 with karaoke captions, a hook overlay in the first 2.5 seconds, and optional direct-publish to TikTok / Reels / Shorts / LinkedIn via your Upload-Post key.',
+          },
+          {
+            type: 'paragraph',
+            text: 'Use Viral Moments when you want clips you can actually post today. Use Clip Finder standalone when you only need to research what IS in the recording, without committing render credits.',
+          },
+          {
+            type: 'callout',
+            variant: 'tip',
+            title: 'The single-button mental model',
+            body: 'Upload \u2192 Find viral moments \u2192 Render the ones you like \u2192 Post. Four buttons. Everything else is polish you add when you care (caption style, crop override, hook-text edits).',
+          },
+        ],
+      },
+      {
+        id: 'step-1-upload',
+        title: 'Step 1 \u2014 Import a long-form recording',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Viral Moments needs a transcript. The content item has to be in the `ready` state with a transcript of at least 200 characters. Any of the four import methods work \u2014 YouTube URL, direct upload, podcast RSS, or paste-a-script.',
+          },
+          {
+            type: 'steps',
+            items: [
+              { title: 'Open New content', body: 'Click Import content from the workspace home, or paste /workspace/[id]/content/new directly.' },
+              { title: 'Paste or drop the source', body: 'YouTube link, MP4/MP3 upload, or podcast RSS \u2014 all four flows work. Skip text-only if you want to render.' },
+              { title: 'Wait for Ready', body: 'Status badge flips from Processing to Ready once Whisper finishes. Usually 30\u2013120 seconds depending on length.' },
+              { title: 'Open the content detail page', body: 'The Highlights button lives in the Tools tab and on the workspace home for any item already in the Ready state.' },
+            ],
+          },
+          {
+            type: 'callout',
+            variant: 'warning',
+            title: 'Text-only imports work, but rendering does not',
+            body: 'If you pasted a script instead of uploading video/audio, Viral Moments can still detect the best moments \u2014 but there is no source file to render from. You can use the clips as caption templates, or re-import the video when you have it.',
+          },
+        ],
+      },
+      {
+        id: 'step-2-detect',
+        title: 'Step 2 \u2014 Run "Find viral moments"',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'From the content page, open the Tools tab and click the Viral Moments card \u2014 or hit the CTA directly from the workspace home. The detection runs for 10\u201330 seconds, then drops 3\u20138 ranked clips in the Highlights view.',
+          },
+          {
+            type: 'paragraph',
+            text: 'Each card shows: a virality score (0\u2013100, color-coded \u2014 green \u226580, amber \u226560, grey below), the time range, a punchy hook line, and a one-sentence reason. The scoring prompt weighs four things, in this order:',
+          },
+          {
+            type: 'dos-donts',
+            dos: [
+              'Hook strength (40%) \u2014 the first 2 seconds pulling the next 58',
+              'Emotional peak (30%) \u2014 is there a moment worth remembering?',
+              'Quotability (20%) \u2014 can the line stand alone as a caption?',
+              'Pacing (10%) \u2014 does it end clean, not mid-thought?',
+            ],
+            donts: [
+              'The score is NOT a view-count prediction \u2014 no AI can do that honestly',
+              'Do not treat it as absolute \u2014 a 68 on your channel might outperform an 89 on mine',
+              'Do not render every clip blindly \u2014 triage first, render second',
+            ],
+          },
+          {
+            type: 'callout',
+            variant: 'tip',
+            title: 'Transparent by design',
+            body: 'Every card shows its reason in plain English. If the AI says "ends on a clean punchline" and you listen and it does not, the score is wrong. Delete it. The transparency is the point.',
+          },
+        ],
+      },
+      {
+        id: 'step-3-preview',
+        title: 'Step 3 \u2014 Preview and adjust before rendering',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Click "Preview & adjust" on any draft card. This opens the source video in a modal with four controls:',
+          },
+          {
+            type: 'steps',
+            items: [
+              { title: 'Timeline handles', body: 'Drag the start / end handles on the scrubber to tune the clip bounds. The preview plays the new range instantly.' },
+              { title: 'Crop guide', body: 'The lime-bordered 9:16 window overlays the 16:9 source. Drag it horizontally when the speaker sits off-center.' },
+              { title: 'Hook overlay', body: 'The first 2.5 seconds of the rendered clip burn in this text. Edit it directly in the modal before rendering.' },
+              { title: 'Caption style', body: 'Pick one of four styles: TikTok Bold, Minimal, Neon Yellow, or White Bar. Each renders instantly on preview.' },
+            ],
+          },
+          {
+            type: 'callout',
+            variant: 'tip',
+            title: 'Render credits are cheap, but not free',
+            body: 'Each render goes through Shotstack and costs \u224c$0.02 on your BYOK quota. Tuning bounds + crop in the preview costs nothing. Spend the 20 seconds on the preview \u2014 cheaper than re-rendering a mis-cropped clip.',
+          },
+        ],
+      },
+      {
+        id: 'step-4-render',
+        title: 'Step 4 \u2014 Render (single or batch)',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Click "Render clip" on any card. The status flips to "Rendering" and polls every 8 seconds. Typical render is 30\u201390 seconds end-to-end. Once ready, the card shows the MP4 inline (with its poster thumbnail) and a Download link.',
+          },
+          {
+            type: 'paragraph',
+            text: 'Have 5+ drafts? A "Render all" banner shows at the top \u2014 one click submits every draft sequentially. Studio plan users get priority queue through Shotstack automatically.',
+          },
+          {
+            type: 'callout',
+            variant: 'warning',
+            title: 'Rendering is one-way',
+            body: 'Once a clip has rendered, Preview & Adjust is locked. That is by design \u2014 the bounds, crop, and hook are burned into the MP4. If you want to change them, delete the card and re-detect.',
+          },
+        ],
+      },
+      {
+        id: 'step-5-post',
+        title: 'Step 5 \u2014 Post directly (optional)',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Each ready card has a Post button. Click it, the platform-picker opens \u2014 by default TikTok / Instagram / YouTube are checked. Edit the caption (defaults to the hook text), pick platforms, hit Post now. Upload-Post handles the per-platform OAuth \u2014 you only hold their key.',
+          },
+          {
+            type: 'paragraph',
+            text: 'Alternatively: download the MP4 and post manually if you want human-in-the-loop before going live. Both flows work from the same card.',
+          },
+        ],
+      },
+    ],
+  },
 ]
 
 export const ALL_GUIDE_IDS = GUIDES.map((g) => g.id)
