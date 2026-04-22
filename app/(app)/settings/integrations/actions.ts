@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 
 import { getUser } from '@/lib/auth/get-user'
 import { createClient } from '@/lib/supabase/server'
+import { log } from '@/lib/log'
 
 export type ConnectState =
   | { ok?: undefined }
@@ -25,7 +26,12 @@ export async function saveIntegrationAction(
   const workspaceId = formData.get('workspace_id')?.toString() ?? ''
   const integrationId = formData.get('integration_id')?.toString() ?? ''
 
-  if (!workspaceId || !integrationId) return { ok: false, error: 'Something went wrong. Please refresh and try again.' }
+  if (!workspaceId || !integrationId) {
+    return {
+      ok: false,
+      error: 'Missing workspace or integration id. Refresh the page and try again.',
+    }
+  }
 
   // Collect all config fields (any field starting with "config_")
   const config: Record<string, string> = {}
@@ -64,7 +70,13 @@ export async function saveIntegrationAction(
     })
     .eq('id', workspaceId)
 
-  if (error) return { ok: false, error: 'Something went wrong while saving. Please try again.' }
+  if (error) {
+    log.error('saveIntegrationAction failed', error, { workspaceId, integrationId })
+    return {
+      ok: false,
+      error: `Could not save the integration: ${error.message}. Try again.`,
+    }
+  }
 
   revalidatePath('/settings/integrations')
   return { ok: true }
@@ -83,7 +95,9 @@ export async function testWebhookAction(
   const workspaceId = formData.get('workspace_id')?.toString() ?? ''
   const integrationId = formData.get('integration_id')?.toString() ?? ''
 
-  if (!workspaceId || !integrationId) return { ok: false, error: 'Something went wrong.' }
+  if (!workspaceId || !integrationId) {
+    return { ok: false, error: 'Missing workspace or integration id.' }
+  }
 
   const supabase = createClient()
   const { data: ws } = await supabase
@@ -126,8 +140,13 @@ export async function testWebhookAction(
     }
 
     return { ok: true }
-  } catch {
-    return { ok: false, error: 'Could not reach the service. Check the link and try again.' }
+  } catch (err) {
+    log.error('testWebhookAction fetch failed', err, { workspaceId, integrationId })
+    const detail = err instanceof Error ? err.message : 'Network error'
+    return {
+      ok: false,
+      error: `Could not reach the webhook: ${detail}. Check the URL and try again.`,
+    }
   }
 }
 

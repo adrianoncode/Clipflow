@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
   FileText,
@@ -168,14 +168,16 @@ export function ContentListWithSearch({
   const hasAnyActiveFilter =
     query.trim().length > 0 || statusFilter !== 'all' || kindFilter !== 'all'
 
-  function toggleItem(id: string) {
+  // Stable reference so the memoized rows below don't all rerender
+  // whenever the parent rerenders for any other reason (filter typing).
+  const toggleItem = useCallback((id: string) => {
     setSelected((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
       return next
     })
-  }
+  }, [])
 
   function toggleAllFiltered() {
     const filteredIds = filtered.map((i) => i.id)
@@ -346,98 +348,16 @@ export function ContentListWithSearch({
       {/* ── Content list ── */}
       {filtered.length > 0 && (
         <div className="space-y-1.5">
-          {filtered.map((item) => {
-            const kindCfg =
-              KIND_CONFIG[item.kind as keyof typeof KIND_CONFIG] ?? KIND_CONFIG.text
-            const statusCfg = STATUS_CONFIG[item.status as keyof typeof STATUS_CONFIG]
-            const Icon = kindCfg.Icon
-            const isDuplicate = duplicateIds?.has(item.id)
-            const isSelected = selected.has(item.id)
-
-            return (
-              <div
-                key={item.id}
-                className={`group relative flex items-center gap-4 rounded-xl border px-4 py-3.5 transition-all duration-150 ${
-                  isSelected
-                    ? 'border-primary/40 bg-primary/[0.04] shadow-sm shadow-primary/[0.08]'
-                    : 'border-border/50 bg-card hover:-translate-y-px hover:border-primary/25 hover:shadow-md hover:shadow-primary/5'
-                }`}
-              >
-                {/* Checkbox */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    toggleItem(item.id)
-                  }}
-                  aria-label={isSelected ? 'Deselect' : 'Select'}
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all ${
-                    isSelected
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border/70 bg-background opacity-60 hover:border-primary/40 hover:opacity-100 group-hover:opacity-100'
-                  }`}
-                >
-                  {isSelected && <Check className="h-3 w-3" strokeWidth={3} />}
-                </button>
-
-                {/* Clickable link area (everything except the checkbox) */}
-                <Link
-                  href={`/workspace/${workspaceId}/content/${item.id}`}
-                  className="flex min-w-0 flex-1 items-center gap-4"
-                >
-                  {/* Kind icon */}
-                  <div
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105 ${kindCfg.bg}`}
-                  >
-                    <Icon className={`h-4 w-4 ${kindCfg.text}`} />
-                  </div>
-
-                  {/* Info */}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-semibold text-foreground">
-                        {item.title ?? 'Untitled'}
-                      </span>
-                      {isDuplicate && (
-                        <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-                          <Copy className="h-2.5 w-2.5" />
-                          Duplicate
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {kindCfg.label}
-                      <span className="mx-1.5 text-muted-foreground/30">·</span>
-                      {/* suppressHydrationWarning — the SSR snapshot
-                          uses server-time, the client rehydrates with
-                          client-time. Minor drift ("just now" vs
-                          "1m ago") is harmless and not worth the JS
-                          to keep them locked. */}
-                      <span suppressHydrationWarning>
-                        {formatRelative(item.created_at)}
-                      </span>
-                    </p>
-                  </div>
-
-                  {/* Status */}
-                  {statusCfg && (
-                    <div
-                      className={`flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusCfg.bg} ${statusCfg.text}`}
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${statusCfg.dot} ${
-                          item.status === 'processing' ? 'animate-pulse' : ''
-                        }`}
-                      />
-                      {statusCfg.label}
-                    </div>
-                  )}
-
-                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/30 transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-primary/50" />
-                </Link>
-              </div>
-            )
-          })}
+          {filtered.map((item) => (
+            <ContentRow
+              key={item.id}
+              item={item}
+              workspaceId={workspaceId}
+              isSelected={selected.has(item.id)}
+              isDuplicate={duplicateIds?.has(item.id) ?? false}
+              onToggle={toggleItem}
+            />
+          ))}
         </div>
       )}
 
@@ -457,3 +377,106 @@ export function ContentListWithSearch({
     </div>
   )
 }
+
+/**
+ * Memoized row — only rerenders when the item, its selection, or its
+ * duplicate flag change. Parent typing in the search box used to cause
+ * every row in the library to rerender on every keystroke; with memo +
+ * the stable toggleItem callback above, only the rows whose filter
+ * status changed repaint.
+ */
+interface ContentRowProps {
+  item: ContentItemListRow
+  workspaceId: string
+  isSelected: boolean
+  isDuplicate: boolean
+  onToggle: (id: string) => void
+}
+
+const ContentRow = memo(function ContentRow({
+  item,
+  workspaceId,
+  isSelected,
+  isDuplicate,
+  onToggle,
+}: ContentRowProps) {
+  const kindCfg =
+    KIND_CONFIG[item.kind as keyof typeof KIND_CONFIG] ?? KIND_CONFIG.text
+  const statusCfg = STATUS_CONFIG[item.status as keyof typeof STATUS_CONFIG]
+  const Icon = kindCfg.Icon
+
+  return (
+    <div
+      className={`group relative flex items-center gap-4 rounded-xl border px-4 py-3.5 transition-all duration-150 ${
+        isSelected
+          ? 'border-primary/40 bg-primary/[0.04] shadow-sm shadow-primary/[0.08]'
+          : 'border-border/50 bg-card hover:-translate-y-px hover:border-primary/25 hover:shadow-md hover:shadow-primary/5'
+      }`}
+    >
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation()
+          onToggle(item.id)
+        }}
+        aria-label={isSelected ? 'Deselect' : 'Select'}
+        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all ${
+          isSelected
+            ? 'border-primary bg-primary text-primary-foreground'
+            : 'border-border/70 bg-background opacity-60 hover:border-primary/40 hover:opacity-100 group-hover:opacity-100'
+        }`}
+      >
+        {isSelected && <Check className="h-3 w-3" strokeWidth={3} />}
+      </button>
+
+      <Link
+        href={`/workspace/${workspaceId}/content/${item.id}`}
+        className="flex min-w-0 flex-1 items-center gap-4"
+      >
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105 ${kindCfg.bg}`}
+        >
+          <Icon className={`h-4 w-4 ${kindCfg.text}`} />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm font-semibold text-foreground">
+              {item.title ?? 'Untitled'}
+            </span>
+            {isDuplicate && (
+              <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                <Copy className="h-2.5 w-2.5" />
+                Duplicate
+              </span>
+            )}
+          </div>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {kindCfg.label}
+            <span className="mx-1.5 text-muted-foreground/30">·</span>
+            {/* Time drift between SSR and hydration is harmless
+                cosmetic; suppressing the warning avoids a repaint. */}
+            <span suppressHydrationWarning>
+              {formatRelative(item.created_at)}
+            </span>
+          </p>
+        </div>
+
+        {statusCfg && (
+          <div
+            className={`flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusCfg.bg} ${statusCfg.text}`}
+          >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${statusCfg.dot} ${
+                item.status === 'processing' ? 'animate-pulse' : ''
+              }`}
+            />
+            {statusCfg.label}
+          </div>
+        )}
+
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/30 transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-primary/50" />
+      </Link>
+    </div>
+  )
+})

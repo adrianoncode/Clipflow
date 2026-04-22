@@ -2,10 +2,12 @@
 
 import { useRef, useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
+import Image from 'next/image'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 import { FormMessage } from '@/components/ui/form-message'
+import { copyToClipboard } from '@/lib/ui/copy-to-clipboard'
 import {
   searchBrollAction,
   type SearchBrollState,
@@ -37,22 +39,23 @@ function formatDuration(seconds: number): string {
 function VideoCard({ video }: { video: PexelsVideo }) {
   const [copied, setCopied] = useState(false)
 
-  function handleCopy() {
-    void navigator.clipboard.writeText(video.videoUrl).then(() => {
+  async function handleCopy() {
+    const ok = await copyToClipboard(video.videoUrl)
+    if (ok) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    })
+    }
   }
 
   return (
     <div className="group relative overflow-hidden rounded-lg border bg-card">
       <div className="relative aspect-[9/16] overflow-hidden bg-muted">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={video.thumbnail}
           alt={`Video by ${video.photographer}`}
-          className="h-full w-full object-cover"
-          loading="lazy"
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className="object-cover"
         />
         <span className="absolute bottom-2 right-2 rounded bg-black/70 px-1.5 py-0.5 text-xs font-medium text-white">
           {formatDuration(video.duration)}
@@ -85,22 +88,23 @@ function VideoCard({ video }: { video: PexelsVideo }) {
 function PhotoCard({ photo }: { photo: PexelsPhoto }) {
   const [copied, setCopied] = useState(false)
 
-  function handleCopy() {
-    void navigator.clipboard.writeText(photo.src.large).then(() => {
+  async function handleCopy() {
+    const ok = await copyToClipboard(photo.src.large)
+    if (ok) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    })
+    }
   }
 
   return (
     <div className="group relative overflow-hidden rounded-lg border bg-card">
       <div className="relative aspect-[9/16] overflow-hidden bg-muted">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={photo.src.medium}
           alt={photo.alt ?? `Photo by ${photo.photographer}`}
-          className="h-full w-full object-cover"
-          loading="lazy"
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className="object-cover"
         />
       </div>
       <div className="p-2 space-y-2">

@@ -21,6 +21,20 @@ const nextConfig = {
         hostname: 'images.unsplash.com',
         pathname: '/**',
       },
+      {
+        // Pexels B-Roll + photo suggestions — rendered as grid
+        // thumbnails on /content/[id]/broll. High-traffic in-app path.
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+        pathname: '/**',
+      },
+      {
+        // Pexels videos deliver still frames (thumbnails) from a
+        // separate subdomain that we need for the B-Roll card posters.
+        protocol: 'https',
+        hostname: 'videos.pexels.com',
+        pathname: '/**',
+      },
     ],
   },
 }

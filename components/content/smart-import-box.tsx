@@ -119,7 +119,8 @@ export function SmartImportBox({ workspaceId, hasOpenAiKey }: SmartImportBoxProp
         if (err instanceof Error && err.message?.includes('NEXT_REDIRECT')) {
           throw err
         }
-        setError('Something went wrong. Try again.')
+        const detail = err instanceof Error ? err.message : 'Unknown error'
+        setError(`Import failed: ${detail}. Try again.`)
       }
     })
   }

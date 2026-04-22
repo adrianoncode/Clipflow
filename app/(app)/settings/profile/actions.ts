@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getUser } from '@/lib/auth/get-user'
+import { log } from '@/lib/log'
 
 export type ProfileState =
   | { ok?: undefined }
@@ -150,10 +151,24 @@ export async function deleteAccountAction(
     // 4. Delete auth user (Supabase Admin API)
     const { error } = await admin.auth.admin.deleteUser(user.id)
     if (error) {
-      return { ok: false, error: 'Failed to delete account. Please contact support.' }
+      log.error('account deletion: auth.admin.deleteUser failed', error, {
+        userId: user.id,
+      })
+      return {
+        ok: false,
+        error: `Could not remove the auth record: ${error.message}. Contact support if this persists.`,
+      }
     }
-  } catch {
-    return { ok: false, error: 'Something went wrong. Please contact support.' }
+  } catch (err) {
+    // Pull the real message up so the user has something actionable.
+    // We still suggest support because mid-deletion failures mean the
+    // account is in an inconsistent half-deleted state.
+    const detail = err instanceof Error ? err.message : 'Unknown error'
+    log.error('account deletion: unexpected failure', err, { userId: user.id })
+    return {
+      ok: false,
+      error: `Account deletion failed partway through: ${detail}. Contact support so we can finish the cleanup.`,
+    }
   }
 
   redirect('/login?deleted=true')

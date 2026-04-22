@@ -55,19 +55,30 @@ export function AutoGenerateTrigger({
             }),
           })
 
-          const data = await res.json()
+          // Guard against 500 HTML pages that explode .json() and
+          // hide the actual status code. Read once and branch.
+          const rawText = await res.text()
+          let data: { ok?: boolean; error?: string } | null = null
+          try {
+            data = JSON.parse(rawText) as { ok?: boolean; error?: string }
+          } catch {
+            // leave data as null — we'll surface the status code
+          }
 
-          if (data.ok) {
+          if (data?.ok) {
             setStatus('done')
-            // Refresh to show the new outputs on the page
             router.refresh()
           } else {
             setStatus('error')
-            setErrorMessage(data.error ?? 'Generation failed')
+            setErrorMessage(
+              data?.error ??
+                `Generation failed (HTTP ${res.status}). You can try again from the Drafts tab.`,
+            )
           }
-        } catch {
+        } catch (err) {
+          const detail = err instanceof Error ? err.message : 'Network error'
           setStatus('error')
-          setErrorMessage('Something went wrong. You can generate manually.')
+          setErrorMessage(`${detail}. You can generate drafts manually from the Drafts tab.`)
         }
       })
     }, 800)
