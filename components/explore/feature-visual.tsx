@@ -12,6 +12,13 @@ import { ThumbnailVisual } from './thumbnail-visual'
 import { IdeaGeneratorVisual } from './idea-generator-visual'
 import { BrandVoiceVisual } from './brand-voice-visual'
 import { ViralMomentsVisual } from './viral-moments-visual'
+import {
+  AutoSubtitlesVisual,
+  AutoReframeVisual,
+  BRollVisual,
+  AIAvatarVisual,
+  AutoDubVisual,
+} from './video-tool-visuals'
 import { PipelineFlowDiagram, RssFlowDiagram, AgencyFlowDiagram } from './flow-diagrams'
 
 /**
@@ -38,6 +45,11 @@ export type VisualId =
   | 'rss-flow'
   | 'agency-flow'
   | 'viral-moments'
+  | 'auto-subtitles'
+  | 'auto-reframe'
+  | 'b-roll'
+  | 'ai-avatar'
+  | 'auto-dub'
 
 export function FeatureVisual({ id }: { id: VisualId }) {
   const Cmp = VISUAL_MAP[id]
@@ -71,4 +83,9 @@ const VISUAL_MAP: Record<VisualId, React.ComponentType> = {
   'rss-flow': RssFlowDiagram,
   'agency-flow': AgencyFlowDiagram,
   'viral-moments': ViralMomentsVisual,
+  'auto-subtitles': AutoSubtitlesVisual,
+  'auto-reframe': AutoReframeVisual,
+  'b-roll': BRollVisual,
+  'ai-avatar': AIAvatarVisual,
+  'auto-dub': AutoDubVisual,
 }

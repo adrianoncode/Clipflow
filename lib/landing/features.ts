@@ -10,6 +10,11 @@
 export type FeatureId =
   | 'viral-moments'
   | 'brand-voice'
+  | 'auto-subtitles'
+  | 'auto-reframe'
+  | 'b-roll'
+  | 'ai-avatar'
+  | 'auto-dub'
   | 'clip-finder'
   | 'brand-kit'
   | 'scheduler'
@@ -54,6 +59,11 @@ export interface ExploreEntry {
     | 'rss-flow'
     | 'agency-flow'
     | 'viral-moments'
+    | 'auto-subtitles'
+    | 'auto-reframe'
+    | 'b-roll'
+    | 'ai-avatar'
+    | 'auto-dub'
   /** Sections rendered on the detail page — structured so the page
    *  layout stays identical while content varies. */
   sections: Array<{
@@ -180,6 +190,244 @@ export const FEATURES: Record<FeatureId, ExploreEntry> = {
       },
     ],
     relatedFeatures: ['clip-finder', 'ab-hook-testing', 'idea-generator'],
+  },
+
+  /* ── Video production tools ─────────────────────────────────── */
+
+  'auto-subtitles': {
+    id: 'auto-subtitles',
+    slug: 'auto-subtitles',
+    name: 'Auto-Subtitles',
+    tagline:
+      'Word-level karaoke captions burned into every clip \u2014 TikTok Bold, Minimal, Neon, or White Bar \u2014 synced to the exact moment each word is spoken.',
+    description:
+      'Clipflow transcribes with OpenAI Whisper at word-level timestamp granularity and paints captions that flip at word boundaries, not guessed line breaks. Pick one of four visual styles and the captions render burned-in via Shotstack \u2014 no separate caption tool, no mid-word cuts, no "almost synced" lag.',
+    emoji: '\ud83c\udfac',
+    visual: 'auto-subtitles',
+    availability: 'Available on Creator and Studio plans',
+    ctaText: 'Turn on captions',
+    highlights: [
+      { value: '\u2248 50ms', label: 'Word-to-caption sync (Whisper verbose_json precision)' },
+      { value: '4', label: 'Visual styles \u2014 TikTok Bold, Minimal, Neon, White Bar' },
+      { value: '0', label: 'Manual timing edits required \u2014 captions snap to word boundaries' },
+    ],
+    sections: [
+      {
+        eyebrow: 'The problem',
+        title: 'Captions are table-stakes, but synced captions are rare.',
+        body:
+          'Most auto-caption tools slice by silence or 5-second blocks. The result: 3\u20134 words appear at once, disappear when the next phrase overlaps, and half-read captions feel choppy. Viewers scroll past in 1.2 seconds.',
+      },
+      {
+        eyebrow: 'How we solve it',
+        title: 'Word-level Whisper + Shotstack burn-in.',
+        body:
+          'Clipflow runs Whisper with `timestamp_granularities=[word]` so every word lands with its own start and end in seconds. Captions render in 2\u20133 word chunks that flip at natural reading pace \u2014 never mid-word, never held too long. Rules: max 3 words per chunk, force a break on sentence-ending punctuation, force a break if the gap between words is \u2265 0.6s.',
+        bullets: [
+          '2\u20133 word chunks for TikTok-pace reading',
+          'Break on sentence punctuation, not guessed',
+          'Break on natural pauses (\u22650.6s gap)',
+          'Max 2s per chunk so nothing lingers past the voice',
+        ],
+      },
+      {
+        eyebrow: 'The four styles',
+        title: 'Match your visual system \u2014 no design time required.',
+        body:
+          'TikTok Bold uses Arial Black with a fat black stroke for that recognizable "TikTok caption" look. Minimal is clean Arial on white with no stroke. Neon Yellow glows for high contrast against dark backgrounds. White Bar drops captions onto a semi-transparent pill \u2014 Instagram Reels style. Switch between them in the Preview editor before rendering.',
+      },
+      {
+        eyebrow: 'Where it fits',
+        title: 'Built into every render, including Viral Moments.',
+        body:
+          'Every clip rendered via the Viral Moments pipeline ships with captions already. For one-off subtitle generation on videos not going through clips (podcasts with full-length uploads, long-form uploads to YouTube), the standalone /subtitles page runs Whisper + outputs SRT + VTT files you can attach to any platform upload.',
+      },
+    ],
+    relatedFeatures: ['viral-moments', 'brand-kit', 'auto-reframe'],
+  },
+
+  'auto-reframe': {
+    id: 'auto-reframe',
+    slug: 'auto-reframe',
+    name: 'Auto-Reframe',
+    tagline:
+      'Crop 16:9 landscape recordings to 9:16 vertical with face-aware centering \u2014 or grab the drag-to-reposition guide when the speaker sits off-center.',
+    description:
+      'Clipflow\u2019s Auto-Reframe uses a Replicate face-tracking model to detect where the speaker\u2019s face actually is across a video and crops to 9:16 (or 1:1 / 4:5) with the face always centered. For multi-speaker podcasts or when the AI misses, manual drag-to-position on every clip gives you the exact frame with zero re-render.',
+    emoji: '\ud83d\udd32',
+    visual: 'auto-reframe',
+    availability: 'Available on Creator and Studio plans (Replicate BYOK)',
+    ctaText: 'Reframe a video',
+    highlights: [
+      { value: '3', label: 'Output ratios \u2014 9:16, 1:1, 4:5' },
+      { value: '\u2248 60s', label: 'Typical reframe time for a 2-minute clip' },
+      { value: '1', label: 'Drag handle for manual override when the speaker is off-center' },
+    ],
+    sections: [
+      {
+        eyebrow: 'The problem',
+        title: 'Centered crops slice faces in half on multi-speaker recordings.',
+        body:
+          'A center-crop works for one person sitting dead-middle. It fails the moment you record a 2-person podcast, a panel, or a walking segment. Half the viewers see half a face \u2014 the worst possible frame for short-form conversion.',
+      },
+      {
+        eyebrow: 'How we solve it',
+        title: 'Face-tracking model + a human override.',
+        body:
+          'Auto-Reframe submits the source video to Replicate\u2019s face-tracking model (currently `lucataco/video-reframe`). The model returns a new MP4 with the crop window tracking whichever face is most prominent in each frame. For cases where the AI picks the wrong face, the Viral Moments Preview editor has a manual crop-x override \u2014 drag the lime-bordered 9:16 guide left/right on the source, and that position bakes into the render.',
+        bullets: [
+          'Automatic face-tracking via Replicate \u2014 BYOK, so you pay at cost',
+          'Manual drag-to-reposition fallback on every clip',
+          'Three output ratios: 9:16 (TikTok/Reels/Shorts), 1:1 (Instagram Feed), 4:5 (LinkedIn)',
+          'Resulting MP4 flows straight into captions + brand kit, no re-render',
+        ],
+      },
+      {
+        eyebrow: 'Why BYOK',
+        title: 'Because rendering face-tracking at scale is expensive.',
+        body:
+          'A face-tracked reframe of a 2-minute clip costs Replicate ~$0.02\u20130.05 depending on the model. Clipflow doesn\u2019t resell tokens \u2014 you bring your Replicate key, we run the job, you pay Replicate directly. Result: no 3x markup, and your AI bill is one transparent line item.',
+      },
+    ],
+    relatedFeatures: ['viral-moments', 'auto-subtitles', 'brand-kit'],
+  },
+
+  'b-roll': {
+    id: 'b-roll',
+    slug: 'b-roll',
+    name: 'B-Roll Suggestions',
+    tagline:
+      'Context-matched B-Roll footage from Pexels, suggested right inside your content detail page. Search, preview, drop into the pipeline.',
+    description:
+      'Clipflow scans your transcript for concrete nouns and actions, then searches Pexels\u2019 stock library for matching videos and photos. Preview the grid right on the content page, copy the direct URL or pick a favorite \u2014 no tab-switching to a stock site, no licensing headaches.',
+    emoji: '\ud83c\udfde\ufe0f',
+    visual: 'b-roll',
+    availability: 'Available on Creator and Studio plans',
+    ctaText: 'Find B-Roll for a clip',
+    highlights: [
+      { value: '15\u201340', label: 'Suggestions per content item, ranked by transcript relevance' },
+      { value: 'Pexels', label: 'Royalty-free, attribution-optional source library' },
+      { value: '1', label: 'Click to copy the direct video URL into any editor' },
+    ],
+    sections: [
+      {
+        eyebrow: 'The problem',
+        title: 'Tab-switching to stock sites kills your edit flow.',
+        body:
+          'You\u2019re cutting a clip about remote work. You need a shot of someone at a laptop. That means opening Pexels in a new tab, searching, previewing, copying the URL back. Every B-Roll insert is a context switch \u2014 and the tool doesn\u2019t know what your transcript just said.',
+      },
+      {
+        eyebrow: 'How we solve it',
+        title: 'The transcript picks the keywords for you.',
+        body:
+          'Clipflow extracts concrete nouns and actions from the first minute of your transcript ("laptop", "whiteboard", "coffee shop", "walking") and pre-queries Pexels. The grid renders inline on the content page with 9:16 thumbnails sized for TikTok/Reels, plus still photos for overlay shots. Preview plays on hover, and the copy button drops the direct MP4 URL into your clipboard \u2014 paste into Shotstack, CapCut, Premiere, whatever.',
+        bullets: [
+          'Transcript-driven keyword extraction (no prompt engineering)',
+          'Videos and photos mixed \u2014 pick format per scene',
+          'Duration chip on every clip so you know length at a glance',
+          'Attribution displayed next to every asset \u2014 paste the photographer credit if your style guide wants it',
+        ],
+      },
+      {
+        eyebrow: 'Why Pexels',
+        title: 'Royalty-free, commercial-use licensed, no monthly fee.',
+        body:
+          'Pexels is free to use commercially with no attribution required (attribution appreciated). Clipflow holds one Pexels API key for everyone \u2014 you don\u2019t need your own. Alternative stock sources (Unsplash for photos, Mixkit for video) are on the roadmap if you want more variety.',
+      },
+    ],
+    relatedFeatures: ['viral-moments', 'auto-subtitles', 'brand-kit'],
+  },
+
+  'ai-avatar': {
+    id: 'ai-avatar',
+    slug: 'ai-avatar',
+    name: 'AI Avatar Videos',
+    tagline:
+      'Generate a talking-head video from a transcript \u2014 no camera, no recording session. D-ID presenter plus your script.',
+    description:
+      'Paste a script (or pull one from your Brand Voice draft), pick a D-ID presenter, and Clipflow generates a 1080p talking-head video with lip-synced audio. Useful for quick weekly recaps, announcement videos, or explainers where setting up a camera is the bottleneck.',
+    emoji: '\ud83e\uddd1\u200d\ud83d\udcbb',
+    visual: 'ai-avatar',
+    availability: 'Studio plan only',
+    ctaText: 'Try AI Avatar',
+    highlights: [
+      { value: 'D-ID', label: 'Provider \u2014 premium talking-head generator, BYOK' },
+      { value: '1500', label: 'Character limit per script (\u22483 minutes of video)' },
+      { value: '\u2248 2min', label: 'From submit to rendered video URL' },
+    ],
+    sections: [
+      {
+        eyebrow: 'When this makes sense',
+        title: 'Not every video needs you on camera.',
+        body:
+          'Weekly "what shipped" recaps, product-release announcements, quick explainers \u2014 there\u2019s a class of video where the message is the content and the face is just a delivery mechanism. AI Avatar replaces the recording session without losing the talking-head format.',
+      },
+      {
+        eyebrow: 'How it works',
+        title: 'Script goes in, MP4 comes out.',
+        body:
+          'From any content item, open Tools \u2192 AI Avatar. The script defaults to the first 1500 characters of your transcript or a draft. Pick a D-ID stock presenter (or upload your own licensed avatar image later), hit Generate. D-ID synthesizes audio, lip-syncs it to the presenter, and returns a 1080p MP4 in about 2 minutes. The video drops into your content library ready for the Viral Moments pipeline if you want clips out of it.',
+        bullets: [
+          'Stock D-ID presenters \u2014 diverse set, no additional licensing needed',
+          'BYOK D-ID key \u2014 pay them directly, no Clipflow markup',
+          'Works off any content item that has a transcript or draft',
+          'Output flows into the standard render + subtitle pipeline',
+        ],
+      },
+      {
+        eyebrow: 'Why Studio only',
+        title: 'D-ID calls are expensive relative to other AI features.',
+        body:
+          'Even on BYOK, a 2-minute AI Avatar render costs ~$0.50\u20131.00 on D-ID\u2019s API. Gated to Studio so the infrastructure cost on our side (webhook handling, storage, retry queue) is covered by the plan price. If you only need this occasionally, a month of Studio is cheaper than a single on-camera shoot.',
+      },
+    ],
+    relatedFeatures: ['auto-dub', 'auto-subtitles', 'brand-voice'],
+  },
+
+  'auto-dub': {
+    id: 'auto-dub',
+    slug: 'auto-dub',
+    name: 'Auto-Dub (Multi-language)',
+    tagline:
+      'Translate and dub your video into Spanish, German, French, Portuguese, Japanese, Korean, or Chinese \u2014 voice-matched via ElevenLabs.',
+    description:
+      'Clipflow submits your audio to ElevenLabs\u2019 dubbing API: the model transcribes, translates to your target language, and re-synthesizes the audio in a voice that preserves your pacing and timbre. Output MP4 has the new-language audio track and is ready to post to region-specific accounts.',
+    emoji: '\ud83c\udf0d',
+    visual: 'auto-dub',
+    availability: 'Studio plan only',
+    ctaText: 'Dub a video',
+    highlights: [
+      { value: '7+', label: 'Languages \u2014 ES, DE, FR, PT, JA, KO, ZH, and more via ElevenLabs' },
+      { value: 'Voice-matched', label: 'Synthesized audio preserves pacing and timbre, not generic TTS' },
+      { value: '\u2248 5min', label: 'Typical dubbing time for a 60-second clip' },
+    ],
+    sections: [
+      {
+        eyebrow: 'The problem',
+        title: 'Multi-language reach is locked behind hiring VO talent.',
+        body:
+          'You hit 100K views on a TikTok in English and want a Spanish audience next. Traditional dubbing means hiring a voice actor ($200+), paying for studio time, and waiting 1\u20132 weeks. Most creators skip the re-cut entirely \u2014 and the Spanish audience never shows up.',
+      },
+      {
+        eyebrow: 'How we solve it',
+        title: 'ElevenLabs does the heavy lifting, Clipflow wires it up.',
+        body:
+          'From a content item: Tools \u2192 Auto-Dub \u2192 pick a target language. Clipflow uploads the audio to ElevenLabs\u2019 dubbing endpoint. Their model handles transcription, translation, voice cloning (matches the pacing of the original speaker), and re-synthesis. Result: a new MP4 with dubbed audio, timing preserved. Subtitles get regenerated in the target language too.',
+        bullets: [
+          'ElevenLabs BYOK \u2014 pay them at their per-minute pricing',
+          'Voice match \u2014 timbre and pacing preserved, not a generic TTS voice',
+          'Subtitles auto-regenerate in the target language',
+          'Result is a full content item in your library with the new language as metadata',
+        ],
+      },
+      {
+        eyebrow: 'What it costs',
+        title: 'Roughly $0.30\u20130.80 per minute of dubbed video on ElevenLabs.',
+        body:
+          'One 60-second clip dubbed into three languages = about $1.50\u20132.40 in ElevenLabs costs. Compare to a $200\u2013600 voice-actor session and you see why this unlocks creators who previously skipped multi-language expansion entirely.',
+      },
+    ],
+    relatedFeatures: ['ai-avatar', 'auto-subtitles', 'scheduler'],
   },
 
   'clip-finder': {
