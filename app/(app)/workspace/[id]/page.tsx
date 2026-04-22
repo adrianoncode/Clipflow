@@ -78,13 +78,17 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
           </p>
         </div>
 
-        {canCreate && (
+        {/* Top-right CTA only renders when the library already has items.
+            In the empty state the centered <EmptyState> card already
+            surfaces a large primary CTA; a second one up here competes
+            for attention and doesn't add anything. */}
+        {canCreate && items.length > 0 && (
           <Link
             href={`/workspace/${params.id}/content/new`}
             className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25"
           >
             <Plus className="h-4 w-4" />
-            Import video
+            Import content
           </Link>
         )}
       </div>

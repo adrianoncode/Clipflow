@@ -55,9 +55,16 @@ export function NichePicker({ workspaceId, initialNiche }: NichePickerProps) {
   return (
     <section className="space-y-3">
       <div className="flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Niche presets
-        </h2>
+        <div>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Niche presets
+          </h2>
+          <p className="mt-0.5 text-[11px] text-muted-foreground/70">
+            {selected
+              ? 'Active on every new draft. Click another to switch.'
+              : 'Pick one to apply industry-tuned tone on top of your platform templates.'}
+          </p>
+        </div>
         <div className="flex items-center gap-2">
           {savedAt ? (
             <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
@@ -95,11 +102,20 @@ export function NichePicker({ workspaceId, initialNiche }: NichePickerProps) {
               type="button"
               onClick={() => choose(n.id)}
               disabled={isPending}
-              className="flex items-start gap-3 rounded-md p-3 text-left transition-all hover:-translate-y-0.5 disabled:opacity-80"
+              className="lv2-niche-card group flex cursor-pointer items-start gap-3 rounded-xl p-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-md disabled:opacity-80"
               style={{
-                background: isActive ? 'var(--lv2d-primary, #2A1A3D)' : 'var(--lv2d-bg-2, rgba(0,0,0,.02))',
+                background: isActive
+                  ? 'var(--lv2d-primary, #2A1A3D)'
+                  : 'var(--lv2d-card, #FFFDF8)',
                 color: isActive ? '#D6FF3E' : undefined,
-                border: `1px solid ${isActive ? 'var(--lv2d-primary, #2A1A3D)' : 'var(--lv2d-border, rgba(0,0,0,.1))'}`,
+                border: `1px solid ${
+                  isActive
+                    ? 'var(--lv2d-primary, #2A1A3D)'
+                    : 'var(--lv2d-border, rgba(0,0,0,.1))'
+                }`,
+                boxShadow: isActive
+                  ? '0 10px 28px -16px rgba(42,26,61,.32), 0 0 0 4px rgba(214,255,62,.14)'
+                  : undefined,
               }}
             >
               <span
@@ -120,7 +136,18 @@ export function NichePicker({ workspaceId, initialNiche }: NichePickerProps) {
                     <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />
                   ) : isActive ? (
                     <Check className="h-4 w-4 shrink-0 text-[#D6FF3E]" strokeWidth={3} />
-                  ) : null}
+                  ) : (
+                    <span
+                      className="lv2-niche-apply pointer-events-none shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] opacity-0 transition-opacity group-hover:opacity-100"
+                      style={{
+                        background: 'var(--lv2d-accent, #D6FF3E)',
+                        color: 'var(--lv2d-accent-ink, #1a2000)',
+                        letterSpacing: '0.08em',
+                      }}
+                    >
+                      Apply
+                    </span>
+                  )}
                 </div>
                 <p
                   className="mt-0.5 text-xs"

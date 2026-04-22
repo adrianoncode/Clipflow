@@ -92,7 +92,7 @@ export default async function ClientsPage() {
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <Stat label="Members" value={w.memberCount} />
                 <Stat label="Content" value={w.contentCount} />
-                <Stat label="Outputs" value={w.outputCount} />
+                <Stat label="Drafts" value={w.outputCount} />
                 <Stat label="Approved" value={w.approvedCount} />
               </div>
               <Button asChild variant="outline" size="sm" className="mt-auto">

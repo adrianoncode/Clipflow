@@ -199,7 +199,7 @@ export function ContentListWithSearch({
       <EmptyState
         icon={Upload}
         title="Import your first content"
-        description="Upload a video, paste a YouTube link, or add text. Clipflow will transcribe it and generate platform-specific outputs."
+        description="Upload a video, paste a YouTube link, or add text. Clipflow transcribes it and drops platform-ready drafts into your pipeline."
         actionLabel="Import content"
         actionHref={`/workspace/${workspaceId}/content/new`}
       />

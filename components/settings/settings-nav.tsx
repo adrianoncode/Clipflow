@@ -50,7 +50,21 @@ export function SettingsNav() {
   }
 
   return (
-    <div className="border-b border-border/50">
+    /* The nav scrolls horizontally on narrow viewports + long tab lists
+       (13 tabs total). Without a visual cue users don't realize the
+       off-right tabs (Channels, Integrations, Audit log, Help) exist —
+       caught this during UX audit where users couldn't find Channels.
+       Fade-out gradients on both edges signal "more content this way",
+       fading in only when there's actually overflow to scroll through. */
+    <div
+      className="relative border-b border-border/50"
+      style={{
+        maskImage:
+          'linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%)',
+        WebkitMaskImage:
+          'linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%)',
+      }}
+    >
       <nav className="-mb-px flex gap-1 overflow-x-auto scrollbar-none">
         {groups.map((group, gi) => (
           <div key={gi} className="contents">
