@@ -19,12 +19,9 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { log } from '@/lib/log'
 
-/**
- * Longer window than most actions because detection + multiple
- * Shotstack render submissions can run back-to-back when the user
- * clicks "find + render all".
- */
-export const maxDuration = 120
+// NOTE: maxDuration lives on the page.tsx for this route — 'use server'
+// action files may only export async functions, so module-level config
+// has to ride on the consuming page.
 
 // ---------------------------------------------------------------------------
 // Schemas
