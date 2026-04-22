@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { updateRender } from '@/lib/video/renders/update-render'
 import { updateHighlightRender } from '@/lib/highlights/update-highlight-render'
 import { verifyEnvSecret } from '@/lib/security/verify-cron-secret'
+import { log } from '@/lib/log'
 
 /**
  * POST /api/webhooks/shotstack
@@ -55,7 +56,22 @@ export async function POST(request: Request): Promise<NextResponse> {
   const status = payload.status as string | undefined
 
   if (!renderId || !status) {
+    log.warn('shotstack webhook missing id or status', {
+      hasId: Boolean(renderId),
+      hasStatus: Boolean(status),
+    })
     return NextResponse.json({ error: 'Missing id or status' }, { status: 400 })
+  }
+
+  // Log every terminal event — priceless when a render silently
+  // stays stuck in 'rendering' because the callback never arrived.
+  if (status === 'done' || status === 'failed') {
+    log.info('shotstack webhook received', {
+      renderId,
+      status,
+      hasUrl: Boolean(payload.url),
+      hasError: Boolean(payload.error),
+    })
   }
 
   // Only act on terminal states — Shotstack may also send interim events.
