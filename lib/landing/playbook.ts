@@ -299,38 +299,51 @@ export const GUIDES: Guide[] = [
         ],
       },
       {
-        id: 'the-three-fields',
-        title: 'The three fields — what each one does',
+        id: 'the-four-fields',
+        title: 'The four fields — what each one does',
         content: [
+          {
+            type: 'paragraph',
+            text: 'Settings → Brand Voice has four fields. Voice name is a label for internal reference (leave as "Default" unless you run multiple voices). The other three are the calibration signals the AI actually acts on.',
+          },
           {
             type: 'heading',
             level: 3,
-            text: 'Field 1 — Tone of voice',
+            text: 'Field 1 — Voice name',
           },
           {
             type: 'paragraph',
-            text: 'The most important field. Describe how you actually sound, with specifics. Length: aim for 3-5 sentences, each one a concrete mechanical choice, not a vibe.',
+            text: 'A label. Used when you run multiple brand voices (agencies do this per client). Solo creators: leave as "Default" and move on.',
+          },
+          {
+            type: 'heading',
+            level: 3,
+            text: 'Field 2 — Tone & style',
+          },
+          {
+            type: 'paragraph',
+            text: 'The most important field. Describe how you actually sound, with specifics. The in-app placeholder ("casual, witty, direct, educational, hype-free...") gives the format — take it as a starting list, then expand with 3-5 mechanical choices.',
           },
           {
             type: 'example-box',
-            label: 'Tone — the right way',
+            label: 'Tone & style — the right way',
             good:
-              'I write in first person and use contractions. My sentences are short, often under 10 words. I use em-dashes instead of commas for emphasis. I never start sentences with "So," — it reads as filler. I end short-form posts with a specific action ("try this next week") not a question ("thoughts?").',
+              'casual, direct, hype-free. I write in first person and use contractions. My sentences are short, often under 10 words. I use em-dashes instead of commas for emphasis. I never start sentences with "So," — it reads as filler. I end short-form posts with a specific action ("try this next week") not a question ("thoughts?").',
             bad:
               'Friendly but authoritative. Approachable. Confident. Authentic to my audience.',
           },
           {
             type: 'heading',
             level: 3,
-            text: 'Field 2 — Words to avoid',
+            text: 'Field 3 — Words / patterns to avoid',
           },
           {
             type: 'paragraph',
-            text: 'The AI has default patterns — overused words and filler constructions it reaches for when unsure. This field kills those patterns for your account specifically. Be specific; generic bans do nothing.',
+            text: 'The AI has default patterns — overused words and filler constructions it reaches for when unsure. This field kills those patterns for your account specifically. Be specific; generic bans do nothing. The in-app placeholder ("jargon, passive voice, emojis, overly salesy language") is a hint, not a full list — expand it.',
           },
           {
             type: 'example-box',
-            label: 'Avoid-list — the right way',
+            label: 'Words / patterns to avoid — the right way',
             good:
               '"leverage" as a verb, "unlock", "game-changer", "actionable insights", "synergy", "deep-dive", "crush it", any sentence starting with "In today\u2019s fast-paced", engagement-bait questions ending in "thoughts?"',
             bad: 'Corporate speak, buzzwords, clichés.',
@@ -338,11 +351,11 @@ export const GUIDES: Guide[] = [
           {
             type: 'heading',
             level: 3,
-            text: 'Field 3 — Example hook',
+            text: 'Field 4 — Example hook',
           },
           {
             type: 'paragraph',
-            text: 'One actual hook from your published content that landed. This is the calibration signal — the AI uses it to match rhythm, sentence length, hook style. Pick your best-performing real hook, not a fantasy one.',
+            text: 'One actual hook from your published content that landed. This is the calibration signal — the AI uses it to match rhythm, sentence length, hook style. Pick your best-performing real hook, not a fantasy one. The in-app placeholder ("I spent 90 days doing X — here\u2019s what nobody tells you about Y...") shows the shape we\u2019re looking for.',
           },
           {
             type: 'example-box',
@@ -1319,6 +1332,265 @@ export const GUIDES: Guide[] = [
             variant: 'example',
             title: 'Real failure we have seen',
             body: 'Agency gave a junior producer Owner role on three clients. Producer left. Clients could not access their own content for 48 hours while the agency reset permissions. The audit log would have caught the role assignment immediately — weekly review prevents that.',
+          },
+        ],
+      },
+    ],
+  },
+
+  /* ──────────────────────────────────────────────────────────────
+   * 6. YouTube to TikTok: the exact setup
+   * ────────────────────────────────────────────────────────────── */
+  {
+    id: 'youtube-to-tiktok',
+    slug: 'youtube-to-tiktok-the-exact-setup',
+    category: 'workflows',
+    title: 'YouTube to TikTok — the exact setup',
+    subtitle:
+      'Drop a YouTube URL into Clipflow, get a TikTok draft ready to post in under two minutes. Start-to-finish walkthrough.',
+    description:
+      'The simplest repurposing flow on Clipflow: one YouTube link in, one TikTok-ready draft out. Every step, every click, what to expect at each stage.',
+    emoji: '📺',
+    readTimeMinutes: 6,
+    difficulty: 'beginner',
+    updatedAt: '2026-04-22',
+    relatedGuides: [
+      'your-first-24-hours-with-clipflow',
+      'train-your-brand-voice',
+    ],
+    sections: [
+      {
+        id: 'when-to-use',
+        title: 'When this flow makes sense',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'You have a YouTube long-form video — yours or from someone whose clips you are licensed to repurpose. You want one strong TikTok post out of it, fast. Not a batch of 12 — just the single best moment, captioned and ready.',
+          },
+          {
+            type: 'callout',
+            variant: 'info',
+            body: 'Time budget: 2 minutes if the YouTube video has a transcript. Up to 10 minutes if Clipflow has to transcribe from scratch (we use Whisper).',
+          },
+        ],
+      },
+      {
+        id: 'step-1-paste',
+        title: 'Step 1 — Paste the YouTube URL (15 seconds)',
+        content: [
+          {
+            type: 'steps',
+            items: [
+              {
+                title: 'Click "+ New content" in the top-left',
+                body: 'Sidebar → + New content. This opens the import picker with four tabs: Upload / YouTube / Text / RSS.',
+              },
+              {
+                title: 'Open the YouTube tab',
+                body: 'Paste the full URL — both short (youtu.be) and long (youtube.com/watch) formats work.',
+              },
+              {
+                title: 'Hit Import',
+                body: 'Clipflow fetches the transcript via the YouTube API. No download. No waiting for video to upload. Transcript lands in roughly 5 seconds on a normal video.',
+                tip: 'If the video has no captions / transcript, Clipflow falls back to Whisper transcription — which takes roughly one minute per 10 minutes of video. You get a progress indicator.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'step-2-generate',
+        title: 'Step 2 — Generate the TikTok draft (30 seconds)',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Once the content item flips to "Ready" state (transcript loaded), open it. You will see the transcript on the left and a big "Generate drafts" CTA on the right.',
+          },
+          {
+            type: 'paragraph',
+            text: 'Generate by default creates drafts for all four platforms (TikTok / Instagram / YouTube Shorts / LinkedIn). If you only want TikTok today, that is fine — just ignore the others or delete them afterward.',
+          },
+          {
+            type: 'callout',
+            variant: 'pro',
+            title: 'Skip the clip finder on short videos',
+            body: 'If the source YouTube is under 5 minutes, the Clip Finder is overkill. Click "Generate drafts" directly — it will write one caption per platform based on the full transcript.',
+          },
+        ],
+      },
+      {
+        id: 'step-3-tiktok-draft',
+        title: 'Step 3 — Review the TikTok draft specifically (1 minute)',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Go to Drafts in the sidebar. Your four drafts sit in the Draft column. Click the one tagged "TikTok" to open it.',
+          },
+          {
+            type: 'dos-donts',
+            dos: [
+              'Read the hook out loud — does it earn the next 3 seconds?',
+              'Check the caption length — TikTok reads roughly 150 characters before "more"',
+              'Verify the hashtag set matches your niche (check the SEO panel)',
+            ],
+            donts: [
+              'Do not edit the caption if the hook is strong — the rest is usually fine',
+              'Do not ship without reviewing the first sentence',
+              'Do not add emojis manually — Clipflow suggests a per-platform set if you want them',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'step-4-hook-test',
+        title: 'Step 4 — Run A/B Hook Testing (30 seconds)',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'On the TikTok draft, scroll to the A/B Hooks section. Click "Generate variants." Clipflow produces three alternative openers — each one using a different psychological lever. Pick the one that lands hardest for your audience.',
+          },
+          {
+            type: 'visual',
+            visual: 'hook-test',
+            caption:
+              'Three hook variants per draft, picks a winner, stores it for later.',
+          },
+        ],
+      },
+      {
+        id: 'step-5-ship',
+        title: 'Step 5 — Approve + post',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Hit Approve on the draft. If Upload-Post is connected (Settings → Channels), go to Schedule and drop it onto today\u2019s calendar slot. If not, click Export — you get a clean caption to paste into TikTok manually.',
+          },
+          {
+            type: 'callout',
+            variant: 'tip',
+            title: 'Posting time matters more than polish',
+            body: 'For TikTok, 9-11am and 7-10pm local time outperform everything else. Schedule for a peak window even if it means shipping the draft one day later.',
+          },
+        ],
+      },
+    ],
+  },
+
+  /* ──────────────────────────────────────────────────────────────
+   * 7. Bulk-regenerate after a brand-voice update
+   * ────────────────────────────────────────────────────────────── */
+  {
+    id: 'bulk-regenerate',
+    slug: 'bulk-regenerate-after-brand-voice-update',
+    category: 'brand-voice',
+    title: 'Bulk-regenerate every draft after a Brand Voice update',
+    subtitle:
+      'The one-click move that saves agencies hours. Update voice once → refresh all pending drafts against the new calibration.',
+    description:
+      'How to use the bulk-regenerate action in the Drafts board to refresh existing drafts when you update the Brand Voice settings. Includes confirmation flow, partial-failure handling, and when NOT to use it.',
+    emoji: '🔄',
+    readTimeMinutes: 5,
+    difficulty: 'intermediate',
+    updatedAt: '2026-04-22',
+    relatedGuides: ['train-your-brand-voice', 'your-first-24-hours-with-clipflow'],
+    sections: [
+      {
+        id: 'why',
+        title: 'Why this action exists',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'You just rewrote your Brand Voice with 10 more specific tone choices. You have 23 pending drafts across the Draft / Review / Approved columns that were generated against the old voice. Manually regenerating each one would take an hour. Bulk-regenerate does it in one shot.',
+          },
+          {
+            type: 'callout',
+            variant: 'pro',
+            title: 'The agency use case',
+            body: 'Agencies running 5 clients often update one client\u2019s Brand Voice mid-week (after a client says "this does not sound like us"). Bulk-regenerate refreshes every pending draft for that client in under a minute — no other tool in this category has this.',
+          },
+        ],
+      },
+      {
+        id: 'the-flow',
+        title: 'The exact flow',
+        content: [
+          {
+            type: 'steps',
+            items: [
+              {
+                title: 'Update your Brand Voice first',
+                body: 'Settings → Brand Voice. Make your changes. Click Save. Verify the update landed (the "Default" label updates).',
+                tip: 'Rewrite Tone & style if the output is reading generic. Update Example hook if your last 5 top posts opened differently than the current one. Add to the avoid-list every time you catch a filler word in output.',
+              },
+              {
+                title: 'Go to the Drafts board',
+                body: 'Sidebar → Drafts. You will see the Pipeline board with Draft / Review / Approved / Exported columns.',
+              },
+              {
+                title: 'Select the drafts you want refreshed',
+                body: 'Click the checkbox on each card. You can select across columns — bulk-regenerate works on any draft regardless of state.',
+                tip: 'Use the column-header "Select all in this column" to grab every Draft + Review card in one click. Skip Approved + Exported drafts unless you want to re-review them.',
+              },
+              {
+                title: 'Click Regenerate in the bulk-action bar',
+                body: 'A floating action bar appears at the bottom once 1+ drafts are selected. Click the Regenerate icon (the rotating arrow). A confirmation prompt asks "Regenerate N drafts? Existing captions will be replaced."',
+              },
+              {
+                title: 'Confirm + wait',
+                body: 'Clipflow regenerates each draft sequentially (not in parallel — respects AI provider rate limits). You see a progress indicator per draft. For 20 drafts, expect ~60 seconds.',
+              },
+              {
+                title: 'Review the refreshed drafts',
+                body: 'When complete, the cards auto-refresh with the new captions. Spot-check 3-4 to verify the voice change took. If output still reads generic, the Brand Voice update was too vague — iterate.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'failure-modes',
+        title: 'When some regenerations fail',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Bulk-regenerate returns partial success. If 18 of 20 succeeded and 2 failed, the toast will say so: "Regenerated 18, but 2 failed: <reason>."',
+          },
+          {
+            type: 'checklist',
+            title: 'Common failure reasons',
+            items: [
+              'AI provider rate-limited (retry in 1 minute)',
+              'Source content item was deleted (nothing to regenerate from)',
+              'Transcript is empty (content item never finished processing)',
+              'AI provider key was removed / rotated (re-add in Settings → AI Keys)',
+            ],
+          },
+        ],
+      },
+      {
+        id: 'when-not',
+        title: 'When NOT to bulk-regenerate',
+        content: [
+          {
+            type: 'dos-donts',
+            dos: [
+              'After a meaningful Brand Voice update',
+              'After switching niche preset (Creator → Coach, etc.)',
+              'After updating the custom template for a platform',
+              'When onboarding a new client — refresh their sample drafts against their voice',
+            ],
+            donts: [
+              'Do not bulk-regenerate drafts you have already edited by hand — you will lose the edits',
+              'Do not bulk-regenerate Approved or Exported drafts unless you specifically want a redo',
+              'Do not run bulk-regenerate on 100+ drafts — split into batches to avoid AI rate limits',
+              'Do not bulk-regenerate just to get "new output" — voice has not changed, neither will output',
+            ],
+          },
+          {
+            type: 'callout',
+            variant: 'warning',
+            title: 'One-way operation',
+            body: 'Bulk-regenerate replaces the existing caption — the old one is gone. If you had hand-edits you wanted to keep, export them first or skip the regenerate for those specific cards.',
           },
         ],
       },

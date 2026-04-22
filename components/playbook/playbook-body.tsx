@@ -6,6 +6,7 @@ import { Checklist } from './blocks/checklist'
 import { DosDonts } from './blocks/dos-donts'
 import { ExampleBox } from './blocks/example-box'
 import { Quote } from './blocks/quote'
+import { Screenshot } from './blocks/screenshot'
 import { Shortcut } from './blocks/shortcut'
 import { Steps } from './blocks/steps'
 
@@ -108,6 +109,9 @@ function BlockRenderer({ block }: { block: GuideBlock }) {
 
     case 'shortcut':
       return <Shortcut keys={block.keys} label={block.label} />
+
+    case 'screenshot':
+      return <Screenshot src={block.src} alt={block.alt} caption={block.caption} />
 
     case 'hr':
       return (

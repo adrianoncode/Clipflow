@@ -71,6 +71,11 @@ export type GuideBlock =
   | { type: 'visual'; visual: VisualId; caption?: string }
   | { type: 'example-box'; label: string; good: string; bad?: string }
   | { type: 'shortcut'; keys: string[]; label: string }
+  /** Real product screenshot. Path is resolved against the Next.js
+   *  public folder, so `/playbook/screenshots/foo.png` loads from
+   *  `public/playbook/screenshots/foo.png`. Wraps with a framed
+   *  card + optional caption to match the editorial layout. */
+  | { type: 'screenshot'; src: string; alt: string; caption?: string }
   | { type: 'hr' }
 
 export interface GuideStep {
