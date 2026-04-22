@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
 import {
   CustomCursor,
@@ -19,7 +19,6 @@ import {
 } from './hero-motion'
 import { CaptionTypewriter } from './caption-typewriter'
 import { BentoShowcase } from './bento-showcase'
-import { HeroWorkspaceDemo } from './hero-workspace-demo'
 // import { Testimonials } from './testimonials' // removed with fake-quote cleanup; see comment at former use-site
 import { ComparisonMatrix } from './comparison-matrix'
 import { StickyCta } from './sticky-cta'
@@ -34,19 +33,6 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
   const rootRef = useRef<HTMLDivElement | null>(null)
   const stepsRef = useRef<HTMLDivElement | null>(null)
 
-  // Scroll-detected navbar state. At the top of the hero the nav is
-  // fully transparent so the headline owns the fold. Past 60px the
-  // nav gets a subtle paper-tinted backdrop-blur + a hairline border
-  // so it reads cleanly over any section below. 300ms ease transition
-  // between the two states.
-  const [scrolled, setScrolled] = useState(false)
-  useEffect(() => {
-    // Initial state — page might be loaded mid-scroll on reload.
-    const update = () => setScrolled(window.scrollY > 60)
-    update()
-    window.addEventListener('scroll', update, { passive: true })
-    return () => window.removeEventListener('scroll', update)
-  }, [])
 
   useEffect(() => {
     const root = rootRef.current
@@ -529,26 +515,10 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         </div>
       ) : null}
 
-      {/* NAV — glass-on-scroll.
-          • At the top of the page: fully transparent, no border, no
-            blur. Hero headline + the workspace demo own the fold.
-          • Past 60px: backdrop-blur(14px) + 72% paper tint + hairline
-            plum border + soft bottom shadow. Restrained "paper glass"
-            look — no icy cybersite vibe, stays on-brand.
-          Transition 300ms so the switch feels intentional, not jumpy. */}
+      {/* NAV */}
       <header
-        className="sticky top-0 z-40 transition-all duration-300"
-        style={{
-          background: scrolled ? 'rgba(250,247,242,0.72)' : 'transparent',
-          backdropFilter: scrolled ? 'saturate(180%) blur(14px)' : 'none',
-          WebkitBackdropFilter: scrolled ? 'saturate(180%) blur(14px)' : 'none',
-          borderBottom: scrolled
-            ? '1px solid rgba(42,26,61,0.06)'
-            : '1px solid transparent',
-          boxShadow: scrolled
-            ? '0 4px 18px -8px rgba(42,26,61,0.08)'
-            : 'none',
-        }}
+        className="sticky top-0 z-40 backdrop-blur-md"
+        style={{ background: 'rgba(250,247,242,0.85)', borderBottom: '1px solid var(--lv2-border)' }}
       >
         <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between px-6">
           <Link href="/" className="group flex items-center gap-2">
@@ -836,37 +806,20 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               </div>
             </div>
 
-            {/* Hero River of Clips — three parallel columns of mock
-                Viral Moments cards scrolling on different speeds.
-                Replaces the old 7-card static stack illustration
-                with a live-feeling content stream that sells what
-                Clipflow actually produces (9:16 clips with hooks +
-                captions + virality scores). Decorative — aria-hidden
-                on each card — so the headline/CTA carry the
-                semantics. Mobile shows 1 column only via the
-                component's own responsive breakpoints. */}
-            <div className="relative hidden md:block">
-              <HeroWorkspaceDemo />
-            </div>
-
-            {/* Hidden no-op placeholder — the old hero-assemble
-                JavaScript (IntersectionObserver + .in class toggling
-                in scripts above) still queries for #lv2-heroStack.
-                Keep the id reachable so those queries don't throw,
-                but zero-size + zero-visual. Safe to remove together
-                with the scripts in a follow-up refactor. */}
+            {/* Hero visual stack — original 7-card assemble animation.
+                Cards drift in with staggered .lv2-hero-assemble
+                delays from the IntersectionObserver above. aria-hidden
+                because the headline + CTA carry the semantics; the
+                stack is decorative. Hidden below lg so mobile doesn't
+                get the 560px absolute-positioned tower pushing the
+                primary CTA below the fold. */}
             <div
               id="lv2-heroStack"
+              role="presentation"
               aria-hidden
-              style={{ display: 'none' }}
-            />
-
-            {/* Legacy 7-card hero stack removed in favor of the River.
-                Preserved in git history: components/landing/new-landing.tsx
-                pre-commit 32a7e4c. The in-tree fragments below are
-                unreachable source that will be swept in the next
-                landing refactor. */}
-            {false && (
+              className="lv2-hero-assemble relative hidden h-[560px] lg:block"
+              style={{ perspective: 1200 }}
+            >
               <TiltWrap>
               {/* Source card */}
               <div
@@ -1173,7 +1126,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 </div>
               </div>
               </TiltWrap>
-            )}
+            </div>
           </div>
         </div>
       </section>
