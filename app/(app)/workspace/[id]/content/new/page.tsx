@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { ChevronRight } from 'lucide-react'
 
@@ -53,6 +54,32 @@ export default async function NewContentPage({ params }: NewContentPageProps) {
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-4 p-4 sm:p-8">
+      {/* Breadcrumb — every other authenticated surface carries one, the
+          New content page was the outlier. Keeps orientation consistent
+          for users deep-linked here from a Playbook / onboarding nudge. */}
+      <nav
+        className="flex flex-wrap items-center gap-1 font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted-foreground"
+        aria-label="Breadcrumb"
+      >
+        <Link
+          href={`/workspace/${params.id}`}
+          className="rounded-md px-1.5 py-0.5 transition-colors hover:bg-muted/60 hover:text-foreground"
+        >
+          {workspace.name}
+        </Link>
+        <ChevronRight className="h-3 w-3 text-muted-foreground/40" />
+        <Link
+          href={`/workspace/${params.id}`}
+          className="rounded-md px-1.5 py-0.5 transition-colors hover:bg-muted/60 hover:text-foreground"
+        >
+          Content
+        </Link>
+        <ChevronRight className="h-3 w-3 text-muted-foreground/40" />
+        <span className="rounded-md px-1.5 py-0.5 font-semibold text-foreground">
+          New
+        </span>
+      </nav>
+
       {/* Smart Import — paste anything, Clipflow figures it out */}
       <Card>
         <CardHeader className="pb-3">

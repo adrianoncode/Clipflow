@@ -268,9 +268,17 @@ function relMinutes(rel: string): number {
 }
 
 function PlatformDot({ platform }: { platform: OutputPlatform | string }) {
+  // Include both the canonical enum values (instagram_reels /
+  // youtube_shorts) AND the short aliases (reels / shorts) since both
+  // show up in practice — enum values come from outputs.platform,
+  // short aliases from UI-layer tag arrays.
   const bg: Record<string, string> = {
     tiktok: '#111',
+    instagram: 'linear-gradient(135deg,#F58529,#DD2A7B,#8134AF)',
+    instagram_reels: 'linear-gradient(135deg,#F58529,#DD2A7B,#8134AF)',
     reels: 'linear-gradient(135deg,#F58529,#DD2A7B,#8134AF)',
+    youtube: '#FF0033',
+    youtube_shorts: '#FF0033',
     shorts: '#FF0033',
     linkedin: '#0A66C2',
     x: '#111',
@@ -1107,26 +1115,47 @@ async function DashboardBody() {
                         </Link>
                       </div>
                       <div className="lv2d-divide">
-                        {platformPerf.map((p) => (
+                        {platformPerf.map((p) => {
+                          const hasData = p.posts > 0
+                          return (
                           <div key={p.key} className="flex items-center gap-3 px-5 py-3">
                             <PlatformDot platform={p.key} />
                             <div className="flex-1 min-w-0">
-                              <p className="text-[13px] font-semibold">{p.name}</p>
+                              <p
+                                className="text-[13px] font-semibold"
+                                style={{
+                                  color: hasData ? undefined : 'var(--lv2d-fg-soft)',
+                                }}
+                              >
+                                {p.name}
+                              </p>
                               <p
                                 className="lv2d-mono lv2d-tabular text-[11px]"
                                 style={{ color: 'var(--lv2d-muted)' }}
                               >
-                                {p.views} views · {p.posts} posts
+                                {hasData
+                                  ? `${p.views} views · ${p.posts} posts`
+                                  : 'No posts yet'}
                               </p>
                             </div>
-                            <Sparkline
-                              data={p.spark}
-                              width={80}
-                              height={22}
-                              variant="line"
-                              color={p.delta >= 0 ? 'var(--lv2d-success)' : 'var(--lv2d-danger)'}
-                              label={`${p.name} trend`}
-                            />
+                            {/* Hide the sparkline entirely on zero-data rows —
+                                rendering a flat line in muted gray reads as
+                                "broken chart," not "nothing to chart yet." */}
+                            {hasData ? (
+                              <Sparkline
+                                data={p.spark}
+                                width={80}
+                                height={22}
+                                variant="line"
+                                color={p.delta >= 0 ? 'var(--lv2d-success)' : 'var(--lv2d-danger)'}
+                                label={`${p.name} trend`}
+                              />
+                            ) : (
+                              <span
+                                aria-hidden
+                                className="block h-[22px] w-[80px] shrink-0"
+                              />
+                            )}
                             {p.posts > 0 && p.delta !== 0 ? (
                               <span
                                 className="lv2d-chip"
@@ -1146,7 +1175,8 @@ async function DashboardBody() {
                               </span>
                             ) : null}
                           </div>
-                        ))}
+                        )
+                        })}
                       </div>
                     </section>
                   )}
