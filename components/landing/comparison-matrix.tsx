@@ -197,23 +197,28 @@ function CellValue({ value, strong }: { value: boolean | string; strong?: boolea
       }}
     >
       {isYes ? (
+        // role="img" lets us attach aria-label on a <span> without
+        // WCAG tripping over "aria-label on element with no role."
+        // Simpler fix than switching to <svg role="img"> everywhere.
         <span
+          role="img"
+          aria-label="Yes"
           className="flex h-7 w-7 items-center justify-center rounded-full"
           style={{
             background: strong ? 'var(--lv2-primary)' : 'var(--lv2-primary-soft)',
             color: strong ? 'var(--lv2-accent)' : 'var(--lv2-primary)',
           }}
-          aria-label="Yes"
         >
-          <Check className="h-3.5 w-3.5" strokeWidth={3} />
+          <Check className="h-3.5 w-3.5" strokeWidth={3} aria-hidden />
         </span>
       ) : isNo ? (
         <span
+          role="img"
+          aria-label="No"
           className="flex h-7 w-7 items-center justify-center rounded-full"
           style={{ background: 'var(--lv2-bg-2)', color: 'var(--lv2-muted)' }}
-          aria-label="No"
         >
-          <Minus className="h-3.5 w-3.5" strokeWidth={2} />
+          <Minus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
         </span>
       ) : (
         <span

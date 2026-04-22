@@ -305,7 +305,7 @@ function InlineVars() {
       .lv2-root {
         --lv2-bg: #FAF7F2; --lv2-bg-2: #F3EDE3;
         --lv2-fg: #181511; --lv2-fg-soft: #3a342c;
-        --lv2-muted: #7c7468; --lv2-muted-2: #ECE5D8;
+        --lv2-muted: #5f5850; --lv2-muted-2: #ECE5D8;
         --lv2-border: #E5DDCE; --lv2-card: #FFFDF8;
         --lv2-primary: #2A1A3D; --lv2-primary-soft: #EDE6F5;
         --lv2-accent: #D6FF3E; --lv2-accent-ink: #1a2000;

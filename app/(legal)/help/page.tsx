@@ -125,7 +125,11 @@ export default function HelpCenterPage() {
           <p className="text-sm font-semibold" style={{ color: '#181511' }}>
             Still stuck?
           </p>
-          <p className="mt-0.5 text-[12.5px] leading-relaxed" style={{ color: '#7c7468' }}>
+          {/* #7c7468 on #F3EDE3 = 3.95:1, fails WCAG AA (needs 4.5:1).
+              #5f5850 brings it to 5.3:1 while staying in the same warm
+              muted family. Only darkened here — general muted token
+              keeps its original value for pages with lighter bg. */}
+          <p className="mt-0.5 text-[12.5px] leading-relaxed" style={{ color: '#5f5850' }}>
             Reply to any Clipflow email or drop a line to{' '}
             <a
               href="mailto:support@clipflow.to"

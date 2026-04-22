@@ -182,7 +182,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           --lv2-bg-2: #F3EDE3;
           --lv2-fg: #181511;
           --lv2-fg-soft: #3a342c;
-          --lv2-muted: #7c7468;
+          --lv2-muted: #5f5850;
           --lv2-muted-2: #ECE5D8;
           --lv2-border: #E5DDCE;
           --lv2-border-strong: #CFC4AF;
