@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { getFromAddress, getResendClient } from '@/lib/email/client'
+import { checkRateLimit } from '@/lib/rate-limit'
 import { log } from '@/lib/log'
 
 /**
@@ -24,6 +25,19 @@ const bodySchema = z.object({
 })
 
 export async function POST(request: Request): Promise<NextResponse> {
+  // IP-keyed rate limit so a scripted curl loop can't fill the DB
+  // and the Resend quota. User-keyed limit comes after auth so
+  // signed-in abusers are ALSO capped per-user, whichever fires first.
+  const forwardedFor = request.headers.get('x-forwarded-for') ?? ''
+  const ip = forwardedFor.split(',')[0]?.trim() || 'unknown'
+  const ipLimit = await checkRateLimit(`feedback:ip:${ip}`, 5, 60_000)
+  if (!ipLimit.ok) {
+    return NextResponse.json(
+      { ok: false, error: 'Too many feedback submissions. Try again in a minute.' },
+      { status: 429 },
+    )
+  }
+
   let body: unknown
   try {
     body = await request.json()
@@ -40,12 +54,24 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const user = await getUser()
+  // Anonymous feedback is not supported — the feedback launcher only
+  // renders inside the authenticated app shell, so hitting this route
+  // unauthenticated is only ever a scripted curl. RLS enforces the
+  // same constraint at the DB layer.
+  if (!user) {
+    return NextResponse.json(
+      { ok: false, error: 'Sign in to send feedback.' },
+      { status: 401 },
+    )
+  }
   const userAgent = request.headers.get('user-agent')?.slice(0, 200) ?? null
   const referer = request.headers.get('referer')?.slice(0, 500) ?? null
 
-  const admin = createAdminClient()
-  const { error: insertError } = await admin.from('user_feedback').insert({
-    user_id: user?.id ?? null,
+  // User-scoped client — RLS enforces that user_id = auth.uid(),
+  // matching the tightened 20260422000500 policy.
+  const supabase = createClient()
+  const { error: insertError } = await supabase.from('user_feedback').insert({
+    user_id: user.id,
     type: parsed.data.type,
     message: parsed.data.message,
     metadata: {
@@ -77,7 +103,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         subject: `[Clipflow · ${parsed.data.type.toUpperCase()}] feedback`,
         text: [
           `Type:    ${parsed.data.type}`,
-          `User:    ${user?.email ?? '(anonymous)'}`,
+          `User:    ${user.email ?? user.id}`,
           `Path:    ${parsed.data.path ?? referer ?? '(unknown)'}`,
           ``,
           parsed.data.message,

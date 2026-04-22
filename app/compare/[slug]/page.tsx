@@ -35,6 +35,9 @@ export function generateMetadata({ params }: PageProps): Metadata {
 
   const title = `Clipflow vs ${c.name} — honest side-by-side comparison`
   const description = `Switching from ${c.name}? See exactly where Clipflow is a superset: Brand Voice, Brand Kit on every render, A/B hook testing, white-label client review links, unlimited client workspaces, and BYOK AI pricing.`
+  const ogImage = `https://clipflow.to/api/thumbnail?title=${encodeURIComponent(
+    `Clipflow vs ${c.name}`,
+  )}&sub=${encodeURIComponent('Honest side-by-side')}&layout=link&variant=split`
 
   return {
     title,
@@ -47,11 +50,13 @@ export function generateMetadata({ params }: PageProps): Metadata {
       description,
       url: `https://clipflow.to/compare/clipflow-vs-${c.slug}`,
       type: 'website',
+      images: [{ url: ogImage, width: 1200, height: 627, alt: title }],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: [ogImage],
     },
   }
 }

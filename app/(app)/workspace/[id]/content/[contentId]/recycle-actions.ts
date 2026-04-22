@@ -9,8 +9,10 @@ import { generate } from '@/lib/ai/generate/generate'
 import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { buildContentRecyclerPrompt } from '@/lib/ai/prompts/content-recycler'
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { checkLimit } from '@/lib/billing/check-limit'
 import { getContentItem } from '@/lib/content/get-content-item'
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 
 // ---------------------------------------------------------------------------
@@ -75,6 +77,28 @@ export async function recycleContentAction(
   }
 
   const { workspace_id: workspaceId, content_id: contentId } = parsed.data
+
+  // Explicit workspace-membership gate — defense-in-depth in case the
+  // content_items RLS policy ever regresses. Prevents cross-tenant
+  // BYOK-quota burn.
+  const memberCheck = await requireWorkspaceMember(workspaceId)
+  if (!memberCheck.ok) {
+    return { ok: false, code: 'unknown', error: memberCheck.message }
+  }
+
+  // Rate-limit per user — recycleContent is a paid LLM call.
+  const rl = await checkRateLimit(
+    `ai:recycle:${user.id}`,
+    RATE_LIMITS.generation.limit,
+    RATE_LIMITS.generation.windowMs,
+  )
+  if (!rl.ok) {
+    return {
+      ok: false,
+      code: 'unknown',
+      error: 'You\u2019re recycling too fast. Wait a minute and try again.',
+    }
+  }
 
   // Billing gate
   const contentLimit = await checkLimit(workspaceId, 'content_items')

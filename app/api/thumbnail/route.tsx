@@ -1,6 +1,8 @@
 import { ImageResponse } from 'next/og'
 import type { NextRequest } from 'next/server'
 
+import { checkRateLimit } from '@/lib/rate-limit'
+
 export const runtime = 'edge'
 
 /**
@@ -27,6 +29,18 @@ export const runtime = 'edge'
  * the upside (social share potential) is real.
  */
 export async function GET(req: NextRequest) {
+  // Public route, no auth → IP-keyed rate limit keeps Vercel edge
+  // CPU costs bounded. `og/ImageResponse` is CPU-heavy so even a
+  // modest burst from one client is worth capping. 60/min is enough
+  // for a reasonable thumbnail-studio preview loop (user tweaks
+  // headline, instant repaint) but well below a DoS curve.
+  const forwardedFor = req.headers.get('x-forwarded-for') ?? ''
+  const ip = forwardedFor.split(',')[0]?.trim() || 'unknown'
+  const rl = await checkRateLimit(`thumb:ip:${ip}`, 60, 60_000)
+  if (!rl.ok) {
+    return new Response('Too many thumbnail requests', { status: 429 })
+  }
+
   const { searchParams } = new URL(req.url)
   const title = (searchParams.get('title') ?? 'Your headline goes here').slice(0, 110)
   const sub = (searchParams.get('sub') ?? '').slice(0, 60)

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getDecryptedAiKey } from '@/lib/ai/get-decrypted-ai-key'
 import { transcribeWithTimestamps } from '@/lib/ai/transcription/transcribe-with-timestamps'
@@ -55,6 +56,9 @@ export async function generateSubtitlesAction(
   if (!user) redirect('/login')
 
   const { workspace_id: workspaceId, content_id: contentId } = parsed.data
+
+  const memberCheck = await requireWorkspaceMember(workspaceId)
+  if (!memberCheck.ok) return { ok: false, error: memberCheck.message }
 
   const rl = await checkWorkspaceRateLimit(workspaceId, 'mediaJob')
   if (!rl.ok) return { ok: false, error: rl.error }

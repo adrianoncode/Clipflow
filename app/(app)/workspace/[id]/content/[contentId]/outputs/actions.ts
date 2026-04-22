@@ -18,7 +18,9 @@ import { z as zod } from 'zod'
 import { DEFAULT_MODELS } from '@/lib/ai/generate/models'
 import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { checkLimit } from '@/lib/billing/check-limit'
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { createClient } from '@/lib/supabase/server'
 import { deleteOutputsForContent } from '@/lib/outputs/delete-outputs-for-content'
@@ -93,6 +95,32 @@ export async function generateOutputsAction(
   const user = await getUser()
   if (!user) {
     redirect('/login')
+  }
+
+  // Defense-in-depth: until now this action trusted the workspace_id
+  // from the form + RLS on content_items to enforce tenancy. That
+  // meant a single RLS regression on content_items would let any
+  // logged-in user burn another workspace's BYOK AI quota by posting
+  // a random workspace_id + a content_id they own elsewhere. Explicit
+  // membership gate closes that blast radius.
+  const memberCheck = await requireWorkspaceMember(parsed.data.workspace_id)
+  if (!memberCheck.ok) {
+    return { ok: false, code: 'unknown', error: memberCheck.message }
+  }
+
+  // Rate-limit per user to prevent a malicious member looping this in
+  // a tight script. Mirrors the gate on the /api/auto-generate route.
+  const rl = await checkRateLimit(
+    `ai:outputs:${user.id}`,
+    RATE_LIMITS.generation.limit,
+    RATE_LIMITS.generation.windowMs,
+  )
+  if (!rl.ok) {
+    return {
+      ok: false,
+      code: 'unknown',
+      error: 'You\u2019re generating too fast. Wait a minute and try again.',
+    }
   }
 
   const outputLimit = await checkLimit(parsed.data.workspace_id, 'outputs')

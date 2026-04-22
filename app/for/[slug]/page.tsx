@@ -17,6 +17,9 @@ export function generateMetadata({ params }: PageProps): Metadata {
   const id = ALL_USE_CASE_IDS.find((i) => USE_CASES[i].slug === params.slug)
   if (!id) return { title: 'Use case not found' }
   const u = USE_CASES[id]
+  const ogImage = `https://clipflow.to/api/thumbnail?title=${encodeURIComponent(
+    `Clipflow for ${u.name}`,
+  )}&sub=${encodeURIComponent('Use case')}&layout=link&variant=bold`
   return {
     title: `Clipflow ${u.name.toLowerCase()}`,
     description: u.description,
@@ -28,6 +31,13 @@ export function generateMetadata({ params }: PageProps): Metadata {
       description: u.description,
       url: `https://clipflow.to/for/${u.slug}`,
       type: 'website',
+      images: [{ url: ogImage, width: 1200, height: 627, alt: u.name }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `Clipflow for ${u.name}`,
+      description: u.description,
+      images: [ogImage],
     },
   }
 }

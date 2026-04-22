@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { generateAvatarVideo } from '@/lib/avatar/generate-avatar-video'
 import type { AvatarVideoResult } from '@/lib/avatar/generate-avatar-video'
@@ -37,6 +38,9 @@ export async function generateAvatarAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  const memberCheck = await requireWorkspaceMember(parsed.data.workspace_id)
+  if (!memberCheck.ok) return { ok: false, error: memberCheck.message }
 
   const rl = await checkWorkspaceRateLimit(parsed.data.workspace_id, 'videoJob')
   if (!rl.ok) return { ok: false, error: rl.error }

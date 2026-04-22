@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getSignedUrl } from '@/lib/content/get-signed-url'
 import { startReframeJob } from '@/lib/reframe/reframe-video'
@@ -39,6 +40,9 @@ export async function startReframeAction(
   if (!user) redirect('/login')
 
   const { workspaceId, contentId, aspectRatio } = parsed.data
+
+  const memberCheck = await requireWorkspaceMember(workspaceId)
+  if (!memberCheck.ok) return { ok: false, error: memberCheck.message }
 
   const rl = await checkWorkspaceRateLimit(workspaceId, 'videoJob')
   if (!rl.ok) return { ok: false, error: rl.error }

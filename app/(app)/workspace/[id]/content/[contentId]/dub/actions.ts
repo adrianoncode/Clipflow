@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { startDubbingJob } from '@/lib/dubbing/translate-and-dub'
 import { checkRenderQuota } from '@/lib/billing/check-feature'
@@ -43,6 +44,11 @@ export async function startDubbingAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  // Explicit membership check — don't rely solely on RLS via
+  // getContentItem. Matches the gate on highlights/outputs-publish.
+  const memberCheck = await requireWorkspaceMember(parsed.data.workspace_id)
+  if (!memberCheck.ok) return { ok: false, error: memberCheck.message }
 
   const rl = await checkWorkspaceRateLimit(parsed.data.workspace_id, 'videoJob')
   if (!rl.ok) return { ok: false, error: rl.error }

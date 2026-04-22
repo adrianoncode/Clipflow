@@ -9,6 +9,7 @@ import { getActiveBrandVoice } from '@/lib/brand-voice/get-active-brand-voice'
 import { generate } from '@/lib/ai/generate/generate'
 import { DEFAULT_MODELS } from '@/lib/ai/generate/models'
 import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 export interface ContentIdea {
   title: string
@@ -48,6 +49,20 @@ export async function generateIdeasAction(
 
   const check = await requireWorkspaceMember(parsed.data.workspace_id)
   if (!check.ok) return { ok: false, error: check.message }
+
+  // Rate-limit paid LLM calls so a scripted client can't loop-drain
+  // the workspace's BYOK quota.
+  const rl = await checkRateLimit(
+    `ai:ideas:${check.userId}`,
+    RATE_LIMITS.generation.limit,
+    RATE_LIMITS.generation.windowMs,
+  )
+  if (!rl.ok) {
+    return {
+      ok: false,
+      error: 'You\u2019re generating ideas too fast. Wait a minute and try again.',
+    }
+  }
 
   const pick = await pickGenerationProvider(parsed.data.workspace_id)
   if (!pick.ok) {

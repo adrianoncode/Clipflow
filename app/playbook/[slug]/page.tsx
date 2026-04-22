@@ -20,6 +20,9 @@ export function generateMetadata({ params }: PageProps): Metadata {
   const g = GUIDES.find((x) => x.slug === params.slug)
   if (!g) return { title: 'Guide not found' }
 
+  const ogImage = `https://clipflow.to/api/thumbnail?title=${encodeURIComponent(
+    g.title,
+  )}&sub=${encodeURIComponent('Clipflow Playbook')}&layout=link&variant=bold`
   return {
     title: `${g.title} — Clipflow Playbook`,
     description: g.description,
@@ -29,11 +32,13 @@ export function generateMetadata({ params }: PageProps): Metadata {
       description: g.description,
       url: `https://clipflow.to/playbook/${g.slug}`,
       type: 'article',
+      images: [{ url: ogImage, width: 1200, height: 627, alt: g.title }],
     },
     twitter: {
       card: 'summary_large_image',
       title: g.title,
       description: g.description,
+      images: [ogImage],
     },
   }
 }
