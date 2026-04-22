@@ -19,7 +19,7 @@ import {
 } from './hero-motion'
 import { CaptionTypewriter } from './caption-typewriter'
 import { BentoShowcase } from './bento-showcase'
-import { HeroPhoneMockup } from './hero-phone-mockup'
+import { HeroWorkspaceDemo } from './hero-workspace-demo'
 // import { Testimonials } from './testimonials' // removed with fake-quote cleanup; see comment at former use-site
 import { ComparisonMatrix } from './comparison-matrix'
 import { StickyCta } from './sticky-cta'
@@ -816,7 +816,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 semantics. Mobile shows 1 column only via the
                 component's own responsive breakpoints. */}
             <div className="relative hidden md:block">
-              <HeroPhoneMockup />
+              <HeroWorkspaceDemo />
             </div>
 
             {/* Hidden no-op placeholder — the old hero-assemble
