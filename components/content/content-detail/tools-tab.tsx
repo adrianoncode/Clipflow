@@ -9,6 +9,7 @@ import {
   Scissors,
   Sparkles,
   Tag,
+  Wand2,
 } from 'lucide-react'
 
 import { AutoTagButton } from '@/components/content/auto-tag-button'
@@ -58,6 +59,17 @@ export function ToolsTab({ item, workspaceId, meta, currentPlan }: ToolsTabProps
           Video Tools
         </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Viral Moments — the headline clipper feature. Lives at
+              the top so users see it first when they open Tools on a
+              long-form (podcast / livestream / YouTube) item. Not
+              gated: this is core positioning, available on every plan
+              that can render at all. */}
+          <ToolCard
+            icon={<Wand2 className="h-4 w-4 text-primary" />}
+            label="Viral Moments"
+            description="AI finds 3\u20138 postable 20\u201360s clips with hooks and karaoke captions."
+            href={`/workspace/${workspaceId}/content/${item.id}/highlights`}
+          />
           <ToolCard
             icon={<MessageSquare className="h-4 w-4 text-muted-foreground" />}
             label="Subtitles"

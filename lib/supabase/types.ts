@@ -54,6 +54,7 @@ export type RenderKind =
 export type RenderStatus = 'rendering' | 'done' | 'failed'
 export type RenderProvider = 'shotstack' | 'replicate'
 export type RenderPriority = 'normal' | 'high'
+export type HighlightStatus = 'draft' | 'rendering' | 'ready' | 'failed'
 export type SubscriptionStatus =
   | 'trialing'
   | 'active'
@@ -350,6 +351,7 @@ export type Database = {
           title: string | null
           source_url: string | null
           transcript: string | null
+          transcript_words: Json | null
           metadata: Json
           created_by: string
           deleted_at: string | null
@@ -365,6 +367,7 @@ export type Database = {
           title?: string | null
           source_url?: string | null
           transcript?: string | null
+          transcript_words?: Json | null
           metadata?: Json
           created_by: string
           deleted_at?: string | null
@@ -380,9 +383,73 @@ export type Database = {
           title?: string | null
           source_url?: string | null
           transcript?: string | null
+          transcript_words?: Json | null
           metadata?: Json
           created_by?: string
           deleted_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      content_highlights: {
+        Row: {
+          id: string
+          content_id: string
+          workspace_id: string
+          start_seconds: number
+          end_seconds: number
+          hook_text: string | null
+          reason: string | null
+          virality_score: number | null
+          status: HighlightStatus
+          render_id: string | null
+          video_url: string | null
+          render_error: string | null
+          caption_style: string
+          aspect_ratio: string
+          metadata: Json
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          content_id: string
+          workspace_id: string
+          start_seconds: number
+          end_seconds: number
+          hook_text?: string | null
+          reason?: string | null
+          virality_score?: number | null
+          status?: HighlightStatus
+          render_id?: string | null
+          video_url?: string | null
+          render_error?: string | null
+          caption_style?: string
+          aspect_ratio?: string
+          metadata?: Json
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          content_id?: string
+          workspace_id?: string
+          start_seconds?: number
+          end_seconds?: number
+          hook_text?: string | null
+          reason?: string | null
+          virality_score?: number | null
+          status?: HighlightStatus
+          render_id?: string | null
+          video_url?: string | null
+          render_error?: string | null
+          caption_style?: string
+          aspect_ratio?: string
+          metadata?: Json
+          created_by?: string | null
           created_at?: string
           updated_at?: string
         }

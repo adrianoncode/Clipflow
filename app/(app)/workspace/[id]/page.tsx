@@ -131,14 +131,14 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
         <div className="grid gap-3 sm:grid-cols-2">
           {firstReady && (
             <Link
-              href={`/workspace/${params.id}/content/${firstReady.id}/outputs`}
+              href={`/workspace/${params.id}/content/${firstReady.id}/highlights`}
               className="group flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/[0.04] p-3.5 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md hover:shadow-primary/[0.06]"
             >
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
                 <Wand2 className="h-4 w-4" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-primary">Generate drafts</p>
+                <p className="text-xs font-bold text-primary">Find viral moments</p>
                 <p className="truncate text-[10px] text-muted-foreground">
                   {firstReady.title ?? 'Untitled'}
                 </p>

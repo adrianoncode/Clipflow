@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { updateRender } from '@/lib/video/renders/update-render'
+import { updateHighlightRender } from '@/lib/highlights/update-highlight-render'
 import { verifyEnvSecret } from '@/lib/security/verify-cron-secret'
 
 /**
@@ -57,19 +58,25 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: 'Missing id or status' }, { status: 400 })
   }
 
-  // Only act on terminal states — Shotstack may also send interim events
+  // Only act on terminal states — Shotstack may also send interim events.
+  //
+  // Both `renders` and `content_highlights` are updated in parallel:
+  // any given render_id lives in exactly one of those tables, and the
+  // non-matching update is a cheap no-op. Running them both keeps the
+  // webhook a single dispatch point instead of spreading the logic
+  // across handlers.
   if (status === 'done') {
-    await updateRender({
-      providerRenderId: renderId,
-      status: 'done',
-      url: (payload.url as string | undefined) ?? null,
-    })
+    const url = (payload.url as string | undefined) ?? null
+    await Promise.all([
+      updateRender({ providerRenderId: renderId, status: 'done', url }),
+      updateHighlightRender({ renderId, status: 'ready', url }),
+    ])
   } else if (status === 'failed') {
-    await updateRender({
-      providerRenderId: renderId,
-      status: 'failed',
-      error: (payload.error as string | undefined) ?? 'Render failed',
-    })
+    const error = (payload.error as string | undefined) ?? 'Render failed'
+    await Promise.all([
+      updateRender({ providerRenderId: renderId, status: 'failed', error }),
+      updateHighlightRender({ renderId, status: 'failed', error }),
+    ])
   }
 
   return NextResponse.json({ received: true })
