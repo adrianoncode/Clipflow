@@ -18,6 +18,8 @@ export interface HighlightRow {
   render_error: string | null
   caption_style: string
   aspect_ratio: string
+  crop_x: number | null
+  thumbnail_url: string | null
   created_at: string
 }
 
@@ -34,7 +36,7 @@ export async function listHighlights(
   const { data, error } = await supabase
     .from('content_highlights')
     .select(
-      'id, content_id, workspace_id, start_seconds, end_seconds, hook_text, reason, virality_score, status, render_id, video_url, render_error, caption_style, aspect_ratio, created_at',
+      'id, content_id, workspace_id, start_seconds, end_seconds, hook_text, reason, virality_score, status, render_id, video_url, render_error, caption_style, aspect_ratio, crop_x, thumbnail_url, created_at',
     )
     .eq('content_id', contentId)
     .eq('workspace_id', workspaceId)
@@ -49,13 +51,19 @@ export async function listHighlights(
   // Cast through unknown because numeric columns come back as string
   // from PostgREST when Postgres numeric(10,2) would otherwise lose
   // precision. Coerce explicitly so consumers see numbers.
-  return (data ?? []).map((r) => ({
-    ...(r as unknown as HighlightRow),
-    start_seconds: Number((r as { start_seconds: unknown }).start_seconds),
-    end_seconds: Number((r as { end_seconds: unknown }).end_seconds),
-    virality_score:
-      (r as { virality_score: unknown }).virality_score == null
-        ? null
-        : Number((r as { virality_score: unknown }).virality_score),
-  }))
+  return (data ?? []).map((r) => {
+    const row = r as {
+      start_seconds: unknown
+      end_seconds: unknown
+      virality_score: unknown
+      crop_x: unknown
+    }
+    return {
+      ...(r as unknown as HighlightRow),
+      start_seconds: Number(row.start_seconds),
+      end_seconds: Number(row.end_seconds),
+      virality_score: row.virality_score == null ? null : Number(row.virality_score),
+      crop_x: row.crop_x == null ? null : Number(row.crop_x),
+    }
+  })
 }

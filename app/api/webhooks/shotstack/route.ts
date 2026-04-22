@@ -67,9 +67,18 @@ export async function POST(request: Request): Promise<NextResponse> {
   // across handlers.
   if (status === 'done') {
     const url = (payload.url as string | undefined) ?? null
+    // Poster comes back on the same callback when we asked for one in
+    // the render body. Shotstack returns it as response.poster or as
+    // a top-level `poster` — we read both to be safe across versions.
+    const poster =
+      (payload.poster as string | undefined) ??
+      ((payload as { response?: { poster?: unknown } }).response?.poster as
+        | string
+        | undefined) ??
+      null
     await Promise.all([
       updateRender({ providerRenderId: renderId, status: 'done', url }),
-      updateHighlightRender({ renderId, status: 'ready', url }),
+      updateHighlightRender({ renderId, status: 'ready', url, thumbnailUrl: poster }),
     ])
   } else if (status === 'failed') {
     const error = (payload.error as string | undefined) ?? 'Render failed'

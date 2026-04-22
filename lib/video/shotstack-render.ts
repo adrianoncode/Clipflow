@@ -28,6 +28,14 @@ export interface ShotstackClip {
   position?: 'center' | 'top' | 'bottom'
   style?: string
   volume?: number
+  /**
+   * Horizontal crop anchor for cover-fit on mismatched aspect ratios.
+   * Shotstack semantics: -0.5 pushes the visible window to the left
+   * of the source frame, +0.5 pushes it to the right, 0 = center.
+   * Only applied when explicitly set — otherwise Shotstack's default
+   * center-crop stays in play.
+   */
+  offsetX?: number
 }
 
 export interface ShotstackSubtitle {
@@ -180,6 +188,13 @@ export async function submitRender(input: RenderInput): Promise<
           start: clip.start,
           length: clip.length,
           fit: clip.fit ?? 'cover',
+          // Only attach `offset` when the caller explicitly asked for
+          // a horizontal shift — Shotstack's default crop is already
+          // center-anchored and adding offset:{x:0} would prevent the
+          // engine from using its faster default path.
+          ...(typeof clip.offsetX === 'number' && clip.offsetX !== 0
+            ? { offset: { x: clip.offsetX } }
+            : {}),
         })),
     })
   }
@@ -272,6 +287,12 @@ export async function submitRender(input: RenderInput): Promise<
       format: 'mp4',
       resolution: input.resolution ?? 'hd',
       size: outputSize,
+      // Ask Shotstack to emit a poster JPG at 1.5s — far enough in to
+      // skip any fade-in but before most hook overlays fade out, so
+      // the thumbnail captures the moment's hook instead of a black
+      // frame. The URL comes back on the render-complete callback
+      // under `response.poster`.
+      poster: { capture: 1.5 },
       ...(callbackUrl ? { callback: callbackUrl } : {}),
     },
     // Optional top-level priority hint. Shotstack accepts `priority`

@@ -95,6 +95,12 @@ export async function renderHighlightClip(params: {
   captionStyle?: CaptionStyle
   aspectRatio?: '9:16' | '16:9' | '1:1'
   priority?: 'normal' | 'high'
+  /**
+   * Horizontal crop anchor in -0.5..0.5 (0 = center, -0.5 = far-left,
+   * +0.5 = far-right). Shotstack `offset.x` uses the same convention.
+   * Null = default center-crop.
+   */
+  cropX?: number | null
 }): Promise<{ ok: true; renderId: string } | { ok: false; error: string }> {
   const {
     workspaceId,
@@ -107,6 +113,7 @@ export async function renderHighlightClip(params: {
     captionStyle = 'tiktok-bold',
     aspectRatio = '9:16',
     priority = 'normal',
+    cropX = null,
   } = params
 
   const duration = clipEndSeconds - clipStartSeconds
@@ -151,6 +158,7 @@ export async function renderHighlightClip(params: {
         start: 0,
         length: duration,
         fit: 'cover',
+        ...(typeof cropX === 'number' ? { offsetX: cropX } : {}),
       },
     ],
     subtitles,

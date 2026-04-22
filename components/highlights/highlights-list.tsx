@@ -8,29 +8,33 @@ import {
   Clapperboard,
   Download,
   Loader2,
+  Pencil,
+  Send,
   Trash2,
   Wand2,
+  Zap,
 } from 'lucide-react'
 
 import {
   deleteHighlightAction,
+  publishHighlightAction,
+  renderAllHighlightsAction,
   renderHighlightAction,
+  type PublishHighlightState,
+  type RenderAllState,
   type RenderHighlightState,
 } from '@/app/(app)/workspace/[id]/content/[contentId]/highlights/actions'
+import { ClipPreviewEditor } from '@/components/highlights/clip-preview-editor'
 import type { HighlightRow } from '@/lib/highlights/list-highlights'
-
-const CAPTION_STYLES = [
-  { id: 'tiktok-bold', label: 'TikTok Bold', swatch: 'bg-black text-white' },
-  { id: 'minimal', label: 'Minimal', swatch: 'bg-white text-black border border-black/20' },
-  { id: 'neon', label: 'Neon Yellow', swatch: 'bg-black text-[#FFE600]' },
-  { id: 'white-bar', label: 'White Bar', swatch: 'bg-black/80 text-white' },
-] as const
 
 interface HighlightsListProps {
   workspaceId: string
   contentId: string
   items: HighlightRow[]
   canEdit: boolean
+  /** Signed source URL — needed by the preview editor to play the
+   *  original video. Null when there's no source (text/audio only). */
+  sourceVideoUrl: string | null
 }
 
 export function HighlightsList({
@@ -38,19 +42,25 @@ export function HighlightsList({
   contentId,
   items,
   canEdit,
+  sourceVideoUrl,
 }: HighlightsListProps) {
   const router = useRouter()
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const editing = items.find((h) => h.id === editingId) ?? null
 
   // Poll for any items in the `rendering` state — the Shotstack
   // webhook flips them to ready/failed but a user staring at the page
-  // won't see it unless we refresh. 8s keeps it cheap; most renders
-  // finish in 30-120s so 3-15 polls on average.
+  // won't see it unless we refresh.
   useEffect(() => {
     const hasPending = items.some((i) => i.status === 'rendering')
     if (!hasPending) return
     const interval = setInterval(() => router.refresh(), 8_000)
     return () => clearInterval(interval)
   }, [items, router])
+
+  const draftCount = items.filter(
+    (h) => h.status === 'draft' || h.status === 'failed',
+  ).length
 
   if (items.length === 0) {
     return (
@@ -71,32 +81,65 @@ export function HighlightsList({
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      {items.map((h) => (
-        <HighlightCard
-          key={h.id}
+    <>
+      {/* Batch render bar — only show when there's work to batch */}
+      {canEdit && draftCount >= 2 ? (
+        <div className="flex items-center justify-between rounded-xl border border-primary/25 bg-primary/[0.04] px-4 py-2.5">
+          <div className="flex items-center gap-2">
+            <Zap className="h-4 w-4 text-primary" />
+            <p className="text-xs font-semibold text-foreground">
+              {draftCount} clip{draftCount === 1 ? '' : 's'} ready to render
+            </p>
+          </div>
+          <RenderAllButton workspaceId={workspaceId} contentId={contentId} />
+        </div>
+      ) : null}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {items.map((h) => (
+          <HighlightCard
+            key={h.id}
+            workspaceId={workspaceId}
+            contentId={contentId}
+            highlight={h}
+            canEdit={canEdit}
+            canPreview={Boolean(sourceVideoUrl)}
+            onPreview={() => setEditingId(h.id)}
+          />
+        ))}
+      </div>
+
+      {editing && sourceVideoUrl ? (
+        <ClipPreviewEditor
           workspaceId={workspaceId}
-          contentId={contentId}
-          highlight={h}
-          canEdit={canEdit}
+          highlight={editing}
+          sourceVideoUrl={sourceVideoUrl}
+          onClose={() => {
+            setEditingId(null)
+            router.refresh()
+          }}
         />
-      ))}
-    </div>
+      ) : null}
+    </>
   )
 }
+
+// ---------------------------------------------------------------------------
 
 function HighlightCard({
   workspaceId,
   highlight: h,
   canEdit,
+  canPreview,
+  onPreview,
 }: {
   workspaceId: string
   contentId: string
   highlight: HighlightRow
   canEdit: boolean
+  canPreview: boolean
+  onPreview: () => void
 }) {
-  const [captionStyle, setCaptionStyle] = useState<string>(h.caption_style)
-
   const duration = Math.max(h.end_seconds - h.start_seconds, 0)
   const score = h.virality_score ?? 0
   const scoreColor =
@@ -133,70 +176,42 @@ function HighlightCard({
       ) : null}
 
       {/* Video / rendering state */}
-      {h.status === 'ready' && h.video_url ? (
-        <div className="overflow-hidden rounded-xl bg-black">
-          <video
-            src={h.video_url}
-            controls
-            className="aspect-[9/16] w-full"
-            preload="metadata"
-          />
-        </div>
-      ) : h.status === 'rendering' ? (
-        <div className="flex aspect-[9/16] max-h-60 items-center justify-center rounded-xl border border-border/50 bg-muted/20">
-          <div className="flex flex-col items-center gap-2 text-xs text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            <span>Rendering clip…</span>
-            <span className="text-[10px] opacity-60">Usually 30–90s</span>
-          </div>
-        </div>
-      ) : h.status === 'failed' ? (
-        <div className="flex items-start gap-2 rounded-xl border border-red-200/60 bg-red-50/40 p-3 text-xs text-red-700">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{h.render_error ?? 'Render failed. Retry?'}</span>
-        </div>
-      ) : null}
-
-      {/* Caption-style picker — only visible when we can still render */}
-      {canEdit && h.status !== 'ready' && h.status !== 'rendering' ? (
-        <div className="flex flex-wrap gap-1.5">
-          {CAPTION_STYLES.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setCaptionStyle(s.id)}
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold transition-all ${
-                captionStyle === s.id
-                  ? 'bg-primary text-primary-foreground shadow-sm ring-2 ring-primary/20'
-                  : 'bg-muted/40 text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              <span className={`h-2.5 w-2.5 rounded-full ${s.swatch}`} aria-hidden />
-              {s.label}
-            </button>
-          ))}
-        </div>
-      ) : null}
+      <MediaSlot h={h} />
 
       {/* Actions */}
       {canEdit ? (
-        <div className="mt-auto flex items-center gap-2 pt-1">
+        <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
+          {/* Ready: download + publish */}
           {h.status === 'ready' && h.video_url ? (
-            <a
-              href={h.video_url}
-              download
-              className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border/60 bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted/50"
-            >
-              <Download className="h-3.5 w-3.5" /> Download
-            </a>
+            <>
+              <PublishButton workspaceId={workspaceId} highlight={h} />
+              <a
+                href={h.video_url}
+                download
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border/60 bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted/50"
+                aria-label="Download clip"
+              >
+                <Download className="h-3.5 w-3.5" />
+              </a>
+            </>
           ) : (
-            <RenderButton
-              workspaceId={workspaceId}
-              highlightId={h.id}
-              captionStyle={captionStyle}
-              isRendering={h.status === 'rendering'}
-              label={h.status === 'failed' ? 'Retry render' : 'Render clip'}
-            />
+            <>
+              {canPreview && h.status !== 'rendering' ? (
+                <button
+                  type="button"
+                  onClick={onPreview}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted/50"
+                >
+                  <Pencil className="h-3.5 w-3.5" /> Preview &amp; adjust
+                </button>
+              ) : null}
+              <RenderButton
+                workspaceId={workspaceId}
+                highlightId={h.id}
+                isRendering={h.status === 'rendering'}
+                label={h.status === 'failed' ? 'Retry render' : 'Render'}
+              />
+            </>
           )}
           <DeleteButton workspaceId={workspaceId} highlightId={h.id} />
         </div>
@@ -205,16 +220,61 @@ function HighlightCard({
   )
 }
 
+function MediaSlot({ h }: { h: HighlightRow }) {
+  if (h.status === 'ready' && h.video_url) {
+    return (
+      <div className="overflow-hidden rounded-xl bg-black">
+        <video
+          src={h.video_url}
+          poster={h.thumbnail_url ?? undefined}
+          controls
+          className="aspect-[9/16] w-full"
+          preload="metadata"
+        />
+      </div>
+    )
+  }
+
+  if (h.status === 'rendering') {
+    return (
+      <div className="flex aspect-[9/16] max-h-60 items-center justify-center rounded-xl border border-border/50 bg-muted/20">
+        <div className="flex flex-col items-center gap-2 text-xs text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <span>Rendering clip…</span>
+          <span className="text-[10px] opacity-60">Usually 30–90s</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (h.status === 'failed') {
+    return (
+      <div className="flex items-start gap-2 rounded-xl border border-red-200/60 bg-red-50/40 p-3 text-xs text-red-700">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+        <span>{h.render_error ?? 'Render failed. Retry?'}</span>
+      </div>
+    )
+  }
+
+  // Draft state — show a faux-phone silhouette so the card has visual weight.
+  return (
+    <div className="flex aspect-[9/16] max-h-60 items-center justify-center rounded-xl border border-dashed border-border/60 bg-muted/[0.08]">
+      <div className="flex flex-col items-center gap-1.5 text-xs text-muted-foreground">
+        <Clapperboard className="h-5 w-5 opacity-40" />
+        <span className="text-[10.5px] font-medium opacity-70">Draft · not rendered</span>
+      </div>
+    </div>
+  )
+}
+
 function RenderButton({
   workspaceId,
   highlightId,
-  captionStyle,
   isRendering,
   label,
 }: {
   workspaceId: string
   highlightId: string
-  captionStyle: string
   isRendering: boolean
   label: string
 }) {
@@ -222,12 +282,10 @@ function RenderButton({
     renderHighlightAction,
     {},
   )
-
   return (
-    <form action={formAction} className="flex-1">
+    <form action={formAction} className="flex-1 min-w-[120px]">
       <input type="hidden" name="workspace_id" value={workspaceId} />
       <input type="hidden" name="highlight_id" value={highlightId} />
-      <input type="hidden" name="caption_style" value={captionStyle} />
       <RenderSubmit isRendering={isRendering} label={label} />
       {state?.ok === false && state.error ? (
         <p className="mt-1 text-[10.5px] text-destructive">{state.error}</p>
@@ -254,6 +312,168 @@ function RenderSubmit({ isRendering, label }: { isRendering: boolean; label: str
         <>
           <Clapperboard className="h-3.5 w-3.5" />
           {label}
+        </>
+      )}
+    </button>
+  )
+}
+
+function RenderAllButton({
+  workspaceId,
+  contentId,
+}: {
+  workspaceId: string
+  contentId: string
+}) {
+  const [state, formAction] = useFormState<RenderAllState, FormData>(
+    renderAllHighlightsAction,
+    {},
+  )
+  return (
+    <form action={formAction} className="flex items-center gap-2">
+      <input type="hidden" name="workspace_id" value={workspaceId} />
+      <input type="hidden" name="content_id" value={contentId} />
+      {state?.ok === true ? (
+        <span className="text-[11px] font-semibold text-emerald-600">
+          Submitted {state.submitted}
+          {state.failed ? ` · ${state.failed} failed` : ''}
+        </span>
+      ) : state?.ok === false ? (
+        <span className="text-[11px] text-destructive">{state.error}</span>
+      ) : null}
+      <RenderAllSubmit />
+    </form>
+  )
+}
+
+function RenderAllSubmit() {
+  const { pending } = useFormStatus()
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-bold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 disabled:opacity-70"
+    >
+      {pending ? (
+        <>
+          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Submitting all…
+        </>
+      ) : (
+        <>
+          <Zap className="h-3.5 w-3.5" /> Render all
+        </>
+      )}
+    </button>
+  )
+}
+
+function PublishButton({
+  workspaceId,
+  highlight,
+}: {
+  workspaceId: string
+  highlight: HighlightRow
+}) {
+  const [open, setOpen] = useState(false)
+  const [caption, setCaption] = useState(highlight.hook_text ?? '')
+  const [platforms, setPlatforms] = useState<string[]>([
+    'tiktok',
+    'instagram',
+    'youtube',
+  ])
+  const [state, formAction] = useFormState<PublishHighlightState, FormData>(
+    publishHighlightAction,
+    {},
+  )
+
+  function togglePlatform(p: string) {
+    setPlatforms((list) => (list.includes(p) ? list.filter((x) => x !== p) : [...list, p]))
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90"
+      >
+        <Send className="h-3.5 w-3.5" /> Post
+      </button>
+    )
+  }
+
+  return (
+    <div className="w-full rounded-xl border border-border/60 bg-muted/20 p-3">
+      <form action={formAction} className="space-y-2.5">
+        <input type="hidden" name="workspace_id" value={workspaceId} />
+        <input type="hidden" name="highlight_id" value={highlight.id} />
+        <input type="hidden" name="platforms" value={platforms.join(',')} />
+        <div>
+          <label className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+            Caption
+          </label>
+          <textarea
+            name="caption"
+            rows={2}
+            maxLength={2200}
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            className="mt-1 w-full resize-none rounded-md border border-border/60 bg-background p-2 text-xs"
+          />
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {['tiktok', 'instagram', 'youtube', 'linkedin'].map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => togglePlatform(p)}
+              className={`rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold uppercase transition-colors ${
+                platforms.includes(p)
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/60'
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+        {state?.ok === false && state.error ? (
+          <p className="text-[10.5px] text-destructive">{state.error}</p>
+        ) : state?.ok === true ? (
+          <p className="text-[10.5px] font-semibold text-emerald-600">
+            Posted to {Object.keys(state.postIds).join(', ')}.
+          </p>
+        ) : null}
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="rounded-md px-2.5 py-1 text-[10.5px] font-semibold text-muted-foreground hover:bg-muted/50"
+          >
+            Cancel
+          </button>
+          <PublishSubmit />
+        </div>
+      </form>
+    </div>
+  )
+}
+
+function PublishSubmit() {
+  const { pending } = useFormStatus()
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1 text-[11px] font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-70"
+    >
+      {pending ? (
+        <>
+          <Loader2 className="h-3 w-3 animate-spin" /> Posting…
+        </>
+      ) : (
+        <>
+          <Send className="h-3 w-3" /> Post now
         </>
       )}
     </button>

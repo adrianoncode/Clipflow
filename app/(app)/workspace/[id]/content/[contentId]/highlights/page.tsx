@@ -7,6 +7,7 @@ import { HighlightsList } from '@/components/highlights/highlights-list'
 import { PageHeading } from '@/components/workspace/page-heading'
 import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { getContentItem } from '@/lib/content/get-content-item'
+import { getLongLivedSourceUrl } from '@/lib/content/get-signed-url'
 import { listHighlights } from '@/lib/highlights/list-highlights'
 
 interface HighlightsPageProps {
@@ -31,7 +32,10 @@ export default async function HighlightsPage({ params }: HighlightsPageProps) {
   const item = await getContentItem(params.contentId, params.id)
   if (!item) notFound()
 
-  const highlights = await listHighlights(params.contentId, params.id)
+  const [highlights, sourceVideoUrl] = await Promise.all([
+    listHighlights(params.contentId, params.id),
+    item.source_url ? getLongLivedSourceUrl(item.source_url) : Promise.resolve(null),
+  ])
 
   const canEdit = member.role === 'owner' || member.role === 'editor'
   const hasTranscript = Boolean(item.transcript && item.transcript.trim().length >= 200)
@@ -110,6 +114,7 @@ export default async function HighlightsPage({ params }: HighlightsPageProps) {
         contentId={params.contentId}
         items={highlights}
         canEdit={canEdit}
+        sourceVideoUrl={sourceVideoUrl}
       />
     </div>
   )

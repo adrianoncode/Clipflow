@@ -201,22 +201,52 @@ export async function renderHighlightAction(
     return { ok: false, error: 'Only editors and owners can render highlights.' }
   }
 
+  const outcome = await submitHighlightRender({
+    workspaceId: workspace_id,
+    highlightId: highlight_id,
+    captionStyleOverride: caption_style,
+  })
+
+  if (!outcome.ok) return outcome
+  revalidatePath(`/workspace/${workspace_id}/content/${outcome.contentId}/highlights`)
+  return { ok: true, renderId: outcome.renderId }
+}
+
+/**
+ * Shared submit path used by renderHighlightAction and the batch
+ * render-all action. Pulls the highlight row, validates, calls
+ * Shotstack via renderHighlightClip, then flips the row to
+ * `rendering` or `failed` exactly once.
+ *
+ * Returns `contentId` on success so callers can revalidate the
+ * correct highlights page. Skips items already in `rendering`.
+ */
+async function submitHighlightRender(params: {
+  workspaceId: string
+  highlightId: string
+  captionStyleOverride?: 'tiktok-bold' | 'minimal' | 'neon' | 'white-bar'
+}): Promise<
+  | { ok: true; renderId: string; contentId: string }
+  | { ok: false; error: string; skipped?: boolean }
+> {
+  const { workspaceId, highlightId, captionStyleOverride } = params
   const supabase = createClient()
+
   const { data: row } = await supabase
     .from('content_highlights')
     .select(
-      'id, content_id, workspace_id, start_seconds, end_seconds, hook_text, status, caption_style, aspect_ratio',
+      'id, content_id, workspace_id, start_seconds, end_seconds, hook_text, status, caption_style, aspect_ratio, crop_x',
     )
-    .eq('id', highlight_id)
-    .eq('workspace_id', workspace_id)
+    .eq('id', highlightId)
+    .eq('workspace_id', workspaceId)
     .maybeSingle()
 
   if (!row) return { ok: false, error: 'Highlight not found.' }
   if (row.status === 'rendering') {
-    return { ok: false, error: 'This clip is already rendering.' }
+    return { ok: false, error: 'Already rendering.', skipped: true }
   }
 
-  const item = await getContentItem(row.content_id as string, workspace_id)
+  const item = await getContentItem(row.content_id as string, workspaceId)
   if (!item) return { ok: false, error: 'Parent content item missing.' }
   if (!item.source_url) {
     return { ok: false, error: 'Source video missing — cannot render.' }
@@ -227,8 +257,6 @@ export async function renderHighlightAction(
     return { ok: false, error: 'Could not resolve source video URL.' }
   }
 
-  // Word timings come off the parent content item (see comment in
-  // findViralMomentsAction — same two-source fallback).
   const { data: wordsRow } = await supabase
     .from('content_items')
     .select('transcript_words, metadata')
@@ -236,34 +264,38 @@ export async function renderHighlightAction(
     .maybeSingle()
   const wordTimings = extractWordTimings(wordsRow)
 
-  // Studio-plan workspaces get priority queue — same flag used by
-  // render_priority and outputs.
-  const plan = await getWorkspacePlan(workspace_id)
+  const plan = await getWorkspacePlan(workspaceId)
   const priority = checkPlanAccess(plan, 'priorityRenders') ? 'high' : 'normal'
 
+  const captionStyle = (captionStyleOverride ??
+    (row.caption_style as string)) as
+    | 'tiktok-bold'
+    | 'minimal'
+    | 'neon'
+    | 'white-bar'
+
+  const cropX = (row as { crop_x: unknown }).crop_x
+  const cropXNum = typeof cropX === 'number' ? cropX : cropX != null ? Number(cropX) : null
+
   const result = await renderHighlightClip({
-    workspaceId: workspace_id,
+    workspaceId,
     sourceVideoUrl,
     clipStartSeconds: Number(row.start_seconds),
     clipEndSeconds: Number(row.end_seconds),
     hookText: (row.hook_text as string | null) ?? undefined,
     wordTimings,
     fallbackSubtitleText: item.transcript,
-    captionStyle: (caption_style ?? (row.caption_style as string)) as
-      | 'tiktok-bold'
-      | 'minimal'
-      | 'neon'
-      | 'white-bar',
+    captionStyle,
     aspectRatio: ((row.aspect_ratio as string) ?? '9:16') as '9:16',
     priority,
+    cropX: cropXNum,
   })
 
   if (!result.ok) {
-    // Mark failed so the UI can surface the error without a fresh retry.
     await supabase
       .from('content_highlights')
       .update({ status: 'failed', render_error: result.error })
-      .eq('id', highlight_id)
+      .eq('id', highlightId)
     return { ok: false, error: result.error }
   }
 
@@ -273,12 +305,263 @@ export async function renderHighlightAction(
       status: 'rendering',
       render_id: result.renderId,
       render_error: null,
+      ...(captionStyleOverride ? { caption_style: captionStyleOverride } : {}),
+    })
+    .eq('id', highlightId)
+
+  return {
+    ok: true,
+    renderId: result.renderId,
+    contentId: row.content_id as string,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Adjust (bounds + crop_x + caption_style) — called by the preview editor
+// ---------------------------------------------------------------------------
+
+const adjustSchema = z.object({
+  workspace_id: z.string().uuid(),
+  highlight_id: z.string().uuid(),
+  start_seconds: z.coerce.number().nonnegative(),
+  end_seconds: z.coerce.number().positive(),
+  crop_x: z
+    .union([z.coerce.number().min(-0.5).max(0.5), z.literal('')])
+    .optional(),
+  caption_style: z
+    .enum(['tiktok-bold', 'minimal', 'neon', 'white-bar'])
+    .optional(),
+  hook_text: z.string().max(120).optional(),
+})
+
+export type AdjustHighlightState =
+  | { ok?: undefined; error?: string }
+  | { ok: true }
+  | { ok: false; error: string }
+
+/**
+ * Applies user edits from the clip-preview editor to a draft highlight.
+ * Blocks edits to rendering/ready clips — once credits are spent the
+ * bounds are locked (users should delete + regenerate instead).
+ */
+export async function adjustHighlightAction(
+  _prev: AdjustHighlightState,
+  formData: FormData,
+): Promise<AdjustHighlightState> {
+  const parsed = adjustSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    highlight_id: formData.get('highlight_id'),
+    start_seconds: formData.get('start_seconds'),
+    end_seconds: formData.get('end_seconds'),
+    crop_x: formData.get('crop_x') ?? undefined,
+    caption_style: formData.get('caption_style') ?? undefined,
+    hook_text: formData.get('hook_text') ?? undefined,
+  })
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? 'Invalid request.',
+    }
+  }
+
+  const { workspace_id, highlight_id, start_seconds, end_seconds, crop_x, caption_style, hook_text } =
+    parsed.data
+
+  if (end_seconds <= start_seconds) {
+    return { ok: false, error: 'End must be after start.' }
+  }
+  if (end_seconds - start_seconds > 180) {
+    return { ok: false, error: 'Clip can be at most 3 minutes.' }
+  }
+
+  const check = await requireWorkspaceMember(workspace_id)
+  if (!check.ok) return { ok: false, error: check.message }
+  if (check.role !== 'owner' && check.role !== 'editor') {
+    return { ok: false, error: 'Only editors and owners can adjust highlights.' }
+  }
+
+  const supabase = createClient()
+  const { data: row } = await supabase
+    .from('content_highlights')
+    .select('id, content_id, status')
+    .eq('id', highlight_id)
+    .eq('workspace_id', workspace_id)
+    .maybeSingle()
+
+  if (!row) return { ok: false, error: 'Highlight not found.' }
+  if (row.status === 'rendering' || row.status === 'ready') {
+    return {
+      ok: false,
+      error: 'This clip has already been rendered. Delete it and regenerate to adjust.',
+    }
+  }
+
+  const { error } = await supabase
+    .from('content_highlights')
+    .update({
+      start_seconds,
+      end_seconds,
+      crop_x: crop_x === '' || crop_x == null ? null : crop_x,
       ...(caption_style ? { caption_style } : {}),
+      ...(hook_text !== undefined ? { hook_text: hook_text || null } : {}),
     })
     .eq('id', highlight_id)
 
+  if (error) {
+    log.error('adjustHighlightAction failed', error)
+    return { ok: false, error: 'Could not save your edits.' }
+  }
+
   revalidatePath(`/workspace/${workspace_id}/content/${row.content_id}/highlights`)
-  return { ok: true, renderId: result.renderId }
+  return { ok: true }
+}
+
+// ---------------------------------------------------------------------------
+// Batch render — submit every remaining draft in one click
+// ---------------------------------------------------------------------------
+
+const renderAllSchema = z.object({
+  workspace_id: z.string().uuid(),
+  content_id: z.string().uuid(),
+})
+
+export type RenderAllState =
+  | { ok?: undefined; error?: string }
+  | { ok: true; submitted: number; failed: number }
+  | { ok: false; error: string }
+
+export async function renderAllHighlightsAction(
+  _prev: RenderAllState,
+  formData: FormData,
+): Promise<RenderAllState> {
+  const parsed = renderAllSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    content_id: formData.get('content_id'),
+  })
+  if (!parsed.success) return { ok: false, error: 'Invalid request.' }
+
+  const { workspace_id, content_id } = parsed.data
+
+  const check = await requireWorkspaceMember(workspace_id)
+  if (!check.ok) return { ok: false, error: check.message }
+  if (check.role !== 'owner' && check.role !== 'editor') {
+    return { ok: false, error: 'Only editors and owners can render highlights.' }
+  }
+
+  const supabase = createClient()
+  // Only consider `draft` and previously-`failed` rows — rendering
+  // items are already in-flight, ready items have a final URL.
+  const { data: rows, error: listError } = await supabase
+    .from('content_highlights')
+    .select('id, status')
+    .eq('content_id', content_id)
+    .eq('workspace_id', workspace_id)
+    .in('status', ['draft', 'failed'])
+
+  if (listError) {
+    log.error('renderAllHighlightsAction listing failed', listError)
+    return { ok: false, error: 'Could not list your draft highlights.' }
+  }
+  if (!rows || rows.length === 0) {
+    return { ok: false, error: 'No draft highlights to render.' }
+  }
+
+  // Run in small batches so we don't open 8 Shotstack sockets at once
+  // on a free/dev tier. Sequential keeps us well under any rate limit.
+  let submitted = 0
+  let failed = 0
+  for (const r of rows) {
+    const outcome = await submitHighlightRender({
+      workspaceId: workspace_id,
+      highlightId: r.id as string,
+    })
+    if (outcome.ok) submitted += 1
+    else if (!outcome.skipped) failed += 1
+  }
+
+  revalidatePath(`/workspace/${workspace_id}/content/${content_id}/highlights`)
+  return { ok: true, submitted, failed }
+}
+
+// ---------------------------------------------------------------------------
+// Publish a ready highlight directly to social platforms via Upload-Post
+// ---------------------------------------------------------------------------
+
+const publishSchema = z.object({
+  workspace_id: z.string().uuid(),
+  highlight_id: z.string().uuid(),
+  platforms: z.string().optional(), // comma-separated
+  caption: z.string().max(2200).optional(),
+})
+
+export type PublishHighlightState =
+  | { ok?: undefined; error?: string }
+  | { ok: true; postIds: Record<string, string> }
+  | { ok: false; error: string; code?: 'missing_key' | 'api_error' | 'network' }
+
+export async function publishHighlightAction(
+  _prev: PublishHighlightState,
+  formData: FormData,
+): Promise<PublishHighlightState> {
+  const parsed = publishSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    highlight_id: formData.get('highlight_id'),
+    platforms: formData.get('platforms') ?? undefined,
+    caption: formData.get('caption') ?? undefined,
+  })
+  if (!parsed.success) return { ok: false, error: 'Invalid request.' }
+
+  const { workspace_id, highlight_id, platforms, caption } = parsed.data
+
+  const check = await requireWorkspaceMember(workspace_id)
+  if (!check.ok) return { ok: false, error: check.message }
+  if (check.role !== 'owner' && check.role !== 'editor') {
+    return { ok: false, error: 'Only editors and owners can publish.' }
+  }
+
+  const supabase = createClient()
+  const { data: row } = await supabase
+    .from('content_highlights')
+    .select('id, content_id, status, video_url, hook_text, reason')
+    .eq('id', highlight_id)
+    .eq('workspace_id', workspace_id)
+    .maybeSingle()
+
+  if (!row) return { ok: false, error: 'Highlight not found.' }
+  if (row.status !== 'ready' || !row.video_url) {
+    return { ok: false, error: 'This clip has not finished rendering yet.' }
+  }
+
+  // Lazy-load the publisher so the action file doesn't pull it into
+  // the generation code-path.
+  const { publishVideo } = await import('@/lib/publish/upload-post')
+
+  const platformList = platforms
+    ?.split(',')
+    .map((p) => p.trim())
+    .filter((p): p is 'tiktok' | 'instagram' | 'youtube' | 'linkedin' =>
+      ['tiktok', 'instagram', 'youtube', 'linkedin'].includes(p),
+    )
+
+  const body = (caption || row.hook_text || row.reason || '').trim() || 'New clip'
+
+  const result = await publishVideo(workspace_id, {
+    videoUrl: row.video_url as string,
+    caption: body,
+    platforms: platformList && platformList.length > 0 ? platformList : undefined,
+  })
+
+  if (!result.ok) {
+    return { ok: false, error: result.error, code: result.code }
+  }
+
+  revalidatePath(`/workspace/${workspace_id}/content/${row.content_id}/highlights`)
+  return {
+    ok: true,
+    postIds: Object.fromEntries(
+      Object.entries(result.postIds).filter(([, v]) => typeof v === 'string'),
+    ) as Record<string, string>,
+  }
 }
 
 // ---------------------------------------------------------------------------

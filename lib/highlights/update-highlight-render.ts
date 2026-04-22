@@ -21,6 +21,7 @@ export async function updateHighlightRender(params: {
   status: 'ready' | 'failed'
   url?: string | null
   error?: string | null
+  thumbnailUrl?: string | null
 }): Promise<void> {
   const admin = createAdminClient()
   const { error } = await admin
@@ -29,6 +30,9 @@ export async function updateHighlightRender(params: {
       status: params.status,
       video_url: params.url ?? null,
       render_error: params.error ?? null,
+      // Only overwrite thumbnail_url when we have one — keeps a stale
+      // poster from being wiped on a subsequent failed-retry event.
+      ...(params.thumbnailUrl ? { thumbnail_url: params.thumbnailUrl } : {}),
     })
     .eq('render_id', params.renderId)
 

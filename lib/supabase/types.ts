@@ -408,6 +408,8 @@ export type Database = {
           render_error: string | null
           caption_style: string
           aspect_ratio: string
+          crop_x: number | null
+          thumbnail_url: string | null
           metadata: Json
           created_by: string | null
           created_at: string
@@ -428,6 +430,8 @@ export type Database = {
           render_error?: string | null
           caption_style?: string
           aspect_ratio?: string
+          crop_x?: number | null
+          thumbnail_url?: string | null
           metadata?: Json
           created_by?: string | null
           created_at?: string
@@ -448,6 +452,8 @@ export type Database = {
           render_error?: string | null
           caption_style?: string
           aspect_ratio?: string
+          crop_x?: number | null
+          thumbnail_url?: string | null
           metadata?: Json
           created_by?: string | null
           created_at?: string
