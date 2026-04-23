@@ -529,11 +529,15 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
       ) : null}
 
       {/* NAV — Apple-style glass on scroll.
-          Top of page: transparent, zero border, zero blur.
+          position:fixed instead of sticky because .lv2-root has
+          overflow-x:hidden (to constrain orb animations), which
+          breaks descendant sticky positioning. Fixed ignores the
+          parent overflow context and always anchors to the viewport.
+          Top of page: transparent.
           Past 60px: saturate+blur backdrop over 72% paper tint,
-          hairline plum border, soft shadow. 300ms ease transition. */}
+          hairline plum border, soft shadow. 300ms transition. */}
       <header
-        className="sticky top-0 z-40 transition-all duration-300"
+        className="fixed inset-x-0 top-0 z-40 transition-all duration-300"
         style={{
           background: scrolled ? 'rgba(250,247,242,0.72)' : 'transparent',
           backdropFilter: scrolled ? 'saturate(180%) blur(14px)' : 'none',
