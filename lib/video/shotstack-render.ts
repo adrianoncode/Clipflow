@@ -36,6 +36,12 @@ export interface ShotstackClip {
    * center-crop stays in play.
    */
   offsetX?: number
+  /**
+   * Opacity 0..1 applied at the clip level. Used for B-Roll overlays
+   * where the user wants partial transparency so the main video
+   * bleeds through. Omitted for the base video (always 1.0).
+   */
+  opacity?: number
 }
 
 export interface ShotstackSubtitle {
@@ -219,6 +225,12 @@ export async function submitRender(input: RenderInput): Promise<
             // its fast path.
             ...(typeof clip.offsetX === 'number' && clip.offsetX !== 0
               ? { offset: { x: clip.offsetX } }
+              : {}),
+            // Opacity on B-Roll overlays — only included when the
+            // caller set a non-1.0 alpha. Shotstack accepts the
+            // `opacity` field directly on the clip level.
+            ...(typeof clip.opacity === 'number' && clip.opacity < 1
+              ? { opacity: clip.opacity }
               : {}),
           }
         }),

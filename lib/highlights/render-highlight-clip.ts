@@ -1,75 +1,28 @@
 import 'server-only'
 
 import { submitRender, type CaptionStyle } from '@/lib/video/shotstack-render'
-import type { WordTiming } from '@/lib/highlights/detect-viral-moments'
+import {
+  chunkWordsForCaptions,
+  type CaptionChunk,
+  type WordTiming,
+} from '@/lib/highlights/caption-chunks'
 
 /**
- * Groups Whisper word-timings into 2-3 word caption "chunks" that flip
- * in sync with speech. TikTok/Reels-style karaoke captions show 1-3
- * words at a time — never a whole sentence — so the viewer's eye can
- * catch up at reading speed.
- *
- * Chunking rule:
- *  - up to 3 words per chunk
- *  - force a break on sentence-ending punctuation (. ? !)
- *  - force a break if the gap between words >= 0.6 s (natural pause)
- *  - never emit a chunk longer than 2.0 s
+ * A single B-Roll overlay the user dropped into the clip via the
+ * Phase A2 B-Roll picker. Shotstack will paint this on a track above
+ * the main video clip at the given offset + length with the given
+ * opacity (0..1). Typically a Pexels video or photo URL.
  */
-function chunkWordsForCaptions(
-  words: WordTiming[],
-  clipStartSeconds: number,
-  clipEndSeconds: number,
-): Array<{ text: string; start: number; length: number }> {
-  // Filter to words inside the clip window + a tiny head/tail slop
-  const inClip = words.filter(
-    (w) => w.end > clipStartSeconds - 0.05 && w.start < clipEndSeconds + 0.05,
-  )
-
-  const chunks: Array<{ text: string; start: number; length: number }> = []
-  let buffer: WordTiming[] = []
-
-  function flush() {
-    if (buffer.length === 0) return
-    const first = buffer[0]!
-    const last = buffer[buffer.length - 1]!
-    // Offset relative to clip start — Shotstack timeline is 0-based.
-    const start = Math.max(first.start - clipStartSeconds, 0)
-    const end = Math.min(last.end - clipStartSeconds, clipEndSeconds - clipStartSeconds)
-    const length = Math.max(end - start, 0.3)
-    const text = buffer
-      .map((w) => w.word)
-      .join(' ')
-      .replace(/\s+([.,!?;:])/g, '$1') // tighten punctuation spacing
-      .trim()
-    if (text) chunks.push({ text, start, length })
-    buffer = []
-  }
-
-  for (let i = 0; i < inClip.length; i++) {
-    const w = inClip[i]!
-    const prev = buffer[buffer.length - 1]
-    const bufferDuration = prev ? w.end - buffer[0]!.start : 0
-    const gapFromPrev = prev ? w.start - prev.end : 0
-
-    // Flush before appending if adding this word would break a rule
-    if (
-      buffer.length >= 3 ||
-      bufferDuration > 2.0 ||
-      (prev && gapFromPrev >= 0.6)
-    ) {
-      flush()
-    }
-
-    buffer.push(w)
-
-    // Flush after if punctuation closes a sentence.
-    if (/[.?!]$/.test(w.word.trim())) {
-      flush()
-    }
-  }
-  flush()
-
-  return chunks
+export interface BRollOverlay {
+  videoUrl: string
+  /** Seconds into the CLIP (not source) when the overlay appears. */
+  startSeconds: number
+  /** How long the overlay stays on screen. */
+  lengthSeconds: number
+  /** 0..1. 1 = fully opaque (replaces main video), 0 = invisible. */
+  opacity: number
+  /** 'video' or 'image' — controls which Shotstack asset type to use. */
+  kind?: 'video' | 'image'
 }
 
 /**
@@ -117,6 +70,19 @@ export async function renderHighlightClip(params: {
   customCaptionText?: string | null
   audioGainDb?: number | null
   thumbnailSeconds?: number | null
+  /**
+   * User-edited caption chunks from Phase A2's Caption Chunk Editor.
+   * Each entry overrides one line of the auto-chunked karaoke output.
+   * When present and non-empty, takes priority over auto-chunking but
+   * NOT over customCaptionText (single-line override wins first).
+   */
+  captionChunks?: CaptionChunk[] | null
+  /**
+   * Phase A2 B-Roll overlays. Each entry drops a Pexels clip (or
+   * photo) on top of the main video at the given offset for the
+   * given length, with the given opacity.
+   */
+  brollOverlays?: BRollOverlay[] | null
 }): Promise<{ ok: true; renderId: string } | { ok: false; error: string }> {
   const {
     workspaceId,
@@ -133,6 +99,8 @@ export async function renderHighlightClip(params: {
     customCaptionText = null,
     audioGainDb = null,
     thumbnailSeconds = null,
+    captionChunks = null,
+    brollOverlays = null,
   } = params
 
   const duration = clipEndSeconds - clipStartSeconds
@@ -147,6 +115,11 @@ export async function renderHighlightClip(params: {
   //  1. customCaptionText (user override — one line the full clip)
   //  2. word-level karaoke chunks (default, needs word timings)
   //  3. single caption from plaintext transcript (fallback)
+  // Caption-source priority:
+  //  1. customCaptionText — single-line override wins always
+  //  2. captionChunks (Phase A2) — user hand-edited chunk list
+  //  3. wordTimings — auto-chunk from Whisper word timings
+  //  4. fallbackSubtitleText — one caption painted across the clip
   let subtitles: Array<{ text: string; start: number; length: number }> = []
   if (customCaptionText?.trim()) {
     subtitles = [
@@ -156,8 +129,20 @@ export async function renderHighlightClip(params: {
         length: duration,
       },
     ]
+  } else if (captionChunks && captionChunks.length > 0) {
+    subtitles = captionChunks.map((c) => ({
+      text: c.text.trim().slice(0, 120),
+      start: Math.max(0, c.startSeconds),
+      length: Math.max(0.3, c.lengthSeconds),
+    }))
   } else if (wordTimings && wordTimings.length > 0) {
-    subtitles = chunkWordsForCaptions(wordTimings, clipStartSeconds, clipEndSeconds)
+    subtitles = chunkWordsForCaptions(wordTimings, clipStartSeconds, clipEndSeconds).map(
+      (c) => ({
+        text: c.text,
+        start: c.startSeconds,
+        length: c.lengthSeconds,
+      }),
+    )
   } else if (fallbackSubtitleText?.trim()) {
     subtitles = [
       {
@@ -188,6 +173,30 @@ export async function renderHighlightClip(params: {
       ? Math.max(0, Math.min(duration, thumbnailSeconds))
       : undefined
 
+  // B-Roll overlays: each becomes a clip on the same video track with
+  // its own start offset + length. Shotstack stacks later clips on
+  // top, so overlays render above the base video naturally. Opacity
+  // is applied via asset-level alpha filter below via ShotstackClip.
+  const brollClips =
+    brollOverlays && brollOverlays.length > 0
+      ? brollOverlays
+          .filter(
+            (o) =>
+              o.videoUrl &&
+              o.startSeconds >= 0 &&
+              o.startSeconds < duration &&
+              o.lengthSeconds > 0.1,
+          )
+          .map((o) => ({
+            type: (o.kind === 'image' ? 'image' : 'video') as 'video' | 'image',
+            src: o.videoUrl,
+            start: Math.max(0, o.startSeconds),
+            length: Math.min(o.lengthSeconds, duration - o.startSeconds),
+            fit: 'cover' as const,
+            opacity: Math.max(0, Math.min(1, o.opacity)),
+          }))
+      : []
+
   return submitRender({
     workspaceId,
     aspectRatio,
@@ -205,6 +214,7 @@ export async function renderHighlightClip(params: {
         ...(typeof cropX === 'number' ? { offsetX: cropX } : {}),
         ...(typeof volume === 'number' ? { volume } : {}),
       },
+      ...brollClips,
     ],
     subtitles,
     posterCapture,

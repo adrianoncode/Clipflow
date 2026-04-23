@@ -1,19 +1,30 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
-import { Check, Loader2, X } from 'lucide-react'
+import { Check, Loader2, RotateCcw, X } from 'lucide-react'
 
 import {
   adjustHighlightAction,
   type AdjustHighlightState,
 } from '@/app/(app)/workspace/[id]/content/[contentId]/highlights/actions'
+import {
+  chunkWordsForCaptions,
+  type CaptionChunk,
+  type WordTiming,
+} from '@/lib/highlights/caption-chunks'
 import type { HighlightRow } from '@/lib/highlights/list-highlights'
 
 interface ClipPreviewEditorProps {
   workspaceId: string
   highlight: HighlightRow
   sourceVideoUrl: string
+  /** Whisper word-level timings for the parent content item. Lets
+   *  the caption chunk editor show the AI's default chunks so the
+   *  user can correct them line-by-line. Null when unavailable —
+   *  the caption editor hides and only the single-line override
+   *  (Phase A1) is offered. */
+  wordTimings: WordTiming[] | null
   onClose: () => void
 }
 
@@ -30,6 +41,7 @@ export function ClipPreviewEditor({
   workspaceId,
   highlight,
   sourceVideoUrl,
+  wordTimings,
   onClose,
 }: ClipPreviewEditorProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -53,6 +65,27 @@ export function ClipPreviewEditor({
   )
   const [thumbSeconds, setThumbSeconds] = useState<number>(
     initialEdits.thumbnailSeconds ?? 1.5,
+  )
+
+  // Phase A2 — caption chunks (editable list of the AI's karaoke
+  // lines). Default to whatever already persists on the row; fall
+  // back to the auto-chunked lines from wordTimings. When the user
+  // hasn't tweaked anything, captionChunks stays at the computed
+  // default and we DON'T send it on save (null = keep auto).
+  const autoChunks = useMemo<CaptionChunk[]>(() => {
+    if (!wordTimings) return []
+    return chunkWordsForCaptions(
+      wordTimings,
+      highlight.start_seconds,
+      highlight.end_seconds,
+    )
+  }, [wordTimings, highlight.start_seconds, highlight.end_seconds])
+
+  const [captionChunks, setCaptionChunks] = useState<CaptionChunk[]>(
+    initialEdits.captionChunks ?? autoChunks,
+  )
+  const [captionsEdited, setCaptionsEdited] = useState<boolean>(
+    Boolean(initialEdits.captionChunks),
   )
 
   // The source clip's total duration — we need it to scale the
@@ -235,7 +268,7 @@ export function ClipPreviewEditor({
                 Custom caption (override)
               </label>
               <span className="text-[10.5px] text-muted-foreground/60">
-                Leave empty to auto-generate word-level karaoke captions
+                Leave empty to use the word-level lines below
               </span>
             </div>
             <textarea
@@ -243,10 +276,68 @@ export function ClipPreviewEditor({
               maxLength={500}
               value={customCaption}
               onChange={(e) => setCustomCaption(e.target.value)}
-              placeholder="Type a single caption line that shows the full clip…"
+              placeholder="Type one caption that shows across the full clip…"
               className="w-full resize-none rounded-lg border border-border/60 bg-background px-3 py-2 text-sm"
             />
           </div>
+
+          {/* Caption Chunk Editor (Phase A2) — only when we have word
+              timings AND the user hasn't switched to single-line mode
+              (non-empty custom caption would override these anyway). */}
+          {wordTimings && wordTimings.length > 0 && !customCaption.trim() ? (
+            <div className="space-y-1.5">
+              <div className="flex items-baseline justify-between">
+                <label className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                  Caption lines ({captionChunks.length})
+                </label>
+                {captionsEdited ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCaptionChunks(autoChunks)
+                      setCaptionsEdited(false)
+                    }}
+                    className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-primary hover:underline"
+                  >
+                    <RotateCcw className="h-3 w-3" aria-hidden />
+                    Reset to AI
+                  </button>
+                ) : (
+                  <span className="text-[10.5px] text-muted-foreground/60">
+                    Fix typos or rewrite what Whisper heard wrong
+                  </span>
+                )}
+              </div>
+              <div className="max-h-[200px] space-y-1 overflow-y-auto rounded-lg border border-border/50 bg-muted/10 p-1.5">
+                {captionChunks.map((chunk, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-2 rounded-md bg-background px-2 py-1"
+                  >
+                    <span className="w-12 shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground/60">
+                      {chunk.startSeconds.toFixed(1)}s
+                    </span>
+                    <input
+                      type="text"
+                      maxLength={120}
+                      value={chunk.text}
+                      onChange={(e) => {
+                        const next = [...captionChunks]
+                        next[idx] = { ...chunk, text: e.target.value }
+                        setCaptionChunks(next)
+                        setCaptionsEdited(true)
+                      }}
+                      className="flex-1 bg-transparent text-[12.5px] focus:outline-none"
+                      aria-label={`Caption line ${idx + 1}`}
+                    />
+                    <span className="shrink-0 font-mono text-[9.5px] tabular-nums text-muted-foreground/50">
+                      {chunk.lengthSeconds.toFixed(1)}s
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           {/* Audio gain */}
           <div className="space-y-1">
@@ -334,6 +425,15 @@ export function ClipPreviewEditor({
             type="hidden"
             name="thumbnail_seconds"
             value={Math.min(thumbSeconds, Math.max(clipLength - 0.1, 0.1))}
+          />
+          {/* Phase A2 edits.
+              - caption_chunks: JSON only when user actually edited
+                a line; otherwise empty string = keep auto.
+              - broll_overlays: same pattern. */}
+          <input
+            type="hidden"
+            name="caption_chunks"
+            value={captionsEdited ? JSON.stringify(captionChunks) : ''}
           />
 
           <CaptionStylePicker value={captionStyle} onChange={setCaptionStyle} />
@@ -508,21 +608,82 @@ function readEdits(highlight: HighlightRow): {
   customCaptionText: string | null
   audioGainDb: number | null
   thumbnailSeconds: number | null
+  captionChunks: CaptionChunk[] | null
+  brollOverlays: BRollOverlay[] | null
 } {
+  const empty = {
+    customCaptionText: null,
+    audioGainDb: null,
+    thumbnailSeconds: null,
+    captionChunks: null,
+    brollOverlays: null,
+  }
   const meta = (highlight as unknown as { metadata?: unknown }).metadata
-  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) {
-    return { customCaptionText: null, audioGainDb: null, thumbnailSeconds: null }
-  }
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return empty
   const edits = (meta as Record<string, unknown>).edits
-  if (!edits || typeof edits !== 'object' || Array.isArray(edits)) {
-    return { customCaptionText: null, audioGainDb: null, thumbnailSeconds: null }
-  }
+  if (!edits || typeof edits !== 'object' || Array.isArray(edits)) return empty
   const e = edits as Record<string, unknown>
+
+  let chunks: CaptionChunk[] | null = null
+  if (Array.isArray(e.captionChunks)) {
+    chunks = (e.captionChunks as unknown[])
+      .filter(
+        (c): c is CaptionChunk =>
+          typeof c === 'object' &&
+          c !== null &&
+          typeof (c as { text?: unknown }).text === 'string' &&
+          typeof (c as { startSeconds?: unknown }).startSeconds === 'number' &&
+          typeof (c as { lengthSeconds?: unknown }).lengthSeconds === 'number',
+      )
+      .map((c) => ({
+        text: c.text,
+        startSeconds: c.startSeconds,
+        lengthSeconds: c.lengthSeconds,
+      }))
+    if (chunks.length === 0) chunks = null
+  }
+
+  let overlays: BRollOverlay[] | null = null
+  if (Array.isArray(e.brollOverlays)) {
+    overlays = (e.brollOverlays as unknown[])
+      .filter(
+        (o): o is BRollOverlay =>
+          typeof o === 'object' &&
+          o !== null &&
+          typeof (o as { videoUrl?: unknown }).videoUrl === 'string' &&
+          typeof (o as { startSeconds?: unknown }).startSeconds === 'number' &&
+          typeof (o as { lengthSeconds?: unknown }).lengthSeconds === 'number' &&
+          typeof (o as { opacity?: unknown }).opacity === 'number',
+      )
+      .map((o) => ({
+        videoUrl: o.videoUrl,
+        thumbnailUrl: (o as { thumbnailUrl?: string }).thumbnailUrl,
+        startSeconds: o.startSeconds,
+        lengthSeconds: o.lengthSeconds,
+        opacity: o.opacity,
+        kind:
+          (o as { kind?: string }).kind === 'image' ? ('image' as const) : ('video' as const),
+      }))
+    if (overlays.length === 0) overlays = null
+  }
+
   return {
     customCaptionText:
       typeof e.customCaptionText === 'string' ? e.customCaptionText : null,
     audioGainDb: typeof e.audioGainDb === 'number' ? e.audioGainDb : null,
     thumbnailSeconds:
       typeof e.thumbnailSeconds === 'number' ? e.thumbnailSeconds : null,
+    captionChunks: chunks,
+    brollOverlays: overlays,
   }
+}
+
+/** Matches the shape persisted in metadata.edits.brollOverlays. */
+export interface BRollOverlay {
+  videoUrl: string
+  thumbnailUrl?: string
+  startSeconds: number
+  lengthSeconds: number
+  opacity: number
+  kind: 'video' | 'image'
 }

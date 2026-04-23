@@ -292,6 +292,56 @@ async function submitHighlightRender(params: {
     typeof edits.audioGainDb === 'number' ? edits.audioGainDb : null
   const thumbnailSeconds =
     typeof edits.thumbnailSeconds === 'number' ? edits.thumbnailSeconds : null
+  // Phase A2 — validate shape before forwarding to renderer so bad
+  // client data never makes it to Shotstack.
+  const captionChunks = Array.isArray(edits.captionChunks)
+    ? (edits.captionChunks as unknown[])
+        .filter(
+          (c): c is {
+            text: string
+            startSeconds: number
+            lengthSeconds: number
+          } =>
+            typeof c === 'object' &&
+            c !== null &&
+            typeof (c as { text?: unknown }).text === 'string' &&
+            typeof (c as { startSeconds?: unknown }).startSeconds === 'number' &&
+            typeof (c as { lengthSeconds?: unknown }).lengthSeconds === 'number',
+        )
+        .map((c) => ({
+          text: c.text.trim().slice(0, 120),
+          startSeconds: c.startSeconds,
+          lengthSeconds: c.lengthSeconds,
+        }))
+    : null
+  const brollOverlays = Array.isArray(edits.brollOverlays)
+    ? (edits.brollOverlays as unknown[])
+        .filter(
+          (o): o is {
+            videoUrl: string
+            startSeconds: number
+            lengthSeconds: number
+            opacity: number
+            kind?: string
+          } =>
+            typeof o === 'object' &&
+            o !== null &&
+            typeof (o as { videoUrl?: unknown }).videoUrl === 'string' &&
+            typeof (o as { startSeconds?: unknown }).startSeconds === 'number' &&
+            typeof (o as { lengthSeconds?: unknown }).lengthSeconds === 'number' &&
+            typeof (o as { opacity?: unknown }).opacity === 'number',
+        )
+        .map((o) => ({
+          videoUrl: o.videoUrl,
+          startSeconds: o.startSeconds,
+          lengthSeconds: o.lengthSeconds,
+          opacity: Math.max(0, Math.min(1, o.opacity)),
+          kind:
+            o.kind === 'image' || o.kind === 'video'
+              ? (o.kind as 'image' | 'video')
+              : ('video' as const),
+        }))
+    : null
 
   const result = await renderHighlightClip({
     workspaceId,
@@ -308,6 +358,8 @@ async function submitHighlightRender(params: {
     customCaptionText,
     audioGainDb,
     thumbnailSeconds,
+    captionChunks,
+    brollOverlays,
   })
 
   if (!result.ok) {
@@ -369,6 +421,19 @@ const adjustSchema = z.object({
   thumbnail_seconds: z
     .union([z.coerce.number().min(0).max(180), z.literal('')])
     .optional(),
+
+  // ── Phase A2: caption chunks + B-Roll overlays ──
+  /** JSON-encoded array of user-edited caption chunks. Empty / null
+   *  string means "don't override, use auto-chunks at render time."
+   *  Shape per item: { text, startSeconds, lengthSeconds } */
+  caption_chunks: z
+    .union([z.string().max(20_000), z.literal('')])
+    .optional(),
+  /** JSON-encoded array of B-Roll overlay entries.
+   *  Shape per item: { videoUrl, startSeconds, lengthSeconds, opacity, kind } */
+  broll_overlays: z
+    .union([z.string().max(20_000), z.literal('')])
+    .optional(),
 })
 
 export type AdjustHighlightState =
@@ -396,6 +461,8 @@ export async function adjustHighlightAction(
     custom_caption_text: formData.get('custom_caption_text') ?? undefined,
     audio_gain_db: formData.get('audio_gain_db') ?? undefined,
     thumbnail_seconds: formData.get('thumbnail_seconds') ?? undefined,
+    caption_chunks: formData.get('caption_chunks') ?? undefined,
+    broll_overlays: formData.get('broll_overlays') ?? undefined,
   })
   if (!parsed.success) {
     return {
@@ -415,6 +482,8 @@ export async function adjustHighlightAction(
     custom_caption_text,
     audio_gain_db,
     thumbnail_seconds,
+    caption_chunks,
+    broll_overlays,
   } = parsed.data
 
   if (end_seconds <= start_seconds) {
@@ -470,6 +539,43 @@ export async function adjustHighlightAction(
   if (thumbnail_seconds !== undefined) {
     nextEdits.thumbnailSeconds =
       thumbnail_seconds === '' ? null : thumbnail_seconds
+  }
+  // Parse the JSON-encoded arrays from the form. On malformed JSON we
+  // drop the field and log — it's safer to lose an edit than to write
+  // garbage that breaks the renderer.
+  if (caption_chunks !== undefined) {
+    if (caption_chunks === '') {
+      nextEdits.captionChunks = null
+    } else {
+      try {
+        const parsedChunks = JSON.parse(caption_chunks)
+        if (Array.isArray(parsedChunks)) {
+          nextEdits.captionChunks = parsedChunks
+        }
+      } catch (err) {
+        log.warn('adjustHighlightAction: malformed caption_chunks JSON', {
+          highlightId: highlight_id,
+          err: err instanceof Error ? err.message : String(err),
+        })
+      }
+    }
+  }
+  if (broll_overlays !== undefined) {
+    if (broll_overlays === '') {
+      nextEdits.brollOverlays = null
+    } else {
+      try {
+        const parsedOverlays = JSON.parse(broll_overlays)
+        if (Array.isArray(parsedOverlays)) {
+          nextEdits.brollOverlays = parsedOverlays
+        }
+      } catch (err) {
+        log.warn('adjustHighlightAction: malformed broll_overlays JSON', {
+          highlightId: highlight_id,
+          err: err instanceof Error ? err.message : String(err),
+        })
+      }
+    }
   }
 
   const { error } = await supabase

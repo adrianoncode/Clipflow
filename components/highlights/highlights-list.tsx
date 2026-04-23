@@ -25,6 +25,7 @@ import {
   type RenderHighlightState,
 } from '@/app/(app)/workspace/[id]/content/[contentId]/highlights/actions'
 import { ClipPreviewEditor } from '@/components/highlights/clip-preview-editor'
+import type { WordTiming } from '@/lib/highlights/caption-chunks'
 import type { HighlightRow } from '@/lib/highlights/list-highlights'
 
 interface HighlightsListProps {
@@ -35,6 +36,10 @@ interface HighlightsListProps {
   /** Signed source URL — needed by the preview editor to play the
    *  original video. Null when there's no source (text/audio only). */
   sourceVideoUrl: string | null
+  /** Word-level transcript — powers the caption chunk editor. Null
+   *  when the content was imported as text or subtitles haven't been
+   *  generated yet. The editor falls back to single-line override. */
+  wordTimings: WordTiming[] | null
 }
 
 export function HighlightsList({
@@ -43,6 +48,7 @@ export function HighlightsList({
   items,
   canEdit,
   sourceVideoUrl,
+  wordTimings,
 }: HighlightsListProps) {
   const router = useRouter()
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -115,6 +121,7 @@ export function HighlightsList({
           workspaceId={workspaceId}
           highlight={editing}
           sourceVideoUrl={sourceVideoUrl}
+          wordTimings={wordTimings}
           onClose={() => {
             setEditingId(null)
             router.refresh()
