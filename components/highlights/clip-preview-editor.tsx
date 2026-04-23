@@ -1,19 +1,22 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
-import { Check, Loader2, RotateCcw, X } from 'lucide-react'
+import Image from 'next/image'
+import { Check, Film, Loader2, RotateCcw, Search, Trash2, X } from 'lucide-react'
 
 import {
   adjustHighlightAction,
   type AdjustHighlightState,
 } from '@/app/(app)/workspace/[id]/content/[contentId]/highlights/actions'
+import { searchBrollAction } from '@/app/(app)/workspace/[id]/content/[contentId]/broll/actions'
 import {
   chunkWordsForCaptions,
   type CaptionChunk,
   type WordTiming,
 } from '@/lib/highlights/caption-chunks'
 import type { HighlightRow } from '@/lib/highlights/list-highlights'
+import type { PexelsVideo, PexelsPhoto } from '@/lib/broll/search-pexels'
 
 interface ClipPreviewEditorProps {
   workspaceId: string
@@ -87,6 +90,96 @@ export function ClipPreviewEditor({
   const [captionsEdited, setCaptionsEdited] = useState<boolean>(
     Boolean(initialEdits.captionChunks),
   )
+
+  // Phase A2 — B-Roll overlays. Each is a Pexels video or photo the
+  // user dropped onto the clip. The list is saved straight back to
+  // metadata.edits.brollOverlays and replayed by the renderer.
+  const [brollOverlays, setBrollOverlays] = useState<BRollOverlay[]>(
+    initialEdits.brollOverlays ?? [],
+  )
+
+  // Pexels search state — lives in the editor so the user doesn't
+  // leave the modal to find footage.
+  const [brollQuery, setBrollQuery] = useState<string>('')
+  const [brollResults, setBrollResults] = useState<
+    Array<
+      | ({ kind: 'video' } & PexelsVideo)
+      | ({ kind: 'image' } & PexelsPhoto)
+    >
+  >([])
+  const [brollType, setBrollType] = useState<'video' | 'photo'>('video')
+  const [brollError, setBrollError] = useState<string | null>(null)
+  const [brollSearching, startBrollSearch] = useTransition()
+
+  function runBrollSearch() {
+    if (!brollQuery.trim()) return
+    setBrollError(null)
+    startBrollSearch(async () => {
+      const fd = new FormData()
+      fd.set('query', brollQuery.trim())
+      fd.set('type', brollType)
+      const result = await searchBrollAction({}, fd)
+      if (result.ok) {
+        const tagged =
+          result.type === 'photo'
+            ? (result.results as PexelsPhoto[]).map((p) => ({
+                kind: 'image' as const,
+                ...p,
+              }))
+            : (result.results as PexelsVideo[]).map((v) => ({
+                kind: 'video' as const,
+                ...v,
+              }))
+        setBrollResults(tagged)
+      } else if (result.ok === false) {
+        setBrollError(result.error)
+      }
+    })
+  }
+
+  function addBrollOverlay(
+    result:
+      | ({ kind: 'video' } & PexelsVideo)
+      | ({ kind: 'image' } & PexelsPhoto),
+  ) {
+    // Default: drop at current video position, 2s duration, 60% opacity
+    // so the speaker still bleeds through. User tunes after.
+    const v = videoRef.current
+    const nowInClip = v ? Math.max(0, v.currentTime - start) : 0
+    const defaultStart = Math.min(nowInClip, Math.max(clipLength - 2, 0))
+    const src =
+      result.kind === 'video'
+        ? result.videoUrl
+        : result.src.large
+    const thumb =
+      result.kind === 'video' ? result.thumbnail : result.src.medium
+
+    setBrollOverlays((prev) => [
+      ...prev,
+      {
+        videoUrl: src,
+        thumbnailUrl: thumb,
+        startSeconds: defaultStart,
+        lengthSeconds: Math.min(2, Math.max(clipLength - defaultStart, 0.5)),
+        opacity: 0.6,
+        kind: result.kind,
+      },
+    ])
+  }
+
+  function updateOverlay(idx: number, patch: Partial<BRollOverlay>) {
+    setBrollOverlays((prev) => {
+      const next = [...prev]
+      const existing = next[idx]
+      if (!existing) return prev
+      next[idx] = { ...existing, ...patch }
+      return next
+    })
+  }
+
+  function removeOverlay(idx: number) {
+    setBrollOverlays((prev) => prev.filter((_, i) => i !== idx))
+  }
 
   // The source clip's total duration — we need it to scale the
   // timeline scrubber. Comes from the video element once metadata
@@ -403,6 +496,197 @@ export function ClipPreviewEditor({
               platforms that support it (YouTube, LinkedIn, email).
             </p>
           </div>
+
+          {/* ── B-Roll Overlay Picker (Phase A2) ── */}
+          <div className="space-y-2 rounded-xl border border-border/50 bg-muted/10 p-3">
+            <div className="flex items-baseline justify-between">
+              <label className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                <Film className="h-3 w-3" aria-hidden />
+                B-Roll overlays
+                {brollOverlays.length > 0 ? (
+                  <span className="rounded-full bg-primary/15 px-1.5 py-0.5 font-sans text-[9.5px] font-bold text-primary">
+                    {brollOverlays.length}
+                  </span>
+                ) : null}
+              </label>
+              <span className="text-[10.5px] text-muted-foreground/60">
+                Drop Pexels footage on top of your clip
+              </span>
+            </div>
+
+            {/* Search bar */}
+            <div className="flex items-center gap-1.5">
+              <input
+                type="text"
+                value={brollQuery}
+                onChange={(e) => setBrollQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    runBrollSearch()
+                  }
+                }}
+                placeholder="Search Pexels — e.g. 'laptop', 'coffee shop', 'running'…"
+                className="flex-1 rounded-md border border-border/60 bg-background px-2.5 py-1.5 text-[12.5px]"
+              />
+              <select
+                value={brollType}
+                onChange={(e) => setBrollType(e.target.value as 'video' | 'photo')}
+                className="rounded-md border border-border/60 bg-background px-2 py-1.5 text-[11px]"
+                aria-label="B-Roll type"
+              >
+                <option value="video">Video</option>
+                <option value="photo">Photo</option>
+              </select>
+              <button
+                type="button"
+                onClick={runBrollSearch}
+                disabled={brollSearching || !brollQuery.trim()}
+                className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground disabled:opacity-50"
+              >
+                {brollSearching ? (
+                  <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
+                ) : (
+                  <Search className="h-3 w-3" aria-hidden />
+                )}
+                Search
+              </button>
+            </div>
+            {brollError ? (
+              <p className="text-[10.5px] text-destructive">{brollError}</p>
+            ) : null}
+
+            {/* Result grid — click to add */}
+            {brollResults.length > 0 ? (
+              <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6">
+                {brollResults.map((r, idx) => {
+                  const thumb =
+                    r.kind === 'video' ? r.thumbnail : r.src.medium
+                  return (
+                    <button
+                      key={`${r.kind}-${r.id}-${idx}`}
+                      type="button"
+                      onClick={() => addBrollOverlay(r)}
+                      className="group relative aspect-[9/16] overflow-hidden rounded-md border border-border/60 transition-all hover:ring-2 hover:ring-primary/40"
+                    >
+                      <Image
+                        src={thumb}
+                        alt={
+                          r.kind === 'video'
+                            ? `Video by ${r.photographer}`
+                            : (r.alt ?? `Photo by ${r.photographer}`)
+                        }
+                        fill
+                        sizes="(max-width: 640px) 25vw, 120px"
+                        className="object-cover"
+                      />
+                      <span className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20" />
+                      <span className="absolute inset-x-0 bottom-0 flex items-center justify-center bg-black/55 py-0.5 font-mono text-[8.5px] font-bold uppercase tracking-[0.1em] text-white">
+                        + Add
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            ) : brollQuery && !brollSearching ? (
+              <p className="rounded-md bg-muted/40 px-2.5 py-2 text-[11px] text-muted-foreground/80">
+                No results. Try a concrete noun from your transcript —
+                &quot;whiteboard&quot;, &quot;espresso&quot;, &quot;stage lights&quot;.
+              </p>
+            ) : null}
+
+            {/* Active overlays list */}
+            {brollOverlays.length > 0 ? (
+              <div className="space-y-1 pt-1">
+                {brollOverlays.map((overlay, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-2 rounded-md bg-background px-2 py-1.5"
+                  >
+                    {overlay.thumbnailUrl ? (
+                      <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-sm bg-muted/50">
+                        <Image
+                          src={overlay.thumbnailUrl}
+                          alt=""
+                          fill
+                          sizes="32px"
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <span
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-muted/50"
+                        aria-hidden
+                      >
+                        <Film className="h-3.5 w-3.5 text-muted-foreground" />
+                      </span>
+                    )}
+                    <label className="flex items-center gap-1 text-[10.5px] text-muted-foreground">
+                      start
+                      <input
+                        type="number"
+                        step={0.1}
+                        min={0}
+                        max={Math.max(clipLength - 0.1, 0.1)}
+                        value={overlay.startSeconds.toFixed(1)}
+                        onChange={(e) =>
+                          updateOverlay(idx, {
+                            startSeconds: Number(e.target.value),
+                          })
+                        }
+                        className="h-6 w-14 rounded border border-border/60 bg-background px-1 font-mono text-[10.5px] tabular-nums"
+                      />
+                      s
+                    </label>
+                    <label className="flex items-center gap-1 text-[10.5px] text-muted-foreground">
+                      len
+                      <input
+                        type="number"
+                        step={0.1}
+                        min={0.1}
+                        max={Math.max(clipLength - overlay.startSeconds, 0.1)}
+                        value={overlay.lengthSeconds.toFixed(1)}
+                        onChange={(e) =>
+                          updateOverlay(idx, {
+                            lengthSeconds: Number(e.target.value),
+                          })
+                        }
+                        className="h-6 w-14 rounded border border-border/60 bg-background px-1 font-mono text-[10.5px] tabular-nums"
+                      />
+                      s
+                    </label>
+                    <label className="flex flex-1 items-center gap-1 text-[10.5px] text-muted-foreground">
+                      opacity
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        value={overlay.opacity}
+                        onChange={(e) =>
+                          updateOverlay(idx, {
+                            opacity: Number(e.target.value),
+                          })
+                        }
+                        className="flex-1 accent-[var(--lv2-primary,#2A1A3D)]"
+                      />
+                      <span className="w-8 font-mono text-[10px] tabular-nums">
+                        {Math.round(overlay.opacity * 100)}%
+                      </span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => removeOverlay(idx)}
+                      className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      aria-label={`Remove overlay ${idx + 1}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
         </div>
 
         {/* Submit bar */}
@@ -434,6 +718,11 @@ export function ClipPreviewEditor({
             type="hidden"
             name="caption_chunks"
             value={captionsEdited ? JSON.stringify(captionChunks) : ''}
+          />
+          <input
+            type="hidden"
+            name="broll_overlays"
+            value={brollOverlays.length > 0 ? JSON.stringify(brollOverlays) : ''}
           />
 
           <CaptionStylePicker value={captionStyle} onChange={setCaptionStyle} />
