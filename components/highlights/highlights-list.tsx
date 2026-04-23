@@ -118,6 +118,7 @@ export function HighlightsList({
 
       {editing && sourceVideoUrl ? (
         <ClipPreviewEditor
+          key={editing.id}
           workspaceId={workspaceId}
           highlight={editing}
           sourceVideoUrl={sourceVideoUrl}

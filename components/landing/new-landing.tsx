@@ -39,12 +39,14 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
   // border so it stays legible over any section below. 300ms ease
   // transition both ways so it never flickers.
   const [scrolled, setScrolled] = useState(false)
+  const [navHovered, setNavHovered] = useState(false)
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 60)
     update()
     window.addEventListener('scroll', update, { passive: true })
     return () => window.removeEventListener('scroll', update)
   }, [])
+  const navGlass = scrolled || navHovered
 
 
   useEffect(() => {
@@ -233,18 +235,41 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         }
 
         .lv2-btn-primary {
-          display: inline-flex; align-items: center; gap: .5rem;
+          position: relative;
+          display: inline-flex; align-items: center; gap: .55rem;
           background: var(--lv2-primary); color: var(--lv2-accent);
-          font-weight: 700; font-size: 14px;
-          padding: 12px 18px; border-radius: 12px;
-          box-shadow: inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(42,26,61,.35);
-          transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+          font-weight: 700; font-size: 14px; letter-spacing: -.005em;
+          padding: 11px 20px; border-radius: 999px;
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.1),
+            inset 0 0 0 1px rgba(214,255,62,.18),
+            0 1px 2px rgba(42,26,61,.18),
+            0 8px 22px -8px rgba(42,26,61,.45);
+          transition: transform .22s cubic-bezier(.2,.9,.3,1), background .2s ease, box-shadow .25s ease;
+        }
+        /* Specular highlight — a soft lime glow lives at the top edge
+           so the button reads as "lit from above", not flat. */
+        .lv2-btn-primary::before {
+          content: '';
+          position: absolute; inset: 0;
+          border-radius: inherit;
+          background: radial-gradient(120% 90% at 50% -30%, rgba(214,255,62,.18), transparent 60%);
+          opacity: .85;
+          pointer-events: none;
+          transition: opacity .25s ease;
         }
         .lv2-btn-primary:hover {
-          transform: translateY(-2px);
+          transform: translateY(-1.5px);
           background: var(--lv2-primary-ink);
-          box-shadow: inset 0 0 0 1px rgba(214,255,62,.25), 0 10px 24px -6px rgba(42,26,61,.5);
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.14),
+            inset 0 0 0 1px rgba(214,255,62,.32),
+            0 2px 4px rgba(42,26,61,.2),
+            0 16px 30px -10px rgba(42,26,61,.5),
+            0 0 0 6px rgba(214,255,62,.07);
         }
+        .lv2-btn-primary:hover::before { opacity: 1; }
+        .lv2-btn-primary:active { transform: translateY(0); }
         .lv2-btn-primary:hover .lv2-arrow { transform: translateX(3px); }
         .lv2-arrow { transition: transform .2s; }
         .lv2-btn-accent {
@@ -537,16 +562,21 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           Past 60px: saturate+blur backdrop over 72% paper tint,
           hairline plum border, soft shadow. 300ms transition. */}
       <header
-        className="fixed inset-x-0 top-0 z-40 transition-all duration-300"
+        onMouseEnter={() => setNavHovered(true)}
+        onMouseLeave={() => setNavHovered(false)}
+        className="fixed inset-x-0 top-0 z-40 transition-all duration-500"
         style={{
-          background: scrolled ? 'rgba(250,247,242,0.72)' : 'transparent',
-          backdropFilter: scrolled ? 'saturate(180%) blur(14px)' : 'none',
-          WebkitBackdropFilter: scrolled ? 'saturate(180%) blur(14px)' : 'none',
-          borderBottom: scrolled
-            ? '1px solid rgba(42,26,61,0.06)'
+          background: navGlass ? 'rgba(250,247,242,0.58)' : 'transparent',
+          backdropFilter: navGlass ? 'saturate(200%) blur(22px)' : 'none',
+          WebkitBackdropFilter: navGlass ? 'saturate(200%) blur(22px)' : 'none',
+          borderBottom: navGlass
+            ? '1px solid rgba(42,26,61,0.07)'
             : '1px solid transparent',
-          boxShadow: scrolled
-            ? '0 4px 18px -8px rgba(42,26,61,0.08)'
+          // Apple glass = tinted backdrop + inset top highlight (the
+          // specular edge) + soft drop shadow. The inset white line is
+          // what sells it as "glass" rather than just "frosted".
+          boxShadow: navGlass
+            ? 'inset 0 1px 0 rgba(255,255,255,.55), 0 6px 22px -10px rgba(42,26,61,0.1)'
             : 'none',
         }}
       >
