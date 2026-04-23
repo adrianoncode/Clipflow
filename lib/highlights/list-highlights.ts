@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
+import type { Json } from '@/lib/supabase/types'
 import { log } from '@/lib/log'
 
 export interface HighlightRow {
@@ -20,6 +21,10 @@ export interface HighlightRow {
   aspect_ratio: string
   crop_x: number | null
   thumbnail_url: string | null
+  /** jsonb bag for user edits + future knobs. See Phase A1 in the
+   *  clip-preview-editor — stores customCaptionText, audioGainDb,
+   *  thumbnailSeconds under metadata.edits. */
+  metadata: Json
   created_at: string
 }
 
@@ -36,7 +41,7 @@ export async function listHighlights(
   const { data, error } = await supabase
     .from('content_highlights')
     .select(
-      'id, content_id, workspace_id, start_seconds, end_seconds, hook_text, reason, virality_score, status, render_id, video_url, render_error, caption_style, aspect_ratio, crop_x, thumbnail_url, created_at',
+      'id, content_id, workspace_id, start_seconds, end_seconds, hook_text, reason, virality_score, status, render_id, video_url, render_error, caption_style, aspect_ratio, crop_x, thumbnail_url, metadata, created_at',
     )
     .eq('content_id', contentId)
     .eq('workspace_id', workspaceId)

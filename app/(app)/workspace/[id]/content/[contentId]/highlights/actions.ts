@@ -232,7 +232,7 @@ async function submitHighlightRender(params: {
   const { data: row } = await supabase
     .from('content_highlights')
     .select(
-      'id, content_id, workspace_id, start_seconds, end_seconds, hook_text, status, caption_style, aspect_ratio, crop_x',
+      'id, content_id, workspace_id, start_seconds, end_seconds, hook_text, status, caption_style, aspect_ratio, crop_x, metadata',
     )
     .eq('id', highlightId)
     .eq('workspace_id', workspaceId)
@@ -274,6 +274,25 @@ async function submitHighlightRender(params: {
   const cropX = (row as { crop_x: unknown }).crop_x
   const cropXNum = typeof cropX === 'number' ? cropX : cropX != null ? Number(cropX) : null
 
+  // Pull Phase A1 edits (metadata.edits) if the user tuned anything
+  // in the preview editor. Null/missing = use defaults.
+  const meta =
+    row.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
+      ? (row.metadata as Record<string, unknown>)
+      : {}
+  const edits =
+    meta.edits && typeof meta.edits === 'object' && !Array.isArray(meta.edits)
+      ? (meta.edits as Record<string, unknown>)
+      : {}
+  const customCaptionText =
+    typeof edits.customCaptionText === 'string' && edits.customCaptionText.trim()
+      ? edits.customCaptionText.trim()
+      : null
+  const audioGainDb =
+    typeof edits.audioGainDb === 'number' ? edits.audioGainDb : null
+  const thumbnailSeconds =
+    typeof edits.thumbnailSeconds === 'number' ? edits.thumbnailSeconds : null
+
   const result = await renderHighlightClip({
     workspaceId,
     sourceVideoUrl,
@@ -286,6 +305,9 @@ async function submitHighlightRender(params: {
     aspectRatio: ((row.aspect_ratio as string) ?? '9:16') as '9:16',
     priority,
     cropX: cropXNum,
+    customCaptionText,
+    audioGainDb,
+    thumbnailSeconds,
   })
 
   if (!result.ok) {
@@ -329,6 +351,24 @@ const adjustSchema = z.object({
     .enum(['tiktok-bold', 'minimal', 'neon', 'white-bar'])
     .optional(),
   hook_text: z.string().max(120).optional(),
+
+  // ── Phase A1 edits — stored in metadata.edits jsonb so we don't
+  //    need new columns per knob. Shotstack render reads from here.
+  /** User-typed override for the caption text. Empty/null = use
+   *  auto-generated karaoke captions from word timings. */
+  custom_caption_text: z
+    .union([z.string().max(500), z.literal('')])
+    .optional(),
+  /** Audio gain in dB relative to the source (-20 .. +10). 0 = no
+   *  change. Shotstack supports volume 0..1, we map linearly. */
+  audio_gain_db: z
+    .union([z.coerce.number().min(-20).max(10), z.literal('')])
+    .optional(),
+  /** Seconds into the CLIP (not the source) where the poster frame
+   *  should be captured. Null = Shotstack default at 1.5s. */
+  thumbnail_seconds: z
+    .union([z.coerce.number().min(0).max(180), z.literal('')])
+    .optional(),
 })
 
 export type AdjustHighlightState =
@@ -353,6 +393,9 @@ export async function adjustHighlightAction(
     crop_x: formData.get('crop_x') ?? undefined,
     caption_style: formData.get('caption_style') ?? undefined,
     hook_text: formData.get('hook_text') ?? undefined,
+    custom_caption_text: formData.get('custom_caption_text') ?? undefined,
+    audio_gain_db: formData.get('audio_gain_db') ?? undefined,
+    thumbnail_seconds: formData.get('thumbnail_seconds') ?? undefined,
   })
   if (!parsed.success) {
     return {
@@ -361,8 +404,18 @@ export async function adjustHighlightAction(
     }
   }
 
-  const { workspace_id, highlight_id, start_seconds, end_seconds, crop_x, caption_style, hook_text } =
-    parsed.data
+  const {
+    workspace_id,
+    highlight_id,
+    start_seconds,
+    end_seconds,
+    crop_x,
+    caption_style,
+    hook_text,
+    custom_caption_text,
+    audio_gain_db,
+    thumbnail_seconds,
+  } = parsed.data
 
   if (end_seconds <= start_seconds) {
     return { ok: false, error: 'End must be after start.' }
@@ -380,7 +433,7 @@ export async function adjustHighlightAction(
   const supabase = createClient()
   const { data: row } = await supabase
     .from('content_highlights')
-    .select('id, content_id, status')
+    .select('id, content_id, status, metadata')
     .eq('id', highlight_id)
     .eq('workspace_id', workspace_id)
     .maybeSingle()
@@ -393,6 +446,32 @@ export async function adjustHighlightAction(
     }
   }
 
+  // Merge Phase A1 edits into metadata.edits without wiping other
+  // metadata the row might carry (e.g. regenerate_count, hook_overrides).
+  const existingMeta =
+    row.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
+      ? (row.metadata as Record<string, unknown>)
+      : {}
+  const existingEdits =
+    existingMeta.edits &&
+    typeof existingMeta.edits === 'object' &&
+    !Array.isArray(existingMeta.edits)
+      ? (existingMeta.edits as Record<string, unknown>)
+      : {}
+
+  const nextEdits: Record<string, unknown> = { ...existingEdits }
+  if (custom_caption_text !== undefined) {
+    nextEdits.customCaptionText =
+      custom_caption_text === '' ? null : custom_caption_text
+  }
+  if (audio_gain_db !== undefined) {
+    nextEdits.audioGainDb = audio_gain_db === '' ? null : audio_gain_db
+  }
+  if (thumbnail_seconds !== undefined) {
+    nextEdits.thumbnailSeconds =
+      thumbnail_seconds === '' ? null : thumbnail_seconds
+  }
+
   const { error } = await supabase
     .from('content_highlights')
     .update({
@@ -401,6 +480,8 @@ export async function adjustHighlightAction(
       crop_x: crop_x === '' || crop_x == null ? null : crop_x,
       ...(caption_style ? { caption_style } : {}),
       ...(hook_text !== undefined ? { hook_text: hook_text || null } : {}),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Json-typed jsonb column from Supabase types
+      metadata: { ...existingMeta, edits: nextEdits } as any,
     })
     .eq('id', highlight_id)
 

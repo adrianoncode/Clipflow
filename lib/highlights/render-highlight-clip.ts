@@ -101,6 +101,22 @@ export async function renderHighlightClip(params: {
    * Null = default center-crop.
    */
   cropX?: number | null
+  /**
+   * Phase A1 edits — user tweaks from the preview editor. All three
+   * are optional; nulls revert to sensible defaults.
+   *
+   * customCaptionText: overrides the generated karaoke captions with
+   * one painted line that runs the full clip. Useful when the AI
+   * chunked badly or the user wants a custom pull-quote.
+   *
+   * audioGainDb: -20..+10 dB. Mapped into Shotstack volume 0..1.
+   *
+   * thumbnailSeconds: where to capture the poster frame. Null =
+   * Shotstack default at 1.5s. User picks any second inside the clip.
+   */
+  customCaptionText?: string | null
+  audioGainDb?: number | null
+  thumbnailSeconds?: number | null
 }): Promise<{ ok: true; renderId: string } | { ok: false; error: string }> {
   const {
     workspaceId,
@@ -114,6 +130,9 @@ export async function renderHighlightClip(params: {
     aspectRatio = '9:16',
     priority = 'normal',
     cropX = null,
+    customCaptionText = null,
+    audioGainDb = null,
+    thumbnailSeconds = null,
   } = params
 
   const duration = clipEndSeconds - clipStartSeconds
@@ -124,10 +143,20 @@ export async function renderHighlightClip(params: {
     return { ok: false, error: 'Highlight clips cap at 3 minutes.' }
   }
 
-  // Build karaoke captions if we have word timings. If not, fall back
-  // to a single caption painted across the clip (better than silent).
+  // Build captions. Priority:
+  //  1. customCaptionText (user override — one line the full clip)
+  //  2. word-level karaoke chunks (default, needs word timings)
+  //  3. single caption from plaintext transcript (fallback)
   let subtitles: Array<{ text: string; start: number; length: number }> = []
-  if (wordTimings && wordTimings.length > 0) {
+  if (customCaptionText?.trim()) {
+    subtitles = [
+      {
+        text: customCaptionText.trim().slice(0, 500),
+        start: 0,
+        length: duration,
+      },
+    ]
+  } else if (wordTimings && wordTimings.length > 0) {
     subtitles = chunkWordsForCaptions(wordTimings, clipStartSeconds, clipEndSeconds)
   } else if (fallbackSubtitleText?.trim()) {
     subtitles = [
@@ -139,11 +168,26 @@ export async function renderHighlightClip(params: {
     ]
   }
 
-  // Source video — trimmed in place via #t= fragment. Shotstack reads
-  // the start offset from there and we dictate output length via
-  // `length`. `fit: 'cover'` + 9:16 output gives us a center-crop
-  // automatically (no explicit position needed for most podcast
-  // framings where the speaker sits near center).
+  // Map gain dB → Shotstack volume 0..1 (their API uses a linear
+  // 0-to-1 gain scale, not dB). Silence at -20dB, pass-through at 0,
+  // +10dB just clamps to 1 since Shotstack doesn't amplify above
+  // source level.
+  let volume: number | undefined
+  if (typeof audioGainDb === 'number') {
+    const db = Math.max(-20, Math.min(10, audioGainDb))
+    // dB → linear: 0 dB = 1.0, -20 dB ≈ 0.1, positive dB clamped to 1.0
+    volume = db >= 0 ? 1 : Math.pow(10, db / 20)
+  }
+
+  // Thumbnail capture time: user picks any second within the clip
+  // (0..duration). Shotstack's poster.capture is in CLIP time, which
+  // aligns with clipStart=0 after our trim — so we pass it through
+  // directly. Fall back to 1.5s if unset.
+  const posterCapture =
+    typeof thumbnailSeconds === 'number'
+      ? Math.max(0, Math.min(duration, thumbnailSeconds))
+      : undefined
+
   return submitRender({
     workspaceId,
     aspectRatio,
@@ -159,8 +203,10 @@ export async function renderHighlightClip(params: {
         length: duration,
         fit: 'cover',
         ...(typeof cropX === 'number' ? { offsetX: cropX } : {}),
+        ...(typeof volume === 'number' ? { volume } : {}),
       },
     ],
     subtitles,
+    posterCapture,
   })
 }

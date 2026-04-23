@@ -116,6 +116,13 @@ export interface RenderInput {
    * the client components).
    */
   priority?: 'normal' | 'high'
+  /**
+   * Seconds into the timeline at which to capture the poster frame.
+   * When the user picks a custom thumbnail in the preview editor this
+   * comes through as their chosen second; otherwise we fall back to
+   * 1.5s which is past any fade-in but usually still inside the hook.
+   */
+  posterCapture?: number
 }
 
 /**
@@ -180,22 +187,41 @@ export async function submitRender(input: RenderInput): Promise<
     tracks.push({
       clips: input.clips
         .filter((c) => c.type === 'video' || c.type === 'image')
-        .map((clip) => ({
-          asset: {
-            type: clip.type === 'video' ? 'video' : 'image',
-            src: clip.src,
-          },
-          start: clip.start,
-          length: clip.length,
-          fit: clip.fit ?? 'cover',
-          // Only attach `offset` when the caller explicitly asked for
-          // a horizontal shift — Shotstack's default crop is already
-          // center-anchored and adding offset:{x:0} would prevent the
-          // engine from using its faster default path.
-          ...(typeof clip.offsetX === 'number' && clip.offsetX !== 0
-            ? { offset: { x: clip.offsetX } }
-            : {}),
-        })),
+        .map((clip) => {
+          // Audio gain goes INSIDE asset on Shotstack's schema — a
+          // 0..1 linear multiplier. Only attach when user has tuned
+          // the slider away from 1.0; default case stays minimal so
+          // Shotstack uses its fast-path.
+          const hasVolume =
+            clip.type === 'video' &&
+            typeof clip.volume === 'number' &&
+            clip.volume !== 1
+          const asset = hasVolume
+            ? {
+                type: 'video' as const,
+                src: clip.src,
+                volume: clip.volume,
+              }
+            : {
+                type: (clip.type === 'video' ? 'video' : 'image') as
+                  | 'video'
+                  | 'image',
+                src: clip.src,
+              }
+          return {
+            asset,
+            start: clip.start,
+            length: clip.length,
+            fit: clip.fit ?? 'cover',
+            // Only attach `offset` when the caller explicitly asked
+            // for a horizontal shift — Shotstack's default crop is
+            // center-anchored and adding offset:{x:0} would disable
+            // its fast path.
+            ...(typeof clip.offsetX === 'number' && clip.offsetX !== 0
+              ? { offset: { x: clip.offsetX } }
+              : {}),
+          }
+        }),
     })
   }
 
@@ -292,7 +318,7 @@ export async function submitRender(input: RenderInput): Promise<
       // the thumbnail captures the moment's hook instead of a black
       // frame. The URL comes back on the render-complete callback
       // under `response.poster`.
-      poster: { capture: 1.5 },
+      poster: { capture: input.posterCapture ?? 1.5 },
       ...(callbackUrl ? { callback: callbackUrl } : {}),
     },
     // Optional top-level priority hint. Shotstack accepts `priority`

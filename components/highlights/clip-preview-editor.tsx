@@ -42,6 +42,19 @@ export function ClipPreviewEditor({
   const [captionStyle, setCaptionStyle] = useState(highlight.caption_style)
   const [duration, setDuration] = useState<number | null>(null)
 
+  // Phase A1 edits — these live on highlight.metadata.edits jsonb.
+  // Populate from existing row if the user has tuned this clip before.
+  const initialEdits = readEdits(highlight)
+  const [customCaption, setCustomCaption] = useState<string>(
+    initialEdits.customCaptionText ?? '',
+  )
+  const [audioGainDb, setAudioGainDb] = useState<number>(
+    initialEdits.audioGainDb ?? 0,
+  )
+  const [thumbSeconds, setThumbSeconds] = useState<number>(
+    initialEdits.thumbnailSeconds ?? 1.5,
+  )
+
   // The source clip's total duration — we need it to scale the
   // timeline scrubber. Comes from the video element once metadata
   // loads. Fallback to clip end × 1.5 so the slider is usable before
@@ -212,6 +225,93 @@ export function ClipPreviewEditor({
               className="w-full rounded-lg border border-border/60 bg-background px-3 py-2 text-sm"
             />
           </div>
+
+          {/* ── Phase A1 — advanced tuning below ── */}
+
+          {/* Custom caption override */}
+          <div className="space-y-1 pt-2">
+            <div className="flex items-baseline justify-between">
+              <label className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                Custom caption (override)
+              </label>
+              <span className="text-[10.5px] text-muted-foreground/60">
+                Leave empty to auto-generate word-level karaoke captions
+              </span>
+            </div>
+            <textarea
+              rows={2}
+              maxLength={500}
+              value={customCaption}
+              onChange={(e) => setCustomCaption(e.target.value)}
+              placeholder="Type a single caption line that shows the full clip…"
+              className="w-full resize-none rounded-lg border border-border/60 bg-background px-3 py-2 text-sm"
+            />
+          </div>
+
+          {/* Audio gain */}
+          <div className="space-y-1">
+            <div className="flex items-baseline justify-between">
+              <label className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                Audio level
+              </label>
+              <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                {audioGainDb === 0
+                  ? '0 dB · original'
+                  : `${audioGainDb > 0 ? '+' : ''}${audioGainDb.toFixed(1)} dB`}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={-20}
+              max={10}
+              step={0.5}
+              value={audioGainDb}
+              onChange={(e) => setAudioGainDb(Number(e.target.value))}
+              className="block w-full accent-[var(--lv2-primary,#2A1A3D)]"
+              aria-label="Audio gain in decibels"
+            />
+            <div className="flex justify-between font-mono text-[9.5px] text-muted-foreground/60">
+              <span>-20 dB · quiet</span>
+              <span>0 · original</span>
+              <span>+10 dB · loud</span>
+            </div>
+          </div>
+
+          {/* Thumbnail timestamp picker */}
+          <div className="space-y-1.5">
+            <div className="flex items-baseline justify-between">
+              <label className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                Thumbnail frame
+              </label>
+              <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                at {thumbSeconds.toFixed(1)}s into the clip
+              </span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={Math.max(clipLength - 0.1, 0.1)}
+              step={0.1}
+              value={Math.min(thumbSeconds, Math.max(clipLength - 0.1, 0.1))}
+              onChange={(e) => {
+                const next = Number(e.target.value)
+                setThumbSeconds(next)
+                // Jump the preview video to that timestamp so the
+                // user sees the frame they're picking.
+                const v = videoRef.current
+                if (v) {
+                  v.currentTime = start + next
+                  v.pause()
+                }
+              }}
+              className="block w-full accent-[var(--lv2-primary,#2A1A3D)]"
+              aria-label="Thumbnail capture time"
+            />
+            <p className="text-[10.5px] text-muted-foreground/70">
+              Scrub to pick the frame Shotstack uses as the poster on
+              platforms that support it (YouTube, LinkedIn, email).
+            </p>
+          </div>
         </div>
 
         {/* Submit bar */}
@@ -223,6 +323,18 @@ export function ClipPreviewEditor({
           <input type="hidden" name="crop_x" value={cropX ?? ''} />
           <input type="hidden" name="hook_text" value={hookText} />
           <input type="hidden" name="caption_style" value={captionStyle} />
+          {/* Phase A1 edits */}
+          <input
+            type="hidden"
+            name="custom_caption_text"
+            value={customCaption.trim()}
+          />
+          <input type="hidden" name="audio_gain_db" value={audioGainDb} />
+          <input
+            type="hidden"
+            name="thumbnail_seconds"
+            value={Math.min(thumbSeconds, Math.max(clipLength - 0.1, 0.1))}
+          />
 
           <CaptionStylePicker value={captionStyle} onChange={setCaptionStyle} />
           <div className="flex items-center gap-2">
@@ -386,4 +498,31 @@ function formatTime(s: number): string {
   const m = Math.floor(s / 60)
   const sec = Math.floor(s % 60)
   return `${m}:${sec.toString().padStart(2, '0')}`
+}
+
+/**
+ * Pull Phase A1 edits out of highlight.metadata.edits, safely. The
+ * metadata column is Json | null so every access needs shape-checks.
+ */
+function readEdits(highlight: HighlightRow): {
+  customCaptionText: string | null
+  audioGainDb: number | null
+  thumbnailSeconds: number | null
+} {
+  const meta = (highlight as unknown as { metadata?: unknown }).metadata
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) {
+    return { customCaptionText: null, audioGainDb: null, thumbnailSeconds: null }
+  }
+  const edits = (meta as Record<string, unknown>).edits
+  if (!edits || typeof edits !== 'object' || Array.isArray(edits)) {
+    return { customCaptionText: null, audioGainDb: null, thumbnailSeconds: null }
+  }
+  const e = edits as Record<string, unknown>
+  return {
+    customCaptionText:
+      typeof e.customCaptionText === 'string' ? e.customCaptionText : null,
+    audioGainDb: typeof e.audioGainDb === 'number' ? e.audioGainDb : null,
+    thumbnailSeconds:
+      typeof e.thumbnailSeconds === 'number' ? e.thumbnailSeconds : null,
+  }
 }
