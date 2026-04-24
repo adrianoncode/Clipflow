@@ -30,13 +30,6 @@ const COMPOSIO_CHANNELS: ComposioChannelDef[] = [
     note: 'Post drafts to your personal feed the moment you approve them.',
   },
   {
-    id: 'x',
-    name: 'X (Twitter)',
-    letter: '𝕏',
-    iconBg: 'bg-black',
-    note: 'Send single tweets or threads with your clip or link.',
-  },
-  {
     id: 'youtube',
     name: 'YouTube',
     letter: 'Y',
@@ -63,6 +56,12 @@ const COMPOSIO_CHANNELS: ComposioChannelDef[] = [
 // Platforms we want but Composio doesn't list yet. Stays as "Soon"
 // until they're available (then move into COMPOSIO_CHANNELS).
 const COMPOSIO_SOON: Array<Pick<ComposioChannelDef, 'name' | 'letter' | 'iconBg' | 'note'>> = [
+  {
+    name: 'X (Twitter)',
+    letter: '𝕏',
+    iconBg: 'bg-black',
+    note: 'X requires a paid Developer account ($100/mo). We’ll enable it once we support bring-your-own X API keys.',
+  },
   {
     name: 'Threads',
     letter: '@',

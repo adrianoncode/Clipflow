@@ -18,7 +18,6 @@ import { log } from '@/lib/log'
 
 export type ComposioPublishPlatform =
   | 'linkedin'
-  | 'x'
   | 'youtube'
   | 'instagram'
   | 'facebook'
@@ -40,7 +39,6 @@ export type PublishOneResult =
 
 const ACTIONS = {
   linkedin: 'LINKEDIN_CREATE_LINKEDIN_POST',
-  x: 'TWITTER_CREATION_OF_A_POST',
   youtube: 'YOUTUBE_UPLOAD_VIDEO',
   instagram: 'INSTAGRAM_MEDIA_PUBLISH',
   facebook: 'FACEBOOK_CREATE_PAGE_FEED_POST',
@@ -84,10 +82,6 @@ function buildParams(
         commentary: caption,
         visibility: 'PUBLIC',
       }
-    case 'x':
-      return {
-        text: caption.slice(0, 280),
-      }
     case 'youtube':
       if (!content.videoUrl) throw new Error('YouTube publish needs videoUrl')
       return {
@@ -124,7 +118,6 @@ function extractPostId(
     d.post_id,
     d.postId,
     (d.data as Record<string, unknown> | undefined)?.id,
-    platform === 'x' ? (d.tweet_id ?? null) : null,
     platform === 'youtube' ? (d.video_id ?? null) : null,
   ]
   for (const c of candidates) {
