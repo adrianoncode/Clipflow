@@ -50,6 +50,13 @@ interface NavItem {
   label: string
   icon: typeof FileVideo
   requires?: keyof typeof FEATURE_MIN_PLAN
+  /**
+   * Opens in a new tab and leaves the sidebar in the original tab
+   * untouched. Use for destinations that have their own full-page
+   * chrome (e.g. /playbook, /changelog) where the app shell would
+   * otherwise be hidden.
+   */
+  newTab?: boolean
 }
 
 interface NavGroup {
@@ -258,6 +265,10 @@ export function AppShell({
           href: '/playbook',
           label: 'Playbook',
           icon: BookOpen,
+          // Playbook has its own full-screen marketing layout, so
+          // opening in a new tab keeps the Clipflow sidebar visible
+          // in the original tab.
+          newTab: true,
         },
       ],
     },
@@ -336,6 +347,7 @@ export function AppShell({
         href={href}
         title={locked ? `Unlock ${item.label} with the ${requiredPlanName} plan` : undefined}
         className={`lv2s-nav-item ${active ? 'active' : ''} ${locked ? 'locked' : ''}`}
+        {...(item.newTab && !locked ? { target: '_blank', rel: 'noopener' } : {})}
       >
         {active && (
           <motion.span
@@ -569,6 +581,7 @@ export function AppShell({
                     ? 'color-mix(in srgb, var(--lv2s-muted) 65%, transparent)'
                     : 'var(--lv2s-muted)',
                 }}
+                {...(item.newTab && !locked ? { target: '_blank', rel: 'noopener' } : {})}
               >
                 <Icon className="h-4 w-4" />
                 {item.label}
@@ -645,6 +658,7 @@ export function AppShell({
                       className={`relative flex flex-col items-center gap-1.5 rounded-xl p-3 text-center transition-colors hover:bg-black/[0.04] ${
                         locked ? 'opacity-60' : ''
                       }`}
+                      {...(item.newTab && !locked ? { target: '_blank', rel: 'noopener' } : {})}
                     >
                       <Icon
                         className="h-5 w-5"
