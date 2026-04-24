@@ -3,6 +3,7 @@ import 'server-only'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getDecryptedAiKey } from '@/lib/ai/get-decrypted-ai-key'
 import { publishVideo, type PublishPlatform as UploadPostPlatform } from '@/lib/publish/upload-post'
+import { publishToX } from '@/lib/publish/x-publish'
 import {
   publishViaComposio,
   type ComposioPublishPlatform,
@@ -10,19 +11,20 @@ import {
 } from '@/lib/publish/composio-publish'
 
 /**
- * Publish router — decides per-platform whether to route through
- * Composio (direct OAuth) or Upload-Post (third-party aggregator).
+ * Publish router — decides per-platform which backend handles the post.
  *
  * Decision order per platform:
- *   1. If workspace has a Composio channel connection → Composio
- *   2. Else if workspace has an Upload-Post key AND the platform is
+ *   1. X → BYO X API credentials (OAuth 1.0a, user's own Developer app)
+ *   2. Else if workspace has a Composio channel connection → Composio
+ *   3. Else if workspace has an Upload-Post key AND the platform is
  *      in Upload-Post's supported list → Upload-Post fallback
- *   3. Else → mark as not_connected
+ *   4. Else → mark as not_connected
  */
 
 export type PublishablePlatform =
-  | ComposioPublishPlatform   // linkedin, x, youtube, instagram, facebook
+  | ComposioPublishPlatform   // linkedin, youtube, instagram, facebook
   | 'tiktok'                  // Upload-Post only
+  | 'x'                       // BYO X API (OAuth 1.0a)
 
 const UPLOAD_POST_PLATFORMS = new Set<PublishablePlatform>([
   'tiktok', 'instagram', 'youtube', 'linkedin',
@@ -31,7 +33,7 @@ const UPLOAD_POST_PLATFORMS = new Set<PublishablePlatform>([
 export interface RouteResult {
   platform: PublishablePlatform
   ok: boolean
-  via?: 'composio' | 'upload-post'
+  via?: 'composio' | 'upload-post' | 'x-api'
   postId?: string
   error?: string
 }
@@ -42,18 +44,23 @@ export async function publishToSocial(
   content: PublishContent,
 ): Promise<RouteResult[]> {
   // Load all the connection info we need in one pass.
-  const [composioIds, hasUploadPostKey] = await Promise.all([
+  const [composioIds, hasUploadPostKey, hasXApi] = await Promise.all([
     getComposioChannelIds(workspaceId),
     hasUploadPost(workspaceId),
+    hasXApiKey(workspaceId),
   ])
 
   // Group platforms by provider so Upload-Post can still batch.
   const composioPlatforms: ComposioPublishPlatform[] = []
   const uploadPostPlatforms: UploadPostPlatform[] = []
+  const xPlatforms: Array<'x'> = []
   const unrouted: PublishablePlatform[] = []
 
   for (const p of platforms) {
-    if (p !== 'tiktok' && composioIds.has(p)) {
+    if (p === 'x') {
+      if (hasXApi) xPlatforms.push('x')
+      else unrouted.push(p)
+    } else if (p !== 'tiktok' && composioIds.has(p)) {
       composioPlatforms.push(p)
     } else if (hasUploadPostKey && UPLOAD_POST_PLATFORMS.has(p)) {
       uploadPostPlatforms.push(p as UploadPostPlatform)
@@ -63,6 +70,16 @@ export async function publishToSocial(
   }
 
   const results: RouteResult[] = []
+
+  // X — one call per platform (only 'x' for now)
+  for (const _p of xPlatforms) {
+    const r = await publishToX(workspaceId, { text: content.caption, videoUrl: content.videoUrl })
+    results.push(
+      r.ok
+        ? { platform: 'x', ok: true, via: 'x-api', postId: r.tweetId }
+        : { platform: 'x', ok: false, via: 'x-api', error: r.error },
+    )
+  }
 
   // Composio — one call per platform (each is its own OAuth connection)
   for (const p of composioPlatforms) {
@@ -118,7 +135,9 @@ export async function publishToSocial(
       error:
         p === 'tiktok'
           ? 'TikTok needs an Upload-Post key. Connect it in Settings → Channels.'
-          : `${p} is not connected. Connect it in Settings → Channels.`,
+          : p === 'x'
+            ? 'X needs your own Developer API credentials. Connect them in Settings → Channels.'
+            : `${p} is not connected. Connect it in Settings → Channels.`,
     })
   }
 
@@ -149,4 +168,21 @@ async function getComposioChannelIds(workspaceId: string): Promise<Set<string>> 
 async function hasUploadPost(workspaceId: string): Promise<boolean> {
   const result = await getDecryptedAiKey(workspaceId, 'upload-post')
   return result.ok
+}
+
+async function hasXApiKey(workspaceId: string): Promise<boolean> {
+  try {
+    const supabase = createAdminClient()
+    const { data: ws } = await supabase
+      .from('workspaces')
+      .select('branding')
+      .eq('id', workspaceId)
+      .single()
+    const branding = (ws?.branding ?? {}) as Record<string, unknown>
+    const channels = (branding.channels ?? {}) as Record<string, unknown>
+    const xSlot = (channels.x ?? null) as { credentials?: unknown } | null
+    return !!xSlot?.credentials
+  } catch {
+    return false
+  }
 }

@@ -27,7 +27,16 @@ function scopePath(scope: Scope): string {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const connectedAppName = searchParams.get('connectedAppName') ?? ''
-  const connectionId = searchParams.get('connectionId') ?? searchParams.get('id') ?? ''
+  // v3 sends `connected_account_id` + `status=success`; v2 used
+  // `connectionId` / `id`. Support both so downgrading the SDK later
+  // wouldn't break this route.
+  const connectionId =
+    searchParams.get('connected_account_id') ??
+    searchParams.get('connectionId') ??
+    searchParams.get('id') ??
+    ''
+  const status = searchParams.get('status') ?? ''
+  const failed = status && status !== 'success'
 
   // Read pending integration info from the cookie set in /connect
   const pendingRaw = cookies().get('composio_pending')?.value
@@ -65,7 +74,7 @@ export async function GET(req: NextRequest) {
   }
   const user = { id: check.userId }
 
-  if (connectionId) {
+  if (connectionId && !failed) {
     // Persist under branding.channels or branding.integrations depending
     // on the scope — so the Integrations page doesn't light up LinkedIn
     // just because the user connected it for publishing.
@@ -99,7 +108,7 @@ export async function GET(req: NextRequest) {
   }
 
   const settingsUrl = new URL(basePath, req.url)
-  if (connectionId) {
+  if (connectionId && !failed) {
     settingsUrl.searchParams.set('connected', integrationId)
   } else {
     settingsUrl.searchParams.set('error', 'auth_cancelled')
