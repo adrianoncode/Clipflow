@@ -19,18 +19,35 @@ export function getComposioClient(): Composio {
 }
 
 /**
- * Maps our internal integration IDs to Composio app slugs.
- * Only integrations that use the Composio OAuth flow are listed here.
+ * Maps our internal IDs to Composio app slugs. Covers two categories:
+ *   - Workflow integrations (notion, sheets, drive) → live in /settings/integrations
+ *   - Social channels (linkedin, x, youtube, instagram, facebook) → live in /settings/channels
+ * Both share the same OAuth plumbing but persist to different JSONB keys.
  */
 export const COMPOSIO_APP_SLUGS: Record<string, string> = {
+  // Workflow
   notion:           'NOTION',
   'google-drive':   'GOOGLEDRIVE',
   'google-sheets':  'GOOGLESHEETS',
+  // Social channels (publishing destinations)
   linkedin:         'LINKEDIN',
+  x:                'TWITTER',      // X still uses the TWITTER slug in Composio
+  youtube:          'YOUTUBE',
+  instagram:        'INSTAGRAM',
+  facebook:         'FACEBOOK',
 }
+
+/** IDs that represent publishing destinations, not workflow tools. */
+export const COMPOSIO_CHANNEL_IDS = new Set([
+  'linkedin', 'x', 'youtube', 'instagram', 'facebook',
+])
 
 export function isComposioOAuth(integrationId: string): boolean {
   return integrationId in COMPOSIO_APP_SLUGS
+}
+
+export function isComposioChannel(integrationId: string): boolean {
+  return COMPOSIO_CHANNEL_IDS.has(integrationId)
 }
 
 /**

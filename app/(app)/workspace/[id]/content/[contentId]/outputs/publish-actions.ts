@@ -3,13 +3,16 @@
 import { getUser } from '@/lib/auth/get-user'
 import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { notifyPostPublished } from '@/lib/notifications/triggers'
-import { publishVideo, type PublishPlatform } from '@/lib/publish/upload-post'
+import { publishToSocial, type PublishablePlatform } from '@/lib/publish/route'
 import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
 import { dispatchIntegrations } from '@/lib/integrations/dispatch-integrations'
 
+// Re-exported for UI components that still import this name from here.
+export type PublishPlatform = PublishablePlatform
+
 export type PublishOutputState =
   | { ok?: undefined }
-  | { ok: true; postedTo: PublishPlatform[] }
+  | { ok: true; postedTo: PublishablePlatform[]; failed?: Array<{ platform: PublishablePlatform; error: string }> }
   | { ok: false; error: string }
 
 /**
@@ -53,7 +56,7 @@ export async function publishOutputAction(
     return { ok: false, error: 'Caption cannot be empty.' }
   }
 
-  let platforms: PublishPlatform[]
+  let platforms: PublishablePlatform[]
   try {
     platforms = JSON.parse(platformsRaw)
     if (!Array.isArray(platforms) || platforms.length === 0) throw new Error()
@@ -61,23 +64,34 @@ export async function publishOutputAction(
     return { ok: false, error: 'Select at least one platform.' }
   }
 
-  const result = await publishVideo(workspaceId, {
+  const results = await publishToSocial(workspaceId, platforms, {
     videoUrl,
     caption: caption.trim(),
-    platforms,
   })
 
-  if (!result.ok) return { ok: false, error: result.error }
+  const postedTo = results.filter((r) => r.ok).map((r) => r.platform)
+  const failed = results
+    .filter((r) => !r.ok)
+    .map((r) => ({ platform: r.platform, error: r.error ?? 'Unknown error' }))
+
+  // If every platform failed, surface the first error as the top-level
+  // failure so the form shows it. Partial success → ok:true + failed list.
+  if (postedTo.length === 0) {
+    return {
+      ok: false,
+      error: failed[0]?.error ?? 'Publish failed on all selected platforms.',
+    }
+  }
 
   // Fire-and-forget webhook for post.published
   triggerWebhooks(workspaceId, 'post.published', {
-    platforms,
+    platforms: postedTo,
     caption: caption.trim(),
   })
 
-  // Fire-and-forget notification per platform
+  // Fire-and-forget notification per successful platform
   try {
-    for (const p of platforms) {
+    for (const p of postedTo) {
       notifyPostPublished({
         userId: user.id,
         workspaceId,
@@ -90,9 +104,9 @@ export async function publishOutputAction(
   // Fire-and-forget integration dispatch
   dispatchIntegrations(workspaceId, 'post.published', {
     title: caption.trim().slice(0, 120),
-    platform: platforms.join(', '),
+    platform: postedTo.join(', '),
     workspaceUrl: `/workspace/${workspaceId}`,
   })
 
-  return { ok: true, postedTo: platforms }
+  return { ok: true, postedTo, ...(failed.length > 0 ? { failed } : {}) }
 }

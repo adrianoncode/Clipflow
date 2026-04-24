@@ -2,9 +2,19 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
 import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
-import { initiateComposioConnection, isComposioOAuth } from '@/lib/integrations/composio'
+import {
+  initiateComposioConnection,
+  isComposioChannel,
+  isComposioOAuth,
+} from '@/lib/integrations/composio'
 
 const WORKSPACE_COOKIE = 'clipflow.current_workspace'
+
+type Scope = 'channel' | 'integration'
+
+function scopeSettingsPath(scope: Scope): string {
+  return scope === 'channel' ? '/settings/channels' : '/settings/integrations'
+}
 
 /**
  * GET /api/integrations/connect?app=notion&workspace_id=xxx
@@ -27,9 +37,21 @@ export async function GET(req: NextRequest) {
     cookies().get(WORKSPACE_COOKIE)?.value ??
     ''
 
+  // Scope defaults by integration type: social platforms → channel,
+  // everything else → integration. An explicit ?scope= param wins so
+  // we can force-override if needed later.
+  const paramScope = searchParams.get('scope')
+  const scope: Scope =
+    paramScope === 'channel' || paramScope === 'integration'
+      ? paramScope
+      : isComposioChannel(integrationId)
+        ? 'channel'
+        : 'integration'
+  const settingsPath = scopeSettingsPath(scope)
+
   if (!integrationId || !workspaceId) {
     return NextResponse.redirect(
-      new URL('/settings/integrations?error=missing_params', req.url),
+      new URL(`${settingsPath}?error=missing_params`, req.url),
     )
   }
 
@@ -39,25 +61,25 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL('/login', req.url))
     }
     return NextResponse.redirect(
-      new URL('/settings/integrations?error=not_a_member', req.url),
+      new URL(`${settingsPath}?error=not_a_member`, req.url),
     )
   }
 
   if (!isComposioOAuth(integrationId)) {
     return NextResponse.redirect(
-      new URL('/settings/integrations?error=not_oauth', req.url),
+      new URL(`${settingsPath}?error=not_oauth`, req.url),
     )
   }
 
-  // Store workspace + integrationId in a short-lived cookie so the
-  // callback route knows where to save the connection.
-  const pending = JSON.stringify({ workspaceId, integrationId })
+  // Store workspace + integrationId + scope in a short-lived cookie
+  // so the callback route knows where to save the connection.
+  const pending = JSON.stringify({ workspaceId, integrationId, scope })
   const response = await initiateComposioConnection(workspaceId, integrationId)
 
   if ('error' in response) {
     return NextResponse.redirect(
       new URL(
-        `/settings/integrations?error=${encodeURIComponent(response.error)}`,
+        `${settingsPath}?error=${encodeURIComponent(response.error)}`,
         req.url,
       ),
     )

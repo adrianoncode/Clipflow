@@ -716,36 +716,51 @@ export async function publishHighlightAction(
     return { ok: false, error: 'This clip has not finished rendering yet.' }
   }
 
-  // Lazy-load the publisher so the action file doesn't pull it into
-  // the generation code-path.
-  const { publishVideo } = await import('@/lib/publish/upload-post')
+  // Lazy-load the publish router so the action file doesn't pull it
+  // (and its deps) into the generation code-path.
+  const { publishToSocial } = await import('@/lib/publish/route')
+
+  const ALL_PLATFORMS = [
+    'tiktok', 'instagram', 'youtube', 'linkedin', 'x', 'facebook',
+  ] as const
+  type P = (typeof ALL_PLATFORMS)[number]
 
   const platformList = platforms
     ?.split(',')
     .map((p) => p.trim())
-    .filter((p): p is 'tiktok' | 'instagram' | 'youtube' | 'linkedin' =>
-      ['tiktok', 'instagram', 'youtube', 'linkedin'].includes(p),
-    )
+    .filter((p): p is P => (ALL_PLATFORMS as readonly string[]).includes(p))
+
+  // Default publish set: the Upload-Post bundle (4 platforms) plus
+  // whatever Composio channels are connected. Router will skip any
+  // platform that isn't wired up.
+  const selected: P[] =
+    platformList && platformList.length > 0
+      ? platformList
+      : ['tiktok', 'instagram', 'youtube', 'linkedin']
 
   const body = (caption || row.hook_text || row.reason || '').trim() || 'New clip'
 
-  const result = await publishVideo(workspace_id, {
+  const results = await publishToSocial(workspace_id, selected, {
     videoUrl: row.video_url as string,
     caption: body,
-    platforms: platformList && platformList.length > 0 ? platformList : undefined,
   })
 
-  if (!result.ok) {
-    return { ok: false, error: result.error, code: result.code }
+  const postIds: Record<string, string> = {}
+  for (const r of results) {
+    if (r.ok && r.postId) postIds[r.platform] = r.postId
+  }
+
+  if (Object.keys(postIds).length === 0) {
+    const firstFail = results.find((r) => !r.ok)
+    return {
+      ok: false,
+      error: firstFail?.error ?? 'Publish failed on all selected platforms.',
+      code: 'api_error',
+    }
   }
 
   revalidatePath(`/workspace/${workspace_id}/content/${row.content_id}/highlights`)
-  return {
-    ok: true,
-    postIds: Object.fromEntries(
-      Object.entries(result.postIds).filter(([, v]) => typeof v === 'string'),
-    ) as Record<string, string>,
-  }
+  return { ok: true, postIds }
 }
 
 // ---------------------------------------------------------------------------

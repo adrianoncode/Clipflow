@@ -110,16 +110,6 @@ const GROUPS: IntegrationGroup[] = [
         iconText: 'text-white',
       },
       {
-        id: 'linkedin',
-        name: 'LinkedIn',
-        connectionType: 'oauth',
-        benefit: 'Post your LinkedIn drafts to your personal feed the moment you export them.',
-        trigger: 'Fires on export',
-        letter: 'in',
-        iconBg: 'bg-[#0A66C2]',
-        iconText: 'text-white',
-      },
-      {
         id: 'google-drive',
         name: 'Google Drive',
         connectionType: 'oauth',
@@ -176,9 +166,9 @@ export default async function IntegrationsPage({
         <div>
           <h1 className="text-lg font-bold tracking-tight">Integrations</h1>
           <p className="mt-0.5 max-w-2xl text-sm text-muted-foreground">
-            Send events from Clipflow into the tools you already use. Social
-            auto-publishing (TikTok, Instagram, YouTube, LinkedIn) lives in
-            Channels.
+            Workflow tools — notifications, CMS exports, content-calendar
+            sync. Social publishing (TikTok, Instagram, YouTube, LinkedIn,
+            X, Threads) lives in <strong className="font-semibold text-foreground">Channels</strong>.
           </p>
         </div>
       </div>
@@ -217,9 +207,9 @@ export default async function IntegrationsPage({
         </div>
       )}
 
-      {/* ── Social publishing pointer. The LinkedIn card below posts to
-           your personal feed on single-export; Upload-Post does the full
-           multi-platform publish on schedule. Two different jobs. ── */}
+      {/* ── Pointer to Channels. Integrations and Channels are two
+           different jobs — integrations send signals into tools, channels
+           push finished content out to social feeds. ── */}
       <Link
         href="/settings/channels"
         className="group flex items-start gap-3 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/[0.06] to-background p-4 transition-all hover:-translate-y-px hover:border-primary/30 hover:shadow-md"
@@ -229,10 +219,10 @@ export default async function IntegrationsPage({
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold">
-            Auto-publish to TikTok, Instagram, YouTube &amp; LinkedIn on schedule
+            Publish to socials — TikTok, Instagram, YouTube, LinkedIn &amp; more
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            That lives in Channels — one Upload-Post key covers all four platforms on a schedule.
+            Channels is where your social destinations live — schedule, auto-post, track performance.
           </p>
         </div>
         <span className="self-center text-sm font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">
