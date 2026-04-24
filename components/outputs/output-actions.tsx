@@ -134,7 +134,7 @@ export function OutputActions({ output, contentId, hasPublishKey = false }: Outp
           variant={publishOpen ? 'default' : 'outline'}
           size="sm"
           onClick={() => setPublishOpen((s) => !s)}
-          title="Publish to TikTok, Instagram, YouTube, LinkedIn"
+          title="Publish to TikTok, Instagram, YouTube, LinkedIn, X, Facebook"
         >
           {publishOpen ? 'Hide publish' : '↑ Publish'}
         </Button>

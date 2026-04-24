@@ -7,7 +7,11 @@ import { CheckSquare2, ExternalLink, Send, Square } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { publishOutputAction, type PublishOutputState } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/publish-actions'
-import type { PublishPlatform } from '@/lib/publish/upload-post'
+import type { PublishablePlatform } from '@/lib/publish/route'
+
+// Local alias so the component reads cleanly. All the canonical
+// platform types live in lib/publish/route.ts now.
+type PublishPlatform = PublishablePlatform
 
 interface PublishPanelProps {
   workspaceId: string
@@ -27,6 +31,8 @@ const PLATFORMS: PlatformMeta[] = [
   { id: 'instagram', label: 'Instagram', icon: '📸' },
   { id: 'youtube',   label: 'YouTube',   icon: '▶️' },
   { id: 'linkedin',  label: 'LinkedIn',  icon: '💼' },
+  { id: 'x',         label: 'X',         icon: '𝕏' },
+  { id: 'facebook',  label: 'Facebook',  icon: 'f' },
 ]
 
 /** Maps Clipflow output platform slugs to Upload-Post platform IDs. */
@@ -36,6 +42,9 @@ function defaultPlatformsFor(outputPlatform: string): PublishPlatform[] {
     instagram_reels:  'instagram',
     youtube_shorts:   'youtube',
     linkedin:         'linkedin',
+    x:                'x',
+    twitter:          'x',
+    facebook:         'facebook',
   }
   const mapped = map[outputPlatform]
   return mapped ? [mapped] : ['tiktok']

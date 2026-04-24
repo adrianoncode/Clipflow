@@ -75,11 +75,16 @@ async function getAuthConfigId(toolkit: string): Promise<string> {
 
   const client = getComposioClient()
 
+  // Shape notes: Composio v3 responses sometimes wrap arrays under
+  // `items`, sometimes `data` — both are tolerated via dual-read. The
+  // `unknown` cast narrows one field at a time without `any` leaking.
+  type LooseList = { items?: Array<{ id?: string }>; data?: Array<{ id?: string }> }
+  type LooseCreate = { id?: string; authConfig?: { id?: string } }
+
   // Try listing first — we might already have one from a prior session.
   try {
-    const existing = await client.authConfigs.list({ toolkit } as any)
-    // The list response shape varies; items[0].id is the stable field.
-    const items = (existing as any)?.items ?? (existing as any)?.data ?? []
+    const existing = (await client.authConfigs.list({ toolkit })) as LooseList
+    const items = existing?.items ?? existing?.data ?? []
     for (const item of items) {
       const id = item?.id
       if (typeof id === 'string' && id.length > 0) {
@@ -89,11 +94,11 @@ async function getAuthConfigId(toolkit: string): Promise<string> {
     }
   } catch { /* fall through to create */ }
 
-  const created = await client.authConfigs.create(toolkit, {
+  const created = (await client.authConfigs.create(toolkit, {
     type: 'use_composio_managed_auth',
     name: `${toolkit} via Clipflow`,
-  } as any)
-  const id = (created as any)?.id ?? (created as any)?.authConfig?.id
+  })) as LooseCreate
+  const id = created?.id ?? created?.authConfig?.id
   if (!id) throw new Error(`Composio: authConfigs.create returned no id for ${toolkit}`)
   _authConfigCache.set(toolkit, id)
   return id
@@ -120,12 +125,12 @@ export async function initiateComposioConnection(
   try {
     const client = getComposioClient()
     const authConfigId = await getAuthConfigId(toolkit)
-    const connectionRequest = await client.connectedAccounts.link(
+    const connectionRequest = (await client.connectedAccounts.link(
       workspaceId,
       authConfigId,
-      { callbackUrl } as any,
-    )
-    const redirectUrl = (connectionRequest as any)?.redirectUrl
+      { callbackUrl },
+    )) as { redirectUrl?: string }
+    const redirectUrl = connectionRequest?.redirectUrl
     if (!redirectUrl) {
       return { error: `Composio returned no redirectUrl for ${toolkit}.` }
     }
@@ -145,10 +150,16 @@ export async function getComposioConnections(
 ): Promise<Set<string>> {
   try {
     const client = getComposioClient()
-    const resp = await client.connectedAccounts.list({
+    type LooseConn = {
+      toolkit?: { slug?: string }
+      toolkitSlug?: string
+      appName?: string
+    }
+    type LooseListResp = { items?: LooseConn[]; data?: LooseConn[] }
+    const resp = (await client.connectedAccounts.list({
       userIds: [workspaceId],
-    } as any)
-    const items = (resp as any)?.items ?? (resp as any)?.data ?? []
+    })) as LooseListResp
+    const items = resp?.items ?? resp?.data ?? []
     const toolkitToId = Object.fromEntries(
       Object.entries(COMPOSIO_APP_SLUGS).map(([id, slug]) => [slug, id]),
     )
@@ -180,7 +191,7 @@ export async function executeComposioAction(
     const result = await client.tools.execute(toolSlug, {
       userId: workspaceId,
       arguments: toolArguments,
-    } as any)
+    })
     return { ok: true, data: result }
   } catch (err) {
     return { ok: false, error: (err as Error).message }

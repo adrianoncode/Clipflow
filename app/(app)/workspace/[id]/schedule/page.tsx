@@ -21,6 +21,7 @@ import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getScheduledPosts } from '@/lib/scheduler/get-scheduled-posts'
 import { getUnscheduledOutputs } from '@/lib/scheduler/get-unscheduled-outputs'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { checkPlanAccess } from '@/lib/billing/plans'
 import { CancelPostButton } from '@/components/scheduler/cancel-post-button'
@@ -93,7 +94,25 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
     redirect(`/billing?workspace_id=${params.id}&plan=solo&feature=scheduling`)
   }
 
+  // "Ready to auto-publish" = ANY connected destination: Upload-Post
+  // bundle OR a Composio channel OR BYO X keys. Before this, workspaces
+  // that only connected Composio/X saw a stale "Connect Upload-Post"
+  // banner even though they were fully set up.
   const hasUploadPostKey = aiKeys.some((k) => k.provider === 'upload-post')
+  let hasAnyChannel = hasUploadPostKey
+  if (!hasAnyChannel) {
+    try {
+      const supabase = createAdminClient()
+      const { data: ws } = await supabase
+        .from('workspaces')
+        .select('branding')
+        .eq('id', params.id)
+        .single()
+      const branding = (ws?.branding ?? {}) as Record<string, unknown>
+      const channels = (branding.channels ?? {}) as Record<string, unknown>
+      hasAnyChannel = Object.keys(channels).length > 0
+    } catch { /* ignore */ }
+  }
 
   // Calendar view — server actions
   async function handleQuickSchedule(fd: FormData) {
@@ -256,7 +275,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
       )}
 
       {/* ── Publishing status banner ── */}
-      {hasUploadPostKey ? (
+      {hasAnyChannel ? (
         <div className="flex items-center gap-3 rounded-2xl border border-emerald-200/60 bg-emerald-50/30 p-4">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100">
             <CheckCircle2 className="h-4 w-4 text-emerald-600" />

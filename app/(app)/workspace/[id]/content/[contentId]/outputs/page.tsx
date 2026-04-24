@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge'
 import { SeoPanel } from '@/components/outputs/seo-panel'
 import { ThumbnailStudio } from '@/components/outputs/thumbnail-studio'
 import { getBrandKit } from '@/lib/brand-kit/get-brand-kit'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { ExportAllButton } from '@/components/outputs/export-all-button'
 import { GenerateOutputsForm } from '@/components/outputs/generate-outputs-form'
 import { OutputsGrid } from '@/components/outputs/outputs-grid'
@@ -90,7 +91,22 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
       getBrandKit(params.id),
     ])
   const planFeatures = getPlanFeatures(plan)
-  const hasPublishKey = aiKeys.some((k) => k.provider === 'upload-post')
+  // Publish-ready = ANY connected destination, not just Upload-Post.
+  // Composio channels (LinkedIn/YouTube/IG/FB) and BYO X keys also count.
+  let hasPublishKey = aiKeys.some((k) => k.provider === 'upload-post')
+  if (!hasPublishKey) {
+    try {
+      const supabase = createAdminClient()
+      const { data: ws } = await supabase
+        .from('workspaces')
+        .select('branding')
+        .eq('id', params.id)
+        .single()
+      const branding = (ws?.branding ?? {}) as Record<string, unknown>
+      const channels = (branding.channels ?? {}) as Record<string, unknown>
+      hasPublishKey = Object.keys(channels).length > 0
+    } catch { /* ignore */ }
+  }
   const title = item.title ?? 'Untitled'
   const kindCfg = KIND_CONFIG[item.kind] ?? KIND_CONFIG.text
   const KindIcon = kindCfg.icon

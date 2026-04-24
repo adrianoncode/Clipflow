@@ -721,7 +721,7 @@ export async function publishHighlightAction(
   const { publishToSocial } = await import('@/lib/publish/route')
 
   const ALL_PLATFORMS = [
-    'tiktok', 'instagram', 'youtube', 'linkedin', 'facebook',
+    'tiktok', 'instagram', 'youtube', 'linkedin', 'facebook', 'x',
   ] as const
   type P = (typeof ALL_PLATFORMS)[number]
 

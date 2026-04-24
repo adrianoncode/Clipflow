@@ -3,7 +3,7 @@ import { revalidatePath } from 'next/cache'
 
 import { notifyPostPublished } from '@/lib/notifications/triggers'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { decrypt } from '@/lib/crypto/encryption'
+import { publishToSocial, type PublishablePlatform } from '@/lib/publish/route'
 import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
 import { verifyCronSecret } from '@/lib/security/verify-cron-secret'
 import { pingHealthcheck } from '@/lib/monitoring/ping-healthcheck'
@@ -11,16 +11,22 @@ import { log } from '@/lib/log'
 
 export const dynamic = 'force-dynamic'
 
-const UPLOAD_POST_API = 'https://upload-post.com/api/v1'
+const VALID_PLATFORMS = new Set<PublishablePlatform>([
+  'tiktok', 'instagram', 'youtube', 'linkedin', 'facebook', 'x',
+])
 
 /**
  * POST /api/cron/publish-scheduled
  *
- * Publishes due posts via Upload-Post BYOK. Each post is processed with
- * optimistic locking: status is set to 'publishing' first, then the
- * Upload-Post API is called. If the API succeeds but the DB update fails,
- * we retry the DB update once before marking as failed — preventing
- * duplicate publishes on the next cron run.
+ * Publishes due posts through the publish router so each platform
+ * picks the right backend:
+ *   - Composio direct OAuth (linkedin/youtube/instagram/facebook)
+ *   - Upload-Post bundle (tiktok + fallback for IG/YT/LinkedIn)
+ *   - BYO X API credentials (x)
+ *
+ * Each post is processed with optimistic locking: status is set to
+ * 'publishing' first, then published. If publish succeeds but the
+ * status update fails, we retry once to prevent duplicate publishes.
  */
 export async function POST(req: NextRequest) {
   const secret = req.headers.get('x-cron-secret') ?? req.nextUrl.searchParams.get('secret')
@@ -47,43 +53,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, published: 0 })
   }
 
-  // Fetch output bodies + content titles for due posts
+  // Fetch output bodies + content titles for due posts. The rendered
+  // MP4 URL for this output (if any) lives in metadata.videoUrl —
+  // matters for TikTok/IG Reels/Shorts which can't post text-only.
   const outputIds = [...new Set(duePosts.map((p) => p.output_id))]
   const { data: outputs } = await supabase
     .from('outputs')
-    .select('id, body, content_id, content_items(title)')
+    .select('id, body, metadata, content_id, content_items(title)')
     .in('id', outputIds)
 
-  const outputMap = new Map<string, { body: string; title: string }>()
+  const outputMap = new Map<string, { body: string; title: string; videoUrl: string | null }>()
   for (const o of outputs ?? []) {
     const ci = o.content_items as unknown as { title: string | null } | null
+    const meta = (o.metadata ?? {}) as Record<string, unknown>
+    const videoUrl =
+      typeof meta.videoUrl === 'string'
+        ? meta.videoUrl
+        : typeof meta.video_url === 'string'
+          ? meta.video_url
+          : null
     outputMap.set(o.id, {
       body: o.body ?? '',
       title: ci?.title ?? 'Scheduled post',
+      videoUrl,
     })
-  }
-
-  // Cache decrypted Upload-Post keys per workspace
-  const keyCache = new Map<string, string | null>()
-  async function getUploadPostKey(workspaceId: string): Promise<string | null> {
-    if (keyCache.has(workspaceId)) return keyCache.get(workspaceId)!
-    const { data } = await supabase
-      .from('ai_keys')
-      .select('ciphertext, iv, auth_tag')
-      .eq('workspace_id', workspaceId)
-      .eq('provider', 'upload-post')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-    if (!data) { keyCache.set(workspaceId, null); return null }
-    try {
-      const plain = decrypt({ ciphertext: data.ciphertext, iv: data.iv, authTag: data.auth_tag })
-      keyCache.set(workspaceId, plain)
-      return plain
-    } catch {
-      keyCache.set(workspaceId, null)
-      return null
-    }
   }
 
   const results: Array<{ id: string; platform: string; ok: boolean; error?: string }> = []
@@ -101,58 +94,42 @@ export async function POST(req: NextRequest) {
       continue
     }
 
-    const apiKey = await getUploadPostKey(post.workspace_id)
-    if (!apiKey) {
-      await supabase
-        .from('scheduled_posts')
-        .update({ status: 'failed', error_message: 'Upload-Post not connected. Add it in Settings → Channels.' })
-        .eq('id', post.id)
-      results.push({ id: post.id, platform: post.platform, ok: false, error: 'No Upload-Post key' })
-      continue
+    const outputData = outputMap.get(post.output_id) ?? {
+      body: '',
+      title: 'Scheduled post',
+      videoUrl: null,
     }
 
-    const outputData = outputMap.get(post.output_id) ?? { body: '', title: 'Scheduled post' }
-
-    // Call Upload-Post API
+    // Route via the single publisher so Composio / Upload-Post / X
+    // credentials are resolved per-platform. The router handles the
+    // "not connected" case with a clear error message.
     let publishOk = false
     let platformPostId: string | undefined
     let publishError: string | undefined
 
-    try {
-      const response = await fetch(`${UPLOAD_POST_API}/post`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          platforms: [post.platform],
-          description: outputData.body,
-          title: outputData.title,
-          tags: [],
-        }),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        const posts = (data?.posts ?? {}) as Record<string, { id?: string }>
-        platformPostId = posts[post.platform]?.id
-        publishOk = true
-      } else {
-        let detail = ''
-        try {
-          const b = await response.json()
-          detail = b?.message ?? b?.error ?? ''
-        } catch (parseErr) {
-          log.error('publish-cron: failed to parse upload-post error body', parseErr, {
-            postId: post.id,
-            status: response.status,
-          })
+    if (!VALID_PLATFORMS.has(post.platform as PublishablePlatform)) {
+      publishError = `Unknown platform: ${post.platform}`
+    } else {
+      try {
+        const routeResults = await publishToSocial(
+          post.workspace_id,
+          [post.platform as PublishablePlatform],
+          {
+            caption: outputData.body,
+            title: outputData.title,
+            videoUrl: outputData.videoUrl ?? undefined,
+          },
+        )
+        const r = routeResults[0]
+        if (r?.ok) {
+          publishOk = true
+          platformPostId = r.postId
+        } else {
+          publishError = r?.error ?? 'Unknown publish error'
         }
-        publishError = detail || `Upload-Post returned ${response.status}`
+      } catch (err) {
+        publishError = err instanceof Error ? err.message : 'Network error'
       }
-    } catch (err) {
-      publishError = err instanceof Error ? err.message : 'Network error'
     }
 
     if (publishOk) {
