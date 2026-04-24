@@ -11,8 +11,6 @@ import {
   Key,
   Mic2,
   Palette,
-  Plug,
-  Radio,
   ScrollText,
   Shield,
   LayoutTemplate,
@@ -34,16 +32,25 @@ const aiGroup = [
 ]
 
 const connectGroup = [
-  { href: '/settings/channels', label: 'Channels', icon: Radio },
-  { href: '/settings/integrations', label: 'Integrations', icon: Plug },
   { href: '/settings/audit-log', label: 'Audit log', icon: ScrollText },
   { href: '/help', label: 'Help', icon: HelpCircle },
 ]
 
 const groups = [accountGroup, aiGroup, connectGroup]
 
+// Routes where the horizontal Settings nav should NOT render. These
+// pages are full-fledged features (reachable from the main sidebar)
+// that happen to live under /settings/* for URL-stability reasons —
+// but surfacing the Profile/Security/Billing tabs above them is
+// noise, not navigation.
+const HIDE_NAV_PREFIXES = ['/settings/channels', '/settings/integrations']
+
 export function SettingsNav() {
   const pathname = usePathname()
+
+  if (HIDE_NAV_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+    return null
+  }
 
   function isActive(href: string) {
     return pathname === href || pathname.startsWith(href + '/')
