@@ -17,6 +17,7 @@ import {
   disconnectXAction,
   type ConnectXState,
 } from '@/app/(app)/settings/channels/x-actions'
+import { XLogo } from '@/components/brand-logos'
 
 const initialState: ConnectXState = {}
 
@@ -45,10 +46,10 @@ export function XConnectCard({ workspaceId, isOwner, connected }: XConnectCardPr
     return (
       <div className="relative flex items-start gap-3 rounded-xl border border-border/60 bg-background p-4">
         <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black text-sm font-bold text-white"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-black text-white shadow-sm"
           aria-hidden
         >
-          𝕏
+          <XLogo size={20} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -82,10 +83,10 @@ export function XConnectCard({ workspaceId, isOwner, connected }: XConnectCardPr
     <div className="relative rounded-xl border border-border/60 bg-background p-4">
       <div className="flex items-start gap-3">
         <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black text-sm font-bold text-white"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-black text-white shadow-sm"
           aria-hidden
         >
-          𝕏
+          <XLogo size={20} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
