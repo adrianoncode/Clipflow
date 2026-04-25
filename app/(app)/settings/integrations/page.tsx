@@ -1,13 +1,11 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { Check, Plug, Send, Zap } from 'lucide-react'
+import { Check, Zap } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { createClient } from '@/lib/supabase/server'
 import { ConnectDialog } from '@/components/integrations/connect-dialog'
-import { PageHeading } from '@/components/workspace/page-heading'
 import {
   DiscordLogo,
   GoogleDriveLogo,
@@ -145,31 +143,11 @@ export default async function IntegrationsPage({
     } catch { /* ignore */ }
   }
 
-  const totalConnected = connectedIds.size
   const urlError = searchParams.error
   const urlConnected = searchParams.connected
 
   return (
-    <div className="space-y-8">
-      {/* ── Header ── */}
-      <div className="flex items-start gap-3">
-        <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-          style={{ background: '#EDE6F5' }}
-        >
-          <Plug className="h-4 w-4" style={{ color: '#2A1A3D' }} />
-        </div>
-        <PageHeading
-          eyebrow="Settings · Integrations"
-          title="Workspace tools, wired in."
-          body={
-            totalConnected > 0
-              ? `${totalConnected} integration${totalConnected === 1 ? '' : 's'} live. Events fire when content moves through the pipeline.`
-              : 'Hook up the tools your team already uses. Events fire when content moves — approve, export, publish.'
-          }
-        />
-      </div>
-
+    <div className="space-y-6">
       {urlError ? (
         <FeedbackBanner tone="error">
           <p className="font-semibold text-destructive">Connection failed</p>
@@ -194,28 +172,6 @@ export default async function IntegrationsPage({
           </p>
         </FeedbackBanner>
       ) : null}
-
-      {/* ── Pointer to Channels ── */}
-      <Link
-        href="/settings/channels"
-        className="group flex items-start gap-3 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/[0.06] to-background p-4 transition-all hover:-translate-y-px hover:border-primary/30 hover:shadow-md"
-      >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Send className="h-4 w-4" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-[14px] font-bold text-foreground">
-            Looking for TikTok, Instagram, YouTube or LinkedIn?
-          </p>
-          <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted-foreground">
-            Social publishing destinations live on the <strong className="font-semibold text-foreground">Channels</strong> page —
-            schedule, auto-post, and track performance there.
-          </p>
-        </div>
-        <span className="self-center text-[12px] font-bold text-primary opacity-0 transition-opacity group-hover:opacity-100">
-          Open →
-        </span>
-      </Link>
 
       {/* ── Integration groups ── */}
       {GROUPS.map((group) => (
