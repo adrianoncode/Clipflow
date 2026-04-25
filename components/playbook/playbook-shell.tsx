@@ -127,7 +127,10 @@ export function PlaybookShell({
           </div>
         </header>
 
-        {/* Body grid — sidebars only on desktop, content owns small screens */}
+        {/* Body grid — sidebars only on desktop, content owns small screens.
+            On mobile we surface the path sidebar + TOC via collapsible
+            <details> drawers above the main content (no JS, no portals,
+            keyboard accessible). */}
         <div
           className="mx-auto grid max-w-[1400px] gap-8 px-6 py-10 lg:grid-cols-[260px_minmax(0,1fr)_220px]"
         >
@@ -139,7 +142,46 @@ export function PlaybookShell({
               currentSlug={currentSlug}
             />
           </div>
-          <main className="min-w-0">{children}</main>
+
+          <main className="min-w-0">
+            {/* Mobile path drawer */}
+            <details
+              className="group mb-5 overflow-hidden rounded-2xl border bg-[var(--lv2-card)] lg:hidden"
+              style={{ borderColor: 'var(--lv2-border)' }}
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+                <span className="lv2-mono inline-flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--lv2-muted)' }}>
+                  <span aria-hidden>📑</span>
+                  Browse paths &amp; guides
+                </span>
+                <svg
+                  aria-hidden
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  className="transition-transform group-open:rotate-180"
+                  style={{ color: 'var(--lv2-muted)' }}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </summary>
+              <div className="border-t px-4 py-4" style={{ borderColor: 'var(--lv2-border)' }}>
+                <PlaybookPathSidebar
+                  paths={paths}
+                  guidesById={guidesById}
+                  activePathId={activePathId}
+                  currentSlug={currentSlug}
+                />
+              </div>
+            </details>
+
+            {children}
+          </main>
+
           <div className="hidden lg:block">{right ?? null}</div>
         </div>
       </div>

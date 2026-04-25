@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, Clock, Compass } from 'lucide-react'
 import { PlaybookShell } from '@/components/playbook/playbook-shell'
 import { PlaybookSection } from '@/components/playbook/playbook-body'
 import { PlaybookToc } from '@/components/playbook/playbook-toc'
+import { PlaybookMobileToc } from '@/components/playbook/playbook-mobile-toc'
 import {
   GUIDES,
   GUIDE_CATEGORIES,
@@ -261,7 +262,10 @@ export default function PlaybookGuidePage({ params, searchParams }: PageProps) {
             </p>
           </header>
 
-          {/* TL;DR — auto-generated from section titles */}
+          {/* TL;DR — auto-generated from section titles. Doubles as the
+              mobile TOC: anchor links jump the user to each section.
+              On lg+ we hide the right rail TOC's redundant compact form
+              and rely on this card. */}
           {guide.sections.length >= 2 ? (
             <div
               className="mb-12 rounded-2xl border p-6"
@@ -302,6 +306,12 @@ export default function PlaybookGuidePage({ params, searchParams }: PageProps) {
               </ol>
             </div>
           ) : null}
+
+          {/* Mobile floating "Jump to section" sheet — sticky at the
+              viewport bottom so the reader can hop anywhere without
+              scrolling back to the TL;DR. Hidden on lg+ (right rail
+              TOC takes over). */}
+          <PlaybookMobileToc sections={guide.sections} />
 
           {/* Sections */}
           <div className="space-y-0">
