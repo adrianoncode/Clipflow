@@ -5,6 +5,7 @@ import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getActiveNiche } from '@/lib/niche/get-active-niche'
 import { getWorkspaceTemplates } from '@/lib/templates/get-templates'
+import { PageHeading } from '@/components/workspace/page-heading'
 import { NichePicker } from './niche-picker'
 import { TemplatesClient } from './templates-client'
 
@@ -67,17 +68,19 @@ export default async function TemplatesPage({
   ])
 
   return (
-    <div className="max-w-2xl space-y-8">
-      <div className="flex items-start gap-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-100">
-          <LayoutTemplate className="h-5 w-5 text-teal-600" />
+    <div className="max-w-3xl space-y-8">
+      <div className="flex items-start gap-3">
+        <div
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+          style={{ background: '#EDE6F5' }}
+        >
+          <LayoutTemplate className="h-4 w-4" style={{ color: '#2A1A3D' }} />
         </div>
-        <div>
-          <h1 className="text-lg font-bold tracking-tight">Draft Templates</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Customize the AI prompts used to generate content for each platform.
-          </p>
-        </div>
+        <PageHeading
+          eyebrow="Settings · Templates"
+          title="Draft templates."
+          body="Customise the AI prompts used per platform. Built-ins ship sane defaults — override only the ones where your voice needs steering."
+        />
       </div>
 
       {/* Built-in platform templates */}
