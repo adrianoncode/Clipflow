@@ -88,15 +88,21 @@ export function Callout({
 
   return (
     <aside
-      className="flex items-start gap-3 rounded-2xl p-4 sm:p-5"
+      className="relative flex items-start gap-3 overflow-hidden rounded-2xl p-4 pl-5 sm:p-5 sm:pl-6"
       style={{
         background: cfg.bg,
         color: cfg.fg,
         border: `1px solid ${cfg.border}`,
       }}
     >
+      {/* Saturated left rule — sells the variant at a glance */}
       <span
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+        aria-hidden
+        className="absolute inset-y-0 left-0 w-1"
+        style={{ background: isDark ? 'var(--lv2-accent)' : cfg.iconColor }}
+      />
+      <span
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
         style={{ background: cfg.iconBg, color: cfg.iconColor }}
         aria-hidden
       >
@@ -104,15 +110,15 @@ export function Callout({
       </span>
       <div className="min-w-0 flex-1">
         <p
-          className="lv2-mono mb-1 text-[10px] font-bold uppercase tracking-[0.12em]"
+          className="lv2-mono mb-1 text-[10px] font-bold uppercase tracking-[0.14em]"
           style={{
-            color: isDark ? 'rgba(214,255,62,.7)' : cfg.iconColor,
+            color: isDark ? 'rgba(214,255,62,.78)' : cfg.iconColor,
           }}
         >
           {label}
         </p>
         <p
-          className="text-[14px] leading-relaxed"
+          className="text-[14px] leading-[1.6]"
           style={{ color: isDark ? 'rgba(255,255,255,.92)' : cfg.fg }}
         >
           {body}

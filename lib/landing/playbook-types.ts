@@ -48,6 +48,25 @@ export interface Guide {
   relatedGuides?: string[]
 }
 
+/**
+ * Curated learning paths — a path is a hand-ordered sequence of guides
+ * around one operator goal ("just starting", "scaling output", "agency
+ * playbook"). A guide can belong to multiple paths. The Hub renders
+ * paths as the primary IA; the guide page shows path context + next.
+ */
+export type PathId = 'start' | 'scale' | 'agency'
+
+export interface LearningPath {
+  id: PathId
+  name: string
+  pitch: string
+  emoji: string
+  /** Ordered list of guide IDs that make up this path. */
+  guideIds: string[]
+  /** Lime / plum / sand — used as the path's accent on cards + sidebar. */
+  tone: 'lime' | 'plum' | 'sand'
+}
+
 export interface GuideSection {
   /** Anchor id — used by the right-rail TOC to deep-link + highlight. */
   id: string

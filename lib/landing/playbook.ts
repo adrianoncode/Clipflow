@@ -1,4 +1,75 @@
-import type { Guide, GuideCategory, GuideCategoryId } from './playbook-types'
+import type { Guide, GuideCategory, GuideCategoryId, LearningPath, PathId } from './playbook-types'
+
+/**
+ * Curated learning paths. Order matters — the guide page navigates
+ * "next" by stepping through `guideIds`. A guide can belong to
+ * multiple paths; the page picks the most-recent path the user came
+ * from (or the first one alphabetically as a fallback).
+ */
+export const PATHS: Record<PathId, LearningPath> = {
+  start: {
+    id: 'start',
+    name: 'Just starting',
+    pitch: 'Get from zero account to your first scheduled week of posts.',
+    emoji: '🚀',
+    tone: 'lime',
+    guideIds: [
+      'first-24-hours',
+      'train-your-brand-voice',
+      'hook-formulas-that-convert',
+      'bulk-regenerate',
+    ],
+  },
+  scale: {
+    id: 'scale',
+    name: 'Scaling output',
+    pitch: 'Turn one long recording into a month of posts without losing voice.',
+    emoji: '📈',
+    tone: 'plum',
+    guideIds: [
+      'seven-day-podcast-workflow',
+      'find-viral-moments',
+      'hook-formulas-that-convert',
+      'youtube-to-tiktok',
+      'bulk-regenerate',
+    ],
+  },
+  agency: {
+    id: 'agency',
+    name: 'Going pro (agency)',
+    pitch: 'Onboard clients, keep voice consistent, deliver weekly without chaos.',
+    emoji: '🎯',
+    tone: 'sand',
+    guideIds: [
+      'onboard-agency-client',
+      'train-your-brand-voice',
+      'hook-formulas-that-convert',
+    ],
+  },
+}
+
+export const PATH_ORDER: PathId[] = ['start', 'scale', 'agency']
+
+/** Reverse-lookup: which paths contain this guide, in order. */
+export function pathsContaining(guideId: string): LearningPath[] {
+  return PATH_ORDER
+    .map((id) => PATHS[id])
+    .filter((p) => p.guideIds.includes(guideId))
+}
+
+/** Find next guide in a given path after the current one. */
+export function nextInPath(path: LearningPath, currentGuideId: string): string | null {
+  const i = path.guideIds.indexOf(currentGuideId)
+  if (i < 0 || i === path.guideIds.length - 1) return null
+  return path.guideIds[i + 1] ?? null
+}
+
+/** Find previous guide in a given path before the current one. */
+export function prevInPath(path: LearningPath, currentGuideId: string): string | null {
+  const i = path.guideIds.indexOf(currentGuideId)
+  if (i <= 0) return null
+  return path.guideIds[i - 1] ?? null
+}
 
 /**
  * Playbook — the in-app / SEO Knowledge base. Every guide is a full,

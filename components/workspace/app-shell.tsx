@@ -115,6 +115,11 @@ const SHELL_STYLES = `
 .lv2-shell .lv2s-nav-item:hover { background: rgba(24,21,17,.04); color: var(--lv2s-fg); }
 .lv2-shell .lv2s-nav-item.active {
   color: var(--lv2s-accent); font-weight: 600;
+  /* Solid background on the item itself — guarantees lime text always
+     sits on dark plum, even during the framer-motion shared-element
+     slide of the indicator across tabs (otherwise lime-on-cream is
+     unreadable for ~200ms while the indicator catches up). */
+  background: var(--lv2s-primary);
 }
 .lv2-shell .lv2s-nav-indicator {
   position: absolute; inset: 0; z-index: 0; border-radius: 8px;
