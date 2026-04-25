@@ -16,6 +16,8 @@ import {
 } from 'lucide-react'
 
 import { EmptyState } from '@/components/ui/empty-state'
+import { PageHeader } from '@/components/ui/page-header'
+import { ScheduleEmptyPreview } from '@/components/scheduler/schedule-empty-preview'
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getScheduledPosts } from '@/lib/scheduler/get-scheduled-posts'
@@ -189,57 +191,49 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
-      {/* ── Header ── */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">
-            <Link href={`/workspace/${params.id}`} className="hover:text-foreground transition-colors">Content</Link>
-            {' → '}
-            <Link href={`/workspace/${params.id}/pipeline`} className="hover:text-foreground transition-colors">Drafts</Link>
-            {' → '}
-            <span className="font-medium text-foreground">Schedule</span>
-          </p>
-          <h1
-            className="text-[44px] leading-[1.02]"
-            style={{
-              fontFamily: 'var(--font-instrument-serif), serif',
-              letterSpacing: '-.015em',
-              color: '#2A1A3D',
-            }}
-          >
-            Schedule.
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {posts.length === 0
-              ? 'Line up your approved posts. We push them out for you at the time you pick.'
-              : `${upcomingCount} queued · ${publishedCount} live · ${posts.length} total`}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* View toggle */}
-          <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-0.5">
-            <span className="flex items-center gap-1.5 rounded-md bg-background px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm">
-              <List className="h-3.5 w-3.5" />
-              List
-            </span>
+      {/* ── Breadcrumb ── */}
+      <p className="text-xs text-muted-foreground">
+        <Link href={`/workspace/${params.id}`} className="hover:text-foreground transition-colors">Content</Link>
+        {' → '}
+        <Link href={`/workspace/${params.id}/pipeline`} className="hover:text-foreground transition-colors">Drafts</Link>
+        {' → '}
+        <span className="font-medium text-foreground">Schedule</span>
+      </p>
+
+      <PageHeader
+        eyebrow={posts.length === 0 ? 'Posts queue' : `${posts.length} post${posts.length === 1 ? '' : 's'}`}
+        title="Schedule."
+        description={
+          posts.length === 0
+            ? undefined
+            : `${upcomingCount} queued · ${publishedCount} live · ${failedCount} failed`
+        }
+        actions={
+          <>
+            <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-0.5">
+              <span className="flex items-center gap-1.5 rounded-md bg-background px-2.5 py-1 text-[12px] font-semibold text-foreground shadow-sm">
+                <List className="h-3.5 w-3.5" />
+                List
+              </span>
+              <Link
+                href={`/workspace/${params.id}/schedule?view=calendar`}
+                className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <CalendarDays className="h-3.5 w-3.5" />
+                Calendar
+              </Link>
+            </div>
             <Link
-              href={`/workspace/${params.id}/schedule?view=calendar`}
-              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+              href={`/workspace/${params.id}/pipeline`}
+              className="group inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/[0.04] px-3.5 py-2 text-[13px] font-semibold text-primary transition-all hover:-translate-y-px hover:bg-primary/10 hover:shadow-md"
             >
-              <CalendarDays className="h-3.5 w-3.5" />
-              Calendar
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              View drafts
+              <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
             </Link>
-          </div>
-          <Link
-            href={`/workspace/${params.id}/pipeline`}
-            className="group inline-flex shrink-0 items-center gap-2 rounded-xl border border-primary/20 bg-primary/[0.04] px-4 py-2.5 text-sm font-semibold text-primary transition-all hover:-translate-y-0.5 hover:bg-primary/10 hover:shadow-md"
-          >
-            <CheckCircle2 className="h-4 w-4" />
-            View drafts
-            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-          </Link>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* ── Stats strip ── */}
       {posts.length > 0 && (
@@ -319,12 +313,27 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
       {posts.length === 0 ? (
         <EmptyState
           icon={CalendarDays}
-          title="Nothing queued up"
-          description="Approve a draft first, then drag it onto the calendar to pick a time."
+          title="Pick a time, we hit publish."
+          description="Approve drafts first, then drop them on the week. Posts go live exactly when you set them — no manual copy-paste, no app-switching."
           actionLabel="Review drafts"
           actionHref={`/workspace/${params.id}/pipeline`}
           secondaryLabel="Open calendar"
           secondaryHref={`/workspace/${params.id}/schedule?view=calendar`}
+          steps={[
+            {
+              title: 'Approve drafts in Pipeline',
+              body: 'Reject what you don’t like, approve what you ship. Bulk-approve with shift-click.',
+            },
+            {
+              title: 'Drag onto the calendar',
+              body: 'Pick a day + time. The same post can target multiple platforms in one slot.',
+            },
+            {
+              title: 'Auto-publish does the rest',
+              body: 'When the slot hits, we push to TikTok / IG / YT / LinkedIn / X. You see status here.',
+            },
+          ]}
+          preview={<ScheduleEmptyPreview />}
         />
       ) : (
         <div className="space-y-6">

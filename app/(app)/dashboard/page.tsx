@@ -619,8 +619,15 @@ async function DashboardBody() {
                   className="mt-2 max-w-xl text-sm"
                   style={{ color: 'var(--lv2d-muted)' }}
                 >
-                  Connect an AI provider and drop in a video — your first drafts land here in
-                  about 30 seconds.
+                  No drafts yet. Drop a recording into{' '}
+                  <Link
+                    href={workspace ? `/workspace/${workspace.id}` : '/'}
+                    className="font-semibold underline-offset-4 hover:underline"
+                    style={{ color: 'var(--lv2d-fg)' }}
+                  >
+                    your library
+                  </Link>{' '}
+                  — first batch lands in about a minute.
                 </p>
               )}
             </div>

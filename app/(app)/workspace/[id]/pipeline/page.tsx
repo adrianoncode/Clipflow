@@ -3,6 +3,8 @@ import { notFound, redirect } from 'next/navigation'
 import { ArrowRight, CalendarClock, Plus, GitBranch } from 'lucide-react'
 
 import { EmptyState } from '@/components/ui/empty-state'
+import { PageHeader } from '@/components/ui/page-header'
+import { PipelineEmptyPreview } from '@/components/pipeline/pipeline-empty-preview'
 import {
   PipelineBoard,
   type PipelineStateKey,
@@ -145,53 +147,46 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
 
   return (
     <div className="mx-auto w-full max-w-[1400px] space-y-6 p-4 sm:p-8">
-      {/* ── Header ── */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">
-            <Link href={`/workspace/${workspaceId}`} className="hover:text-foreground transition-colors">Content</Link>
-            {' → '}
-            <span className="font-medium text-foreground">Drafts</span>
-            {' → '}
-            <Link href={`/workspace/${workspaceId}/schedule`} className="hover:text-foreground transition-colors">Schedule</Link>
-          </p>
-          <h1
-            className="text-[44px] leading-[1.02]"
-            style={{
-              fontFamily: 'var(--font-instrument-serif), serif',
-              letterSpacing: '-.015em',
-              color: '#2A1A3D',
-            }}
-          >
-            Drafts.
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {totalCount === 0
-              ? 'Your drafts land here. Pick the ones you like and approve them.'
-              : `${totalCount} draft${totalCount === 1 ? '' : 's'} · ${reviewCount} waiting · ${approvedCount} approved`}
-          </p>
-        </div>
+      {/* ── Breadcrumb (kept above the header — readers expect the
+          stage trail before they hit the page title). ── */}
+      <p className="text-xs text-muted-foreground">
+        <Link href={`/workspace/${workspaceId}`} className="hover:text-foreground transition-colors">Content</Link>
+        {' → '}
+        <span className="font-medium text-foreground">Drafts</span>
+        {' → '}
+        <Link href={`/workspace/${workspaceId}/schedule`} className="hover:text-foreground transition-colors">Schedule</Link>
+      </p>
 
-        <div className="flex items-center gap-2">
-          {approvedCount > 0 && (
+      <PageHeader
+        eyebrow={`${totalCount === 0 ? 'Drafts pipeline' : `${totalCount} draft${totalCount === 1 ? '' : 's'}`}`}
+        title="Drafts."
+        description={
+          totalCount === 0
+            ? undefined
+            : `${reviewCount} waiting · ${approvedCount} approved · ${exportedCount} published`
+        }
+        actions={
+          <>
+            {approvedCount > 0 && (
+              <Link
+                href={`/workspace/${workspaceId}/schedule`}
+                className="group inline-flex items-center gap-2 rounded-xl border border-emerald-200/60 bg-emerald-50/50 px-3.5 py-2 text-[13px] font-semibold text-emerald-700 transition-all hover:-translate-y-px hover:bg-emerald-100 hover:shadow-md"
+              >
+                <CalendarClock className="h-3.5 w-3.5" />
+                Schedule {approvedCount}
+                <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            )}
             <Link
-              href={`/workspace/${workspaceId}/schedule`}
-              className="group inline-flex shrink-0 items-center gap-2 rounded-xl border border-emerald-200/60 bg-emerald-50/50 px-4 py-2 text-sm font-semibold text-emerald-700 transition-all hover:-translate-y-px hover:bg-emerald-100 hover:shadow-md"
+              href={`/workspace/${workspaceId}/content/new`}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-[13px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25"
             >
-              <CalendarClock className="h-4 w-4" />
-              Schedule {approvedCount}
-              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+              <Plus className="h-3.5 w-3.5" />
+              Import
             </Link>
-          )}
-          <Link
-            href={`/workspace/${workspaceId}/content/new`}
-            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25"
-          >
-            <Plus className="h-4 w-4" />
-            Import
-          </Link>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* ── Workflow flow strip ── */}
       {totalCount > 0 && (
@@ -220,12 +215,27 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
       {totalCount === 0 ? (
         <EmptyState
           icon={GitBranch}
-          title="No drafts yet"
-          description="Import a video and generate drafts — they land here for review, approval, and scheduling."
+          title="A kanban for your unpublished work."
+          description="Drafts land in the leftmost column. Move them right as you review, approve, and ship — same shape as the preview here. Nothing publishes until you say so."
           actionLabel="Import a video"
           actionHref={`/workspace/${workspaceId}/content/new`}
           secondaryLabel="Back to library"
           secondaryHref={`/workspace/${workspaceId}`}
+          steps={[
+            {
+              title: 'Generate drafts from a source',
+              body: 'Import a video, then trigger generation. Hooks + captions land in Draft.',
+            },
+            {
+              title: 'Review and approve what works',
+              body: 'Drag from Review → Approved. Bulk-approve with shift-click. Reject with a reason if you want a regen.',
+            },
+            {
+              title: 'Schedule the approved ones',
+              body: 'One click sends approved drafts to the calendar. Auto-publish handles the rest.',
+            },
+          ]}
+          preview={<PipelineEmptyPreview />}
         />
       ) : (
         <PipelineBoard
