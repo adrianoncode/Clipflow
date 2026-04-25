@@ -7,6 +7,15 @@ import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { createClient } from '@/lib/supabase/server'
 import { ConnectDialog } from '@/components/integrations/connect-dialog'
+import { PageHeading } from '@/components/workspace/page-heading'
+import {
+  DiscordLogo,
+  GoogleDriveLogo,
+  GoogleSheetsLogo,
+  NotionLogo,
+  SlackLogo,
+} from '@/components/brand-logos'
+import type { ReactNode } from 'react'
 
 export const metadata = { title: 'Integrations' }
 export const dynamic = 'force-dynamic'
@@ -16,27 +25,9 @@ const WORKSPACE_COOKIE = 'clipflow.current_workspace'
 /**
  * Integrations.
  *
- * This page only shows integrations that actually fire at runtime:
- *
- *   OAuth via Composio (lib/integrations/composio.ts):
- *     - Notion         → NOTION_CREATE_A_PAGE on approve/export
- *     - Google Drive   → OAuth connectable (for future import flows)
- *     - Google Sheets  → GOOGLESHEETS_BATCH_UPDATE on approve/export
- *     - LinkedIn       → LINKEDIN_CREATE_A_LINKED_IN_POST on export
- *
- *   Webhook (lib/integrations/dispatch-integrations.ts):
- *     - Slack   → message on approve/export/publish
- *     - Discord → message on approve/export/publish
- *
- * Anything else lives behind "Request an integration" at the bottom —
- * aspirational cards that don't fire would just mislead users.
- *
- * Note on LinkedIn: there are two LinkedIn paths in the product.
- * Composio LinkedIn here posts to your personal feed when a draft is
- * exported. Upload-Post (Settings → Channels) publishes to LinkedIn as
- * part of the TikTok / Instagram / YouTube / LinkedIn bundle on a
- * schedule. The pointer-card below routes heavy social-publishing
- * users there instead.
+ * Workflow tools that fire when content moves through the pipeline.
+ * Channels (social destinations) live on a separate page — see the
+ * pointer card below the header.
  */
 
 type ConnectionType = 'webhook' | 'api_key' | 'oauth' | 'coming_soon' | 'managed'
@@ -47,9 +38,11 @@ interface IntegrationDef {
   connectionType: ConnectionType
   benefit: string
   trigger: string
-  letter: string
-  iconBg: string
-  iconText: string
+  Logo: (props: { size?: number; className?: string }) => ReactNode
+  /** Tailwind classes for the brand tile. White-bg brands get a border. */
+  tileBg: string
+  /** Logo color: 'white' renders as text-white; 'native' uses brand-color SVG paths inside the logo. */
+  logoColor: 'white' | 'native' | 'dark'
 }
 
 interface IntegrationGroup {
@@ -61,63 +54,63 @@ interface IntegrationGroup {
 const GROUPS: IntegrationGroup[] = [
   {
     title: 'Notifications',
-    subtitle: 'Get a ping when content moves through your pipeline.',
+    subtitle: 'Get a ping in your team chat when content moves.',
     items: [
       {
         id: 'slack',
         name: 'Slack',
         connectionType: 'webhook',
-        benefit: 'Message your Slack channel when a draft is approved, exported, or published.',
+        benefit: 'Post to a Slack channel when a draft is approved, exported, or published.',
         trigger: 'Fires on approve · export · publish',
-        letter: '#',
-        iconBg: 'bg-[#4A154B]',
-        iconText: 'text-white',
+        Logo: SlackLogo,
+        tileBg: 'bg-white border border-border/60',
+        logoColor: 'native',
       },
       {
         id: 'discord',
         name: 'Discord',
         connectionType: 'webhook',
-        benefit: 'Ping your Discord channel when new content is ready to review.',
+        benefit: 'Ping a Discord channel when new content is ready to review.',
         trigger: 'Fires on approve · export · publish',
-        letter: '◈',
-        iconBg: 'bg-[#5865F2]',
-        iconText: 'text-white',
+        Logo: DiscordLogo,
+        tileBg: 'bg-[#5865F2]',
+        logoColor: 'white',
       },
     ],
   },
   {
     title: 'Sync & publish',
-    subtitle: 'Send approved content out to the tools you already work in.',
+    subtitle: 'Send approved content out to the workspace tools you live in.',
     items: [
       {
         id: 'notion',
         name: 'Notion',
         connectionType: 'oauth',
-        benefit: 'Create a Notion page with the draft every time you approve or export content.',
+        benefit: 'Create a Notion page with the draft each time you approve or export.',
         trigger: 'Fires on approve · export',
-        letter: 'N',
-        iconBg: 'bg-zinc-900',
-        iconText: 'text-white',
+        Logo: NotionLogo,
+        tileBg: 'bg-white border border-border/60',
+        logoColor: 'dark',
       },
       {
         id: 'google-sheets',
         name: 'Google Sheets',
         connectionType: 'oauth',
-        benefit: 'Append a row — date, title, platform, body — to your tracking sheet automatically.',
+        benefit: 'Append a row — date, title, platform, body — to your tracking sheet.',
         trigger: 'Fires on approve · export',
-        letter: 'S',
-        iconBg: 'bg-emerald-600',
-        iconText: 'text-white',
+        Logo: GoogleSheetsLogo,
+        tileBg: 'bg-[#0F9D58]',
+        logoColor: 'white',
       },
       {
         id: 'google-drive',
         name: 'Google Drive',
         connectionType: 'oauth',
-        benefit: 'Connect your Drive for future import flows. Already connected? You\u2019re set up.',
+        benefit: 'Connect your Drive for upcoming import flows. Already linked? You’re set.',
         trigger: 'Import source (coming soon)',
-        letter: 'G',
-        iconBg: 'bg-gradient-to-br from-blue-500 via-green-500 to-yellow-400',
-        iconText: 'text-white',
+        Logo: GoogleDriveLogo,
+        tileBg: 'bg-white border border-border/60',
+        logoColor: 'native',
       },
     ],
   },
@@ -152,80 +145,74 @@ export default async function IntegrationsPage({
     } catch { /* ignore */ }
   }
 
+  const totalConnected = connectedIds.size
   const urlError = searchParams.error
   const urlConnected = searchParams.connected
 
   return (
     <div className="space-y-8">
-
       {/* ── Header ── */}
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-          <Plug className="h-4 w-4 text-primary" />
+        <div
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+          style={{ background: '#EDE6F5' }}
+        >
+          <Plug className="h-4 w-4" style={{ color: '#2A1A3D' }} />
         </div>
-        <div>
-          <h1 className="text-lg font-bold tracking-tight">Integrations</h1>
-          <p className="mt-0.5 max-w-2xl text-sm text-muted-foreground">
-            Workflow tools — notifications, CMS exports, content-calendar
-            sync. Social publishing (TikTok, Instagram, YouTube, LinkedIn,
-            X, Threads) lives in <strong className="font-semibold text-foreground">Channels</strong>.
-          </p>
-        </div>
+        <PageHeading
+          eyebrow="Settings · Integrations"
+          title="Workspace tools, wired in."
+          body={
+            totalConnected > 0
+              ? `${totalConnected} integration${totalConnected === 1 ? '' : 's'} live. Events fire when content moves through the pipeline.`
+              : 'Hook up the tools your team already uses. Events fire when content moves — approve, export, publish.'
+          }
+        />
       </div>
 
-      {/* ── OAuth feedback banners ── */}
-      {urlError && (
-        <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
-          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white">!</span>
-          <div>
-            <p className="font-semibold text-destructive">Connection failed</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {urlError === 'session_expired'
-                ? 'Took too long — click Connect to try again.'
-                : urlError === 'auth_cancelled'
-                  ? 'Sign-in was cancelled — try again when ready.'
-                  : urlError === 'missing_params'
-                    ? 'Something went wrong. Please refresh and try again.'
-                    : decodeURIComponent(urlError)}
-            </p>
-          </div>
-        </div>
-      )}
-      {urlConnected && (
-        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 text-sm">
-          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500">
-            <Check className="h-3 w-3 text-white" />
-          </div>
-          <div>
-            <p className="font-semibold text-emerald-800">
-              {urlConnected.replace(/-/g, ' ')} connected
-            </p>
-            <p className="mt-0.5 text-xs text-emerald-700">
-              You&apos;ll start getting events the next time content moves through the pipeline.
-            </p>
-          </div>
-        </div>
-      )}
+      {urlError ? (
+        <FeedbackBanner tone="error">
+          <p className="font-semibold text-destructive">Connection failed</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {urlError === 'session_expired'
+              ? 'Took too long — click Connect to try again.'
+              : urlError === 'auth_cancelled'
+                ? 'Sign-in was cancelled — try again when ready.'
+                : urlError === 'missing_params'
+                  ? 'Something went wrong. Please refresh and try again.'
+                  : decodeURIComponent(urlError)}
+          </p>
+        </FeedbackBanner>
+      ) : null}
+      {urlConnected ? (
+        <FeedbackBanner tone="success">
+          <p className="font-semibold text-emerald-800">
+            {urlConnected.replace(/-/g, ' ')} connected
+          </p>
+          <p className="mt-0.5 text-xs text-emerald-700">
+            Events will fire the next time content moves through the pipeline.
+          </p>
+        </FeedbackBanner>
+      ) : null}
 
-      {/* ── Pointer to Channels. Integrations and Channels are two
-           different jobs — integrations send signals into tools, channels
-           push finished content out to social feeds. ── */}
+      {/* ── Pointer to Channels ── */}
       <Link
         href="/settings/channels"
-        className="group flex items-start gap-3 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/[0.06] to-background p-4 transition-all hover:-translate-y-px hover:border-primary/30 hover:shadow-md"
+        className="group flex items-start gap-3 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/[0.06] to-background p-4 transition-all hover:-translate-y-px hover:border-primary/30 hover:shadow-md"
       >
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
           <Send className="h-4 w-4" />
         </div>
-        <div className="flex-1">
-          <p className="text-sm font-semibold">
-            Publish to socials — TikTok, Instagram, YouTube, LinkedIn &amp; more
+        <div className="min-w-0 flex-1">
+          <p className="text-[14px] font-bold text-foreground">
+            Looking for TikTok, Instagram, YouTube or LinkedIn?
           </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Channels is where your social destinations live — schedule, auto-post, track performance.
+          <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted-foreground">
+            Social publishing destinations live on the <strong className="font-semibold text-foreground">Channels</strong> page —
+            schedule, auto-post, and track performance there.
           </p>
         </div>
-        <span className="self-center text-sm font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">
+        <span className="self-center text-[12px] font-bold text-primary opacity-0 transition-opacity group-hover:opacity-100">
           Open →
         </span>
       </Link>
@@ -234,60 +221,20 @@ export default async function IntegrationsPage({
       {GROUPS.map((group) => (
         <section key={group.title} className="space-y-3">
           <div>
-            <h2 className="text-sm font-bold">{group.title}</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">{group.subtitle}</p>
+            <h2 className="text-[13px] font-bold">{group.title}</h2>
+            <p className="mt-0.5 text-[12px] text-muted-foreground">{group.subtitle}</p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             {group.items.map((integration) => {
               const isConnected = connectedIds.has(integration.id)
               return (
-                <div
+                <IntegrationCard
                   key={integration.id}
-                  className={`relative flex flex-col rounded-2xl border p-5 transition-all ${
-                    isConnected
-                      ? 'border-emerald-200 bg-emerald-50/40'
-                      : 'border-border/60 bg-card hover:-translate-y-px hover:border-primary/25 hover:shadow-md'
-                  }`}
-                >
-                  {isConnected && (
-                    <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-                      Live
-                    </div>
-                  )}
-
-                  <div
-                    className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl text-xl font-black ${integration.iconBg} ${integration.iconText}`}
-                    aria-hidden
-                  >
-                    {integration.letter}
-                  </div>
-
-                  <div className="flex-1">
-                    <h3 className="text-sm font-bold">{integration.name}</h3>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      {integration.benefit}
-                    </p>
-                    {isConnected && (
-                      <p className="mt-2 rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-medium text-emerald-700">
-                        {integration.trigger}
-                      </p>
-                    )}
-                  </div>
-
-                  {workspaceId && (
-                    <div className="mt-4">
-                      <ConnectDialog
-                        integrationId={integration.id}
-                        integrationName={integration.name}
-                        workspaceId={workspaceId}
-                        isConnected={isConnected}
-                        connectionType={integration.connectionType}
-                      />
-                    </div>
-                  )}
-                </div>
+                  integration={integration}
+                  workspaceId={workspaceId}
+                  isConnected={isConnected}
+                />
               )
             })}
           </div>
@@ -295,13 +242,13 @@ export default async function IntegrationsPage({
       ))}
 
       {/* ── Request-an-integration footer ── */}
-      <div className="flex items-start gap-3 rounded-xl border border-border/50 bg-muted/30 p-5">
+      <div className="flex items-start gap-3 rounded-2xl border border-border/50 bg-muted/30 p-5">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted">
           <Zap className="h-4 w-4 text-muted-foreground" />
         </div>
         <div>
-          <p className="text-sm font-semibold">Need Airtable, Zapier, Beehiiv, or something else?</p>
-          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+          <p className="text-[13px] font-semibold">Need Airtable, Zapier, Beehiiv, or something else?</p>
+          <p className="mt-0.5 text-[12px] leading-relaxed text-muted-foreground">
             We ship integrations our users actually ask for.{' '}
             <a
               href="mailto:support@clipflow.to?subject=Integration request"
@@ -312,6 +259,104 @@ export default async function IntegrationsPage({
           </p>
         </div>
       </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Cards
+// ---------------------------------------------------------------------------
+
+function IntegrationCard({
+  integration,
+  workspaceId,
+  isConnected,
+}: {
+  integration: IntegrationDef
+  workspaceId: string
+  isConnected: boolean
+}) {
+  const Logo = integration.Logo
+  const logoTint =
+    integration.logoColor === 'white'
+      ? 'text-white'
+      : integration.logoColor === 'dark'
+        ? 'text-foreground'
+        : '' // 'native' = SVG carries its own colors
+  return (
+    <div
+      className={`relative flex flex-col rounded-2xl border p-5 transition-all ${
+        isConnected
+          ? 'border-emerald-200/70 bg-emerald-50/30'
+          : 'border-border/60 bg-card hover:-translate-y-px hover:border-border hover:shadow-md hover:shadow-primary/[0.04]'
+      }`}
+    >
+      {/* Top row — brand tile + status pill */}
+      <div className="flex items-start justify-between gap-3">
+        <span
+          className={`flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm ${integration.tileBg} ${logoTint}`}
+          aria-hidden
+        >
+          <Logo size={22} />
+        </span>
+        {isConnected ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+            Live
+          </span>
+        ) : null}
+      </div>
+
+      <div className="mt-4 flex-1">
+        <h3 className="text-[14px] font-bold text-foreground">{integration.name}</h3>
+        <p className="mt-1 text-[12.5px] leading-snug text-muted-foreground">
+          {integration.benefit}
+        </p>
+        <p
+          className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70"
+        >
+          {integration.trigger}
+        </p>
+      </div>
+
+      {workspaceId ? (
+        <div className="mt-4">
+          <ConnectDialog
+            integrationId={integration.id}
+            integrationName={integration.name}
+            workspaceId={workspaceId}
+            isConnected={isConnected}
+            connectionType={integration.connectionType}
+          />
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function FeedbackBanner({
+  tone,
+  children,
+}: {
+  tone: 'error' | 'success'
+  children: ReactNode
+}) {
+  if (tone === 'error') {
+    return (
+      <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white">
+          !
+        </span>
+        <div className="min-w-0">{children}</div>
+      </div>
+    )
+  }
+  return (
+    <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 text-sm">
+      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500">
+        <Check className="h-3 w-3 text-white" strokeWidth={3} />
+      </div>
+      <div className="min-w-0">{children}</div>
     </div>
   )
 }
