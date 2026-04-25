@@ -21,6 +21,7 @@ import {
 
 import { BulkActionBar } from '@/components/content/bulk-action-bar'
 import { EmptyState } from '@/components/ui/empty-state'
+import { ContentLibraryPreview } from '@/components/content/content-library-preview'
 import type { ContentItemListRow } from '@/lib/content/get-content-items'
 
 interface ContentListWithSearchProps {
@@ -200,10 +201,27 @@ export function ContentListWithSearch({
     return (
       <EmptyState
         icon={Upload}
-        title="Import your first content"
-        description="Upload a video, paste a YouTube link, or add text. Clipflow transcribes it and drops platform-ready drafts into your pipeline."
-        actionLabel="Import content"
+        title="Drop in a recording, get drafts back."
+        description="Paste a YouTube URL, upload an MP4, or drop in raw text. Within a minute it lands here as a row with a status pill — same shape as the preview on the right."
+        actionLabel="Import a video"
         actionHref={`/workspace/${workspaceId}/content/new`}
+        secondaryLabel="See the playbook →"
+        secondaryHref="/playbook/your-first-24-hours-with-clipflow"
+        steps={[
+          {
+            title: 'Drop in source material',
+            body: 'YouTube link, MP4 upload, Loom URL, or pasted text. We auto-transcribe with timestamps.',
+          },
+          {
+            title: 'We slice it into drafts',
+            body: 'Hooks, captions, and platform-formatted posts land in this library — one row per source.',
+          },
+          {
+            title: 'Approve and publish',
+            body: 'Review in Pipeline, schedule from the calendar, push to TikTok / Reels / Shorts / LinkedIn.',
+          },
+        ]}
+        preview={<ContentLibraryPreview />}
       />
     )
   }

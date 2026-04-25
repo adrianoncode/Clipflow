@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 
 import { ContentListWithSearch } from '@/components/content/content-list-with-search'
+import { PageHeader } from '@/components/ui/page-header'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getContentItems } from '@/lib/content/get-content-items'
 import { findDuplicateIds } from '@/lib/content/find-duplicates'
@@ -52,46 +53,32 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
 
-      {/* ── Header ── */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p
-            className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
-            style={{ color: '#7c7468', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
-          >
-            {workspace.name} · Content
-          </p>
-          <h1
-            className="text-[44px] leading-[1.02]"
-            style={{
-              fontFamily: 'var(--font-instrument-serif), serif',
-              letterSpacing: '-.015em',
-              color: '#2A1A3D',
-            }}
-          >
-            Your library.
-          </h1>
-          <p className="mt-1 text-sm" style={{ color: '#7c7468' }}>
-            {items.length === 0
-              ? 'Import your first video to get started.'
-              : `${items.length} item${items.length === 1 ? '' : 's'} · ${workspace.name}`}
-          </p>
-        </div>
-
-        {/* Top-right CTA only renders when the library already has items.
-            In the empty state the centered <EmptyState> card already
-            surfaces a large primary CTA; a second one up here competes
-            for attention and doesn't add anything. */}
-        {canCreate && items.length > 0 && (
-          <Link
-            href={`/workspace/${params.id}/content/new`}
-            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25"
-          >
-            <Plus className="h-4 w-4" />
-            Import content
-          </Link>
-        )}
-      </div>
+      {/* ── Header ──
+          Subtitle is suppressed on empty libraries — the new EmptyState
+          card already surfaces the explanation, and a redundant
+          subtitle "Import your first video to get started" reads as
+          double-talk. Once content exists we surface a count so the
+          header doubles as a stats glance. */}
+      <PageHeader
+        eyebrow={`${workspace.name} · Content`}
+        title="Your library."
+        description={
+          items.length === 0
+            ? undefined
+            : `${items.length} item${items.length === 1 ? '' : 's'} in this workspace.`
+        }
+        actions={
+          canCreate && items.length > 0 ? (
+            <Link
+              href={`/workspace/${params.id}/content/new`}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-[13px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Import content
+            </Link>
+          ) : undefined
+        }
+      />
 
       {/* ── Status stats strip ── */}
       {items.length > 0 && (
