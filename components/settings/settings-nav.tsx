@@ -8,14 +8,13 @@ import {
   CreditCard,
   Gift,
   HelpCircle,
-  Key,
-  Mic2,
-  Palette,
   ScrollText,
   Shield,
-  LayoutTemplate,
 } from 'lucide-react'
 
+// Account-only items live here. Workflow tools (AI Keys, Brand Voice,
+// Brand Kit, Templates) moved to the main app sidebar — they're not
+// account settings, they're tools you reach for during content work.
 const accountGroup = [
   { href: '/settings/profile', label: 'Profile', icon: User },
   { href: '/settings/security', label: 'Security', icon: Shield },
@@ -24,26 +23,26 @@ const accountGroup = [
   { href: '/settings/referrals', label: 'Referrals', icon: Gift },
 ]
 
-const aiGroup = [
-  { href: '/settings/ai-keys', label: 'AI Keys', icon: Key },
-  { href: '/settings/brand-voice', label: 'Brand Voice', icon: Mic2 },
-  { href: '/settings/brand-kit', label: 'Brand Kit', icon: Palette },
-  { href: '/settings/templates', label: 'Templates', icon: LayoutTemplate },
-]
-
 const connectGroup = [
   { href: '/settings/audit-log', label: 'Audit log', icon: ScrollText },
   { href: '/help', label: 'Help', icon: HelpCircle },
 ]
 
-const groups = [accountGroup, aiGroup, connectGroup]
+const groups = [accountGroup, connectGroup]
 
 // Routes where the horizontal Settings nav should NOT render. These
 // pages are full-fledged features (reachable from the main sidebar)
 // that happen to live under /settings/* for URL-stability reasons —
 // but surfacing the Profile/Security/Billing tabs above them is
 // noise, not navigation.
-const HIDE_NAV_PREFIXES = ['/settings/channels', '/settings/integrations']
+const HIDE_NAV_PREFIXES = [
+  '/settings/channels',
+  '/settings/integrations',
+  '/settings/ai-keys',
+  '/settings/brand-voice',
+  '/settings/brand-kit',
+  '/settings/templates',
+]
 
 export function SettingsNav() {
   const pathname = usePathname()

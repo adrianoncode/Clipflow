@@ -17,9 +17,13 @@ import {
   CheckSquare,
   FileVideo,
   Home,
+  Key,
+  LayoutTemplate,
   Lock,
   LogOut,
+  Mic2,
   MoreHorizontal,
+  Palette,
   Plug,
   Plus,
   Radio,
@@ -304,6 +308,15 @@ export function AppShell({
           },
         ]
       : []),
+    {
+      label: 'Brand',
+      items: [
+        { href: '/settings/brand-voice', label: 'Voice', icon: Mic2 },
+        { href: '/settings/brand-kit', label: 'Kit', icon: Palette },
+        { href: '/settings/templates', label: 'Templates', icon: LayoutTemplate },
+        { href: '/settings/ai-keys', label: 'AI keys', icon: Key },
+      ],
+    },
     {
       label: 'Insights',
       items: [
