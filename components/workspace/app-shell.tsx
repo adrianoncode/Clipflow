@@ -260,22 +260,14 @@ export function AppShell({
       ],
     },
     {
-      label: 'Research',
+      label: 'Create',
       items: [
+        { href: '/settings/templates', label: 'Templates', icon: LayoutTemplate },
         {
           href: `/workspace/${currentWorkspaceId}/research`,
           label: 'Creators',
           icon: Search,
           requires: 'creatorResearch',
-        },
-        {
-          href: '/playbook',
-          label: 'Playbook',
-          icon: BookOpen,
-          // Playbook has its own full-screen marketing layout, so
-          // opening in a new tab keeps the Clipflow sidebar visible
-          // in the original tab.
-          newTab: true,
         },
       ],
     },
@@ -307,23 +299,33 @@ export function AppShell({
         ]
       : []),
     {
-      label: 'Studio',
-      items: [
-        { href: '/settings/templates', label: 'Templates', icon: LayoutTemplate },
-        { href: '/settings/ai-keys', label: 'AI keys', icon: Key },
-      ],
-    },
-    {
       label: 'Insights',
       items: [
         { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+      ],
+    },
+    {
+      label: 'Connect',
+      items: [
         { href: '/settings/channels', label: 'Channels', icon: Radio },
+        { href: '/settings/ai-keys', label: 'AI keys', icon: Key },
         { href: '/settings/integrations', label: 'Integrations', icon: Plug },
       ],
     },
   ]
 
   const bottomItems: NavItem[] = [
+    {
+      href: '/playbook',
+      label: 'Playbook',
+      icon: BookOpen,
+      // Playbook has its own full-screen marketing layout, so opening
+      // in a new tab keeps the Clipflow sidebar visible in the
+      // original tab — same reason it lived in the Research group
+      // before. Now it sits with Settings as a footer "learn more"
+      // link instead of inside a content group.
+      newTab: true,
+    },
     { href: '/settings', label: 'Settings', icon: SettingsIcon },
   ]
 
