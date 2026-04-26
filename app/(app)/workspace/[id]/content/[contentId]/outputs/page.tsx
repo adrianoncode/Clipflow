@@ -20,6 +20,7 @@ import { getBrandKit } from '@/lib/brand-kit/get-brand-kit'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ExportAllButton } from '@/components/outputs/export-all-button'
 import { GenerateOutputsForm } from '@/components/outputs/generate-outputs-form'
+import { StudioContextRail } from '@/components/studio/studio-context-rail'
 import { OutputsGrid } from '@/components/outputs/outputs-grid'
 import { RegenerateButton } from '@/components/outputs/regenerate-button'
 import { ReviewLinkPanel } from '@/components/outputs/review-link-panel'
@@ -167,16 +168,19 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
       </div>
 
       {outputs.length === 0 ? (
-        /* ── Empty state: Generate form ── */
-        <div className="rounded-2xl border border-border/50 bg-card shadow-sm">
-          <div className="p-6 sm:p-8">
-            <GenerateOutputsForm
-              workspaceId={params.id}
-              contentId={params.contentId}
-              submitLabel="Generate 4 drafts"
-            />
+        /* ── Empty state: Studio context + Generate form ── */
+        <>
+          <StudioContextRail workspaceId={params.id} />
+          <div className="rounded-2xl border border-border/50 bg-card shadow-sm">
+            <div className="p-6 sm:p-8">
+              <GenerateOutputsForm
+                workspaceId={params.id}
+                contentId={params.contentId}
+                submitLabel="Generate 4 drafts"
+              />
+            </div>
           </div>
-        </div>
+        </>
       ) : (
         <>
           {/* ── Success banner ── */}
