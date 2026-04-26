@@ -9,7 +9,6 @@ import {
   ScheduleDemo,
 } from '@/components/landing/bento-showcase'
 import { ThumbnailVisual } from './thumbnail-visual'
-import { IdeaGeneratorVisual } from './idea-generator-visual'
 import { BrandVoiceVisual } from './brand-voice-visual'
 import { ViralMomentsVisual } from './viral-moments-visual'
 import {
@@ -39,7 +38,6 @@ export type VisualId =
   | 'review-link'
   | 'analytics'
   | 'thumbnail'
-  | 'idea-generator'
   | 'brand-voice'
   | 'pipeline-flow'
   | 'rss-flow'
@@ -77,7 +75,6 @@ const VISUAL_MAP: Record<VisualId, React.ComponentType> = {
   'review-link': ReviewLinkDemo,
   analytics: AnalyticsDemo,
   thumbnail: ThumbnailVisual,
-  'idea-generator': IdeaGeneratorVisual,
   'brand-voice': BrandVoiceVisual,
   'pipeline-flow': PipelineFlowDiagram,
   'rss-flow': RssFlowDiagram,

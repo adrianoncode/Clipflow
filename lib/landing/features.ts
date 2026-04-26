@@ -21,7 +21,6 @@ export type FeatureId =
   | 'ab-hook-testing'
   | 'white-label-review'
   | 'thumbnail-studio'
-  | 'idea-generator'
 
 export type UseCaseId =
   | 'podcasters'
@@ -53,7 +52,6 @@ export interface ExploreEntry {
     | 'review-link'
     | 'analytics'
     | 'thumbnail'
-    | 'idea-generator'
     | 'brand-voice'
     | 'pipeline-flow'
     | 'rss-flow'
@@ -189,7 +187,7 @@ export const FEATURES: Record<FeatureId, ExploreEntry> = {
           'Update your Brand Voice as your tone evolves and run bulk regenerate from the pipeline — every pending draft gets refreshed against the new voice in one shot. Agencies save hours per client when repositioning mid-campaign.',
       },
     ],
-    relatedFeatures: ['clip-finder', 'ab-hook-testing', 'idea-generator'],
+    relatedFeatures: ['clip-finder', 'ab-hook-testing'],
   },
 
   /* ── Video production tools ─────────────────────────────────── */
@@ -607,7 +605,7 @@ export const FEATURES: Record<FeatureId, ExploreEntry> = {
           'Mark a variant as the winner and Clipflow stores it against the draft. When analytics come back, you can see which psychological lever is outperforming for your audience — and bias future generations toward it.',
       },
     ],
-    relatedFeatures: ['clip-finder', 'brand-voice', 'idea-generator'],
+    relatedFeatures: ['clip-finder', 'brand-voice'],
   },
 
   'white-label-review': {
@@ -698,52 +696,6 @@ export const FEATURES: Record<FeatureId, ExploreEntry> = {
       },
     ],
     relatedFeatures: ['brand-kit', 'clip-finder'],
-  },
-
-  'idea-generator': {
-    id: 'idea-generator',
-    slug: 'idea-generator',
-    name: 'Idea Generator',
-    tagline:
-      'Give a topic. Get 8-10 on-brand content ideas with hooks, outlines, and platform recommendations.',
-    description:
-      'Feed Clipflow a rough topic. Get back a structured set of content ideas — each with a working title, a hook, a 3-5 bullet outline, and suggested platforms — all tuned to your Brand Voice.',
-    emoji: '💡',
-    visual: 'idea-generator',
-    availability: 'Available on Creator and Studio plans',
-    ctaText: 'Generate ideas',
-    highlights: [
-      { value: '8–10', label: 'Distinct ideas per topic — no trivial reframings' },
-      { value: '<15s', label: 'Per batch, including Brand Voice calibration' },
-      { value: '4', label: 'Structural elements per idea — title, hook, outline, platforms' },
-    ],
-    sections: [
-      {
-        eyebrow: 'The problem',
-        title: 'Creators get stuck on "what to record next" more than on anything else.',
-        body:
-          'You sit down to batch-record a week of content. You have the time and the setup — you just don\u2019t have the list. Most brainstorming tools give you generic topics or require you to prompt-engineer your way to good output.',
-      },
-      {
-        eyebrow: 'How we solve it',
-        title: 'Ideas that sound like you, not like a prompt.',
-        body:
-          'Clipflow uses your Brand Voice as the calibration layer. Ask for "indie SaaS burnout" ideas and you\u2019ll get angles your audience would click — not a LinkedIn gurus\u2019 greatest hits. Each idea includes the hook that\u2019d open the recording, which is 80% of the work for most creators.',
-        bullets: [
-          'Title + hook — ready to drop into a record button',
-          'Outline — 3-5 bullets so you don\u2019t wing the middle',
-          'Platforms suggested — where this specific angle lands best',
-          'Estimated length — so you plan your recording session',
-        ],
-      },
-      {
-        eyebrow: 'Workflow',
-        title: 'Pick one. Record. Import. Repurpose.',
-        body:
-          'Every idea card has a "Record this" button that pre-fills the new-content import page with the title and hook as scene notes. Record → upload → Clipflow runs the full pipeline. From idea to published clip in under 90 minutes.',
-      },
-    ],
-    relatedFeatures: ['brand-voice', 'clip-finder'],
   },
 }
 
@@ -885,7 +837,7 @@ export const USE_CASES: Record<UseCaseId, ExploreEntry> = {
           'Record one Loom, get captions across LinkedIn (thought-leadership format), TikTok (hook-heavy short), YouTube Shorts (SEO-tuned), and Instagram (aesthetic-first) — every one sounding like an expert, not a hype-merchant.',
       },
     ],
-    relatedFeatures: ['brand-voice', 'clip-finder', 'idea-generator'],
+    relatedFeatures: ['brand-voice', 'clip-finder'],
   },
 
   founders: {
@@ -930,7 +882,7 @@ export const USE_CASES: Record<UseCaseId, ExploreEntry> = {
           'Our SaaS preset leans into story-driven, lesson-led posts. Specific company names stay in, vague "leverage / synergy" language stays out. The goal is authority through specificity.',
       },
     ],
-    relatedFeatures: ['brand-voice', 'scheduler', 'idea-generator'],
+    relatedFeatures: ['brand-voice', 'scheduler'],
   },
 
   creators: {
