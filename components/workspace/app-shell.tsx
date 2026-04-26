@@ -16,6 +16,7 @@ import {
   BookOpen,
   CheckSquare,
   FileVideo,
+  Gift,
   Home,
   Key,
   LayoutTemplate,
@@ -36,7 +37,6 @@ import {
 import { WorkspaceSwitcher } from '@/components/workspace/workspace-switcher'
 import { GlobalSearch } from '@/components/workspace/global-search'
 import { NotificationBell } from '@/components/workspace/notification-bell'
-import { ReferralSidebarCard } from '@/components/workspace/referral-sidebar-card'
 import { KeyboardShortcuts } from '@/components/keyboard-shortcuts'
 import { FeedbackWidget } from '@/components/feedback-widget'
 import type { WorkspaceSummary } from '@/lib/auth/get-workspaces'
@@ -387,6 +387,68 @@ export function AppShell({
     )
   }
 
+  /**
+   * Referral footer link. Sits with Settings + Playbook in the bottom
+   * nav — same row treatment as the rest, just one item among the
+   * footer links. Old surface (a fat gradient card pinned above the
+   * footer) was eating sidebar real-estate for what is essentially a
+   * "go configure your invite link" affordance. The full share
+   * experience lives on /settings/referrals; this row is the link.
+   *
+   * If the user has paid conversions or pending invites we surface a
+   * tiny status pill so the activity is visible without opening the
+   * page.
+   */
+  function ReferralFooterLink({
+    pending,
+    confirmed,
+  }: {
+    pending: number
+    confirmed: number
+  }) {
+    const active = isActive('/settings/referrals')
+    const badge =
+      confirmed > 0
+        ? { label: `${confirmed} paid`, accent: true }
+        : pending > 0
+          ? { label: `${pending} pending`, accent: false }
+          : null
+    return (
+      <Link
+        href="/settings/referrals"
+        className={`lv2s-nav-item ${active ? 'active' : ''}`}
+      >
+        {active && (
+          <motion.span
+            layoutId="lv2s-nav-indicator"
+            aria-hidden
+            className="lv2s-nav-indicator"
+            transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.6 }}
+          />
+        )}
+        <Gift className="h-[15px] w-[15px] shrink-0" />
+        <span className="flex-1 leading-none">Refer &amp; earn</span>
+        {badge ? (
+          <span
+            className="shrink-0 rounded-full px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.12em]"
+            style={{
+              fontFamily:
+                'var(--font-inter-tight), var(--font-inter), sans-serif',
+              background: badge.accent
+                ? 'var(--lv2s-accent)'
+                : 'rgba(24,21,17,0.06)',
+              color: badge.accent
+                ? 'var(--lv2s-accent-ink)'
+                : 'var(--lv2s-muted)',
+            }}
+          >
+            {badge.label}
+          </span>
+        ) : null}
+      </Link>
+    )
+  }
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: SHELL_STYLES }} />
@@ -535,23 +597,20 @@ export function AppShell({
               </LayoutGroup>
             </div>
 
-            {referralLink && (
-              <div className="shrink-0 m-3">
-                <ReferralSidebarCard
-                  link={referralLink}
-                  pending={referralStats.pending}
-                  confirmed={referralStats.confirmed}
-                  currentPlan={currentPlan}
-                />
-              </div>
-            )}
-
             <div
               className="shrink-0 px-3 py-2"
               style={{ borderTop: '1px solid var(--lv2s-border)' }}
             >
               <LayoutGroup id="bottom-nav">
-                <nav className="flex flex-col gap-px">{bottomItems.map(renderItem)}</nav>
+                <nav className="flex flex-col gap-px">
+                  {bottomItems.map(renderItem)}
+                  {referralLink ? (
+                    <ReferralFooterLink
+                      pending={referralStats.pending}
+                      confirmed={referralStats.confirmed}
+                    />
+                  ) : null}
+                </nav>
               </LayoutGroup>
             </div>
           </aside>
