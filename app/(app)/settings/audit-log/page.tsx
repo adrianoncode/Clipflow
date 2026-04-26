@@ -1,9 +1,13 @@
 import { cookies } from 'next/headers'
 import Link from 'next/link'
-import { ArrowLeft, Lock } from 'lucide-react'
+import { ArrowLeft, Download, Lock } from 'lucide-react'
 
 import { AuditLogList } from '@/components/settings/audit-log-list'
-import { SettingsSection } from '@/components/settings/section'
+import {
+  SettingsFootnote,
+  SettingsRow,
+  SettingsSection,
+} from '@/components/settings/section'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { checkPlanAccess, PLANS, FEATURE_MIN_PLAN } from '@/lib/billing/plans'
@@ -13,6 +17,25 @@ export const metadata = { title: 'Audit log' }
 export const dynamic = 'force-dynamic'
 
 const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
+
+const TRACKED_CATEGORIES = [
+  {
+    label: 'Members',
+    description: 'Invites, role changes, removals, joins.',
+  },
+  {
+    label: 'Content',
+    description: 'Approvals, rejections, publishes, schedules, deletions.',
+  },
+  {
+    label: 'Billing',
+    description: 'Plan upgrades, downgrades, subscription cancellations.',
+  },
+  {
+    label: 'Security',
+    description: 'AI key rotations, brand kit / voice updates, review links.',
+  },
+] as const
 
 export default async function AuditLogPage() {
   const workspaces = await getWorkspaces()
@@ -98,26 +121,98 @@ export default async function AuditLogPage() {
     .limit(200)
 
   const count = rows?.length ?? 0
+  const isEmpty = count === 0
+
+  const normalizedRows = (rows ?? []).map((r) => ({
+    ...r,
+    metadata:
+      r.metadata && typeof r.metadata === 'object' && !Array.isArray(r.metadata)
+        ? (r.metadata as Record<string, unknown>)
+        : null,
+  }))
 
   return (
     <div className="space-y-7">
+      {/* ── 01 · Activity ─────────────────────────────────────── */}
       <SettingsSection
         num="01"
-        title="Recent activity"
-        hint={`${currentWorkspace.name} · most recent ${count} event${count === 1 ? '' : 's'}, newest first`}
+        title={isEmpty ? 'Activity' : 'Recent activity'}
+        hint={
+          isEmpty
+            ? `${currentWorkspace.name} · waiting for the first event`
+            : `${currentWorkspace.name} · most recent ${count} event${count === 1 ? '' : 's'}, newest first`
+        }
       >
-        <div className="px-4 py-4 sm:px-5 sm:py-5">
-          <AuditLogList
-            rows={(rows ?? []).map((r) => ({
-              ...r,
-              metadata:
-                r.metadata && typeof r.metadata === 'object' && !Array.isArray(r.metadata)
-                  ? (r.metadata as Record<string, unknown>)
-                  : null,
-            }))}
-          />
-        </div>
+        {isEmpty ? (
+          <div className="flex flex-col gap-2 px-4 py-6 sm:px-5">
+            <p className="text-[13px] font-semibold text-foreground">
+              Nothing tracked yet.
+            </p>
+            <p className="max-w-xl text-[12.5px] leading-relaxed text-muted-foreground">
+              The next time someone invites a teammate, approves a draft, publishes a
+              post, or rotates a key in <span className="font-bold text-foreground">{currentWorkspace.name}</span>,
+              it shows up here with the actor, target, timestamp, and IP.
+            </p>
+          </div>
+        ) : (
+          <div className="px-4 py-4 sm:px-5 sm:py-5">
+            <AuditLogList rows={normalizedRows} />
+          </div>
+        )}
       </SettingsSection>
+
+      {/* ── 02 · Coverage ─────────────────────────────────────── */}
+      <SettingsSection num="02" title="What we track" hint="four categories, every workspace action">
+        {TRACKED_CATEGORIES.map((cat) => (
+          <SettingsRow
+            key={cat.label}
+            label={cat.label}
+            description={cat.description}
+            control={
+              <span className="inline-flex items-center rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                Logged
+              </span>
+            }
+          />
+        ))}
+      </SettingsSection>
+
+      {/* ── 03 · Retention & export ──────────────────────────── */}
+      <SettingsSection num="03" title="Retention & export" hint="agency-contract ready">
+        <SettingsRow
+          label="Retention"
+          description="Events stay queryable for 90 days, then archive cold for another 12 months."
+          control={
+            <span className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-foreground">
+              90d · 365d cold
+            </span>
+          }
+        />
+        <SettingsRow
+          label="Export"
+          description="Download every event as CSV — actor, target, metadata, IP, timestamp."
+          control={
+            isEmpty ? (
+              <span className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-dashed border-border/60 bg-muted/20 px-3 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">
+                <Download className="h-3 w-3" />
+                Available once events exist
+              </span>
+            ) : (
+              <a
+                href={`/api/audit-log/export?workspace=${currentWorkspace.id}`}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border/70 bg-background px-3 text-[12px] font-bold text-foreground transition-all hover:-translate-y-px hover:border-border hover:shadow-sm"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Download CSV
+              </a>
+            )
+          }
+        />
+      </SettingsSection>
+
+      <SettingsFootnote>
+        Rows are write-only · RLS pins reads to the workspace owner · IP is hashed before storage.
+      </SettingsFootnote>
     </div>
   )
 }
