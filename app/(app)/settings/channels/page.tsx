@@ -2,8 +2,8 @@ import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { AlertTriangle, ArrowRight, Check, ChevronDown, Clock, Sparkles } from 'lucide-react'
 
-import { ServiceCard } from '@/components/ai-keys/service-card'
 import { SERVICE_DIRECTORY } from '@/components/ai-keys/service-directory'
+import { UploadPostConnectSlot } from '@/components/channels/upload-post-connect-slot'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { createClient } from '@/lib/supabase/server'
@@ -475,17 +475,18 @@ function UploadPostBundleCard({
           </p>
         </div>
 
-        {/* Right column — action card */}
-        <div className="flex w-full items-stretch p-5 sm:w-[280px] sm:p-6">
+        {/* Right column — connect slot. Minimal — every word of marketing
+            copy already lives in the left column, so this only carries
+            the connection mechanics (button, key list, "get your key"). */}
+        <div className="flex w-full flex-col justify-center p-5 sm:w-[260px] sm:p-6">
           {publishServices.map((spec) => (
-            <div key={spec.provider} className="w-full">
-              <ServiceCard
-                spec={spec}
-                connectedKeys={(keysByProvider[spec.provider] as never) ?? []}
-                workspaceId={workspaceId}
-                isOwner={isOwner}
-              />
-            </div>
+            <UploadPostConnectSlot
+              key={spec.provider}
+              spec={spec}
+              connectedKeys={(keysByProvider[spec.provider] as never) ?? []}
+              workspaceId={workspaceId}
+              isOwner={isOwner}
+            />
           ))}
         </div>
       </div>
