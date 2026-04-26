@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowRight, FolderKanban, Users2 } from 'lucide-react'
+import { ArrowRight, Building2, FolderKanban, Settings2, Users2 } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
@@ -39,7 +39,12 @@ export default async function WorkspaceSettingsPage({
   return (
     <div className="space-y-7">
       {/* ── 01 · Identity ──────────────────────────────────────── */}
-      <SettingsSection title="Identity" hint="how this workspace shows up">
+      <SettingsSection
+        index="01"
+        title="Identity"
+        icon={<Building2 className="h-3.5 w-3.5" />}
+        hint="how this workspace shows up"
+      >
         <SettingsRow
           label="Name"
           description="The display name on the sidebar switcher and review links."
@@ -55,7 +60,12 @@ export default async function WorkspaceSettingsPage({
       </SettingsSection>
 
       {/* ── 02 · Quick links ──────────────────────────────────── */}
-      <SettingsSection title="Members & projects" hint="open in the workspace shell">
+      <SettingsSection
+        index="02"
+        title="Members & projects"
+        icon={<Users2 className="h-3.5 w-3.5" />}
+        hint="open in the workspace shell"
+      >
         <SettingsRow
           label="Team"
           description="Invite people, set roles, manage access."
@@ -87,7 +97,12 @@ export default async function WorkspaceSettingsPage({
       </SettingsSection>
 
       {/* ── 03 · Danger zone ──────────────────────────────────── */}
-      <SettingsSection title="Danger zone" hint="permanent · cannot be undone">
+      <SettingsSection
+        index="03"
+        title="Danger zone"
+        icon={<Settings2 className="h-3.5 w-3.5" />}
+        hint="permanent · cannot be undone"
+      >
         <SettingsRow
           label="Delete workspace"
           description={

@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { BarChart3, Gift, Send } from 'lucide-react'
 
 import { ReferralShare } from '@/components/settings/referral-share'
 import { ReferralShareTemplates } from '@/components/settings/referral-share-templates'
@@ -42,7 +43,9 @@ export default async function ReferralsPage() {
     <div className="space-y-7">
       {/* ── 01 · Your link ──────────────────────────────────────── */}
       <SettingsSection
+        index="01"
         title="Your link"
+        icon={<Gift className="h-3.5 w-3.5" />}
         hint={`Give ${REFERRAL_DISCOUNT_PERCENT}%, get ${REFERRAL_DISCOUNT_PERCENT}% — for as long as both stay subscribed`}
       >
         <div className="px-4 py-4 sm:px-5 sm:py-5">
@@ -52,7 +55,9 @@ export default async function ReferralsPage() {
 
       {/* ── 02 · One-click share ────────────────────────────────── */}
       <SettingsSection
+        index="02"
         title="Send it in one click"
+        icon={<Send className="h-3.5 w-3.5" />}
         hint="pre-written snippets, attribution baked in"
       >
         <div className="px-4 py-4 sm:px-5 sm:py-5">
@@ -62,7 +67,9 @@ export default async function ReferralsPage() {
 
       {/* ── 03 · Performance ────────────────────────────────────── */}
       <SettingsSection
+        index="03"
         title="Performance"
+        icon={<BarChart3 className="h-3.5 w-3.5" />}
         hint={`${totalSignups} signup${totalSignups === 1 ? '' : 's'} · ${stats.confirmed} paid conversion${stats.confirmed === 1 ? '' : 's'}`}
       >
         <SettingsRow

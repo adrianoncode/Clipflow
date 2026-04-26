@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { Info } from 'lucide-react'
+import { Info, KeyRound, LifeBuoy, ShieldCheck } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
 import { listFactors } from '@/lib/auth/mfa'
@@ -31,7 +31,9 @@ export default async function SecurityPage() {
     <div className="space-y-7">
       {/* ── 01 · Two-factor auth ────────────────────────────────── */}
       <SettingsSection
+        index="01"
         title="Two-factor authentication"
+        icon={<ShieldCheck className="h-3.5 w-3.5" />}
         hint={hasVerifiedFactor ? 'enabled · code required at every login' : 'not enabled'}
       >
         <div className="px-4 py-4 sm:px-5 sm:py-5">
@@ -56,7 +58,9 @@ export default async function SecurityPage() {
       {/* ── 02 · Recovery codes (only when 2FA active) ─────────── */}
       {hasVerifiedFactor ? (
         <SettingsSection
+          index="02"
           title="Recovery codes"
+          icon={<LifeBuoy className="h-3.5 w-3.5" />}
           hint={`${unusedCodes} unused · single-use, get a new batch when low`}
         >
           <div className="px-4 py-4 sm:px-5 sm:py-5">
@@ -68,7 +72,9 @@ export default async function SecurityPage() {
       {/* ── 03 · Pending factors cleanup ────────────────────────── */}
       {pending.length > 0 ? (
         <SettingsSection
+          index="03"
           title="Pending factors"
+          icon={<KeyRound className="h-3.5 w-3.5" />}
           hint="started but never verified · safe to remove"
         >
           <div className="px-4 py-4 sm:px-5 sm:py-5">

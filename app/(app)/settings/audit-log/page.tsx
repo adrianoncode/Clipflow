@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers'
 import Link from 'next/link'
-import { ArrowLeft, Download, Lock } from 'lucide-react'
+import { Activity, ArrowLeft, Database, Download, FileSearch, Lock } from 'lucide-react'
 
 import { AuditLogList } from '@/components/settings/audit-log-list'
 import {
@@ -135,7 +135,9 @@ export default async function AuditLogPage() {
     <div className="space-y-7">
       {/* ── 01 · Activity ─────────────────────────────────────── */}
       <SettingsSection
+        index="01"
         title={isEmpty ? 'Activity' : 'Recent activity'}
+        icon={<Activity className="h-3.5 w-3.5" />}
         hint={
           isEmpty
             ? `${currentWorkspace.name} · waiting for the first event`
@@ -161,7 +163,12 @@ export default async function AuditLogPage() {
       </SettingsSection>
 
       {/* ── 02 · Coverage ─────────────────────────────────────── */}
-      <SettingsSection title="What we track" hint="four categories, every workspace action">
+      <SettingsSection
+        index="02"
+        title="What we track"
+        icon={<FileSearch className="h-3.5 w-3.5" />}
+        hint="four categories, every workspace action"
+      >
         {TRACKED_CATEGORIES.map((cat) => (
           <SettingsRow
             key={cat.label}
@@ -177,7 +184,12 @@ export default async function AuditLogPage() {
       </SettingsSection>
 
       {/* ── 03 · Retention & export ──────────────────────────── */}
-      <SettingsSection title="Retention & export" hint="agency-contract ready">
+      <SettingsSection
+        index="03"
+        title="Retention & export"
+        icon={<Database className="h-3.5 w-3.5" />}
+        hint="agency-contract ready"
+      >
         <SettingsRow
           label="Retention"
           description="Events stay queryable for 90 days, then archive cold for another 12 months."
