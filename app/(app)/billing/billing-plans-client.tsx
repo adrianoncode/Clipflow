@@ -19,18 +19,38 @@ function IntervalToggle({
   onChange: (v: 'monthly' | 'annual') => void
 }) {
   return (
-    <div className="flex items-center gap-1 rounded-full border bg-muted/30 p-1 text-sm">
+    <div
+      className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-card p-1 text-[12px] shadow-sm"
+      role="tablist"
+      aria-label="Billing interval"
+    >
       {(['monthly', 'annual'] as const).map((opt) => (
         <button
           key={opt}
           type="button"
+          role="tab"
+          aria-selected={value === opt}
           onClick={() => onChange(opt)}
           className={cn(
-            'rounded-full px-4 py-1 font-medium transition-colors',
-            value === opt ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground',
+            'rounded-full px-4 py-1.5 font-semibold transition-all',
+            value === opt
+              ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20'
+              : 'text-muted-foreground hover:text-foreground',
           )}
         >
-          {opt === 'monthly' ? 'Monthly' : 'Annual · 20% off'}
+          {opt === 'monthly' ? 'Monthly' : 'Annual'}
+          {opt === 'annual' ? (
+            <span
+              className={cn(
+                'ml-1.5 rounded-full px-1.5 py-px text-[10px] font-bold',
+                value === 'annual'
+                  ? 'bg-[#D6FF3E] text-[#1a2000]'
+                  : 'bg-emerald-100 text-emerald-800',
+              )}
+            >
+              −20%
+            </span>
+          ) : null}
         </button>
       ))}
     </div>
