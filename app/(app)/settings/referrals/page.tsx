@@ -1,9 +1,11 @@
 import { redirect } from 'next/navigation'
-import { Gift, Users, PartyPopper, Send } from 'lucide-react'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ReferralShare } from '@/components/settings/referral-share'
 import { ReferralShareTemplates } from '@/components/settings/referral-share-templates'
+import {
+  SettingsRow,
+  SettingsSection,
+} from '@/components/settings/section'
 import { getUser } from '@/lib/auth/get-user'
 import { getOwnReferralCode } from '@/lib/referrals/get-referral-code'
 import { getReferralStats } from '@/lib/referrals/get-stats'
@@ -23,11 +25,8 @@ export default async function ReferralsPage() {
     getReferralSourceBreakdown(user.id),
   ])
   if (!code) {
-    // Profile hasn't materialized yet — shouldn't happen in practice
-    // because the DB trigger backfills a code on insert.
     return (
-      <div className="max-w-2xl space-y-4">
-        <h1 className="text-xl font-semibold">Refer friends</h1>
+      <div className="space-y-2">
         <p className="text-sm text-muted-foreground">
           Your referral code is being prepared. Refresh in a moment.
         </p>
@@ -37,150 +36,109 @@ export default async function ReferralsPage() {
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://clipflow.to'
   const link = `${baseUrl}/signup?ref=${code}`
+  const totalSignups = stats.pending + stats.confirmed
 
   return (
-    <div className="max-w-2xl space-y-8">
-      <div className="flex items-start gap-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100">
-          <Gift className="h-5 w-5 text-orange-600" />
-        </div>
-        <div>
-          <h1 className="text-lg font-bold tracking-tight">Refer &amp; Earn</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Give {REFERRAL_DISCOUNT_PERCENT}%, get {REFERRAL_DISCOUNT_PERCENT}%. When someone
-            signs up through your link and starts a paid plan, you both get{' '}
-            {REFERRAL_DISCOUNT_PERCENT}% off — for as long as you stay subscribed.
-          </p>
-        </div>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Gift className="h-4 w-4 text-primary" />
-            Your referral link
-          </CardTitle>
-          <CardDescription>
-            Share anywhere — every paid signup unlocks {REFERRAL_DISCOUNT_PERCENT}% off on
-            your subscription too.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+    <div className="space-y-7">
+      {/* ── 01 · Your link ──────────────────────────────────────── */}
+      <SettingsSection
+        num="01"
+        title="Your link"
+        hint={`Give ${REFERRAL_DISCOUNT_PERCENT}%, get ${REFERRAL_DISCOUNT_PERCENT}% — for as long as both stay subscribed`}
+      >
+        <div className="px-4 py-4 sm:px-5 sm:py-5">
           <ReferralShare link={link} code={code} />
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Send className="h-4 w-4 text-primary" />
-            Send it in one click
-          </CardTitle>
-          <CardDescription>
-            Pre-written snippets ready for chat, Twitter, LinkedIn, or email. Each
-            link is tagged so you can see which channel actually converts.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      {/* ── 02 · One-click share ────────────────────────────────── */}
+      <SettingsSection
+        num="02"
+        title="Send it in one click"
+        hint="pre-written snippets, attribution baked in"
+      >
+        <div className="px-4 py-4 sm:px-5 sm:py-5">
           <ReferralShareTemplates link={link} />
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <StatCard
-          icon={Users}
+      {/* ── 03 · Performance ────────────────────────────────────── */}
+      <SettingsSection
+        num="03"
+        title="Performance"
+        hint={`${totalSignups} signup${totalSignups === 1 ? '' : 's'} · ${stats.confirmed} paid conversion${stats.confirmed === 1 ? '' : 's'}`}
+      >
+        <SettingsRow
           label="Friends signed up"
-          value={stats.pending + stats.confirmed}
-          hint={
+          description={
             stats.pending > 0
-              ? `${stats.pending} still on free plan`
-              : 'Invited people land here'
+              ? `${stats.pending} still on the free plan — paid wins are pending.`
+              : 'Invited people land here once they create an account.'
+          }
+          control={
+            <span className="font-mono text-[24px] font-bold tabular-nums text-foreground">
+              {totalSignups}
+            </span>
           }
         />
-        <StatCard
-          icon={PartyPopper}
+        <SettingsRow
           label="Paid conversions"
-          value={stats.confirmed}
-          hint={
+          description={
             stats.confirmed > 0
-              ? `You're saving ${REFERRAL_DISCOUNT_PERCENT}% every month`
-              : 'None yet — share your link to start'
+              ? `You're saving ${REFERRAL_DISCOUNT_PERCENT}% on every monthly invoice.`
+              : 'None yet — share your link to start.'
           }
-          accent={stats.confirmed > 0}
+          control={
+            <span
+              className={`font-mono text-[24px] font-bold tabular-nums ${
+                stats.confirmed > 0 ? 'text-primary' : 'text-foreground'
+              }`}
+            >
+              {stats.confirmed}
+            </span>
+          }
         />
-      </div>
-
-      {sources.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Where your signups come from</CardTitle>
-            <CardDescription>
-              Attribution by channel — paid counts toward your discount.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {sources.map((s) => {
+        {sources.length > 0
+          ? sources.map((s) => {
               const total = s.pending + s.confirmed
               const paidPct = total > 0 ? Math.round((s.confirmed / total) * 100) : 0
               return (
-                <div key={s.source} className="flex items-center justify-between text-sm">
-                  <span className="font-medium capitalize">{s.source}</span>
-                  <span className="text-muted-foreground">
-                    {s.confirmed} paid · {s.pending} pending
-                    {total > 0 ? ` · ${paidPct}% conversion` : ''}
-                  </span>
-                </div>
+                <SettingsRow
+                  key={s.source}
+                  label={s.source}
+                  description={`${s.confirmed} paid · ${s.pending} pending`}
+                  control={
+                    total > 0 ? (
+                      <span className="font-mono text-[12.5px] font-bold tabular-nums text-muted-foreground">
+                        {paidPct}%
+                      </span>
+                    ) : (
+                      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/60">
+                        No conversions
+                      </span>
+                    )
+                  }
+                />
               )
-            })}
-          </CardContent>
-        </Card>
-      ) : null}
+            })
+          : null}
+      </SettingsSection>
 
-      <div className="rounded-lg border bg-muted/30 p-4 text-xs text-muted-foreground">
-        <p className="font-medium text-foreground">How it works</p>
-        <ol className="mt-2 list-decimal space-y-1 pl-4">
+      {/* ── How it works (footnote-style box) ───────────────────── */}
+      <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 text-[12px] text-muted-foreground">
+        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+          How it works
+        </p>
+        <ol className="mt-2 list-decimal space-y-1 pl-4 leading-relaxed">
           <li>Send your link to a creator or team who needs Clipflow.</li>
           <li>They sign up and choose any paid plan.</li>
           <li>
-            They instantly get {REFERRAL_DISCOUNT_PERCENT}% off, and the same discount is
-            applied to your active subscription.
+            They instantly get {REFERRAL_DISCOUNT_PERCENT}% off, and the same discount
+            applies to your active subscription.
           </li>
-          <li>The discount stays as long as the subscriptions stay active.</li>
+          <li>The discount stays as long as both subscriptions stay active.</li>
         </ol>
       </div>
     </div>
-  )
-}
-
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  hint,
-  accent,
-}: {
-  icon: React.ComponentType<{ className?: string }>
-  label: string
-  value: number
-  hint: string
-  accent?: boolean
-}) {
-  return (
-    <Card>
-      <CardContent className="flex items-center gap-4 p-5">
-        <div
-          className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-            accent ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-          }`}
-        >
-          <Icon className="h-5 w-5" />
-        </div>
-        <div className="min-w-0">
-          <div className="text-2xl font-semibold">{value}</div>
-          <div className="text-xs font-medium text-foreground">{label}</div>
-          <div className="mt-0.5 text-xs text-muted-foreground">{hint}</div>
-        </div>
-      </CardContent>
-    </Card>
   )
 }

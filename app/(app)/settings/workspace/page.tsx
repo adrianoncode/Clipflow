@@ -1,16 +1,22 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowRight, Building2, FolderKanban, Users2 } from 'lucide-react'
+import { ArrowRight, FolderKanban, Users2 } from 'lucide-react'
 
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
-import { WorkspaceSettingsForm } from '@/components/settings/workspace-settings-form'
+import {
+  SettingsRow,
+  SettingsSection,
+} from '@/components/settings/section'
+import {
+  WorkspaceDeleteButton,
+  WorkspaceNameRow,
+  WorkspaceTypeRow,
+} from '@/components/settings/workspace-rows'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata = {
-  title: 'Workspace settings',
-}
+export const metadata = { title: 'Workspace settings' }
 
 export default async function WorkspaceSettingsPage({
   searchParams,
@@ -31,55 +37,68 @@ export default async function WorkspaceSettingsPage({
   const isOwner = workspace.role === 'owner'
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-start gap-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100">
-          <Building2 className="h-5 w-5 text-violet-600" />
-        </div>
-        <div>
-          <h1 className="text-lg font-bold tracking-tight">Workspace settings</h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Manage <span className="font-semibold text-foreground">{workspace.name}</span> — rename,
-            change type, or delete.
-          </p>
-        </div>
-      </div>
+    <div className="space-y-7">
+      {/* ── 01 · Identity ──────────────────────────────────────── */}
+      <SettingsSection num="01" title="Identity" hint="how this workspace shows up">
+        <SettingsRow
+          label="Name"
+          description="The display name on the sidebar switcher and review links."
+          control={<WorkspaceNameRow workspace={workspace} isOwner={isOwner} />}
+          align="top"
+        />
+        <SettingsRow
+          label="Type"
+          description="Cosmetic — drives the label in the workspace header."
+          control={<WorkspaceTypeRow workspace={workspace} isOwner={isOwner} />}
+          align="top"
+        />
+      </SettingsSection>
 
-      {/* Workspace form card */}
-      <div className="max-w-xl rounded-2xl border border-border/50 bg-card p-6 shadow-sm">
-        <WorkspaceSettingsForm workspace={workspace} isOwner={isOwner} />
-      </div>
+      {/* ── 02 · Quick links ──────────────────────────────────── */}
+      <SettingsSection num="02" title="Members & projects" hint="open in the workspace shell">
+        <SettingsRow
+          label="Team"
+          description="Invite people, set roles, manage access."
+          control={
+            <Link
+              href={`/workspace/${workspaceId}/members`}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border/70 bg-background px-3 text-[12px] font-bold text-foreground transition-all hover:-translate-y-px hover:border-border hover:shadow-sm"
+            >
+              <Users2 className="h-3.5 w-3.5" />
+              Open team
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          }
+        />
+        <SettingsRow
+          label="Projects"
+          description="Group content by campaign or client engagement."
+          control={
+            <Link
+              href={`/workspace/${workspaceId}/projects`}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border/70 bg-background px-3 text-[12px] font-bold text-foreground transition-all hover:-translate-y-px hover:border-border hover:shadow-sm"
+            >
+              <FolderKanban className="h-3.5 w-3.5" />
+              Open projects
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          }
+        />
+      </SettingsSection>
 
-      {/* Quick links */}
-      <div className="grid max-w-xl gap-3 sm:grid-cols-2">
-        <Link
-          href={`/workspace/${workspaceId}/members`}
-          className="group flex items-center gap-3 rounded-xl border border-border/50 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md"
-        >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-            <Users2 className="h-4 w-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold">Team members</p>
-            <p className="text-[11px] text-muted-foreground">Invite &amp; manage access</p>
-          </div>
-          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 transition-transform group-hover:translate-x-0.5" />
-        </Link>
-        <Link
-          href={`/workspace/${workspaceId}/projects`}
-          className="group flex items-center gap-3 rounded-xl border border-border/50 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md"
-        >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-600">
-            <FolderKanban className="h-4 w-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold">Projects</p>
-            <p className="text-[11px] text-muted-foreground">Organize by campaign</p>
-          </div>
-          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 transition-transform group-hover:translate-x-0.5" />
-        </Link>
-      </div>
+      {/* ── 03 · Danger zone ──────────────────────────────────── */}
+      <SettingsSection num="03" title="Danger zone" hint="permanent · cannot be undone">
+        <SettingsRow
+          label="Delete workspace"
+          description={
+            <span>
+              Permanently deletes every content item, draft, render, project, and
+              integration in this workspace. <span className="font-bold text-foreground">Cannot be undone.</span>
+            </span>
+          }
+          control={<WorkspaceDeleteButton workspace={workspace} isOwner={isOwner} />}
+        />
+      </SettingsSection>
     </div>
   )
 }
