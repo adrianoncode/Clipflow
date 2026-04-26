@@ -1,10 +1,9 @@
 import Link from 'next/link'
 import { cookies } from 'next/headers'
-import { AlertTriangle, ArrowRight, Check, ChevronDown, Clock, Radio, Sparkles, Zap } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Check, ChevronDown, Clock, Sparkles } from 'lucide-react'
 
 import { ServiceCard } from '@/components/ai-keys/service-card'
 import { SERVICE_DIRECTORY } from '@/components/ai-keys/service-directory'
-import { PageHeading } from '@/components/workspace/page-heading'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { createClient } from '@/lib/supabase/server'
@@ -33,19 +32,14 @@ interface ChannelDef {
   id: string
   name: string
   provider: ChannelProvider
-  /** Brand tile background (Tailwind classes for solid or gradient). */
   tileBg: string
-  /** White-on-brand SVG logo. */
   Logo: (props: { size?: number; className?: string }) => ReactNode
-  /** One-liner shown on the card. */
   note: string
-  /** Inline warning expander shown only when set (Instagram). */
   warning?: string
-  /** "Why isn't this live?" expander body (only for catalog-wait). */
   explainer?: string
 }
 
-const CHANNELS: ChannelDef[] = [
+const DIRECT_CHANNELS: ChannelDef[] = [
   {
     id: 'linkedin',
     name: 'LinkedIn',
@@ -79,22 +73,9 @@ const CHANNELS: ChannelDef[] = [
     Logo: FacebookLogo,
     note: 'Push clips and link posts to a Facebook Page you manage.',
   },
-  {
-    id: 'tiktok',
-    name: 'TikTok',
-    provider: 'upload-post',
-    tileBg: 'bg-black',
-    Logo: TikTokLogo,
-    note: 'Routed through the Upload-Post bundle below — one key, four platforms.',
-  },
-  {
-    id: 'x',
-    name: 'X (Twitter)',
-    provider: 'byok-keys',
-    tileBg: 'bg-black',
-    Logo: () => null, // X uses its own dedicated wizard card
-    note: '',
-  },
+]
+
+const SOON_CHANNELS: ChannelDef[] = [
   {
     id: 'threads',
     name: 'Threads',
@@ -132,7 +113,6 @@ export default async function ChannelsPage({
   if (!currentWorkspace) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">Channels</h1>
         <p className="text-sm text-muted-foreground">No workspace selected.</p>
       </div>
     )
@@ -165,31 +145,9 @@ export default async function ChannelsPage({
 
   const connectedProviderSet = new Set(keys.map((k) => k.provider))
   const hasUploadPost = publishServices.some((s) => connectedProviderSet.has(s.provider))
-  const totalConnected =
-    connectedChannelIds.size + (hasUploadPost ? 1 : 0)
-  const hasChannel = totalConnected > 0
 
   return (
     <div className="space-y-8">
-      {/* ── Header ── */}
-      <div className="flex items-start gap-3">
-        <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-          style={{ background: '#EDE6F5' }}
-        >
-          <Radio className="h-4 w-4" style={{ color: '#2A1A3D' }} />
-        </div>
-        <PageHeading
-          eyebrow="Settings · Channels"
-          title="Where your content goes out."
-          body={
-            hasChannel
-              ? `${totalConnected} destination${totalConnected === 1 ? '' : 's'} connected. Posts go live straight from the Pipeline.`
-              : 'Connect a destination so approved posts publish straight from Clipflow. Each platform takes ~30 seconds.'
-          }
-        />
-      </div>
-
       {searchParams.error ? (
         <FeedbackBanner tone="error">
           <p className="font-semibold text-destructive">Connection failed</p>
@@ -221,246 +179,315 @@ export default async function ChannelsPage({
         </div>
       )}
 
-      {/* ── Single unified grid ── */}
-      <section className="grid gap-3 sm:grid-cols-2">
-        {CHANNELS.map((p) => {
-          // X gets its own self-contained wizard card (BYO Developer keys).
-          if (p.provider === 'byok-keys' && p.id === 'x') {
+      {/* ── 01 · Direct connect ──────────────────────────────────── */}
+      <section className="space-y-3">
+        <SectionLabel num="01">
+          Direct connect
+          <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground/70">
+            OAuth via Composio · 4 destinations
+          </span>
+        </SectionLabel>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {DIRECT_CHANNELS.map((c) => {
+            const isConnected = connectedChannelIds.has(c.id)
             return (
-              <div key={p.id} className="sm:col-span-2">
-                <XConnectCard
-                  workspaceId={currentWorkspace.id}
-                  isOwner={isOwner}
-                  connected={xConnection}
-                />
-              </div>
+              <ChannelCard
+                key={c.id}
+                channel={c}
+                isConnected={isConnected}
+                isOwner={isOwner}
+                workspaceId={currentWorkspace.id}
+              />
             )
-          }
-
-          const composioConnected =
-            p.provider === 'composio' && connectedChannelIds.has(p.id)
-          const uploadPostConnected =
-            p.provider === 'upload-post' && hasUploadPost
-          const isConnected = composioConnected || uploadPostConnected
-          const dimmed = p.provider === 'catalog-wait'
-
-          return (
-            <ChannelCard
-              key={p.id}
-              channel={p}
-              isConnected={isConnected}
-              uploadPostConnected={uploadPostConnected}
-              dimmed={dimmed}
-              isOwner={isOwner}
-              workspaceId={currentWorkspace.id}
-            />
-          )
-        })}
-      </section>
-
-      {/* ── Upload-Post bundle: special wide card with platform strip ── */}
-      <section
-        id="upload-post-bundle"
-        className="channel-target overflow-hidden rounded-3xl border bg-gradient-to-br from-[#EDE6F5] via-[#F8F4FB] to-[#FAF7F2] p-0.5 shadow-sm"
-      >
-        <div className="rounded-[calc(theme(borderRadius.3xl)-2px)] bg-card p-5 sm:p-7">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white"
-                  style={{ background: 'var(--lv2s-primary, #2A1A3D)' }}
-                >
-                  <UploadPostLogo size={18} />
-                </span>
-                <span className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
-                  <Sparkles className="mr-1 inline h-3 w-3" />
-                  Bundle aggregator
-                </span>
-                {hasUploadPost ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
-                    <Check className="h-2.5 w-2.5" strokeWidth={3} />
-                    Connected
-                  </span>
-                ) : null}
-              </div>
-              <h2 className="mt-3 text-[20px] font-bold leading-tight text-foreground sm:text-[22px]">
-                Upload-Post — one key for the four video platforms.
-              </h2>
-              <p className="mt-1.5 max-w-[460px] text-[13px] leading-relaxed text-muted-foreground">
-                Required for TikTok scheduled publishing (their API is whitelisted). Optional shortcut for the other three — Composio direct OAuth above also works.
-              </p>
-
-              {/* Stack of covered platforms — real logos, no clip-art */}
-              <div className="mt-4 flex items-center gap-2">
-                {UP_BUNDLE_PLATFORMS.map((p) => {
-                  const Logo = p.Logo
-                  return (
-                    <span
-                      key={p.name}
-                      className={`flex h-8 w-8 items-center justify-center rounded-lg text-white ${p.tile}`}
-                      title={p.name}
-                      aria-label={p.name}
-                    >
-                      <Logo size={16} />
-                    </span>
-                  )
-                })}
-                <span
-                  className="ml-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70"
-                >
-                  Covered platforms
-                </span>
-              </div>
-            </div>
-
-            {/* Service-card slot lives here on desktop, inline on mobile. */}
-            <div className="w-full sm:max-w-[320px]">
-              {publishServices.map((spec) => (
-                <ServiceCard
-                  key={spec.provider}
-                  spec={spec}
-                  connectedKeys={keysByProvider[spec.provider] ?? []}
-                  workspaceId={currentWorkspace.id}
-                  isOwner={isOwner}
-                />
-              ))}
-            </div>
-          </div>
+          })}
         </div>
       </section>
 
-      {/* Subtle footnote — explains the "via Upload-Post" links */}
-      <p
-        className="text-center text-[11px] text-muted-foreground/70"
-      >
-        <Zap className="mr-1 inline h-3 w-3" />
-        Direct OAuth is preferred where possible — fewer moving parts, no third-party invoice.
-      </p>
+      {/* ── 02 · Bundle aggregator (Upload-Post) ─────────────────── */}
+      <section className="space-y-3" id="upload-post-bundle">
+        <SectionLabel num="02">
+          Bundle aggregator
+          <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground/70">
+            required for TikTok scheduled publishing
+          </span>
+        </SectionLabel>
+
+        <UploadPostBundleCard
+          isOwner={isOwner}
+          isConnected={hasUploadPost}
+          workspaceId={currentWorkspace.id}
+          publishServices={publishServices}
+          keysByProvider={keysByProvider}
+        />
+      </section>
+
+      {/* ── 03 · Bring your own keys (X) ─────────────────────────── */}
+      <section className="space-y-3">
+        <SectionLabel num="03">
+          Bring your own keys
+          <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground/70">
+            X (Twitter) · free tier ~1.5k tweets/month
+          </span>
+        </SectionLabel>
+        <XConnectCard
+          workspaceId={currentWorkspace.id}
+          isOwner={isOwner}
+          connected={xConnection}
+        />
+      </section>
+
+      {/* ── Catalog-wait (Threads etc.) ──────────────────────────── */}
+      {SOON_CHANNELS.length > 0 && (
+        <section className="space-y-3">
+          <SectionLabel num="·" muted>
+            Not in the Composio catalog yet
+            <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground/70">
+              {SOON_CHANNELS.length} platform{SOON_CHANNELS.length === 1 ? '' : 's'}
+            </span>
+          </SectionLabel>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {SOON_CHANNELS.map((c) => (
+              <ChannelCard
+                key={c.id}
+                channel={c}
+                isConnected={false}
+                isOwner={isOwner}
+                workspaceId={currentWorkspace.id}
+                dimmed
+              />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   )
 }
 
 // ---------------------------------------------------------------------------
-// Cards
+// Pieces
 // ---------------------------------------------------------------------------
+
+function SectionLabel({
+  num,
+  children,
+  muted,
+}: {
+  num: string
+  children: ReactNode
+  muted?: boolean
+}) {
+  return (
+    <p
+      className={`font-mono text-[10px] font-bold uppercase tracking-[0.22em] ${
+        muted ? 'text-muted-foreground/70' : 'text-muted-foreground'
+      }`}
+    >
+      <span className={muted ? 'text-muted-foreground/50' : 'text-primary'}>{num}</span>
+      {' · '}
+      {children}
+    </p>
+  )
+}
 
 function ChannelCard({
   channel: p,
   isConnected,
-  uploadPostConnected,
-  dimmed,
   isOwner,
   workspaceId,
+  dimmed = false,
 }: {
   channel: ChannelDef
   isConnected: boolean
-  uploadPostConnected: boolean
-  dimmed: boolean
   isOwner: boolean
   workspaceId: string
+  dimmed?: boolean
 }) {
   const Logo = p.Logo
   return (
     <div
-      className={`group relative flex items-start gap-4 rounded-2xl border p-4 transition-all ${
+      className={`group relative flex flex-col rounded-2xl border p-4 transition-all ${
         dimmed
           ? 'border-dashed border-border/60 bg-muted/20'
-          : 'border-border/60 bg-card hover:-translate-y-px hover:border-border hover:shadow-md hover:shadow-primary/[0.04]'
+          : isConnected
+            ? 'border-emerald-200/70 bg-emerald-50/30'
+            : 'border-border/60 bg-card hover:-translate-y-px hover:border-border hover:shadow-md hover:shadow-primary/[0.04]'
       }`}
     >
-      <span
-        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-sm ${p.tileBg}`}
-        aria-hidden
-      >
-        <Logo size={22} />
-      </span>
+      <div className="flex items-start gap-3">
+        <span
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-sm ${p.tileBg}`}
+          aria-hidden
+        >
+          <Logo size={22} />
+        </span>
 
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="text-[14px] font-bold text-foreground">{p.name}</p>
-          {isConnected ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
-              <Check className="h-2.5 w-2.5" strokeWidth={3} />
-              Connected
-            </span>
-          ) : null}
-          {p.provider === 'upload-post' && !uploadPostConnected ? (
-            <span className="inline-flex items-center rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-medium text-violet-800">
-              Bundled
-            </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-[14px] font-bold text-foreground">{p.name}</p>
+            {isConnected ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
+                <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                Connected
+              </span>
+            ) : null}
+            {dimmed ? (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                <Clock className="h-2.5 w-2.5" />
+                Soon
+              </span>
+            ) : null}
+          </div>
+          <p className="mt-1 text-[12.5px] leading-snug text-muted-foreground">
+            {p.note}
+          </p>
+        </div>
+
+        {/* Right-side action — uniform slot, always shows something */}
+        <div className="flex shrink-0 self-center">
+          {p.provider === 'composio' && isOwner && !isConnected ? (
+            <Link
+              href={`/api/integrations/connect?app=${p.id}&scope=channel&workspace_id=${workspaceId}`}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[12px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:shadow-md"
+            >
+              Connect
+              <ArrowRight className="h-3 w-3" />
+            </Link>
           ) : null}
           {dimmed ? (
-            <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-              <Clock className="h-2.5 w-2.5" />
-              Soon
+            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/60">
+              Auto-enable
             </span>
           ) : null}
         </div>
-
-        <p className="mt-1 text-[12.5px] leading-snug text-muted-foreground">{p.note}</p>
-
-        {/* Instagram eligibility expander */}
-        {p.id === 'instagram' && p.warning ? (
-          <details className="group/expand mt-2.5 rounded-md bg-amber-50 text-[11px] text-amber-900">
-            <summary className="flex cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 font-medium [&::-webkit-details-marker]:hidden">
-              <AlertTriangle className="h-3 w-3 shrink-0" />
-              {p.warning}
-              <ChevronDown className="ml-auto h-3 w-3 transition-transform group-open/expand:rotate-180" />
-            </summary>
-            <div className="space-y-1.5 border-t border-amber-200/70 px-2 py-2 text-amber-800">
-              <p>Quick eligibility check:</p>
-              <ol className="ml-4 list-decimal space-y-0.5">
-                <li>IG account is set to Business or Creator</li>
-                <li>Linked to a Facebook Page you admin</li>
-                <li>You authorise Meta for the Page + IG during Connect</li>
-              </ol>
-              <a
-                href="https://help.instagram.com/502981923235522"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-block font-semibold underline underline-offset-2"
-              >
-                Instagram setup guide →
-              </a>
-            </div>
-          </details>
-        ) : null}
-
-        {/* "Why isn't this live?" for catalog-wait */}
-        {dimmed && p.explainer ? (
-          <details className="group/expand mt-2.5 rounded-md bg-background/60 text-[11px] text-muted-foreground ring-1 ring-border/60">
-            <summary className="flex cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 font-medium text-foreground [&::-webkit-details-marker]:hidden">
-              Why isn’t this live?
-              <ChevronDown className="ml-auto h-3 w-3 transition-transform group-open/expand:rotate-180" />
-            </summary>
-            <div className="border-t border-border/60 px-2 py-2 leading-relaxed">
-              {p.explainer}
-            </div>
-          </details>
-        ) : null}
       </div>
 
-      {/* CTA */}
-      <div className="flex shrink-0 self-center">
-        {p.provider === 'composio' && isOwner && !isConnected ? (
-          <Link
-            href={`/api/integrations/connect?app=${p.id}&scope=channel&workspace_id=${workspaceId}`}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[12px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:shadow-md"
-          >
-            Connect
-            <ArrowRight className="h-3 w-3" />
-          </Link>
-        ) : null}
-        {p.provider === 'upload-post' && !uploadPostConnected ? (
-          <a
-            href="#upload-post-bundle"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-background px-3 py-1.5 text-[12px] font-semibold text-foreground transition-all hover:-translate-y-px hover:border-border hover:shadow-sm"
-          >
-            Via bundle
-            <ArrowRight className="h-3 w-3" />
-          </a>
-        ) : null}
+      {/* Inline expanders — pushed to footer so card heights stay closer */}
+      {p.id === 'instagram' && p.warning ? (
+        <details className="group/expand mt-3 rounded-md bg-amber-50 text-[11px] text-amber-900">
+          <summary className="flex cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 font-medium [&::-webkit-details-marker]:hidden">
+            <AlertTriangle className="h-3 w-3 shrink-0" />
+            {p.warning}
+            <ChevronDown className="ml-auto h-3 w-3 transition-transform group-open/expand:rotate-180" />
+          </summary>
+          <div className="space-y-1.5 border-t border-amber-200/70 px-2 py-2 text-amber-800">
+            <p>Quick eligibility check:</p>
+            <ol className="ml-4 list-decimal space-y-0.5">
+              <li>IG account is set to Business or Creator</li>
+              <li>Linked to a Facebook Page you admin</li>
+              <li>You authorise Meta for the Page + IG during Connect</li>
+            </ol>
+            <a
+              href="https://help.instagram.com/502981923235522"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block font-semibold underline underline-offset-2"
+            >
+              Instagram setup guide →
+            </a>
+          </div>
+        </details>
+      ) : null}
+
+      {dimmed && p.explainer ? (
+        <details className="group/expand mt-3 rounded-md bg-background/60 text-[11px] text-muted-foreground ring-1 ring-border/60">
+          <summary className="flex cursor-pointer list-none items-center gap-1.5 px-2 py-1.5 font-medium text-foreground [&::-webkit-details-marker]:hidden">
+            Why isn’t this live?
+            <ChevronDown className="ml-auto h-3 w-3 transition-transform group-open/expand:rotate-180" />
+          </summary>
+          <div className="border-t border-border/60 px-2 py-2 leading-relaxed">
+            {p.explainer}
+          </div>
+        </details>
+      ) : null}
+    </div>
+  )
+}
+
+function UploadPostBundleCard({
+  isOwner,
+  isConnected,
+  workspaceId,
+  publishServices,
+  keysByProvider,
+}: {
+  isOwner: boolean
+  isConnected: boolean
+  workspaceId: string
+  publishServices: typeof SERVICE_DIRECTORY
+  keysByProvider: Record<string, ReturnType<typeof Object.values>>
+}) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-primary/[0.02]">
+      <div className="grid gap-0 sm:grid-cols-[1fr_auto]">
+        {/* Left column — info */}
+        <div className="flex flex-col gap-4 border-b border-border/40 p-5 sm:border-b-0 sm:border-r sm:p-6">
+          <div className="flex items-center gap-2.5">
+            <span
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-sm"
+              style={{ background: '#2A1A3D' }}
+              aria-hidden
+            >
+              <UploadPostLogo size={18} />
+            </span>
+            <div>
+              <p className="text-[14.5px] font-bold text-foreground">Upload-Post</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                One key · four video platforms
+              </p>
+            </div>
+            {isConnected ? (
+              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
+                <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                Connected
+              </span>
+            ) : null}
+          </div>
+
+          <p className="text-[13px] leading-relaxed text-muted-foreground">
+            Required for TikTok scheduled publishing — TikTok&apos;s API is whitelisted, so we route through Upload-Post. Optional shortcut for the other three platforms below — direct OAuth in Section 01 also works.
+          </p>
+
+          {/* Covered platforms strip — clearly delineated, mono label */}
+          <div className="rounded-xl border border-border/40 bg-muted/30 p-3">
+            <p className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+              Covered platforms
+            </p>
+            <div className="mt-2 flex items-center gap-2">
+              {UP_BUNDLE_PLATFORMS.map((p) => {
+                const Logo = p.Logo
+                return (
+                  <span
+                    key={p.name}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-white shadow-sm ${p.tile}`}
+                    title={p.name}
+                    aria-label={p.name}
+                  >
+                    <Logo size={16} />
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+
+          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70">
+            <Sparkles className="mr-1 inline h-3 w-3" />
+            Free tier · 10 posts/mo, 2 profiles · upgrade from $16/mo
+          </p>
+        </div>
+
+        {/* Right column — action card */}
+        <div className="flex w-full items-stretch p-5 sm:w-[280px] sm:p-6">
+          {publishServices.map((spec) => (
+            <div key={spec.provider} className="w-full">
+              <ServiceCard
+                spec={spec}
+                connectedKeys={(keysByProvider[spec.provider] as never) ?? []}
+                workspaceId={workspaceId}
+                isOwner={isOwner}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
