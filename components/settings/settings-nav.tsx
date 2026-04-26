@@ -58,13 +58,13 @@ export function SettingsNav() {
   }
 
   return (
-    <nav aria-label="Settings sections" className="space-y-5">
+    <nav aria-label="Settings sections" className="space-y-6">
       {SECTIONS.map((section) => (
-        <div key={section.label} className="space-y-1.5">
-          <p className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/60">
+        <div key={section.label} className="space-y-2">
+          <p className="px-2.5 text-[11px] font-semibold leading-tight text-muted-foreground/70">
             {section.label}
           </p>
-          <ul className="space-y-0.5">
+          <ul className="space-y-px">
             {section.items.map((item) => {
               const active = isActive(item.href)
               const Icon = item.icon
@@ -72,17 +72,17 @@ export function SettingsNav() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className={`group relative flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[13px] font-medium transition-all ${
+                    className={`group relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] transition-all ${
                       active
-                        ? 'bg-primary/[0.06] text-foreground'
-                        : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
+                        ? 'bg-primary/[0.07] font-semibold text-foreground'
+                        : 'font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                     }`}
                   >
                     {/* Left accent bar on active */}
                     {active ? (
                       <span
                         aria-hidden
-                        className="absolute -left-px top-1.5 h-[calc(100%-12px)] w-0.5 rounded-full bg-primary"
+                        className="absolute -left-1 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary"
                       />
                     ) : null}
                     <Icon

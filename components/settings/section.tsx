@@ -69,7 +69,7 @@ export function SettingsRow({
 }) {
   return (
     <div
-      className={`flex flex-col gap-3 px-5 py-4 sm:flex-row sm:gap-6 sm:px-6 sm:py-5 ${
+      className={`flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-muted/[0.18] sm:flex-row sm:gap-6 sm:px-6 sm:py-5 ${
         align === 'top' ? 'sm:items-start' : 'sm:items-center'
       }`}
     >
