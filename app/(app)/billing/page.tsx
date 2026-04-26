@@ -86,7 +86,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
   const gatedRequiredPlan = gatedFeature ? FEATURE_MIN_PLAN[gatedFeature] : null
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-8 p-4 sm:p-8">
+    <div className="space-y-8">
       <div>
         <p
           className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
