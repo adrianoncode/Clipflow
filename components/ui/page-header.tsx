@@ -1,44 +1,56 @@
 import type { ReactNode } from 'react'
 
 /**
- * Editorial page header used across the workspace shell. Three-row
- * layout: eyebrow (mono · uppercase) → big serif title → optional
- * one-line description. Optional `actions` slot floats right on
- * desktop and stacks below the title on mobile.
+ * Editorial page header used across the workspace shell.
  *
- * Replaces the ad-hoc "Eyebrow + h1 + p" patterns that drifted
- * across pages and made the dashboard feel like 12 different apps
- * stitched together.
+ *   <PageHeader category="Import" title="Drop a recording in." description="…" />
+ *
+ * Three rows: an optional designer-grade category line (a violet
+ * hairline + Inter-Tight tracking-wide caps in primary — *not* the
+ * generic grey-mono eyebrow that read as boilerplate everywhere), the
+ * Instrument-Serif title for editorial weight, and an optional
+ * description. Right slot for primary/secondary actions.
  */
 
 interface PageHeaderProps {
+  /**
+   * Section / category label rendered above the title. Replaces the
+   * old `eyebrow` prop — accepts the same value, rendered in the new
+   * primary-tone Sans-Tight treatment with a leading hairline.
+   */
+  category?: string
+  /** @deprecated Use `category`. Kept so legacy call-sites still compile. */
   eyebrow?: string
   title: string
   /** Short, action-oriented one-liner. Skip if redundant. */
   description?: string
   /** Right-aligned action buttons (Primary CTA + Secondary). */
   actions?: ReactNode
-  /** Optional emoji/icon shown next to the eyebrow. */
+  /** @deprecated emoji eyebrows are out — pass an icon-prefixed `category` instead. */
   emoji?: string
 }
 
 export function PageHeader({
+  category,
   eyebrow,
   title,
   description,
   actions,
-  emoji,
 }: PageHeaderProps) {
+  const label = category ?? eyebrow
   return (
     <header className="flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        {eyebrow ? (
+        {label ? (
           <p
-            className="mb-2 inline-flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
-            style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+            className="mb-2.5 inline-flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85"
+            style={{
+              fontFamily:
+                'var(--font-inter-tight), var(--font-inter), sans-serif',
+            }}
           >
-            {emoji ? <span aria-hidden>{emoji}</span> : null}
-            {eyebrow}
+            <span aria-hidden className="inline-block h-px w-6 bg-primary/40" />
+            {label}
           </p>
         ) : null}
         <h1
@@ -52,9 +64,7 @@ export function PageHeader({
           {title}
         </h1>
         {description ? (
-          <p
-            className="mt-2 max-w-[640px] text-[14px] leading-relaxed text-muted-foreground"
-          >
+          <p className="mt-2 max-w-[640px] text-[14px] leading-relaxed text-muted-foreground">
             {description}
           </p>
         ) : null}

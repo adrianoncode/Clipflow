@@ -94,31 +94,39 @@ export default async function NewContentPage({ params }: NewContentPageProps) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-8 p-4 sm:p-8">
-      {/* ── Breadcrumb ── */}
+    <div className="mx-auto w-full max-w-3xl space-y-9 p-4 sm:p-8">
+      {/* ── Breadcrumb ── modern sans, sentence-case, hairline separators */}
       <nav
-        className="flex flex-wrap items-center gap-1 font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted-foreground"
+        className="flex flex-wrap items-center gap-1 text-[12px] text-muted-foreground/80"
         aria-label="Breadcrumb"
       >
         <Link
           href={`/workspace/${params.id}`}
-          className="rounded-md px-1.5 py-0.5 transition-colors hover:bg-muted/60 hover:text-foreground"
+          className="rounded-md px-1.5 py-0.5 font-medium transition-colors hover:bg-muted/60 hover:text-foreground"
         >
           {workspace.name}
         </Link>
-        <ChevronRight className="h-3 w-3 text-muted-foreground/40" />
+        <span aria-hidden className="select-none text-muted-foreground/40">/</span>
         <Link
           href={`/workspace/${params.id}`}
-          className="rounded-md px-1.5 py-0.5 transition-colors hover:bg-muted/60 hover:text-foreground"
+          className="rounded-md px-1.5 py-0.5 font-medium transition-colors hover:bg-muted/60 hover:text-foreground"
         >
           Content
         </Link>
-        <ChevronRight className="h-3 w-3 text-muted-foreground/40" />
-        <span className="rounded-md px-1.5 py-0.5 font-semibold text-foreground">New</span>
+        <span aria-hidden className="select-none text-muted-foreground/40">/</span>
+        <span
+          className="rounded-md px-1.5 py-0.5 font-semibold tracking-tight text-foreground"
+          style={{
+            fontFamily:
+              'var(--font-inter-tight), var(--font-inter), sans-serif',
+          }}
+        >
+          New
+        </span>
       </nav>
 
       <PageHeader
-        eyebrow="Import"
+        category="Import"
         title="Drop a recording in."
         description="Paste a link, upload a file, or record straight in the browser. Clipflow figures out the format and starts processing — no per-source forms."
       />
@@ -132,8 +140,13 @@ export default async function NewContentPage({ params }: NewContentPageProps) {
         {/* ── Source-type chips: visual hint of what's accepted ── */}
         <div className="flex flex-wrap items-center gap-1.5 px-1">
           <span
-            className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70"
+            className="inline-flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75"
+            style={{
+              fontFamily:
+                'var(--font-inter-tight), var(--font-inter), sans-serif',
+            }}
           >
+            <span aria-hidden className="inline-block h-px w-4 bg-primary/40" />
             We handle
           </span>
           {SOURCE_TYPES.slice(0, 4).map((s) => {
@@ -141,7 +154,11 @@ export default async function NewContentPage({ params }: NewContentPageProps) {
             return (
               <span
                 key={s.label}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-2 py-0.5 text-[11px] font-semibold text-foreground"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-2.5 py-0.5 text-[11.5px] font-semibold tracking-tight text-foreground transition-colors hover:border-primary/30 hover:text-primary"
+                style={{
+                  fontFamily:
+                    'var(--font-inter-tight), var(--font-inter), sans-serif',
+                }}
                 title={s.hint}
               >
                 <Icon className="h-3 w-3 opacity-70" />
@@ -154,36 +171,92 @@ export default async function NewContentPage({ params }: NewContentPageProps) {
 
       {/* ── What happens next — preview the pipeline so users build trust ── */}
       <section className="space-y-3">
-        <p
-          className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground"
-        >
-          What happens next
-        </p>
+        <header className="space-y-1">
+          <p
+            className="inline-flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85"
+            style={{
+              fontFamily:
+                'var(--font-inter-tight), var(--font-inter), sans-serif',
+            }}
+          >
+            <span aria-hidden className="inline-block h-px w-6 bg-primary/40" />
+            What happens next
+          </p>
+          <p className="text-[13px] leading-relaxed text-muted-foreground">
+            Three steps. The first two run in the background — you keep working.
+          </p>
+        </header>
         <ol className="grid gap-2 sm:grid-cols-3">
           {PIPELINE_STEPS.map((step, i) => {
             const Icon = step.icon
+            const isReady = step.estimate === 'Ready'
             return (
               <li
                 key={i}
-                className="rounded-2xl border bg-card p-4"
+                className="relative overflow-hidden rounded-2xl border border-border/60 bg-card p-4"
+                style={{
+                  boxShadow:
+                    '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 10px 24px -16px rgba(42,26,61,0.18)',
+                }}
               >
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent"
+                />
                 <div className="flex items-center gap-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <span
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-primary"
+                    style={{
+                      background:
+                        'linear-gradient(140deg, rgba(124,58,237,0.14) 0%, rgba(124,58,237,0.06) 100%)',
+                    }}
+                  >
                     <Icon className="h-3.5 w-3.5" />
                   </span>
                   <span
-                    className="font-mono text-[10px] font-bold tabular-nums text-muted-foreground"
+                    className="text-[10.5px] font-bold tabular-nums tracking-[0.18em] text-primary/70"
+                    style={{
+                      fontFamily:
+                        'var(--font-inter-tight), var(--font-inter), sans-serif',
+                    }}
                   >
                     0{i + 1}
                   </span>
                   <span
-                    className="ml-auto rounded-full bg-muted/60 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground"
+                    className={`ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold tabular-nums ${
+                      isReady
+                        ? 'bg-emerald-500/[0.12] text-emerald-700'
+                        : 'border border-border/60 bg-background text-muted-foreground'
+                    }`}
+                    style={
+                      isReady
+                        ? undefined
+                        : {
+                            fontFamily:
+                              'var(--font-jetbrains-mono), monospace',
+                          }
+                    }
                   >
-                    {step.estimate}
+                    {isReady ? (
+                      <>
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        Ready
+                      </>
+                    ) : (
+                      step.estimate
+                    )}
                   </span>
                 </div>
-                <p className="mt-3 text-[13px] font-bold text-foreground">{step.label}</p>
-                <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+                <p
+                  className="mt-3 text-[14px] font-bold tracking-tight text-foreground"
+                  style={{
+                    fontFamily:
+                      'var(--font-inter-tight), var(--font-inter), sans-serif',
+                  }}
+                >
+                  {step.label}
+                </p>
+                <p className="mt-1 text-[12.5px] leading-relaxed text-muted-foreground">
                   {step.body}
                 </p>
               </li>
@@ -193,20 +266,43 @@ export default async function NewContentPage({ params }: NewContentPageProps) {
       </section>
 
       {/* ── Advanced source pickers (upload widget, audio recorder, RSS) ── */}
-      <details className="group rounded-2xl border bg-card">
-        <summary
-          className="flex cursor-pointer items-center justify-between gap-3 px-5 py-3.5 text-[13px] font-semibold text-foreground [&::-webkit-details-marker]:hidden"
-        >
-          <span className="inline-flex items-center gap-2">
-            <Film className="h-3.5 w-3.5 text-muted-foreground" />
+      <details
+        className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card"
+        style={{
+          boxShadow:
+            '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 10px 24px -16px rgba(42,26,61,0.18)',
+        }}
+      >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent"
+        />
+        <summary className="flex cursor-pointer items-center justify-between gap-3 px-5 py-4 text-[13.5px] font-bold tracking-tight text-foreground [&::-webkit-details-marker]:hidden">
+          <span
+            className="inline-flex items-center gap-2.5"
+            style={{
+              fontFamily:
+                'var(--font-inter-tight), var(--font-inter), sans-serif',
+            }}
+          >
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-border/60 bg-background text-muted-foreground/80 transition-colors group-hover:border-primary/30 group-hover:text-primary">
+              <Film className="h-3.5 w-3.5" />
+            </span>
             Other sources
-            <span className="font-mono text-[10px] font-normal uppercase tracking-[0.12em] text-muted-foreground">
-              upload · record · RSS
+            <span className="ml-1 hidden items-center gap-1 sm:inline-flex">
+              {['Upload', 'Record', 'RSS'].map((s) => (
+                <span
+                  key={s}
+                  className="rounded-full border border-border/60 bg-background px-2 py-0.5 text-[10.5px] font-medium text-muted-foreground"
+                >
+                  {s}
+                </span>
+              ))}
             </span>
           </span>
           <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
         </summary>
-        <div className="border-t px-5 py-5">
+        <div className="border-t border-border/60 px-5 py-5">
           <NewContentTabs workspaceId={params.id} hasOpenAiKey={hasOpenAiKey} />
         </div>
       </details>

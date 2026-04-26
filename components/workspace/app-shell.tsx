@@ -98,9 +98,15 @@ const SHELL_STYLES = `
 .lv2-shell .lv2s-sans-d { font-family: var(--font-inter-tight), sans-serif; letter-spacing: -.02em; }
 .lv2-shell .lv2s-mono { font-family: var(--font-jetbrains-mono), monospace; }
 .lv2-shell .lv2s-mono-label {
-  font-family: var(--font-jetbrains-mono), monospace;
-  font-size: 9px; letter-spacing: .18em; text-transform: uppercase;
-  color: var(--lv2s-muted); opacity: .6;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .22em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--lv2s-primary) 75%, transparent);
+}
+.lv2-shell .lv2s-mono-label::before {
+  content: ''; display: inline-block; height: 1px; width: 18px;
+  background: color-mix(in srgb, var(--lv2s-primary) 38%, transparent);
 }
 .lv2-shell .lv2s-chip {
   display: inline-flex; align-items: center; gap: .25rem;
