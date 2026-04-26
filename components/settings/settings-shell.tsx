@@ -35,7 +35,7 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-8 sm:py-10">
-      <div className="grid gap-8 md:grid-cols-[180px_1fr] lg:gap-12">
+      <div className="grid gap-8 md:grid-cols-[220px_1fr] lg:gap-10">
         <aside className="md:sticky md:top-6 md:self-start">
           <SettingsNav />
         </aside>
