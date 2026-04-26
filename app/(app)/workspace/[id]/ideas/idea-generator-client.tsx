@@ -15,6 +15,7 @@ import Link from 'next/link'
 import { generateIdeasAction } from './actions'
 import type { ContentIdea } from './actions'
 import { copyToClipboard } from '@/lib/utils/copy-to-clipboard'
+import { IdeasPreview } from '@/components/ideas/ideas-preview'
 
 const PLATFORM_LABELS: Record<string, string> = {
   tiktok: 'TikTok',
@@ -120,7 +121,9 @@ export function IdeaGeneratorClient({ workspaceId }: { workspaceId: string }) {
             ))}
           </div>
         </div>
-      ) : null}
+      ) : (
+        <IdeasPreview />
+      )}
     </div>
   )
 }
