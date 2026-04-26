@@ -1,7 +1,9 @@
 import { getActiveBrandVoice } from '@/lib/brand-voice/get-active-brand-voice'
 import { getBrandKit } from '@/lib/brand-kit/get-brand-kit'
+import { getActiveNiche } from '@/lib/niche/get-active-niche'
 import { VoicePill } from '@/components/studio/voice-pill'
 import { KitPill } from '@/components/studio/kit-pill'
+import { NichePill } from '@/components/studio/niche-pill'
 
 interface StudioContextRailProps {
   workspaceId: string
@@ -18,9 +20,10 @@ interface StudioContextRailProps {
  * submit.
  */
 export async function StudioContextRail({ workspaceId }: StudioContextRailProps) {
-  const [voice, kit] = await Promise.all([
+  const [voice, kit, niche] = await Promise.all([
     getActiveBrandVoice(workspaceId),
     getBrandKit(workspaceId),
+    getActiveNiche(workspaceId),
   ])
 
   return (
@@ -34,9 +37,10 @@ export async function StudioContextRail({ workspaceId }: StudioContextRailProps)
         </span>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-3">
         <VoicePill workspaceId={workspaceId} voice={voice} />
         <KitPill workspaceId={workspaceId} kit={kit} />
+        <NichePill workspaceId={workspaceId} niche={niche} />
       </div>
     </section>
   )
