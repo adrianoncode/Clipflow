@@ -249,8 +249,7 @@ export function AppShell({
       label: 'Workspace',
       items: [
         { href: '/dashboard', label: 'Dashboard', icon: Home },
-        { href: `/workspace/${currentWorkspaceId}`, label: 'Content', icon: FileVideo },
-        { href: `/workspace/${currentWorkspaceId}/content/new`, label: 'Import', icon: Sparkles },
+        { href: `/workspace/${currentWorkspaceId}`, label: 'Library', icon: FileVideo },
         { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Drafts', icon: CheckSquare },
         {
           href: `/workspace/${currentWorkspaceId}/schedule`,
@@ -335,7 +334,7 @@ export function AppShell({
 
   const mobileItems: NavItem[] = [
     { href: '/dashboard', label: 'Home', icon: Home },
-    { href: `/workspace/${currentWorkspaceId}`, label: 'Content', icon: FileVideo },
+    { href: `/workspace/${currentWorkspaceId}`, label: 'Library', icon: FileVideo },
     { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Drafts', icon: CheckSquare },
     {
       href: `/workspace/${currentWorkspaceId}/schedule`,

@@ -3,23 +3,19 @@ import { ArrowRight, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 /**
- * EmptyState — two visual variants for two roles.
+ * EmptyState — first-time hero for a page that has no rows yet.
  *
  *   variant="hero"  (default)
- *     Used on whole-page first-time experiences. Three-column layout:
- *     a stylised PREVIEW of what the populated state will look like
- *     (passed via `preview`), a tight three-step "how this works" list,
- *     and a primary CTA. No more dashed-border placeholder feel.
+ *     A single, focused, page-owning card. Violet-gradient visual chip
+ *     on the left, editorial title, single body line, primary CTA,
+ *     optional secondary link. No more fake "preview" thumbnails or
+ *     boilerplate "1, 2, 3" how-it-works list — those read as onboarding
+ *     filler. Pages that genuinely need a steps row can opt in by
+ *     passing `steps`; same for `preview`.
  *
  *   variant="compact"
- *     Used inside lists / panels where a hero-sized empty state would
- *     dominate. Falls back to the legacy centered-icon-text-button
- *     layout but with sharper typography and no dashed border.
- *
- * Both variants share the same prop surface so existing callers can
- * keep using <EmptyState icon=... title=... description=.../> and
- * just inherit the new look. Pass `preview` + `steps` to opt into
- * the richer hero treatment.
+ *     Inline empty state for sub-panels (e.g. an empty section inside
+ *     a larger page). Same prop surface, smaller chassis.
  */
 
 interface Step {
@@ -35,11 +31,14 @@ interface EmptyStateProps {
   actionHref: string
   secondaryLabel?: string
   secondaryHref?: string
-  /** Render mode. Defaults to "hero" — the new big preview layout. */
+  /** Render mode. Defaults to "hero" — the new big premium card. */
   variant?: 'hero' | 'compact'
-  /** Numbered list of micro-steps shown next to the preview. */
+  /** Optional numbered micro-steps shown beneath the description.
+   *  Most pages don't need this; pipeline / library skip it. */
   steps?: Step[]
-  /** A JSX preview of what the populated state will look like. */
+  /** Optional rich preview node rendered to the right on desktop.
+   *  Most pages don't need this — keeping the hero tight reads cleaner
+   *  than a fake-data sample. */
   preview?: ReactNode
 }
 
@@ -57,12 +56,27 @@ export function EmptyState({
 }: EmptyStateProps) {
   if (variant === 'compact') {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-2xl border bg-card/40 px-6 py-12 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          <Icon className="h-5 w-5" />
-        </div>
+      <div
+        className="relative flex flex-col items-center gap-4 overflow-hidden rounded-2xl border border-border/60 bg-card px-6 py-10 text-center"
+        style={{
+          boxShadow:
+            '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 10px 24px -16px rgba(42,26,61,0.18)',
+        }}
+      >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent"
+        />
+        <VisualChip Icon={Icon} size="sm" />
         <div className="max-w-md space-y-1.5">
-          <p className="text-[15px] font-bold text-foreground">{title}</p>
+          <p
+            className="text-[15px] font-bold tracking-tight text-foreground"
+            style={{
+              fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
+            }}
+          >
+            {title}
+          </p>
           <p className="text-[13px] leading-relaxed text-muted-foreground">
             {description}
           </p>
@@ -78,33 +92,76 @@ export function EmptyState({
   }
 
   // Hero — page-owning empty state.
+  const hasAside = Boolean(preview) || Boolean(steps && steps.length > 0)
+
   return (
-    <div className="overflow-hidden rounded-3xl border bg-card">
-      <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-        {/* Left: title + steps + CTA */}
+    <div
+      className="relative overflow-hidden rounded-3xl border border-border/60 bg-card"
+      style={{
+        boxShadow:
+          '0 1px 0 rgba(255,255,255,0.7) inset, 0 1px 2px rgba(42,26,61,0.04), 0 22px 44px -28px rgba(42,26,61,0.24)',
+      }}
+    >
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -left-16 -top-20 h-56 w-56 rounded-full"
+        style={{
+          background:
+            'radial-gradient(circle, rgba(124,58,237,0.16) 0%, rgba(124,58,237,0) 60%)',
+        }}
+      />
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-primary/35 to-transparent"
+      />
+
+      <div
+        className={`relative grid gap-8 p-6 sm:p-9 ${
+          hasAside ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-10' : ''
+        }`}
+      >
+        {/* Left: visual + title + body + CTA */}
         <div className="flex flex-col">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Icon className="h-4 w-4" />
-          </div>
-          <h2 className="mt-4 text-[22px] font-bold leading-tight text-foreground sm:text-[26px]">
+          <VisualChip Icon={Icon} />
+          <h2
+            className="mt-5 text-[26px] leading-[1.06] tracking-tight text-foreground sm:text-[30px]"
+            style={{
+              fontFamily: 'var(--font-instrument-serif), serif',
+              letterSpacing: '-.015em',
+              color: '#2A1A3D',
+            }}
+          >
             {title}
           </h2>
-          <p className="mt-2 max-w-[420px] text-[14px] leading-relaxed text-muted-foreground">
+          <p className="mt-2.5 max-w-[460px] text-[14px] leading-relaxed text-muted-foreground">
             {description}
           </p>
 
           {steps && steps.length > 0 ? (
-            <ol className="mt-6 space-y-3.5">
+            <ol className="mt-6 space-y-3">
               {steps.map((s, i) => (
                 <li key={i} className="flex gap-3">
                   <span
-                    className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground"
-                    style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                    className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10.5px] font-bold text-white"
+                    style={{
+                      background:
+                        'linear-gradient(140deg, #7C3AED 0%, #4B0FB8 100%)',
+                      fontFamily:
+                        'var(--font-inter-tight), var(--font-inter), sans-serif',
+                      boxShadow:
+                        '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 10px -4px rgba(75,15,184,0.55)',
+                    }}
                   >
                     {i + 1}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-[13.5px] font-semibold text-foreground">
+                    <p
+                      className="text-[13.5px] font-bold tracking-tight text-foreground"
+                      style={{
+                        fontFamily:
+                          'var(--font-inter-tight), var(--font-inter), sans-serif',
+                      }}
+                    >
                       {s.title}
                     </p>
                     <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted-foreground">
@@ -126,11 +183,9 @@ export function EmptyState({
           </div>
         </div>
 
-        {/* Right: preview of the populated state */}
+        {/* Right: optional rich preview */}
         {preview ? (
-          <div className="relative">
-            {/* Subtle dashed grid backdrop — gives the preview "depth"
-                without falling back to the cheap dashed-border look. */}
+          <aside className="relative">
             <div
               aria-hidden
               className="pointer-events-none absolute inset-0 -m-3 rounded-3xl"
@@ -138,7 +193,7 @@ export function EmptyState({
                 background:
                   'radial-gradient(circle at 1px 1px, hsl(var(--border)) 1px, transparent 0)',
                 backgroundSize: '14px 14px',
-                opacity: 0.4,
+                opacity: 0.35,
                 maskImage:
                   'radial-gradient(ellipse at center, black 40%, transparent 80%)',
                 WebkitMaskImage:
@@ -146,16 +201,48 @@ export function EmptyState({
               }}
             />
             <div className="relative">{preview}</div>
-            <p
-              className="mt-3 text-center text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground/70"
-              style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
-            >
-              Preview · what your library will look like
-            </p>
-          </div>
+          </aside>
         ) : null}
       </div>
     </div>
+  )
+}
+
+function VisualChip({
+  Icon,
+  size = 'md',
+}: {
+  Icon: LucideIcon
+  size?: 'sm' | 'md'
+}) {
+  const dim = size === 'sm' ? 44 : 56
+  const iconSize = size === 'sm' ? 18 : 22
+  return (
+    <span
+      className="relative flex shrink-0 items-center justify-center rounded-2xl text-white"
+      style={{
+        width: dim,
+        height: dim,
+        background:
+          'linear-gradient(140deg, #7C3AED 0%, #4B0FB8 60%, #2A1A3D 100%)',
+        boxShadow:
+          '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(75,15,184,0.55)',
+      }}
+      aria-hidden
+    >
+      <span
+        className="pointer-events-none absolute inset-1 rounded-[14px]"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 45%)',
+        }}
+      />
+      <Icon
+        className="relative"
+        style={{ width: iconSize, height: iconSize }}
+        strokeWidth={1.7}
+      />
+    </span>
   )
 }
 
@@ -174,7 +261,10 @@ function ActionRow({
     <>
       <Link
         href={href}
-        className="group inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-[13px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/25"
+        className="group inline-flex items-center gap-2 rounded-xl bg-foreground px-4 py-2.5 text-[13px] font-bold tracking-tight text-background shadow-sm shadow-foreground/[0.18] transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-foreground/[0.28]"
+        style={{
+          fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
+        }}
       >
         {label}
         <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />

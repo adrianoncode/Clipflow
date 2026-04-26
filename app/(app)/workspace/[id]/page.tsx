@@ -4,13 +4,14 @@ import {
   AlertCircle,
   CheckCircle2,
   ChevronRight,
+  FileVideo,
   Loader2,
   Plus,
   Wand2,
 } from 'lucide-react'
 
 import { ContentListWithSearch } from '@/components/content/content-list-with-search'
-import { PageHeader } from '@/components/ui/page-header'
+import { SettingsHero } from '@/components/settings/settings-hero'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getContentItems } from '@/lib/content/get-content-items'
 import { findDuplicateIds } from '@/lib/content/find-duplicates'
@@ -50,66 +51,80 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
   // Find first ready item without outputs for a CTA
   const firstReady = items.find((i) => i.status === 'ready')
 
-  return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
+  const heroBody =
+    items.length === 0
+      ? 'Every recording you import lands here as a row with a status pill — ready to slice into platform drafts.'
+      : `${items.length} recording${items.length === 1 ? '' : 's'} in this workspace · ${readyCount} ready, ${processingCount} processing.`
 
-      {/* ── Header ──
-          Subtitle is suppressed on empty libraries — the new EmptyState
-          card already surfaces the explanation, and a redundant
-          subtitle "Import your first video to get started" reads as
-          double-talk. Once content exists we surface a count so the
-          header doubles as a stats glance. */}
-      <PageHeader
-        eyebrow={`${workspace.name} · Content`}
-        title="Your library."
-        description={
-          items.length === 0
-            ? undefined
-            : `${items.length} item${items.length === 1 ? '' : 's'} in this workspace.`
+  return (
+    <div className="mx-auto w-full max-w-4xl space-y-7 p-4 sm:p-8">
+      <SettingsHero
+        visual={
+          <span
+            className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white sm:h-16 sm:w-16"
+            style={{
+              background:
+                'linear-gradient(140deg, #7C3AED 0%, #4B0FB8 60%, #2A1A3D 100%)',
+              boxShadow:
+                '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(75,15,184,0.55)',
+            }}
+            aria-hidden
+          >
+            <span
+              className="pointer-events-none absolute inset-1 rounded-[14px]"
+              style={{
+                background:
+                  'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 45%)',
+              }}
+            />
+            <FileVideo className="relative h-6 w-6 sm:h-7 sm:w-7" strokeWidth={1.7} />
+          </span>
         }
-        actions={
-          canCreate && items.length > 0 ? (
+        eyebrow={`${workspace.name} · Library`}
+        title="Your library."
+        body={heroBody}
+        action={
+          canCreate ? (
             <Link
               href={`/workspace/${params.id}/content/new`}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-[13px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25"
+              className="group inline-flex h-10 items-center gap-1.5 rounded-xl bg-foreground px-4 text-[13px] font-bold tracking-tight text-background shadow-sm shadow-foreground/[0.18] transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-foreground/[0.28]"
+              style={{
+                fontFamily:
+                  'var(--font-inter-tight), var(--font-inter), sans-serif',
+              }}
             >
               <Plus className="h-3.5 w-3.5" />
-              Import content
+              Import recording
             </Link>
-          ) : undefined
+          ) : null
         }
       />
 
-      {/* ── Status stats strip ── */}
+      {/* ── Status stats strip ── compact pills, only when content exists */}
       {items.length > 0 && (
-        <div className="grid grid-cols-3 gap-3">
-          <div className="flex items-center gap-3 rounded-xl border border-emerald-200/50 bg-emerald-50/30 px-4 py-3 transition-all hover:shadow-sm">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-            </div>
-            <div>
-              <p className="font-mono text-xl font-bold tabular-nums leading-none">{readyCount}</p>
-              <p className="text-[11px] font-medium text-emerald-700/70">Ready</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 rounded-xl border border-amber-200/50 bg-amber-50/30 px-4 py-3 transition-all hover:shadow-sm">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100">
-              <Loader2 className={`h-4 w-4 text-amber-600 ${processingCount > 0 ? 'animate-spin' : ''}`} />
-            </div>
-            <div>
-              <p className="font-mono text-xl font-bold tabular-nums leading-none">{processingCount}</p>
-              <p className="text-[11px] font-medium text-amber-700/70">Processing</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 rounded-xl border border-red-200/50 bg-red-50/30 px-4 py-3 transition-all hover:shadow-sm">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-100">
-              <AlertCircle className="h-4 w-4 text-red-500" />
-            </div>
-            <div>
-              <p className="font-mono text-xl font-bold tabular-nums leading-none">{failedCount}</p>
-              <p className="text-[11px] font-medium text-red-600/70">Failed</p>
-            </div>
-          </div>
+        <div className="grid grid-cols-3 gap-2.5">
+          <StatChip
+            tone="ready"
+            value={readyCount}
+            label="Ready"
+            icon={<CheckCircle2 className="h-4 w-4" />}
+          />
+          <StatChip
+            tone="processing"
+            value={processingCount}
+            label="Processing"
+            icon={
+              <Loader2
+                className={`h-4 w-4 ${processingCount > 0 ? 'animate-spin' : ''}`}
+              />
+            }
+          />
+          <StatChip
+            tone="failed"
+            value={failedCount}
+            label="Failed"
+            icon={<AlertCircle className="h-4 w-4" />}
+          />
         </div>
       )}
 
@@ -180,6 +195,69 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+function StatChip({
+  tone,
+  value,
+  label,
+  icon,
+}: {
+  tone: 'ready' | 'processing' | 'failed'
+  value: number
+  label: string
+  icon: React.ReactNode
+}) {
+  const palette = {
+    ready: {
+      iconBg: 'bg-emerald-500/[0.12] text-emerald-700',
+      labelColor: 'text-emerald-700/80',
+      ring: 'border-emerald-500/20',
+      glow: 'rgba(16,185,129,0.10)',
+    },
+    processing: {
+      iconBg: 'bg-amber-500/[0.12] text-amber-700',
+      labelColor: 'text-amber-700/80',
+      ring: 'border-amber-500/25',
+      glow: 'rgba(245,158,11,0.10)',
+    },
+    failed: {
+      iconBg: 'bg-red-500/[0.12] text-red-600',
+      labelColor: 'text-red-600/80',
+      ring: 'border-red-500/25',
+      glow: 'rgba(239,68,68,0.10)',
+    },
+  }[tone]
+  return (
+    <div
+      className={`relative flex items-center gap-3 overflow-hidden rounded-xl border ${palette.ring} bg-card px-4 py-3 transition-all`}
+      style={{
+        boxShadow: `0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 8px 18px -14px ${palette.glow}`,
+      }}
+    >
+      <span
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${palette.iconBg}`}
+      >
+        {icon}
+      </span>
+      <div>
+        <p
+          className="font-mono text-[20px] font-bold tabular-nums leading-none text-foreground"
+          style={{ fontFamily: 'var(--font-inter-tight), sans-serif' }}
+        >
+          {value}
+        </p>
+        <p
+          className={`mt-1 text-[10.5px] font-bold uppercase tracking-[0.18em] ${palette.labelColor}`}
+          style={{
+            fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
+          }}
+        >
+          {label}
+        </p>
+      </div>
     </div>
   )
 }
