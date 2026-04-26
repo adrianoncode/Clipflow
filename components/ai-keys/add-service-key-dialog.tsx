@@ -3,6 +3,7 @@
 import { useCallback } from 'react'
 import { ExternalLink } from 'lucide-react'
 
+import { BrandLogo } from '@/components/ai-keys/brand-logo'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -86,9 +87,7 @@ export function AddServiceKeyDialog({
       >
         <DialogHeader className="flex-row items-start justify-between gap-4 border-b border-border/60 px-5 py-4 space-y-0 text-left">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-mono text-sm font-bold shadow-sm bg-primary text-primary-foreground">
-              {spec.monogram}
-            </div>
+            <BrandLogo provider={spec.provider} size={40} />
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
                 Connect service

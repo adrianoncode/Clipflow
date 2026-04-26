@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { ExternalLink, Plus, Zap, Key } from 'lucide-react'
+import { ArrowUpRight, Plus, Sparkles } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
+import { BrandLogo } from '@/components/ai-keys/brand-logo'
 import { DeleteAiKeyButton } from '@/components/ai-keys/delete-ai-key-button'
 import { AddServiceKeyDialog } from '@/components/ai-keys/add-service-key-dialog'
 import type { ServiceSpec } from '@/components/ai-keys/service-directory'
@@ -17,21 +17,19 @@ interface ServiceCardProps {
   isOwner: boolean
 }
 
-// Per-provider brand colors — monogram chip background + text
-const PROVIDER_COLORS: Record<string, { bg: string; text: string; glow: string }> = {
-  openai:       { bg: 'bg-zinc-900',     text: 'text-white',        glow: 'shadow-zinc-900/20' },
-  anthropic:    { bg: 'bg-[#d4580b]',    text: 'text-white',        glow: 'shadow-orange-500/20' },
-  google:       { bg: 'bg-blue-600',     text: 'text-white',        glow: 'shadow-blue-600/20' },
-  shotstack:    { bg: 'bg-violet-600',   text: 'text-white',        glow: 'shadow-violet-600/20' },
-  replicate:    { bg: 'bg-indigo-600',   text: 'text-white',        glow: 'shadow-indigo-600/20' },
-  elevenlabs:   { bg: 'bg-amber-400',    text: 'text-zinc-900',     glow: 'shadow-amber-400/20' },
-  'upload-post':{ bg: 'bg-emerald-500',  text: 'text-white',        glow: 'shadow-emerald-500/20' },
-}
-
-function getProviderColor(provider: string) {
-  return PROVIDER_COLORS[provider] ?? { bg: 'bg-primary', text: 'text-primary-foreground', glow: 'shadow-primary/20' }
-}
-
+/**
+ * One row inside an AI-keys section. Designed to sit flush with the
+ * SettingsSection card — no double border, no nested shadow stack.
+ *
+ * Layout:
+ *   [logo]  Name  ·  status pill   ·  free-tier whisper
+ *           description
+ *           cost line                                       [Connect →]
+ *
+ * Connected state expands a hairline-divided sub-rail with the masked
+ * preview, the manage-on-provider link, and a quiet "Add another"
+ * affordance for users who rotate keys per workspace.
+ */
 export function ServiceCard({
   spec,
   connectedKeys,
@@ -40,69 +38,74 @@ export function ServiceCard({
 }: ServiceCardProps) {
   const [adding, setAdding] = useState(false)
   const isConnected = connectedKeys.length > 0
-  const colors = getProviderColor(spec.provider)
 
   return (
     <div
-      className={`group relative flex flex-col overflow-hidden rounded-2xl border transition-all duration-300 ${
-        isConnected
-          ? 'border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-background shadow-sm hover:-translate-y-1 hover:border-emerald-300 hover:shadow-xl hover:shadow-emerald-500/[0.08]'
-          : 'border-border/50 bg-card hover:-translate-y-1 hover:border-primary/25 hover:shadow-xl hover:shadow-primary/[0.08]'
+      className={`group relative transition-colors ${
+        isConnected ? 'bg-emerald-50/[0.35]' : 'hover:bg-muted/[0.18]'
       }`}
     >
-      {/* Shine sweep on hover */}
-      <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-
-      {/* Connected accent bar */}
+      {/* hairline accent on the left when connected */}
       {isConnected && (
-        <div className="absolute left-0 top-0 h-full w-0.5 bg-gradient-to-b from-emerald-400 to-emerald-500/50" />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute left-0 top-0 h-full w-[2px] bg-gradient-to-b from-emerald-400/0 via-emerald-400 to-emerald-400/0"
+        />
       )}
 
-      <div className="flex items-start gap-4 p-5">
-        {/* Monogram chip */}
-        <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl font-mono text-sm font-bold shadow-md transition-transform duration-300 group-hover:scale-105 group-hover:rotate-1 ${colors.bg} ${colors.text} ${colors.glow}`}
-        >
-          {spec.monogram}
-        </div>
+      <div className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-start sm:gap-5 sm:px-6 sm:py-6">
+        <BrandLogo
+          provider={spec.provider}
+          size={44}
+          className="transition-transform duration-300 group-hover:-rotate-[2deg] group-hover:scale-[1.04]"
+        />
 
-        {/* Title + description */}
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h4 className="text-sm font-bold text-foreground">{spec.name}</h4>
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+            <h3
+              className="text-[15px] font-bold leading-tight tracking-tight text-foreground"
+              style={{
+                fontFamily:
+                  'var(--font-inter-tight), var(--font-inter), sans-serif',
+              }}
+            >
+              {spec.name}
+            </h3>
             {isConnected ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/[0.12] px-2 py-0.5 text-[10.5px] font-semibold text-emerald-700">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                </span>
                 Connected
               </span>
             ) : (
-              <span className="inline-flex items-center rounded-full border border-border/70 bg-muted/40 px-2 py-0.5 font-mono text-[10px] tracking-wide text-muted-foreground/70">
+              <span className="inline-flex items-center rounded-full border border-border/70 bg-background px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/80">
                 Not connected
               </span>
             )}
-            {spec.freeTierNote && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/[0.08] px-2 py-0.5 text-[10px] font-semibold text-primary/80">
-                <Zap className="h-2.5 w-2.5" />
+            {!isConnected && spec.freeTierNote && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/[0.08] px-2 py-0.5 text-[10.5px] font-semibold text-primary">
+                <Sparkles className="h-2.5 w-2.5" />
                 {spec.freeTierNote}
               </span>
             )}
           </div>
 
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          <p className="text-[13px] leading-relaxed text-muted-foreground">
             {spec.description}
           </p>
 
-          <p className="mt-1.5 font-mono text-[10px] text-muted-foreground/50">
+          <p className="font-mono text-[10.5px] tracking-tight text-muted-foreground/55">
             {spec.costHint}
           </p>
 
-          {/* Platform pills for publishing services */}
           {spec.publishPlatforms && spec.publishPlatforms.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1 pt-1">
               {spec.publishPlatforms.map((platform) => (
                 <span
                   key={platform}
-                  className="rounded-full border border-border/60 bg-muted/30 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+                  className="rounded-full border border-border/60 bg-background px-2 py-0.5 text-[10.5px] font-medium text-muted-foreground"
                 >
                   {platform}
                 </span>
@@ -111,44 +114,43 @@ export function ServiceCard({
           )}
         </div>
 
-        {/* Action area — only for owners when not connected */}
         {isOwner && !isConnected && (
-          <div className="flex shrink-0 flex-col items-end gap-1.5">
-            <Button size="sm" onClick={() => setAdding(true)}>
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
+          <div className="flex shrink-0 flex-col items-stretch gap-1.5 sm:items-end">
+            <button
+              type="button"
+              onClick={() => setAdding(true)}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-foreground px-3.5 text-[12.5px] font-bold text-background shadow-sm shadow-foreground/[0.18] transition-all hover:-translate-y-px hover:shadow-md hover:shadow-foreground/25"
+            >
+              <Plus className="h-3.5 w-3.5" />
               Connect
-            </Button>
+            </button>
             <a
               href={spec.signupUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-0.5 text-[10px] font-medium text-muted-foreground/60 transition-colors hover:text-primary"
+              className="inline-flex items-center justify-center gap-0.5 text-[10.5px] font-medium text-muted-foreground/70 transition-colors hover:text-primary sm:justify-end"
             >
-              Get your key
-              <ExternalLink className="h-2.5 w-2.5" />
+              Get a key
+              <ArrowUpRight className="h-2.5 w-2.5" />
             </a>
           </div>
         )}
       </div>
 
-      {/* Connected keys footer */}
       {isConnected && (
-        <div className="border-t border-emerald-100/80 bg-emerald-50/30 px-5 py-3">
+        <div className="border-t border-emerald-500/15 bg-emerald-500/[0.04] px-5 py-3 sm:px-6">
           <ul className="space-y-2">
             {connectedKeys.map((key) => (
               <li
                 key={key.id}
                 className="flex items-center justify-between gap-3"
               >
-                <div className="flex min-w-0 items-center gap-2">
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-emerald-100">
-                    <Key className="h-3 w-3 text-emerald-600" />
-                  </div>
-                  <span className="font-mono text-[11px] text-muted-foreground">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <span className="font-mono text-[11.5px] tracking-tight text-foreground/80">
                     {key.masked_preview ?? '••••••••••••'}
                   </span>
                   {key.label && (
-                    <span className="truncate text-[11px] text-muted-foreground/60">
+                    <span className="truncate rounded-full bg-background px-2 py-0.5 text-[10.5px] font-medium text-muted-foreground">
                       {key.label}
                     </span>
                   )}
@@ -165,23 +167,23 @@ export function ServiceCard({
           </ul>
 
           {isOwner && (
-            <div className="mt-2.5 flex items-center justify-between">
+            <div className="mt-3 flex items-center justify-between gap-3">
               <a
                 href={spec.keyDashboardUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground/50 transition-colors hover:text-primary"
+                className="inline-flex items-center gap-0.5 text-[10.5px] font-medium text-muted-foreground/70 transition-colors hover:text-primary"
               >
                 Manage at {spec.name}
-                <ExternalLink className="h-2.5 w-2.5" />
+                <ArrowUpRight className="h-2.5 w-2.5" />
               </a>
               <button
                 type="button"
                 onClick={() => setAdding(true)}
-                className="inline-flex items-center gap-1 rounded-lg border border-border/60 bg-background px-2.5 py-1 text-[10px] font-semibold text-muted-foreground transition-all hover:border-primary/30 hover:text-primary"
+                className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-background px-2.5 py-1 text-[10.5px] font-semibold text-muted-foreground transition-all hover:-translate-y-px hover:border-foreground/30 hover:text-foreground"
               >
                 <Plus className="h-3 w-3" />
-                Add key
+                Add another
               </button>
             </div>
           )}
@@ -198,3 +200,5 @@ export function ServiceCard({
     </div>
   )
 }
+
+export type { ServiceCardProps }
