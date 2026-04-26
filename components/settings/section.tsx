@@ -1,46 +1,51 @@
 import type { ReactNode } from 'react'
 
 /**
- * Editorial settings primitives — replaces the bloated
- * "rounded-3xl SectionCard with header" pattern with a denser
- * data-sheet style: mono section labels, hairline-divided rows,
- * label/body/action in a single line.
+ * Designer-level settings primitives. Reads like a polished SaaS
+ * console (Linear / Vercel / Stripe) — not a developer data-sheet.
  *
- * Used across all /settings sub-pages so the rhythm is consistent.
+ *   <SettingsSection title="Identity" hint="…">
+ *     <SettingsRow label="Email" description="…" control={…} />
+ *     <SettingsRow label="Display name" … />
+ *   </SettingsSection>
+ *
+ * Section header uses sans-display + sentence case (no mono uppercase
+ * eyebrows). Rows are hairline-divided, generous vertical breathing
+ * room, label/description left + control right.
  */
 
 export function SettingsSection({
-  num,
   title,
   hint,
   children,
+  /** Optional right-aligned slot in the section header (e.g. a "View all" link). */
+  action,
 }: {
-  /** Editorial section number — "01", "02", etc. */
-  num: string
-  /** Section heading shown on the same line as the number. */
   title: string
-  /** Optional one-liner explaining what this section contains. */
   hint?: string
   children: ReactNode
+  action?: ReactNode
 }) {
   return (
-    <section className="space-y-3">
-      <div className="flex flex-wrap items-baseline gap-2">
-        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
-          <span className="text-primary">{num}</span>
-          {' · '}
-          {title}
-        </p>
-        {hint ? (
-          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground/60">
-            {hint}
-          </p>
-        ) : null}
-      </div>
+    <section className="space-y-4">
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div className="min-w-0">
+          <h2
+            className="text-[20px] font-bold leading-tight tracking-tight text-foreground sm:text-[22px]"
+            style={{ fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif' }}
+          >
+            {title}
+          </h2>
+          {hint ? (
+            <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+              {hint}
+            </p>
+          ) : null}
+        </div>
+        {action ? <div className="shrink-0">{action}</div> : null}
+      </header>
 
-      {/* Rows live in a single bordered container with hairline
-          dividers, not nested cards. Reads like a data sheet. */}
-      <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-primary/[0.02] [&>*+*]:border-t [&>*+*]:border-border/50">
+      <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-primary/[0.03] [&>*+*]:border-t [&>*+*]:border-border/60">
         {children}
       </div>
     </section>
@@ -53,28 +58,27 @@ export function SettingsRow({
   control,
   align = 'center',
 }: {
-  /** Mono uppercase label on the left. */
+  /** Sentence-case label, primary foreground, semibold. */
   label: string
-  /** Plain-language description / current value sitting below. */
+  /** Plain-language description / current value. */
   description?: ReactNode
-  /** The interactive piece on the right (button, input, link). */
+  /** Interactive piece on the right (button, input, link). */
   control: ReactNode
-  /** Align the control vertically — top for taller controls (form
-   *  groups), center for single-line buttons. */
+  /** Align the control vertically — top for taller controls. */
   align?: 'top' | 'center'
 }) {
   return (
     <div
-      className={`flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:gap-4 sm:px-5 sm:py-4 ${
+      className={`flex flex-col gap-3 px-5 py-4 sm:flex-row sm:gap-6 sm:px-6 sm:py-5 ${
         align === 'top' ? 'sm:items-start' : 'sm:items-center'
       }`}
     >
-      <div className="min-w-0 flex-1 space-y-0.5">
-        <p className="font-mono text-[10.5px] font-bold uppercase tracking-[0.18em] text-muted-foreground/80">
+      <div className="min-w-0 flex-1 space-y-1">
+        <p className="text-[13.5px] font-semibold leading-tight text-foreground">
           {label}
         </p>
         {description ? (
-          <div className="text-[12.5px] leading-snug text-foreground/85">
+          <div className="text-[12.5px] leading-relaxed text-muted-foreground">
             {description}
           </div>
         ) : null}
@@ -84,7 +88,7 @@ export function SettingsRow({
   )
 }
 
-/** Footer line under a section — for reassurances, fine print, etc. */
+/** Fine print under a section — security reassurance, legal-ish. */
 export function SettingsFootnote({
   icon,
   children,
@@ -93,9 +97,9 @@ export function SettingsFootnote({
   children: ReactNode
 }) {
   return (
-    <p className="flex items-start gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70">
-      {icon ? <span className="mt-0.5">{icon}</span> : null}
-      <span className="normal-case tracking-normal">{children}</span>
+    <p className="flex items-start gap-1.5 text-[11.5px] leading-relaxed text-muted-foreground/80">
+      {icon ? <span className="mt-0.5 shrink-0">{icon}</span> : null}
+      <span>{children}</span>
     </p>
   )
 }

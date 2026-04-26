@@ -31,7 +31,6 @@ export default async function SecurityPage() {
     <div className="space-y-7">
       {/* ── 01 · Two-factor auth ────────────────────────────────── */}
       <SettingsSection
-        num="01"
         title="Two-factor authentication"
         hint={hasVerifiedFactor ? 'enabled · code required at every login' : 'not enabled'}
       >
@@ -57,7 +56,6 @@ export default async function SecurityPage() {
       {/* ── 02 · Recovery codes (only when 2FA active) ─────────── */}
       {hasVerifiedFactor ? (
         <SettingsSection
-          num="02"
           title="Recovery codes"
           hint={`${unusedCodes} unused · single-use, get a new batch when low`}
         >
@@ -70,7 +68,6 @@ export default async function SecurityPage() {
       {/* ── 03 · Pending factors cleanup ────────────────────────── */}
       {pending.length > 0 ? (
         <SettingsSection
-          num={hasVerifiedFactor ? '03' : '02'}
           title="Pending factors"
           hint="started but never verified · safe to remove"
         >

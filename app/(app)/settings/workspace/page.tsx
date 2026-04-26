@@ -39,7 +39,7 @@ export default async function WorkspaceSettingsPage({
   return (
     <div className="space-y-7">
       {/* ── 01 · Identity ──────────────────────────────────────── */}
-      <SettingsSection num="01" title="Identity" hint="how this workspace shows up">
+      <SettingsSection title="Identity" hint="how this workspace shows up">
         <SettingsRow
           label="Name"
           description="The display name on the sidebar switcher and review links."
@@ -55,7 +55,7 @@ export default async function WorkspaceSettingsPage({
       </SettingsSection>
 
       {/* ── 02 · Quick links ──────────────────────────────────── */}
-      <SettingsSection num="02" title="Members & projects" hint="open in the workspace shell">
+      <SettingsSection title="Members & projects" hint="open in the workspace shell">
         <SettingsRow
           label="Team"
           description="Invite people, set roles, manage access."
@@ -87,7 +87,7 @@ export default async function WorkspaceSettingsPage({
       </SettingsSection>
 
       {/* ── 03 · Danger zone ──────────────────────────────────── */}
-      <SettingsSection num="03" title="Danger zone" hint="permanent · cannot be undone">
+      <SettingsSection title="Danger zone" hint="permanent · cannot be undone">
         <SettingsRow
           label="Delete workspace"
           description={

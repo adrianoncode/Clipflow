@@ -61,7 +61,7 @@ export default async function AuditLogPage() {
     const requiredPlanName = PLANS[FEATURE_MIN_PLAN.auditLog].name
     return (
       <div className="space-y-7">
-        <SettingsSection num="01" title="Audit log" hint={`available on the ${requiredPlanName} plan`}>
+        <SettingsSection title="Audit log" hint={`available on the ${requiredPlanName} plan`}>
           <div className="flex flex-col items-center gap-3 px-6 py-10 text-center sm:px-8">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Lock className="h-4 w-4" />
@@ -92,7 +92,7 @@ export default async function AuditLogPage() {
   if (!isOwner) {
     return (
       <div className="space-y-7">
-        <SettingsSection num="01" title="Audit log" hint="owner-only">
+        <SettingsSection title="Audit log" hint="owner-only">
           <div className="flex flex-col items-center gap-3 px-6 py-10 text-center sm:px-8">
             <p className="text-[13.5px] font-bold text-foreground">
               Only the workspace owner can view the audit log.
@@ -135,7 +135,6 @@ export default async function AuditLogPage() {
     <div className="space-y-7">
       {/* ── 01 · Activity ─────────────────────────────────────── */}
       <SettingsSection
-        num="01"
         title={isEmpty ? 'Activity' : 'Recent activity'}
         hint={
           isEmpty
@@ -162,7 +161,7 @@ export default async function AuditLogPage() {
       </SettingsSection>
 
       {/* ── 02 · Coverage ─────────────────────────────────────── */}
-      <SettingsSection num="02" title="What we track" hint="four categories, every workspace action">
+      <SettingsSection title="What we track" hint="four categories, every workspace action">
         {TRACKED_CATEGORIES.map((cat) => (
           <SettingsRow
             key={cat.label}
@@ -178,7 +177,7 @@ export default async function AuditLogPage() {
       </SettingsSection>
 
       {/* ── 03 · Retention & export ──────────────────────────── */}
-      <SettingsSection num="03" title="Retention & export" hint="agency-contract ready">
+      <SettingsSection title="Retention & export" hint="agency-contract ready">
         <SettingsRow
           label="Retention"
           description="Events stay queryable for 90 days, then archive cold for another 12 months."

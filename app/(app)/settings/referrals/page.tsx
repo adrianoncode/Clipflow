@@ -42,7 +42,6 @@ export default async function ReferralsPage() {
     <div className="space-y-7">
       {/* ── 01 · Your link ──────────────────────────────────────── */}
       <SettingsSection
-        num="01"
         title="Your link"
         hint={`Give ${REFERRAL_DISCOUNT_PERCENT}%, get ${REFERRAL_DISCOUNT_PERCENT}% — for as long as both stay subscribed`}
       >
@@ -53,7 +52,6 @@ export default async function ReferralsPage() {
 
       {/* ── 02 · One-click share ────────────────────────────────── */}
       <SettingsSection
-        num="02"
         title="Send it in one click"
         hint="pre-written snippets, attribution baked in"
       >
@@ -64,7 +62,6 @@ export default async function ReferralsPage() {
 
       {/* ── 03 · Performance ────────────────────────────────────── */}
       <SettingsSection
-        num="03"
         title="Performance"
         hint={`${totalSignups} signup${totalSignups === 1 ? '' : 's'} · ${stats.confirmed} paid conversion${stats.confirmed === 1 ? '' : 's'}`}
       >
