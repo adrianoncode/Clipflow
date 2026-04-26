@@ -13,14 +13,17 @@ import type { ReactNode } from 'react'
  */
 export function SettingsHero({
   monogram,
+  visual,
   eyebrow,
   title,
   body,
   meta,
   action,
 }: {
-  /** 1–2 character monogram drawn in the violet chip. */
-  monogram: string
+  /** 1–2 character monogram drawn in the violet chip. Ignored if `visual` is set. */
+  monogram?: string
+  /** Custom visual to drop in place of the monogram (e.g. an icon or logo). */
+  visual?: ReactNode
   /** Small all-caps label above the title. */
   eyebrow?: string
   title: string
@@ -30,7 +33,7 @@ export function SettingsHero({
   /** Right-aligned slot, e.g. status pill or a primary action. */
   action?: ReactNode
 }) {
-  const initials = monogram.slice(0, 2).toUpperCase()
+  const initials = (monogram ?? '').slice(0, 2).toUpperCase()
   return (
     <section
       className="relative overflow-hidden rounded-3xl border border-border/60 bg-card px-5 py-6 sm:px-7 sm:py-7"
@@ -56,7 +59,7 @@ export function SettingsHero({
 
       <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
         <div className="flex items-center gap-4 sm:gap-5">
-          <Monogram initials={initials} />
+          {visual ?? <Monogram initials={initials || '··'} />}
           <div className="min-w-0">
             {eyebrow ? (
               <p

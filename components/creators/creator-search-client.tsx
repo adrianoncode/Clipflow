@@ -4,7 +4,15 @@ import Image from 'next/image'
 import type { ReactNode } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 import { useState } from 'react'
-import { ArrowRight, ExternalLink, Search, Users } from 'lucide-react'
+import {
+  ArrowRight,
+  Compass,
+  ExternalLink,
+  Radar,
+  Search,
+  Sparkles,
+  Users,
+} from 'lucide-react'
 import {
   InstagramLogo,
   LinkedInLogo,
@@ -104,7 +112,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="group inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-primary px-4 text-[13px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:shadow-md disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-sm"
+      className="group inline-flex h-11 shrink-0 items-center gap-2 rounded-xl bg-foreground px-4 text-[13px] font-bold text-background shadow-sm shadow-foreground/[0.18] transition-all hover:-translate-y-px hover:shadow-md hover:shadow-foreground/[0.28] disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-sm"
     >
       <Search className="h-3.5 w-3.5" />
       {pending ? 'Searching…' : 'Search'}
@@ -127,15 +135,23 @@ export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearch
   const hasSubmitted = state.ok !== undefined
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-9">
       {/* ── 01 · Source ─────────────────────────────────────────── */}
-      <section className="space-y-3">
-        <SectionLabel num="01">Source</SectionLabel>
+      <section className="space-y-4">
+        <SectionHeader index="01" icon={<Radar className="h-3.5 w-3.5" />} title="Source" hint="Pick the platform, then narrow the search to a niche, handle, or keyword." />
 
         <form
           action={formAction}
-          className="space-y-4 rounded-2xl border border-border/60 bg-card p-4 shadow-sm shadow-primary/[0.02] sm:p-5"
+          className="relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5 sm:p-6"
+          style={{
+            boxShadow:
+              '0 1px 0 rgba(255,255,255,0.6) inset, 0 1px 2px rgba(42,26,61,0.04), 0 12px 32px -18px rgba(42,26,61,0.18)',
+          }}
         >
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
+          />
           <input type="hidden" name="platform" value={platformId} />
 
           {/* Platform pills with real brand logos */}
@@ -151,17 +167,15 @@ export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearch
                     setPlatformId(p.id)
                     setQuery('')
                   }}
-                  className={`group relative inline-flex items-center gap-2 rounded-xl border px-2.5 py-1.5 text-[12.5px] font-semibold transition-all ${
+                  className={`group relative inline-flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-[12.5px] font-semibold transition-all ${
                     isActive
-                      ? 'border-foreground/20 bg-background text-foreground shadow-sm ring-1 ring-primary/15'
-                      : 'border-transparent bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'bg-foreground text-background shadow-sm shadow-foreground/20'
+                      : 'border border-border/60 bg-background text-muted-foreground hover:-translate-y-px hover:border-foreground/20 hover:text-foreground hover:shadow-sm'
                   }`}
                 >
                   <span
-                    className={`flex h-6 w-6 items-center justify-center rounded-md shadow-sm ${p.tileBg} ${p.tileFg} ${
-                      isActive
-                        ? ''
-                        : 'opacity-80 group-hover:opacity-100'
+                    className={`flex h-6 w-6 items-center justify-center rounded-md ${p.tileBg} ${p.tileFg} ${
+                      isActive ? '' : 'opacity-90 group-hover:opacity-100'
                     } transition-opacity`}
                     aria-hidden
                   >
@@ -173,25 +187,29 @@ export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearch
             })}
           </div>
 
-          {/* Hairline divider */}
-          <div className="h-px bg-border/60" />
-
-          {/* Query input */}
-          <div>
+          {/* Query input — taller, premium chrome */}
+          <div className="mt-5">
             <label className="block">
-              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+              <span
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-primary/75"
+                style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+              >
+                <span className="inline-block h-px w-4 bg-primary/40" />
                 {platform.inputPrefix}
               </span>
-              <div className="mt-1.5 flex gap-2">
-                <input
-                  name="query"
-                  type="text"
-                  required
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={platform.inputHint}
-                  className="flex-1 rounded-lg border border-border bg-background px-4 py-2.5 text-[14px] placeholder:text-muted-foreground/60 focus:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
+              <div className="mt-2 flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/50" />
+                  <input
+                    name="query"
+                    type="text"
+                    required
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={platform.inputHint}
+                    className="h-11 w-full rounded-xl border border-border/70 bg-background pl-9 pr-3 text-[14px] shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] placeholder:text-muted-foreground/55 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/15"
+                  />
+                </div>
                 <SubmitButton />
               </div>
             </label>
@@ -199,8 +217,12 @@ export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearch
 
           {/* Example chips */}
           {platform.exampleChips.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+            <div className="mt-4 flex flex-wrap items-center gap-1.5">
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground/65"
+                style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+              >
+                <Sparkles className="h-2.5 w-2.5 text-primary/60" />
                 Try
               </span>
               {platform.exampleChips.map((s) => (
@@ -208,7 +230,7 @@ export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearch
                   key={s}
                   type="button"
                   onClick={() => setQuery(s)}
-                  className="rounded-full border border-border/60 bg-background px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground transition-all hover:-translate-y-px hover:border-primary/40 hover:text-primary"
+                  className="rounded-full border border-border/60 bg-background px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground transition-all hover:-translate-y-px hover:border-primary/40 hover:bg-primary/[0.05] hover:text-primary"
                 >
                   {s}
                 </button>
@@ -217,8 +239,11 @@ export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearch
           )}
 
           {/* API footnote */}
-          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70">
-            <span className="text-muted-foreground/50">↳</span> {platform.apiNote}
+          <p
+            className="mt-5 inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60"
+            style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+          >
+            <span className="text-primary/40">↳</span> {platform.apiNote}
           </p>
         </form>
       </section>
@@ -240,13 +265,13 @@ export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearch
 
       {/* ── 02 · Results / Discoverable ─────────────────────────── */}
       {results ? (
-        <section className="space-y-3">
-          <div className="flex items-baseline gap-3">
-            <SectionLabel num="02">Results</SectionLabel>
-            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/60">
-              · {results.creators.length} found
-            </span>
-          </div>
+        <section className="space-y-4">
+          <SectionHeader
+            index="02"
+            icon={<Compass className="h-3.5 w-3.5" />}
+            title="Results"
+            hint={`${results.creators.length} creator${results.creators.length === 1 ? '' : 's'} matched on ${platform.name}`}
+          />
 
           {results.creators.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border/60 bg-muted/20 px-4 py-12 text-center">
@@ -286,11 +311,47 @@ export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearch
 // Pieces
 // ---------------------------------------------------------------------------
 
-function SectionLabel({ num, children }: { num: string; children: ReactNode }) {
+function SectionHeader({
+  index,
+  icon,
+  title,
+  hint,
+}: {
+  index: string
+  icon?: ReactNode
+  title: string
+  hint?: string
+}) {
   return (
-    <p className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
-      <span className="text-primary">{num}</span> · {children}
-    </p>
+    <header className="space-y-1">
+      <p
+        className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-primary/75"
+        style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+      >
+        <span className="inline-block h-px w-5 bg-primary/40" />
+        {index}
+        <span className="text-primary/30">·</span>
+        <span className="text-muted-foreground/70">section</span>
+      </p>
+      <div className="flex items-center gap-2.5">
+        {icon ? (
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-primary/[0.09] text-primary">
+            {icon}
+          </span>
+        ) : null}
+        <h2
+          className="text-[20px] font-bold leading-tight tracking-tight text-foreground sm:text-[22px]"
+          style={{ fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif' }}
+        >
+          {title}
+        </h2>
+      </div>
+      {hint ? (
+        <p className="text-[13px] leading-relaxed text-muted-foreground">
+          {hint}
+        </p>
+      ) : null}
+    </header>
   )
 }
 
@@ -302,9 +363,24 @@ function DiscoverPanel({
   onPlatformSelect: (id: string) => void
 }) {
   return (
-    <section className="space-y-3">
-      <SectionLabel num="02">Discoverable</SectionLabel>
-      <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-primary/[0.02]">
+    <section className="space-y-4">
+      <SectionHeader
+        index="02"
+        icon={<Compass className="h-3.5 w-3.5" />}
+        title="Discoverable"
+        hint="Five sources, one search. Pick a platform to scope the next query."
+      />
+      <div
+        className="relative overflow-hidden rounded-2xl border border-border/60 bg-card"
+        style={{
+          boxShadow:
+            '0 1px 0 rgba(255,255,255,0.6) inset, 0 1px 2px rgba(42,26,61,0.04), 0 12px 32px -18px rgba(42,26,61,0.18)',
+        }}
+      >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
+        />
         {PLATFORMS.map((p, i) => {
           const Logo = p.Logo
           const isActive = p.id === activeId
@@ -313,21 +389,45 @@ function DiscoverPanel({
               key={p.id}
               type="button"
               onClick={() => onPlatformSelect(p.id)}
-              className={`group flex w-full items-center gap-4 px-4 py-3 text-left transition-colors hover:bg-muted/30 sm:px-5 ${
-                i > 0 ? 'border-t border-border/50' : ''
-              } ${isActive ? 'bg-muted/20' : ''}`}
+              className={`group relative flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-primary/[0.025] sm:px-6 sm:py-5 ${
+                i > 0 ? 'border-t border-border/60' : ''
+              } ${isActive ? 'bg-primary/[0.04]' : ''}`}
             >
+              {/* hairline accent that fades in on hover or when active */}
               <span
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-sm ${p.tileBg} ${p.tileFg}`}
                 aria-hidden
+                className={`pointer-events-none absolute left-0 top-1/2 h-8 w-[2px] -translate-y-1/2 bg-primary transition-opacity duration-300 ${
+                  isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-80'
+                }`}
+              />
+              <span
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${p.tileBg} ${p.tileFg}`}
+                aria-hidden
+                style={{
+                  boxShadow:
+                    '0 1px 0 rgba(255,255,255,0.16) inset, 0 8px 22px -10px rgba(0,0,0,0.4)',
+                }}
               >
-                <Logo size={16} />
+                <Logo size={17} />
               </span>
               <div className="flex min-w-0 flex-1 flex-col">
-                <p className="text-[13px] font-bold text-foreground">{p.name}</p>
-                <p className="truncate text-[12px] text-muted-foreground">{p.apiNote}</p>
+                <p
+                  className="text-[14px] font-bold tracking-tight text-foreground"
+                  style={{
+                    fontFamily:
+                      'var(--font-inter-tight), var(--font-inter), sans-serif',
+                  }}
+                >
+                  {p.name}
+                </p>
+                <p className="truncate text-[12.5px] leading-relaxed text-muted-foreground">
+                  {p.apiNote}
+                </p>
               </div>
-              <span className="hidden font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/60 transition-colors group-hover:text-primary sm:inline">
+              <span
+                className="hidden items-center gap-1 rounded-full border border-border/60 bg-background px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/80 transition-colors group-hover:border-primary/30 group-hover:text-primary sm:inline-flex"
+                style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+              >
                 {p.inputPrefix}
               </span>
               <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
@@ -374,7 +474,13 @@ function CreatorCard({
   const labelRight = platform.id === 'youtube' ? 'Views' : 'Likes'
 
   return (
-    <div className="group relative flex flex-col rounded-2xl border border-border/60 bg-card p-4 transition-all hover:-translate-y-px hover:border-border hover:shadow-md hover:shadow-primary/[0.04]">
+    <div
+      className="group relative flex flex-col rounded-2xl border border-border/60 bg-card p-4 transition-all hover:-translate-y-px hover:border-border hover:shadow-md hover:shadow-primary/[0.05]"
+      style={{
+        boxShadow:
+          '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04)',
+      }}
+    >
       {/* Brand corner badge — clearly tags the platform */}
       <span
         className={`absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-md shadow-sm ${platform.tileBg} ${platform.tileFg}`}
@@ -402,7 +508,15 @@ function CreatorCard({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13.5px] font-bold text-foreground">{name}</p>
+          <p
+            className="truncate text-[13.5px] font-bold tracking-tight text-foreground"
+            style={{
+              fontFamily:
+                'var(--font-inter-tight), var(--font-inter), sans-serif',
+            }}
+          >
+            {name}
+          </p>
           {handle ? (
             <p className="truncate font-mono text-[11px] text-muted-foreground">@{handle}</p>
           ) : null}
@@ -428,7 +542,7 @@ function CreatorCard({
           href={profileUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg border border-border/70 bg-background px-3 py-1.5 text-[12px] font-bold text-foreground transition-all hover:-translate-y-px hover:border-border hover:shadow-sm"
+          className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg border border-border/70 bg-background px-3 py-1.5 text-[12px] font-bold text-foreground transition-all hover:-translate-y-px hover:border-foreground/30 hover:shadow-sm"
         >
           Open on {platform.name}
           <ExternalLink className="h-3 w-3" />
