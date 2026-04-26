@@ -67,12 +67,36 @@ const DASH_STYLES = `
 .lv2-dash .lv2d-mono { font-family: var(--font-jetbrains-mono), monospace; }
 .lv2-dash .lv2d-tabular { font-variant-numeric: tabular-nums; }
 .lv2-dash .lv2d-mono-label {
-  font-family: var(--font-jetbrains-mono), monospace;
-  font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
-  color: var(--lv2d-muted);
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif;
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: .22em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--lv2d-primary) 78%, transparent);
 }
-.lv2-dash .lv2d-card { background: var(--lv2d-card); border: 1px solid var(--lv2d-border); border-radius: 14px; }
-.lv2-dash .lv2d-ring-soft { box-shadow: 0 1px 0 rgba(24,21,17,.03), 0 12px 24px -18px rgba(42,26,61,.15); }
+.lv2-dash .lv2d-mono-label::before {
+  content: ''; display: inline-block; height: 1px; width: 18px;
+  background: color-mix(in srgb, var(--lv2d-primary) 38%, transparent);
+}
+.lv2-dash .lv2d-card {
+  position: relative;
+  background: var(--lv2d-card); border: 1px solid var(--lv2d-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.lv2-dash .lv2d-card::after {
+  content: ''; position: absolute; left: 1.25rem; right: 1.25rem; top: 0; height: 1px;
+  background: linear-gradient(to right,
+    transparent,
+    color-mix(in srgb, var(--lv2d-primary) 28%, transparent),
+    transparent);
+  pointer-events: none;
+}
+.lv2-dash .lv2d-ring-soft {
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.55) inset,
+    0 1px 2px rgba(24,21,17,.03),
+    0 14px 32px -22px rgba(42,26,61,.22);
+}
 .lv2-dash .lv2d-chip {
   display: inline-flex; align-items: center; gap: .25rem;
   border-radius: 999px; padding: 2px 8px;
@@ -583,77 +607,147 @@ async function DashboardBody() {
   return (
     <div className="lv2d-fade-in mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-8 2xl:max-w-[1440px]">
           {/* ── Hero ────────────────────────────────────────────── */}
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="lv2d-mono-label mb-1">
-                {new Date().toLocaleDateString(undefined, {
-                  weekday: 'long',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-                {workspace?.name ? ` · ${workspace.name}` : ''}
-              </p>
-              <h1 className="lv2d-display lv2d-enter text-[44px] leading-[1.02]">
-                {greeting}, {firstName}.
-              </h1>
-              {hasData && stats ? (
-                <p
-                  className="lv2d-enter lv2d-enter-d1 mt-2 max-w-xl text-sm"
-                  style={{ color: 'var(--lv2d-muted)' }}
+          <header
+            className="relative overflow-hidden rounded-3xl border px-5 py-6 sm:px-7 sm:py-7"
+            style={{
+              background: 'var(--lv2d-card)',
+              borderColor: 'var(--lv2d-border)',
+              boxShadow:
+                '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(24,21,17,.04), 0 22px 44px -28px rgba(42,26,61,.28)',
+            }}
+          >
+            {/* Soft plum glow tucked behind the avatar so the hero
+                has real depth without becoming a billboard. */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -left-16 -top-20 h-56 w-56 rounded-full"
+              style={{
+                background:
+                  'radial-gradient(circle, rgba(42,26,61,.16) 0%, rgba(42,26,61,0) 60%)',
+              }}
+            />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute right-[-40px] top-[-40px] h-40 w-40 rounded-full"
+              style={{
+                background:
+                  'radial-gradient(circle, rgba(214,255,62,.18) 0%, rgba(214,255,62,0) 60%)',
+              }}
+            />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-10 top-0 h-px"
+              style={{
+                background:
+                  'linear-gradient(to right, transparent, rgba(42,26,61,.32), transparent)',
+              }}
+            />
+
+            <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between md:gap-6">
+              <div className="flex items-center gap-4 sm:gap-5">
+                {/* Hero monogram — same designer-grade chip as the
+                    Settings hero, in the dashboard's plum so it fits
+                    the landing palette instead of jumping to violet. */}
+                <span
+                  className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-[18px] font-bold tracking-tight sm:h-16 sm:w-16 sm:text-[20px]"
+                  style={{
+                    background:
+                      'linear-gradient(140deg, #3F2A57 0%, #2A1A3D 60%, #120920 100%)',
+                    color: 'var(--lv2d-accent)',
+                    fontFamily:
+                      'var(--font-inter-tight), var(--font-inter), sans-serif',
+                    boxShadow:
+                      '0 1px 0 rgba(214,255,62,.18) inset, 0 10px 24px -12px rgba(42,26,61,.55)',
+                  }}
+                  aria-hidden
                 >
-                  <b style={{ color: 'var(--lv2d-fg)' }}>
-                    {pendingReview} draft{pendingReview === 1 ? '' : 's'}
-                  </b>{' '}
-                  waiting for review
-                  {processing ? (
-                    <>
-                      {' '}
-                      and{' '}
-                      <b style={{ color: 'var(--lv2d-fg)' }}>1 clip</b> rendering right now
-                    </>
-                  ) : null}
-                  . Line up your week in about 4 minutes.
-                </p>
-              ) : (
-                <p
-                  className="mt-2 max-w-xl text-sm"
-                  style={{ color: 'var(--lv2d-muted)' }}
-                >
-                  No drafts yet. Drop a recording into{' '}
-                  <Link
-                    href={workspace ? `/workspace/${workspace.id}` : '/'}
-                    className="font-semibold underline-offset-4 hover:underline"
+                  <span
+                    className="pointer-events-none absolute inset-1 rounded-[14px]"
+                    style={{
+                      background:
+                        'linear-gradient(180deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,0) 45%)',
+                    }}
+                  />
+                  <span className="relative">
+                    {(firstName?.[0] ?? 'C').toUpperCase()}
+                  </span>
+                </span>
+
+                <div className="min-w-0">
+                  <p className="lv2d-mono-label mb-1.5">
+                    {new Date().toLocaleDateString(undefined, {
+                      weekday: 'long',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                    {workspace?.name ? ` · ${workspace.name}` : ''}
+                  </p>
+                  <h1
+                    className="lv2d-display lv2d-enter text-[34px] leading-[1.02] sm:text-[40px]"
                     style={{ color: 'var(--lv2d-fg)' }}
                   >
-                    your library
-                  </Link>{' '}
-                  — first batch lands in about a minute.
-                </p>
+                    {greeting}, {firstName}.
+                  </h1>
+                  {hasData && stats ? (
+                    <p
+                      className="lv2d-enter lv2d-enter-d1 mt-2 max-w-xl text-[13.5px] leading-relaxed"
+                      style={{ color: 'var(--lv2d-muted)' }}
+                    >
+                      <b style={{ color: 'var(--lv2d-fg)' }}>
+                        {pendingReview} draft{pendingReview === 1 ? '' : 's'}
+                      </b>{' '}
+                      waiting for review
+                      {processing ? (
+                        <>
+                          {' '}
+                          and{' '}
+                          <b style={{ color: 'var(--lv2d-fg)' }}>1 clip</b> rendering right now
+                        </>
+                      ) : null}
+                      . Line up your week in about 4 minutes.
+                    </p>
+                  ) : (
+                    <p
+                      className="mt-2 max-w-xl text-[13.5px] leading-relaxed"
+                      style={{ color: 'var(--lv2d-muted)' }}
+                    >
+                      No drafts yet. Drop a recording into{' '}
+                      <Link
+                        href={workspace ? `/workspace/${workspace.id}` : '/'}
+                        className="font-semibold underline-offset-4 hover:underline"
+                        style={{ color: 'var(--lv2d-fg)' }}
+                      >
+                        your library
+                      </Link>{' '}
+                      — first batch lands in about a minute.
+                    </p>
+                  )}
+                </div>
+              </div>
+              {workspace && (
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  {isAgencyMode && (
+                    <Link href="/workspace/new?as=client" className="lv2d-btn-ghost">
+                      <Users2 className="h-3.5 w-3.5" /> New client
+                    </Link>
+                  )}
+                  <Link
+                    href={`/workspace/${workspace.id}/schedule`}
+                    className="lv2d-btn-ghost"
+                  >
+                    <Calendar className="h-3.5 w-3.5" /> Calendar
+                  </Link>
+                  <Link
+                    href={`/workspace/${workspace.id}/content/new`}
+                    className="lv2d-btn-accent"
+                  >
+                    <span className="text-base leading-none">+</span> New content{' '}
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
               )}
             </div>
-            {workspace && (
-              <div className="flex items-center gap-2">
-                {isAgencyMode && (
-                  <Link href="/workspace/new?as=client" className="lv2d-btn-ghost">
-                    <Users2 className="h-3.5 w-3.5" /> New client
-                  </Link>
-                )}
-                <Link
-                  href={`/workspace/${workspace.id}/schedule`}
-                  className="lv2d-btn-ghost"
-                >
-                  <Calendar className="h-3.5 w-3.5" /> Calendar
-                </Link>
-                <Link
-                  href={`/workspace/${workspace.id}/content/new`}
-                  className="lv2d-btn-accent"
-                >
-                  <span className="text-base leading-none">+</span> New content{' '}
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            )}
-          </div>
+          </header>
 
           {workspace && (
             <>
@@ -920,9 +1014,28 @@ async function DashboardBody() {
                 </Link>
               )}
 
-              {/* ── Stats ───────────────────────────────────────── */}
+              {/* ── Stats ── compact 4-up strip in one card so it
+                  reads as a single instrument panel, not four heavy
+                  cards stacked across half the screen. */}
               {stats && (
-                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <section className="lv2d-card lv2d-ring-soft">
+                  <div
+                    className="flex items-center justify-between px-5 py-3"
+                    style={{ borderBottom: '1px solid var(--lv2d-border)' }}
+                  >
+                    <span className="lv2d-mono-label">At a glance · last 7 days</span>
+                    <Link
+                      href="/analytics"
+                      className="text-[11px] font-semibold hover:underline"
+                      style={{ color: 'var(--lv2d-primary)' }}
+                    >
+                      Open analytics →
+                    </Link>
+                  </div>
+                  <div
+                    className="grid grid-cols-2 lg:grid-cols-4"
+                    style={{ background: 'var(--lv2d-border)', gap: '1px' }}
+                  >
                   {[
                     {
                       key: 'content',
@@ -984,41 +1097,53 @@ async function DashboardBody() {
                     <Link
                       key={m.key}
                       href={m.href}
-                      className="lv2d-card lv2d-ring-soft group flex flex-col gap-3 p-4 transition hover:-translate-y-0.5 hover:border-[var(--lv2d-border-strong)]"
+                      className="group flex items-center gap-3 px-4 py-4 transition-colors hover:bg-[var(--lv2d-bg-2)]"
+                      style={{ background: 'var(--lv2d-card)' }}
                     >
-                      <div className="flex items-center justify-between">
-                        <span
-                          className="flex h-8 w-8 items-center justify-center rounded-lg"
-                          style={{ background: m.tone.bg, color: m.tone.fg }}
+                      <span
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                        style={{
+                          background: m.tone.bg,
+                          color: m.tone.fg,
+                          boxShadow:
+                            '0 1px 0 rgba(255,255,255,.4) inset, 0 6px 14px -8px rgba(42,26,61,.25)',
+                        }}
+                      >
+                        <m.icon className="h-[15px] w-[15px]" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="lv2d-sans-d lv2d-tabular text-[22px] font-bold leading-none">
+                            {m.value}
+                          </span>
+                          {(m.thisMonth > 0 || m.lastMonth > 0) && (
+                            <DeltaChip current={m.thisMonth} previous={m.lastMonth} />
+                          )}
+                        </div>
+                        <p
+                          className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em]"
+                          style={{
+                            color: 'var(--lv2d-muted)',
+                            fontFamily:
+                              'var(--font-inter-tight), var(--font-inter), sans-serif',
+                          }}
                         >
-                          <m.icon className="h-[15px] w-[15px]" />
-                        </span>
-                        {(m.thisMonth > 0 || m.lastMonth > 0) && (
-                          <DeltaChip current={m.thisMonth} previous={m.lastMonth} />
-                        )}
-                      </div>
-                      <div>
-                        <span className="lv2d-sans-d lv2d-tabular text-[30px] font-bold leading-none">
-                          {m.value}
-                        </span>
-                        <p className="lv2d-mono-label mt-1" style={{ fontSize: 10 }}>
                           {m.label}
                         </p>
                       </div>
                       {m.spark ? (
                         <Sparkline
                           data={m.spark}
-                          width={130}
-                          height={26}
+                          width={64}
+                          height={22}
                           variant="bars"
                           label={`${m.label} last 7 days`}
                         />
-                      ) : (
-                        <div className="h-[26px]" />
-                      )}
+                      ) : null}
                     </Link>
                   ))}
-                </div>
+                  </div>
+                </section>
               )}
 
               {/* ── Recent drafts + Sidebar ─────────────────────── */}
