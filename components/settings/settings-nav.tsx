@@ -18,23 +18,25 @@ import {
 const accountGroup = [
   { href: '/settings/profile', label: 'Profile', icon: User },
   { href: '/settings/security', label: 'Security', icon: Shield },
-  { href: '/settings/workspace', label: 'Workspace profile', icon: Building2 },
+  { href: '/settings/workspace', label: 'Workspace', icon: Building2 },
   { href: '/billing', label: 'Billing', icon: CreditCard },
   { href: '/settings/referrals', label: 'Referrals', icon: Gift },
 ]
 
-const connectGroup = [
+const supportGroup = [
   { href: '/settings/audit-log', label: 'Audit log', icon: ScrollText },
   { href: '/help', label: 'Help', icon: HelpCircle },
 ]
 
-const groups = [accountGroup, connectGroup]
+const SECTIONS = [
+  { label: 'Account', items: accountGroup },
+  { label: 'Support', items: supportGroup },
+] as const
 
-// Routes where the horizontal Settings nav should NOT render. These
-// pages are full-fledged features (reachable from the main sidebar)
-// that happen to live under /settings/* for URL-stability reasons —
-// but surfacing the Profile/Security/Billing tabs above them is
-// noise, not navigation.
+// Routes where the settings sub-nav should NOT render. These pages
+// are full-fledged features (reachable from the main sidebar) that
+// happen to live under /settings/* for URL-stability reasons —
+// surfacing the Profile/Security/Billing nav above them is noise.
 const HIDE_NAV_PREFIXES = [
   '/settings/channels',
   '/settings/integrations',
@@ -56,62 +58,48 @@ export function SettingsNav() {
   }
 
   return (
-    /* The nav scrolls horizontally on narrow viewports + long tab lists
-       (13 tabs total). Without a visual cue users don't realize the
-       off-right tabs (Channels, Integrations, Audit log, Help) exist —
-       caught this during UX audit where users couldn't find Channels.
-       Fade-out gradients on both edges signal "more content this way",
-       fading in only when there's actually overflow to scroll through. */
-    <div
-      className="relative border-b border-border/50"
-      style={{
-        maskImage:
-          'linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%)',
-        WebkitMaskImage:
-          'linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%)',
-      }}
-    >
-      <nav className="-mb-px flex gap-1 overflow-x-auto scrollbar-none">
-        {groups.map((group, gi) => (
-          <div key={gi} className="contents">
-            {gi > 0 && (
-              <div aria-hidden className="mx-1 flex items-center">
-                <span className="h-4 w-px bg-border/40" />
-              </div>
-            )}
-            {group.map((item) => {
+    <nav aria-label="Settings sections" className="space-y-5">
+      {SECTIONS.map((section) => (
+        <div key={section.label} className="space-y-1.5">
+          <p className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/60">
+            {section.label}
+          </p>
+          <ul className="space-y-0.5">
+            {section.items.map((item) => {
               const active = isActive(item.href)
               const Icon = item.icon
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`group relative flex shrink-0 items-center gap-1.5 px-3 py-2.5 text-[13px] font-medium transition-all duration-150 ${
-                    active
-                      ? 'text-primary'
-                      : 'text-muted-foreground/70 hover:text-foreground'
-                  }`}
-                >
-                  <Icon
-                    className={`h-3.5 w-3.5 shrink-0 transition-colors ${
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`group relative flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[13px] font-medium transition-all ${
                       active
-                        ? 'text-primary'
-                        : 'text-muted-foreground/40 group-hover:text-foreground/60'
+                        ? 'bg-primary/[0.06] text-foreground'
+                        : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
                     }`}
-                  />
-                  {item.label}
-                  {active && (
-                    <span
-                      aria-hidden
-                      className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-primary"
+                  >
+                    {/* Left accent bar on active */}
+                    {active ? (
+                      <span
+                        aria-hidden
+                        className="absolute -left-px top-1.5 h-[calc(100%-12px)] w-0.5 rounded-full bg-primary"
+                      />
+                    ) : null}
+                    <Icon
+                      className={`h-3.5 w-3.5 shrink-0 transition-colors ${
+                        active
+                          ? 'text-primary'
+                          : 'text-muted-foreground/60 group-hover:text-foreground/70'
+                      }`}
                     />
-                  )}
-                </Link>
+                    {item.label}
+                  </Link>
+                </li>
               )
             })}
-          </div>
-        ))}
-      </nav>
-    </div>
+          </ul>
+        </div>
+      ))}
+    </nav>
   )
 }
