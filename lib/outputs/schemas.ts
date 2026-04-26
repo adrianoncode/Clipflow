@@ -5,10 +5,24 @@ import { z } from 'zod'
  * Kept out of the 'use server' action module so it can be imported
  * freely — server action files may only export async functions.
  */
+// Per-platform template override:
+//   undefined / missing → fall back to the workspace's auto-pick (legacy)
+//   'default'           → user explicitly chose the built-in template, skip custom injection
+//   <uuid>              → use this specific custom template
+const templateOverride = z
+  .string()
+  .optional()
+  .nullable()
+  .transform((v) => (v === '' ? undefined : v ?? undefined))
+
 export const generateOutputsSchema = z.object({
   workspace_id: z.string().uuid(),
   content_id: z.string().uuid(),
   target_language: z.string().length(2).optional().default('en'),
+  template_tiktok: templateOverride,
+  template_instagram_reels: templateOverride,
+  template_youtube_shorts: templateOverride,
+  template_linkedin: templateOverride,
 })
 
 export type GenerateOutputsInput = z.infer<typeof generateOutputsSchema>

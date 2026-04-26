@@ -83,6 +83,10 @@ export async function generateOutputsAction(
     workspace_id: formData.get('workspace_id'),
     content_id: formData.get('content_id'),
     target_language: formData.get('target_language') ?? 'en',
+    template_tiktok: formData.get('template_tiktok'),
+    template_instagram_reels: formData.get('template_instagram_reels'),
+    template_youtube_shorts: formData.get('template_youtube_shorts'),
+    template_linkedin: formData.get('template_linkedin'),
   })
   if (!parsed.success) {
     return {
@@ -172,6 +176,13 @@ export async function generateOutputsAction(
     return { ok: false, code: 'unknown', error: cleared.error }
   }
 
+  const templateOverrides: Partial<Record<OutputPlatform, string | undefined>> = {
+    tiktok: parsed.data.template_tiktok ?? undefined,
+    instagram_reels: parsed.data.template_instagram_reels ?? undefined,
+    youtube_shorts: parsed.data.template_youtube_shorts ?? undefined,
+    linkedin: parsed.data.template_linkedin ?? undefined,
+  }
+
   const settled = await Promise.allSettled(
     PLATFORMS.map((platform) =>
       runOnePlatform({
@@ -186,6 +197,7 @@ export async function generateOutputsAction(
         contentId,
         userId,
         targetLanguage,
+        templateOverride: templateOverrides[platform],
       }),
     ),
   )

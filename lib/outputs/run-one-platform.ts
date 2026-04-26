@@ -27,6 +27,13 @@ export interface RunOnePlatformInput {
   userId: string
   /** BCP-47 language code, e.g. 'en', 'de', 'es'. Defaults to 'en' (no translation). */
   targetLanguage?: string
+  /**
+   * Per-generation template override.
+   *   undefined → legacy auto-pick (find best match for platform)
+   *   'default' → user explicitly picked built-in, skip custom injection
+   *   <uuid>    → use this specific custom template
+   */
+  templateOverride?: string
 }
 
 export type RunOnePlatformResult =
@@ -67,8 +74,14 @@ export async function runOnePlatform(
   const niche = await getActiveNiche(workspaceId)
   const nicheInstruction = getNicheInstruction(niche)
 
-  // Inject custom output template if one exists for this platform.
-  const templateInstruction = await buildTemplateInstruction(workspaceId, platform)
+  // Inject custom output template — explicit override per generation
+  // takes priority; otherwise fall back to the workspace's default
+  // pick for this platform.
+  const templateInstruction = await buildTemplateInstruction(
+    workspaceId,
+    platform,
+    input.templateOverride,
+  )
 
   const system =
     prompt.system +
@@ -113,7 +126,12 @@ export async function runOnePlatform(
 async function buildTemplateInstruction(
   workspaceId: string,
   platform: OutputPlatform,
+  override?: string,
 ): Promise<string> {
+  // User explicitly picked the built-in default for this platform —
+  // don't inject any custom template prose.
+  if (override === 'default') return ''
+
   let templates: OutputTemplate[]
   try {
     templates = await getWorkspaceTemplates(workspaceId)
@@ -121,10 +139,19 @@ async function buildTemplateInstruction(
     return '' // table may not exist yet
   }
 
-  // Prefer the default template for this platform; fall back to first match.
-  const match =
-    templates.find((t) => t.platform === platform && t.is_default) ??
-    templates.find((t) => t.platform === platform)
+  let match: OutputTemplate | undefined
+  if (override) {
+    // Honour explicit choice — but only if the template still exists
+    // and matches the platform. (Defensive: a stale form value shouldn't
+    // crash a generation; silently fall through to auto-pick.)
+    match = templates.find((t) => t.id === override && t.platform === platform)
+  }
+  if (!match) {
+    // Auto-pick: prefer is_default for this platform, else first match.
+    match =
+      templates.find((t) => t.platform === platform && t.is_default) ??
+      templates.find((t) => t.platform === platform)
+  }
 
   if (!match) return ''
 

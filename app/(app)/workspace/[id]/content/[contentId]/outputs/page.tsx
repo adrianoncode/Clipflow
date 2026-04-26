@@ -37,6 +37,7 @@ import { getPlanFeatures } from '@/lib/billing/plans'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { EditorExportPanel } from '@/components/content/editor-export-panel'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
+import { getWorkspaceTemplates } from '@/lib/templates/get-templates'
 import type { ContentKind } from '@/lib/supabase/types'
 
 /**
@@ -80,7 +81,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
     redirect(`/workspace/${params.id}/content/${params.contentId}`)
   }
 
-  const [outputs, reviewLinks, reviewComments, renders, plan, aiKeys, longLivedSourceUrl, brandKit] =
+  const [outputs, reviewLinks, reviewComments, renders, plan, aiKeys, longLivedSourceUrl, brandKit, customTemplates] =
     await Promise.all([
       getOutputs(params.contentId, params.id),
       getReviewLinksForContent(params.contentId, params.id),
@@ -90,6 +91,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
       getAiKeys(params.id),
       getLongLivedSourceUrl(item.source_url),
       getBrandKit(params.id),
+      getWorkspaceTemplates(params.id),
     ])
   const planFeatures = getPlanFeatures(plan)
   // Publish-ready = ANY connected destination, not just Upload-Post.
@@ -177,6 +179,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
                 workspaceId={params.id}
                 contentId={params.contentId}
                 submitLabel="Generate 4 drafts"
+                customTemplates={customTemplates}
               />
             </div>
           </div>

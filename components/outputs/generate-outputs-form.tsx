@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 import {
   Briefcase,
@@ -9,6 +10,7 @@ import {
   Film,
   Loader2,
   Music,
+  Plus,
   Sparkles,
 } from 'lucide-react'
 
@@ -19,6 +21,7 @@ import {
   generateOutputsAction,
   type GenerateOutputsState,
 } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
+import type { OutputTemplate } from '@/lib/templates/get-templates'
 
 const initialState: GenerateOutputsState = {}
 
@@ -57,6 +60,9 @@ interface GenerateOutputsFormProps {
   workspaceId: string
   contentId: string
   submitLabel?: string
+  /** Workspace's custom output templates. Renders a per-platform Format
+   *  picker only for platforms that have at least one custom template. */
+  customTemplates?: OutputTemplate[]
 }
 
 function SubmitButton({ label }: { label: string }) {
@@ -147,12 +153,103 @@ function PlatformCardsRow({
   )
 }
 
+/**
+ * "Format per platform" picker — surfaces only when the workspace has
+ * at least one custom template. Hidden entirely otherwise so the
+ * default form stays as terse as it was.
+ */
+function FormatOverridesPanel({
+  customTemplates,
+  values,
+  onChange,
+}: {
+  customTemplates: OutputTemplate[]
+  values: Record<string, string>
+  onChange: (platform: string, value: string) => void
+}) {
+  const byPlatform = PLATFORM_CARDS.map((card) => ({
+    card,
+    options: customTemplates.filter((t) => t.platform === card.key),
+  })).filter((row) => row.options.length > 0)
+
+  if (byPlatform.length === 0) {
+    return (
+      <div className="flex items-center justify-between rounded-xl border border-dashed border-border/60 bg-muted/20 px-4 py-3">
+        <div className="flex flex-col gap-0.5">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+            Format
+          </p>
+          <p className="text-[12px] text-muted-foreground">
+            Built-in template per platform — no custom formats yet.
+          </p>
+        </div>
+        <Link
+          href="/settings/templates"
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border/70 bg-background px-2.5 text-[12px] font-semibold text-foreground transition-all hover:-translate-y-px hover:border-border hover:shadow-sm"
+        >
+          <Plus className="h-3 w-3" />
+          New format
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2.5 rounded-xl border border-border/60 bg-muted/20 p-3.5">
+      <div className="flex items-center justify-between">
+        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+          Format per platform
+        </p>
+        <Link
+          href="/settings/templates"
+          className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-primary"
+        >
+          + New format
+        </Link>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {byPlatform.map(({ card, options }) => (
+          <label
+            key={card.key}
+            className="flex items-center gap-2 rounded-lg border border-border/60 bg-card px-2.5 py-1.5"
+          >
+            <span className="font-mono text-[10.5px] font-bold uppercase tracking-[0.14em] text-muted-foreground/80">
+              {card.name}
+            </span>
+            <select
+              name={`template_${card.key}`}
+              value={values[card.key] ?? 'default'}
+              onChange={(e) => onChange(card.key, e.target.value)}
+              className="ml-auto rounded-md border border-border/60 bg-background px-2 py-1 text-[12px] font-medium focus:border-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="default">Built-in</option>
+              {options.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export function GenerateOutputsForm({
   workspaceId,
   contentId,
   submitLabel = 'Generate 4 drafts',
+  customTemplates = [],
 }: GenerateOutputsFormProps) {
   const [state, formAction] = useFormState(generateOutputsAction, initialState)
+
+  // Per-platform format selection. Default = 'default' (built-in). Sent
+  // as form fields so the action sees the override per platform.
+  const [templateValues, setTemplateValues] = useState<Record<string, string>>({})
+  const handleTemplateChange = (platform: string, value: string) => {
+    setTemplateValues((prev) => ({ ...prev, [platform]: value }))
+  }
 
   const hardError =
     state && state.ok === false
@@ -185,6 +282,13 @@ export function GenerateOutputsForm({
 
       {/* Platform preview cards */}
       <PlatformCardsRow isPending={false} generatedPlatforms={generatedPlatforms} />
+
+      {/* Per-platform format picker */}
+      <FormatOverridesPanel
+        customTemplates={customTemplates}
+        values={templateValues}
+        onChange={handleTemplateChange}
+      />
 
       {/* Language selector */}
       <div className="space-y-1.5">
