@@ -126,8 +126,8 @@ function ShotstackLogo({ size, className = '' }: { size: number; className?: str
       {...chipBase(
         size,
         className,
-        'linear-gradient(140deg, #6F2BFF 0%, #4B0FB8 100%)',
-        '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 22px -10px rgba(75,15,184,0.55)',
+        'linear-gradient(140deg, #6F2BFF 0%, #120920 100%)',
+        '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 22px -10px rgba(42,26,61,0.55)',
       )}
     >
       <svg width={inner} height={inner} viewBox="0 0 24 24" aria-hidden>

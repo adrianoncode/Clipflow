@@ -37,12 +37,12 @@ const PROVIDER_TONE: Record<
     tag: { bg: 'rgba(212,88,11,0.10)', fg: '#A0530B' },
   },
   google: {
-    glow: 'rgba(155,114,203,0.34)',
-    tag: { bg: 'rgba(155,114,203,0.12)', fg: '#5C2EA8' },
+    glow: 'rgba(42,26,61,0.32)',
+    tag: { bg: 'rgba(42,26,61,0.10)', fg: '#120920' },
   },
   shotstack: {
-    glow: 'rgba(75,15,184,0.36)',
-    tag: { bg: 'rgba(75,15,184,0.10)', fg: '#4B0FB8' },
+    glow: 'rgba(42,26,61,0.36)',
+    tag: { bg: 'rgba(42,26,61,0.10)', fg: '#120920' },
   },
   replicate: {
     glow: 'rgba(15,15,15,0.32)',

@@ -24,48 +24,57 @@ interface NichePickerProps {
   initialNiche: NicheId | null
 }
 
-/** Per-niche visual identity — Lucide icon + tone-tinted gradient
- *  chip background. Replaces the generic emoji-on-beige chip with
- *  designed objects that carry the niche's vibe at a glance. */
+/** Per-niche visual identity — single-color violet system across
+ *  all six. Each niche gets its own Lucide icon but the chip
+ *  background, foreground, and halo glow all live in the brand's
+ *  primary-violet palette. The niches read as one designed family,
+ *  not six rainbow vibes. */
+/**
+ * Single-color brand-plum system across all six niches. Background
+ * gradients live in the plum-soft range (#F2EEF7 → #DCCFEA, matched
+ * to the --plum-soft / --plum-soft-2 tokens), foregrounds in deep
+ * plum, halo glows in plum rgba. Each niche carries its own Lucide
+ * icon — the visual variation comes from the icon, not the colour.
+ */
 const NICHE_VISUAL: Record<
   NicheId,
   { Icon: LucideIcon; bg: string; fg: string; glow: string }
 > = {
   creator: {
     Icon: Clapperboard,
-    bg: 'linear-gradient(140deg, #FFE4F0 0%, #FFC2DC 100%)',
-    fg: '#A21769',
-    glow: 'rgba(221,42,123,0.30)',
+    bg: 'linear-gradient(140deg, #F2EEF7 0%, #DCCFEA 100%)',
+    fg: '#2A1A3D',
+    glow: 'rgba(42,26,61,0.28)',
   },
   podcaster: {
     Icon: Mic2,
-    bg: 'linear-gradient(140deg, #EDE6F5 0%, #D9C8EC 100%)',
-    fg: '#5C2EA8',
-    glow: 'rgba(124,58,237,0.30)',
+    bg: 'linear-gradient(140deg, #EDE6F2 0%, #D3C2E2 100%)',
+    fg: '#1A0F2A',
+    glow: 'rgba(42,26,61,0.32)',
   },
   coach: {
     Icon: Target,
-    bg: 'linear-gradient(140deg, #FFE9DA 0%, #FCC8A1 100%)',
-    fg: '#A0530B',
-    glow: 'rgba(212,88,11,0.30)',
+    bg: 'linear-gradient(140deg, #F2EEF7 0%, #DCCFEA 100%)',
+    fg: '#2A1A3D',
+    glow: 'rgba(42,26,61,0.26)',
   },
   saas: {
     Icon: Briefcase,
-    bg: 'linear-gradient(140deg, #DEE9FB 0%, #B6CDF6 100%)',
-    fg: '#1B4FB8',
-    glow: 'rgba(10,102,194,0.30)',
+    bg: 'linear-gradient(140deg, #EDE6F2 0%, #D3C2E2 100%)',
+    fg: '#2A1A3D',
+    glow: 'rgba(42,26,61,0.30)',
   },
   ecommerce: {
     Icon: ShoppingBag,
-    bg: 'linear-gradient(140deg, #DDF5E5 0%, #A6E3BC 100%)',
-    fg: '#0F6B4D',
-    glow: 'rgba(15,107,77,0.30)',
+    bg: 'linear-gradient(140deg, #F2EEF7 0%, #DCCFEA 100%)',
+    fg: '#2A1A3D',
+    glow: 'rgba(42,26,61,0.26)',
   },
   agency: {
     Icon: Building2,
-    bg: 'linear-gradient(140deg, #F1ECDC 0%, #DBCBA0 100%)',
-    fg: '#5A4A1F',
-    glow: 'rgba(120,90,40,0.30)',
+    bg: 'linear-gradient(140deg, #E6DCEF 0%, #C9B5DC 100%)',
+    fg: '#1A0F2A',
+    glow: 'rgba(42,26,61,0.32)',
   },
 }
 
@@ -188,11 +197,11 @@ export function NichePicker({ workspaceId, initialNiche }: NichePickerProps) {
                   ? {
                       border: '1.5px solid transparent',
                       backgroundImage:
-                        'linear-gradient(var(--card), var(--card)), linear-gradient(140deg, #7C3AED 0%, #4B0FB8 70%, #2A1A3D 100%)',
+                        'linear-gradient(var(--card), var(--card)), linear-gradient(140deg, #2A1A3D 0%, #120920 70%, #2A1A3D 100%)',
                       backgroundOrigin: 'border-box',
                       backgroundClip: 'padding-box, border-box',
                       boxShadow:
-                        '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 14px 32px -18px rgba(75,15,184,0.30)',
+                        '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 14px 32px -18px rgba(42,26,61,0.30)',
                     }
                   : {
                       boxShadow:

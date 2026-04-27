@@ -462,7 +462,7 @@ function ShimmerButton(props: ShimmerButtonProps) {
         }
       : {
           background:
-            'linear-gradient(115deg, transparent 30%, rgba(124,58,237,0.20) 50%, transparent 70%)',
+            'linear-gradient(115deg, transparent 30%, rgba(42,26,61,0.20) 50%, transparent 70%)',
         }
 
   const inner = (

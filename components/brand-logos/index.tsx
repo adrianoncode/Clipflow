@@ -259,6 +259,73 @@ export function GoogleDriveLogo({ size = 18, className }: LogoProps) {
 }
 
 // ---------------------------------------------------------------------------
+// Beehiiv — stylised honeycomb hexagon. Generic geometric primitive
+// suggesting the newsletter platform's beekeeping vibe, not an
+// attempt to reproduce their wordmark.
+// ---------------------------------------------------------------------------
+export function BeehiivLogo({ size = 18, className }: LogoProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M12 2.5l7 4v11l-7 4-7-4v-11l7-4z" />
+      <path d="M12 8.5l3 1.75v3.5L12 15.5l-3-1.75v-3.5L12 8.5z" fill="currentColor" stroke="none" opacity="0.55" />
+    </svg>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Airtable — abstract three-row tinted bars. Generic "structured data"
+// primitive that signals the spreadsheet/database vibe without copying
+// their actual mark.
+// ---------------------------------------------------------------------------
+export function AirtableLogo({ size = 18, className: _className }: LogoProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <rect x="3" y="5" width="18" height="4" rx="1.2" fill="#FCB400" />
+      <rect x="3" y="10.5" width="18" height="4" rx="1.2" fill="#18BFFF" />
+      <rect x="3" y="16" width="18" height="4" rx="1.2" fill="#F82B60" />
+    </svg>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Zapier — 4-pointed burst. Generic primitive for "automation /
+// connector" — not a reproduction of their orange wordmark.
+// ---------------------------------------------------------------------------
+export function ZapierLogo({ size = 18, className }: LogoProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path d="M12 2 13.4 9.2 20.6 7.8 16.6 13.6 22 18 14.7 18.8 13.6 26 12 22 10.4 26 9.3 18.8 2 18 7.4 13.6 3.4 7.8 10.6 9.2 12 2z" transform="translate(0, -1) scale(0.95)" />
+    </svg>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Upload-Post — neutral geometric mark for the bundle aggregator. No
 // official logo to clone, so we use a stylised "stack of arrows" that
 // reads as multi-platform publishing.

@@ -4,33 +4,40 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
+    /* Brand defaults — same plum/chartreuse palette as the landing
+       and the .lv2-shell scope. Used to be Tailwind's generic-violet
+       (263 70% 50%) for routes outside lv2-shell (Settings,
+       AI-Keys, Integrations, Templates), which is why the UI read
+       as "rosa-violet" instead of "plum-on-paper". One token change
+       cascades to every text-primary / bg-primary/X / ring-primary
+       in the codebase. */
+    --background: 38 38% 97%;          /* #FAF7F2 paper */
+    --foreground: 30 20% 8%;           /* #181511 ink */
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card: 48 71% 98%;                /* #FFFDF8 warm card */
+    --card-foreground: 30 20% 8%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover: 48 71% 98%;
+    --popover-foreground: 30 20% 8%;
 
-    --primary: 263 70% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 265 39% 17%;            /* #2A1A3D plum — BRAND */
+    --primary-foreground: 73 100% 62%; /* #D6FF3E chartreuse */
 
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 6% 10%;
+    --secondary: 35 35% 92%;           /* #F3EDE3 */
+    --secondary-foreground: 30 20% 8%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
+    --muted: 37 28% 89%;               /* #ECE5D8 */
+    --muted-foreground: 32 9% 45%;     /* #7c7468 */
 
-    --accent: 240 5% 96%;
-    --accent-foreground: 240 6% 10%;
+    --accent: 73 100% 62%;             /* #D6FF3E chartreuse — BRAND */
+    --accent-foreground: 73 100% 12%;  /* dark text on lime */
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 4 73% 37%;          /* #9B2018 warm red */
+    --destructive-foreground: 48 71% 98%;
 
-    --border: 240 6% 92%;
-    --input: 240 6% 92%;
-    --ring: 263 70% 50%;
+    --border: 37 32% 85%;              /* #E5DDCE */
+    --input: 37 32% 85%;
+    --ring: 265 39% 17%;               /* plum focus ring */
 
     --radius: 0.75rem;
   }

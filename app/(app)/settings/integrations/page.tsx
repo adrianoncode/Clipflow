@@ -7,11 +7,14 @@ import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { createClient } from '@/lib/supabase/server'
 import { ConnectDialog } from '@/components/integrations/connect-dialog'
 import {
+  AirtableLogo,
+  BeehiivLogo,
   DiscordLogo,
   GoogleDriveLogo,
   GoogleSheetsLogo,
   NotionLogo,
   SlackLogo,
+  ZapierLogo,
 } from '@/components/brand-logos'
 import type { ReactNode } from 'react'
 
@@ -254,7 +257,7 @@ function IntegrationCard({
         ? 'text-foreground'
         : '' // 'native' = SVG carries its own colors
   const glow =
-    INTEGRATION_GLOW[integration.id] ?? 'rgba(124,58,237,0.22)'
+    INTEGRATION_GLOW[integration.id] ?? 'rgba(42,26,61,0.22)'
 
   return (
     <div

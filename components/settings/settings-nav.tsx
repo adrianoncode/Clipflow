@@ -78,7 +78,7 @@ export function SettingsNav() {
         className="pointer-events-none absolute -left-10 -top-10 h-32 w-32 rounded-full"
         style={{
           background:
-            'radial-gradient(circle, rgba(124,58,237,0.10) 0%, rgba(124,58,237,0) 65%)',
+            'radial-gradient(circle, rgba(42,26,61,0.10) 0%, rgba(42,26,61,0) 65%)',
         }}
       />
 
@@ -141,9 +141,9 @@ function NavItem({
           className="group relative flex items-center gap-2.5 overflow-hidden rounded-xl px-2.5 py-2 text-[13px] font-bold text-white"
           style={{
             background:
-              'linear-gradient(140deg, #7C3AED 0%, #5B1FCC 60%, #3F0FA0 100%)',
+              'linear-gradient(140deg, #2A1A3D 0%, #2A1A3D 60%, #1A0F2A 100%)',
             boxShadow:
-              '0 1px 0 rgba(255,255,255,0.18) inset, 0 6px 18px -8px rgba(75,15,184,0.55)',
+              '0 1px 0 rgba(255,255,255,0.18) inset, 0 6px 18px -8px rgba(42,26,61,0.55)',
           }}
         >
           {/* inner highlight arc — same designer detail as the hero monogram */}

@@ -157,7 +157,7 @@ export function SmartImportBox({ workspaceId, hasOpenAiKey }: SmartImportBoxProp
   return (
     <div className="space-y-3">
       <div
-        className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card transition-all focus-within:border-primary/40 focus-within:shadow-[0_0_0_4px_rgba(124,58,237,0.10)]"
+        className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card transition-all focus-within:border-primary/40 focus-within:shadow-[0_0_0_4px_rgba(42,26,61,0.10)]"
         style={{
           boxShadow:
             '0 1px 0 rgba(255,255,255,0.6) inset, 0 1px 2px rgba(42,26,61,0.04), 0 14px 36px -22px rgba(42,26,61,0.22)',
@@ -174,7 +174,7 @@ export function SmartImportBox({ workspaceId, hasOpenAiKey }: SmartImportBoxProp
           className="pointer-events-none absolute -left-10 -top-12 h-36 w-36 rounded-full"
           style={{
             background:
-              'radial-gradient(circle, rgba(124,58,237,0.14) 0%, rgba(124,58,237,0) 65%)',
+              'radial-gradient(circle, rgba(42,26,61,0.14) 0%, rgba(42,26,61,0) 65%)',
           }}
         />
 
@@ -185,9 +185,9 @@ export function SmartImportBox({ workspaceId, hasOpenAiKey }: SmartImportBoxProp
             className="relative mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white sm:h-12 sm:w-12"
             style={{
               background:
-                'linear-gradient(140deg, #7C3AED 0%, #4B0FB8 60%, #2A1A3D 100%)',
+                'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
               boxShadow:
-                '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 22px -10px rgba(75,15,184,0.55)',
+                '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 22px -10px rgba(42,26,61,0.55)',
             }}
             aria-hidden
           >

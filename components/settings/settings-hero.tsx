@@ -49,7 +49,7 @@ export function SettingsHero({
         className="pointer-events-none absolute -left-12 -top-16 h-44 w-44 rounded-full"
         style={{
           background:
-            'radial-gradient(circle, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0) 60%)',
+            'radial-gradient(circle, rgba(42,26,61,0.18) 0%, rgba(42,26,61,0) 60%)',
         }}
       />
       <span
@@ -103,10 +103,10 @@ function Monogram({ initials }: { initials: string }) {
       className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-[18px] font-bold tracking-tight text-white sm:h-16 sm:w-16 sm:text-[20px]"
       style={{
         background:
-          'linear-gradient(140deg, #7C3AED 0%, #4B0FB8 60%, #2A1A3D 100%)',
+          'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
         fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
         boxShadow:
-          '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(75,15,184,0.55)',
+          '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(42,26,61,0.55)',
       }}
     >
       {/* Inner highlight arc — the kind of detail that tells the eye

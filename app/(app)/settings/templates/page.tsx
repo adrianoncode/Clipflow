@@ -43,9 +43,9 @@ export default async function TemplatesPage({
             className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white sm:h-16 sm:w-16"
             style={{
               background:
-                'linear-gradient(140deg, #7C3AED 0%, #4B0FB8 60%, #2A1A3D 100%)',
+                'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
               boxShadow:
-                '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(75,15,184,0.55)',
+                '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(42,26,61,0.55)',
             }}
             aria-hidden
           >

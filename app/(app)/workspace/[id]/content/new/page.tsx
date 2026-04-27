@@ -112,7 +112,7 @@ export default async function NewContentPage({ params }: NewContentPageProps) {
           className="pointer-events-none absolute -left-12 -top-16 h-44 w-44 rounded-full"
           style={{
             background:
-              'radial-gradient(circle, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0) 60%)',
+              'radial-gradient(circle, rgba(42,26,61,0.18) 0%, rgba(42,26,61,0) 60%)',
           }}
         />
         <span
@@ -125,9 +125,9 @@ export default async function NewContentPage({ params }: NewContentPageProps) {
             className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white sm:h-16 sm:w-16"
             style={{
               background:
-                'linear-gradient(140deg, #7C3AED 0%, #4B0FB8 60%, #2A1A3D 100%)',
+                'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
               boxShadow:
-                '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(75,15,184,0.55)',
+                '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(42,26,61,0.55)',
             }}
             aria-hidden
           >
@@ -256,7 +256,7 @@ export default async function NewContentPage({ params }: NewContentPageProps) {
                       className="flex h-8 w-8 items-center justify-center rounded-xl text-primary"
                       style={{
                         background:
-                          'linear-gradient(140deg, rgba(124,58,237,0.16) 0%, rgba(124,58,237,0.06) 100%)',
+                          'linear-gradient(140deg, rgba(42,26,61,0.16) 0%, rgba(42,26,61,0.06) 100%)',
                       }}
                     >
                       <Icon className="h-4 w-4" />
@@ -420,7 +420,7 @@ function Connector() {
         />
         <path
           d="M22 5 L30 10 L22 15"
-          stroke="rgba(124,58,237,0.7)"
+          stroke="rgba(42,26,61,0.7)"
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -428,8 +428,8 @@ function Connector() {
         />
         <defs>
           <linearGradient id="cf-conn-grad" x1="0" y1="0" x2="32" y2="0">
-            <stop offset="0%" stopColor="rgba(124,58,237,0.15)" />
-            <stop offset="100%" stopColor="rgba(124,58,237,0.7)" />
+            <stop offset="0%" stopColor="rgba(42,26,61,0.15)" />
+            <stop offset="100%" stopColor="rgba(42,26,61,0.7)" />
           </linearGradient>
         </defs>
       </svg>

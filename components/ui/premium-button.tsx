@@ -76,16 +76,20 @@ export function PremiumButton(props: PremiumButtonProps) {
   const baseStyle: React.CSSProperties =
     variant === 'primary'
       ? {
+          // Brand plum gradient — same palette as the landing's
+          // lv2-btn-primary (#2A1A3D → #120920). Foreground swaps to
+          // chartreuse so the click reads as "brand action", not as
+          // a generic dark-pill.
           background:
-            'linear-gradient(180deg, #2A2118 0%, #0A0908 100%)',
-          color: '#FFFDF8',
+            'linear-gradient(180deg, #3F2A57 0%, #120920 100%)',
+          color: '#D6FF3E',
           fontFamily:
             'var(--font-inter-tight), var(--font-inter), sans-serif',
         }
       : {
           background:
             'linear-gradient(180deg, #FFFDF8 0%, #F1ECDF 100%)',
-          color: '#181511',
+          color: '#2A1A3D',
           fontFamily:
             'var(--font-inter-tight), var(--font-inter), sans-serif',
         }
@@ -104,7 +108,7 @@ export function PremiumButton(props: PremiumButtonProps) {
     background:
       variant === 'primary'
         ? 'linear-gradient(115deg, transparent 35%, rgba(214,255,62,0.22) 50%, transparent 65%)'
-        : 'linear-gradient(115deg, transparent 35%, rgba(124,58,237,0.16) 50%, transparent 65%)',
+        : 'linear-gradient(115deg, transparent 35%, rgba(42,26,61,0.16) 50%, transparent 65%)',
   }
 
   const inner = (
@@ -136,9 +140,9 @@ export function PremiumButton(props: PremiumButtonProps) {
             inset 0 1px 0 rgba(255, 255, 255, 0.18),
             inset 0 -1px 0 rgba(0, 0, 0, 0.55),
             inset 0 -3px 6px -2px rgba(0, 0, 0, 0.4),
-            0 1px 1px rgba(10, 9, 8, 0.45),
-            0 4px 8px -2px rgba(10, 9, 8, 0.45),
-            0 14px 28px -10px rgba(10, 9, 8, 0.35)`
+            0 1px 1px rgba(18, 9, 32, 0.45),
+            0 4px 8px -2px rgba(18, 9, 32, 0.45),
+            0 14px 28px -10px rgba(18, 9, 32, 0.35)`
             : `
             inset 0 1px 0 rgba(255, 255, 255, 0.95),
             inset 0 -1px 0 rgba(24, 21, 17, 0.10),
@@ -159,9 +163,9 @@ export function PremiumButton(props: PremiumButtonProps) {
             inset 0 1px 0 rgba(255, 255, 255, 0.24),
             inset 0 -1px 0 rgba(0, 0, 0, 0.55),
             inset 0 -3px 6px -2px rgba(0, 0, 0, 0.4),
-            0 1px 1px rgba(10, 9, 8, 0.50),
-            0 8px 14px -2px rgba(10, 9, 8, 0.50),
-            0 22px 38px -10px rgba(10, 9, 8, 0.45),
+            0 1px 1px rgba(18, 9, 32, 0.50),
+            0 8px 14px -2px rgba(18, 9, 32, 0.50),
+            0 22px 38px -10px rgba(18, 9, 32, 0.45),
             0 0 0 4px rgba(214, 255, 62, 0.06)`
             : `
             inset 0 1px 0 rgba(255, 255, 255, 1),
@@ -181,8 +185,8 @@ export function PremiumButton(props: PremiumButtonProps) {
             inset 0 1px 0 rgba(255, 255, 255, 0.10),
             inset 0 -1px 0 rgba(0, 0, 0, 0.45),
             inset 0 2px 4px rgba(0, 0, 0, 0.45),
-            0 1px 1px rgba(10, 9, 8, 0.30),
-            0 2px 4px -1px rgba(10, 9, 8, 0.30)`
+            0 1px 1px rgba(18, 9, 32, 0.30),
+            0 2px 4px -1px rgba(18, 9, 32, 0.30)`
             : `
             inset 0 1px 0 rgba(255, 255, 255, 0.55),
             inset 0 -1px 0 rgba(24, 21, 17, 0.08),

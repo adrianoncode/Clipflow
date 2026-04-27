@@ -107,7 +107,7 @@ export function EmptyState({
         className="pointer-events-none absolute -left-16 -top-20 h-56 w-56 rounded-full"
         style={{
           background:
-            'radial-gradient(circle, rgba(124,58,237,0.16) 0%, rgba(124,58,237,0) 60%)',
+            'radial-gradient(circle, rgba(42,26,61,0.16) 0%, rgba(42,26,61,0) 60%)',
         }}
       />
       <span
@@ -145,11 +145,11 @@ export function EmptyState({
                     className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10.5px] font-bold text-white"
                     style={{
                       background:
-                        'linear-gradient(140deg, #7C3AED 0%, #4B0FB8 100%)',
+                        'linear-gradient(140deg, #2A1A3D 0%, #120920 100%)',
                       fontFamily:
                         'var(--font-inter-tight), var(--font-inter), sans-serif',
                       boxShadow:
-                        '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 10px -4px rgba(75,15,184,0.55)',
+                        '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 10px -4px rgba(42,26,61,0.55)',
                     }}
                   >
                     {i + 1}
@@ -224,9 +224,9 @@ function VisualChip({
         width: dim,
         height: dim,
         background:
-          'linear-gradient(140deg, #7C3AED 0%, #4B0FB8 60%, #2A1A3D 100%)',
+          'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
         boxShadow:
-          '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(75,15,184,0.55)',
+          '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(42,26,61,0.55)',
       }}
       aria-hidden
     >

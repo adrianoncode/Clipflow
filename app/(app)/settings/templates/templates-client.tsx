@@ -343,16 +343,16 @@ function EmptyState() {
         className="pointer-events-none absolute -left-10 -top-12 h-32 w-32 rounded-full"
         style={{
           background:
-            'radial-gradient(circle, rgba(124,58,237,0.14) 0%, rgba(124,58,237,0) 60%)',
+            'radial-gradient(circle, rgba(42,26,61,0.14) 0%, rgba(42,26,61,0) 60%)',
         }}
       />
       <span
         className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white"
         style={{
           background:
-            'linear-gradient(140deg, #7C3AED 0%, #4B0FB8 60%, #2A1A3D 100%)',
+            'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
           boxShadow:
-            '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 18px -8px rgba(75,15,184,0.55)',
+            '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 18px -8px rgba(42,26,61,0.55)',
         }}
         aria-hidden
       >
