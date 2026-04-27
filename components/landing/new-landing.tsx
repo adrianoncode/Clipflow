@@ -535,6 +535,128 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         .lv2-tcard { transition: transform .3s, box-shadow .3s; }
         .lv2-tcard:hover { transform: translateY(-3px) rotate(-.3deg); box-shadow: 0 20px 40px -20px rgba(42,26,61,.25); }
 
+        /* ─── Pricing-tile interaction system ─────────────────────────
+           Six effects that fire when the cursor enters one of the
+           pricing tiles. Designed to compound: each one alone is
+           subtle, together they make the section feel like a real
+           designed object you can press. */
+
+        .lv2-pricing-grid { perspective: 1400px; }
+
+        .lv2-pricing-tile {
+          --pt-tilt: 0;
+          transition:
+            opacity .35s cubic-bezier(.2,.8,.2,1),
+            transform .35s cubic-bezier(.2,.8,.2,1),
+            filter .35s ease;
+        }
+
+        /* 1 ─ Sibling-dimming. When any tile is hovered, the others
+           fade slightly + shrink + desaturate. The hovered one pops
+           by relative contrast, no scale-up needed. */
+        .lv2-pricing-grid:has(.lv2-pricing-tile:hover) .lv2-pricing-tile:not(:hover) {
+          opacity: .58;
+          transform: scale(.985);
+          filter: saturate(.78);
+        }
+
+        /* 2 ─ Sonar welcome pulse. A soft chartreuse ring expands once
+           when the cursor enters a tile — single-shot delight, not a
+           repeating animation. */
+        .lv2-pricing-tile::after {
+          content: '';
+          position: absolute; inset: 0;
+          border-radius: inherit;
+          pointer-events: none;
+          box-shadow: 0 0 0 0 rgba(214,255,62,0);
+          opacity: 0;
+          z-index: 4;
+        }
+        .lv2-pricing-tile:hover::after {
+          animation: lv2-pt-sonar 0.95s cubic-bezier(.2,.8,.2,1) 1;
+        }
+        @keyframes lv2-pt-sonar {
+          0%   { box-shadow: 0 0 0 0 rgba(214,255,62,.55); opacity: 1; }
+          100% { box-shadow: 0 0 0 28px rgba(214,255,62,0); opacity: 0; }
+        }
+
+        /* 3 ─ Staggered feature reveal. Each <li> uses --i (its index)
+           to delay its highlight on hover. Items tick in left-to-right
+           with a brightness lift + tiny scale on the checkmark. */
+        .lv2-pricing-tile .lv2-feature {
+          --i: 0;
+          opacity: .82;
+          transform: translateX(0);
+          transition:
+            opacity .42s cubic-bezier(.2,.8,.2,1),
+            transform .42s cubic-bezier(.2,.8,.2,1);
+        }
+        .lv2-pricing-tile .lv2-feature-check {
+          display: inline-block;
+          transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+        }
+        .lv2-pricing-tile:hover .lv2-feature {
+          opacity: 1;
+          transform: translateX(2px);
+          transition-delay: calc(var(--i) * 55ms);
+        }
+        .lv2-pricing-tile:hover .lv2-feature-check {
+          transform: scale(1.18);
+          transition-delay: calc(var(--i) * 55ms);
+        }
+
+        /* 4 ─ Always-on subtle beam for the popular tile, brighter on
+           hover. The lv2-beam pseudo already exists; we just bump its
+           idle opacity for the popular variant so people see it
+           orbiting before they hover. */
+        .lv2-pricing-tile-popular.lv2-beam::before {
+          opacity: .35;
+        }
+        .lv2-pricing-tile-popular.lv2-beam:hover::before {
+          opacity: 1;
+        }
+
+        /* 5 ─ CTA arrow ambient drift. Subtle continuous motion that
+           tells the eye "click is over here", but pauses on hover so
+           the existing hover-translate takes over cleanly. */
+        @keyframes lv2-pt-arrow-drift {
+          0%, 100% { transform: translateX(0); }
+          50%      { transform: translateX(2.5px); }
+        }
+        .lv2-pricing-tile .lv2-arrow {
+          animation: lv2-pt-arrow-drift 2.6s ease-in-out infinite;
+        }
+        .lv2-pricing-tile:hover .lv2-arrow {
+          animation: none;
+        }
+
+        /* 6 ─ Parallax via tilt. The PricingTilt wrapper exposes the
+           rotation values; child elements with data-depth pull
+           themselves toward or away from the viewer. The tilt math
+           in hero-motion.tsx already does the heavy lifting; we just
+           add Z translations here. */
+        .lv2-pricing-tile [data-depth='back']  { transform: translateZ(-6px); }
+        .lv2-pricing-tile [data-depth='front'] { transform: translateZ(14px); }
+        .lv2-pricing-tile [data-depth='cta']   { transform: translateZ(22px); }
+
+        /* Safety: kill all the new pricing animations under
+           prefers-reduced-motion (the global @media at the top of
+           this style block already handles transitions, but the
+           stagger and sonar would still fire without an explicit
+           opt-out). */
+        @media (prefers-reduced-motion: reduce) {
+          .lv2-pricing-tile,
+          .lv2-pricing-tile .lv2-feature,
+          .lv2-pricing-tile .lv2-feature-check,
+          .lv2-pricing-tile .lv2-arrow {
+            animation: none !important;
+            transition: none !important;
+            transform: none !important;
+            opacity: 1 !important;
+          }
+          .lv2-pricing-tile:hover::after { animation: none; }
+        }
+
         .lv2-sticker {
           position: absolute; transform: rotate(-6deg);
           background: var(--lv2-accent); color: var(--lv2-accent-ink);
@@ -2194,14 +2316,14 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           </p>
         </div>
 
-        <div className="lv2-reveal-stagger mx-auto grid max-w-[1040px] gap-4 md:grid-cols-3">
-          <PricingTilt className="lv2-card lv2-ring-soft lv2-card-hover lv2-beam p-6">
+        <div className="lv2-pricing-grid lv2-reveal-stagger mx-auto grid max-w-[1040px] gap-4 md:grid-cols-3">
+          <PricingTilt className="lv2-pricing-tile lv2-card lv2-ring-soft lv2-card-hover lv2-beam p-6">
           <div>
-            <p className="lv2-mono-label mb-1">Starter</p>
+            <p className="lv2-mono-label mb-1" data-depth="back">Starter</p>
             <p className="mb-2 text-[11.5px] font-medium" style={{ color: 'var(--lv2-muted)' }}>
               Test drive — no card needed
             </p>
-            <p className="lv2-display text-[52px] leading-none" style={{ color: 'var(--lv2-primary)' }}>
+            <p className="lv2-display text-[52px] leading-none" style={{ color: 'var(--lv2-primary)' }} data-depth="front">
               $0
             </p>
             <p className="mt-1 text-[12.5px]" style={{ color: 'var(--lv2-muted)' }}>
@@ -2210,9 +2332,13 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             <div className="lv2-rule my-5" />
             <ul className="space-y-2.5 text-[13px]">
               {['3 videos / month', '10 posts / month', '1 workspace', 'Clipflow watermark'].map(
-                (f) => (
-                  <li key={f} className="flex items-start gap-2">
-                    <span className="mt-0.5" style={{ color: 'var(--lv2-primary)' }}>
+                (f, i) => (
+                  <li
+                    key={f}
+                    className="lv2-feature flex items-start gap-2"
+                    style={{ '--i': i } as React.CSSProperties}
+                  >
+                    <span className="lv2-feature-check mt-0.5" style={{ color: 'var(--lv2-primary)' }}>
                       ✓
                     </span>
                     {f}
@@ -2224,6 +2350,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               href={appendPlan(signupHref, 'free')}
               className="lv2-btn-ghost lv2-magnetic mt-6 w-full justify-center border"
               style={{ borderColor: 'var(--lv2-border)' }}
+              data-depth="cta"
             >
               <span className="lv2-magnetic-shine" />
               <span className="lv2-magnetic-label">
@@ -2234,7 +2361,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           </PricingTilt>
 
           <PricingTilt
-            className="lv2-card lv2-ring-soft lv2-card-hover lv2-beam relative p-6"
+            className="lv2-pricing-tile lv2-pricing-tile-popular lv2-card lv2-ring-soft lv2-card-hover lv2-beam relative p-6"
             style={{
               borderColor: 'var(--lv2-primary)',
               boxShadow:
@@ -2263,6 +2390,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               <p
                 className="lv2-display text-[52px] leading-none"
                 style={{ color: 'var(--lv2-primary)' }}
+                data-depth="front"
               >
                 $29
               </p>
@@ -2294,16 +2422,24 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 'Brand voice + Brand Kit (logo, color, intro/outro)',
                 'Auto-publish to TikTok, Instagram, YouTube, LinkedIn',
                 'A/B hook testing · Virality Score · Creator research',
-              ].map((f) => (
-                <li key={f} className="flex items-start gap-2">
-                  <span className="mt-0.5" style={{ color: 'var(--lv2-primary)' }}>
+              ].map((f, i) => (
+                <li
+                  key={f}
+                  className="lv2-feature flex items-start gap-2"
+                  style={{ '--i': i } as React.CSSProperties}
+                >
+                  <span className="lv2-feature-check mt-0.5" style={{ color: 'var(--lv2-primary)' }}>
                     ✓
                   </span>
                   {f}
                 </li>
               ))}
             </ul>
-            <Link href={appendPlan(signupHref, 'creator')} className="lv2-btn-primary lv2-magnetic mt-6 w-full justify-center">
+            <Link
+              href={appendPlan(signupHref, 'creator')}
+              className="lv2-btn-primary lv2-magnetic mt-6 w-full justify-center"
+              data-depth="cta"
+            >
               <span className="lv2-magnetic-shine" />
               <span className="lv2-magnetic-label">
                 Try Creator free for 14 days <span className="lv2-arrow">→</span>
@@ -2318,9 +2454,9 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           </div>
           </PricingTilt>
 
-          <PricingTilt className="lv2-card lv2-ring-soft lv2-card-hover lv2-beam p-6">
+          <PricingTilt className="lv2-pricing-tile lv2-card lv2-ring-soft lv2-card-hover lv2-beam p-6">
           <div>
-            <p className="lv2-mono-label mb-1">Studio</p>
+            <p className="lv2-mono-label mb-1" data-depth="back">Studio</p>
             <p className="mb-2 inline-flex items-center gap-1.5 text-[11.5px] font-medium" style={{ color: 'var(--lv2-muted)' }}>
               <span
                 aria-hidden
@@ -2333,6 +2469,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               <p
                 className="lv2-display text-[52px] leading-none"
                 style={{ color: 'var(--lv2-primary)' }}
+                data-depth="front"
               >
                 $99
               </p>
@@ -2365,17 +2502,24 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 'AI avatars · auto-dub · voice cloning',
                 'Priority render queue + audit log',
                 'Everything in Creator',
-              ].map((f) => (
-                <li key={f} className="flex items-start gap-2">
-                  <span className="mt-0.5" style={{ color: 'var(--lv2-primary)' }}>
+              ].map((f, i) => (
+                <li
+                  key={f}
+                  className="lv2-feature flex items-start gap-2"
+                  style={{ '--i': i } as React.CSSProperties}
+                >
+                  <span className="lv2-feature-check mt-0.5" style={{ color: 'var(--lv2-primary)' }}>
                     ✓
                   </span>
                   {f}
                 </li>
               ))}
             </ul>
-            <Link href={appendPlan(signupHref, 'studio')} className="lv2-btn-ghost lv2-magnetic mt-6 w-full justify-center border"
+            <Link
+              href={appendPlan(signupHref, 'studio')}
+              className="lv2-btn-ghost lv2-magnetic mt-6 w-full justify-center border"
               style={{ borderColor: 'var(--lv2-border)' }}
+              data-depth="cta"
             >
               <span className="lv2-magnetic-shine" />
               <span className="lv2-magnetic-label">
