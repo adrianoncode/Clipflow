@@ -1242,21 +1242,41 @@ async function DashboardBody() {
                               )}
                             </div>
                             <div className="mt-3 flex items-baseline gap-1.5">
-                              <span className="lv2d-sans-d lv2d-tabular text-[30px] font-bold leading-none">
-                                {s.count}
+                              <span
+                                className="lv2d-sans-d lv2d-tabular text-[30px] font-bold leading-none"
+                                style={{
+                                  color:
+                                    s.count === 0
+                                      ? 'var(--lv2d-muted)'
+                                      : 'var(--lv2d-fg)',
+                                  opacity: s.count === 0 ? 0.55 : 1,
+                                }}
+                              >
+                                {s.count === 0 ? '—' : s.count}
                               </span>
                             </div>
                             <p className="mt-0.5 text-[12px] font-semibold">{s.label}</p>
                             <p className="text-[11px]" style={{ color: 'var(--lv2d-muted)' }}>
                               {s.sub}
                             </p>
-                            {s.pulse && (
+                            {s.pulse ? (
                               <div
                                 className="lv2d-shimmer-wrap mt-2 h-1 w-full rounded-full"
                                 style={{ background: 'var(--lv2d-warn-soft)' }}
                               >
                                 <div className="lv2d-shimmer-bar" />
                               </div>
+                            ) : (
+                              <div
+                                className="mt-2 h-1 w-full rounded-full"
+                                style={{
+                                  background:
+                                    s.count === 0
+                                      ? 'repeating-linear-gradient(90deg, var(--lv2d-border) 0 4px, transparent 4px 8px)'
+                                      : `linear-gradient(90deg, ${s.tone.fg}, transparent)`,
+                                  opacity: s.count === 0 ? 0.7 : 0.4,
+                                }}
+                              />
                             )}
                           </Link>
                         </div>
@@ -1459,8 +1479,17 @@ async function DashboardBody() {
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline gap-1.5">
-                          <span className="lv2d-sans-d lv2d-tabular text-[22px] font-bold leading-none">
-                            {m.value}
+                          <span
+                            className="lv2d-sans-d lv2d-tabular text-[22px] font-bold leading-none"
+                            style={{
+                              color:
+                                m.value === 0
+                                  ? 'var(--lv2d-muted)'
+                                  : 'var(--lv2d-fg)',
+                              opacity: m.value === 0 ? 0.55 : 1,
+                            }}
+                          >
+                            {m.value === 0 ? '—' : m.value}
                           </span>
                           {(m.thisMonth > 0 || m.lastMonth > 0) && (
                             <DeltaChip current={m.thisMonth} previous={m.lastMonth} />
@@ -1485,7 +1514,17 @@ async function DashboardBody() {
                           variant="bars"
                           label={`${m.label} last 7 days`}
                         />
-                      ) : null}
+                      ) : (
+                        <div
+                          className="h-[22px] w-16 shrink-0 rounded-sm"
+                          aria-hidden
+                          style={{
+                            background:
+                              'repeating-linear-gradient(90deg, var(--lv2d-border) 0 4px, transparent 4px 8px)',
+                            opacity: 0.6,
+                          }}
+                        />
+                      )}
                     </Link>
                   ))}
                   </div>
