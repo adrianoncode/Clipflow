@@ -182,12 +182,9 @@ export function SmartSuggestions({ suggestions }: { suggestions: Suggestion[] })
                 </div>
 
                 {/* Action button */}
-                <Link
-                  href={suggestion.actionHref}
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-primary/15 bg-primary/[0.05] py-2 text-[11px] font-semibold text-primary transition-all hover:border-primary/30 hover:bg-primary/10"
-                >
+                <Link href={suggestion.actionHref} className="lv2d-btn-ghost-sm w-full">
                   {suggestion.actionLabel}
-                  <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                  <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
             </div>

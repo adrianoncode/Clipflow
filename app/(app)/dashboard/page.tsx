@@ -122,6 +122,193 @@ const DASH_STYLES = `
   isolation: isolate;
 }
 
+/* Small variants — same physical recipe at a tighter footprint, used
+   for inline section-header CTAs ("Open analytics →", "Tune →", etc.)
+   so every clickable thing in the dashboard speaks the same language. */
+.lv2-dash .lv2d-btn-primary-sm,
+.lv2-dash .lv2d-btn-accent-sm,
+.lv2-dash .lv2d-btn-ghost-sm {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center; gap: .35rem;
+  padding: 0 10px; height: 26px;
+  border-radius: 8px;
+  font-family: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif;
+  font-weight: 700; font-size: 11px; letter-spacing: -.002em;
+  transition: box-shadow .18s ease, transform .18s ease, filter .18s ease;
+  isolation: isolate;
+  white-space: nowrap;
+}
+.lv2-dash .lv2d-btn-pill-sm {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center; gap: .25rem;
+  padding: 0 10px; height: 28px;
+  border-radius: 999px;
+  font-family: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif;
+  font-weight: 800; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+  transition: box-shadow .18s ease, transform .18s ease, filter .18s ease;
+  isolation: isolate;
+  background: linear-gradient(180deg, #3F2A57 0%, #120920 100%);
+  color: var(--lv2d-accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 rgba(0,0,0,.55),
+    inset 0 -3px 6px -2px rgba(0,0,0,.4),
+    0 1px 1px rgba(18,9,32,.45),
+    0 4px 8px -2px rgba(18,9,32,.45),
+    0 12px 22px -10px rgba(18,9,32,.35);
+}
+.lv2-dash .lv2d-btn-pill-sm:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    inset 0 -1px 0 rgba(0,0,0,.55),
+    inset 0 -3px 6px -2px rgba(0,0,0,.4),
+    0 1px 1px rgba(18,9,32,.50),
+    0 8px 14px -2px rgba(18,9,32,.50),
+    0 18px 30px -10px rgba(18,9,32,.45),
+    0 0 0 3px rgba(214,255,62,.10),
+    0 0 22px -2px rgba(214,255,62,.30);
+}
+.lv2-dash .lv2d-btn-pill-sm:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(0,0,0,.45),
+    inset 0 2px 4px rgba(0,0,0,.45),
+    0 1px 1px rgba(18,9,32,.30);
+  transition: box-shadow .05s ease, transform .05s ease;
+}
+
+.lv2-dash .lv2d-btn-primary-sm {
+  background: linear-gradient(180deg, #3F2A57 0%, #120920 100%);
+  color: var(--lv2d-accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 rgba(0,0,0,.55),
+    inset 0 -3px 6px -2px rgba(0,0,0,.4),
+    0 1px 1px rgba(18,9,32,.45),
+    0 3px 6px -2px rgba(18,9,32,.45),
+    0 10px 20px -10px rgba(18,9,32,.35);
+}
+.lv2-dash .lv2d-btn-primary-sm:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    inset 0 -1px 0 rgba(0,0,0,.55),
+    inset 0 -3px 6px -2px rgba(0,0,0,.4),
+    0 1px 1px rgba(18,9,32,.50),
+    0 6px 10px -2px rgba(18,9,32,.50),
+    0 16px 28px -10px rgba(18,9,32,.45),
+    0 0 0 3px rgba(214,255,62,.10),
+    0 0 22px -2px rgba(214,255,62,.30);
+}
+.lv2-dash .lv2d-btn-accent-sm {
+  background: linear-gradient(180deg, #E5FF6A 0%, #BFE82C 100%);
+  color: var(--lv2d-accent-ink);
+  font-weight: 800;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    inset 0 -1px 0 rgba(74,90,0,.45),
+    inset 0 -3px 6px -2px rgba(74,90,0,.30),
+    0 1px 1px rgba(74,90,0,.30),
+    0 3px 6px -2px rgba(74,90,0,.35),
+    0 10px 20px -10px rgba(74,90,0,.35);
+}
+.lv2-dash .lv2d-btn-accent-sm:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.65),
+    inset 0 -1px 0 rgba(74,90,0,.45),
+    inset 0 -3px 6px -2px rgba(74,90,0,.30),
+    0 1px 1px rgba(74,90,0,.35),
+    0 6px 10px -2px rgba(74,90,0,.40),
+    0 16px 28px -10px rgba(74,90,0,.40),
+    0 0 0 3px rgba(214,255,62,.30),
+    0 0 22px -2px rgba(214,255,62,.50);
+}
+.lv2-dash .lv2d-btn-ghost-sm {
+  background: linear-gradient(180deg, #FFFDF8 0%, #F1ECDF 100%);
+  color: var(--lv2d-fg);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 -1px 0 rgba(24,21,17,.10),
+    inset 0 -3px 6px -2px rgba(24,21,17,.06),
+    0 0 0 1px var(--lv2d-border),
+    0 1px 1px rgba(24,21,17,.06),
+    0 3px 6px -2px rgba(24,21,17,.10),
+    0 10px 20px -10px rgba(24,21,17,.10);
+}
+.lv2-dash .lv2d-btn-ghost-sm:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -1px 0 rgba(24,21,17,.10),
+    inset 0 -3px 6px -2px rgba(24,21,17,.06),
+    0 0 0 1px var(--lv2d-border-strong),
+    0 1px 1px rgba(24,21,17,.08),
+    0 6px 10px -2px rgba(24,21,17,.14),
+    0 14px 26px -10px rgba(24,21,17,.14),
+    0 0 0 3px rgba(42,26,61,.05);
+}
+.lv2-dash .lv2d-btn-primary-sm:active,
+.lv2-dash .lv2d-btn-accent-sm:active,
+.lv2-dash .lv2d-btn-ghost-sm:active {
+  transform: translateY(1px);
+  transition: box-shadow .05s ease, transform .05s ease, filter .05s ease;
+}
+.lv2-dash .lv2d-btn-primary-sm:active {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(0,0,0,.45),
+    inset 0 2px 4px rgba(0,0,0,.45),
+    0 1px 1px rgba(18,9,32,.30);
+}
+.lv2-dash .lv2d-btn-accent-sm:active {
+  filter: brightness(.97);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.30),
+    inset 0 -1px 0 rgba(74,90,0,.35),
+    inset 0 2px 4px rgba(74,90,0,.35),
+    0 1px 1px rgba(74,90,0,.20);
+}
+.lv2-dash .lv2d-btn-ghost-sm:active {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    inset 0 -1px 0 rgba(24,21,17,.08),
+    inset 0 2px 4px rgba(24,21,17,.08),
+    0 0 0 1px var(--lv2d-border-strong),
+    0 1px 1px rgba(24,21,17,.04);
+}
+.lv2-dash .lv2d-btn-primary-sm::before,
+.lv2-dash .lv2d-btn-accent-sm::before,
+.lv2-dash .lv2d-btn-ghost-sm::before,
+.lv2-dash .lv2d-btn-pill-sm::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none;
+}
+.lv2-dash .lv2d-btn-primary-sm::before,
+.lv2-dash .lv2d-btn-pill-sm::before {
+  background: radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,.18) 0%, transparent 55%);
+}
+.lv2-dash .lv2d-btn-accent-sm::before {
+  background: radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,.55) 0%, transparent 55%);
+}
+.lv2-dash .lv2d-btn-ghost-sm::before {
+  background: radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,.85) 0%, transparent 55%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lv2-dash .lv2d-btn-primary-sm,
+  .lv2-dash .lv2d-btn-accent-sm,
+  .lv2-dash .lv2d-btn-ghost-sm,
+  .lv2-dash .lv2d-btn-pill-sm { transition: none; }
+  .lv2-dash .lv2d-btn-primary-sm:hover,
+  .lv2-dash .lv2d-btn-accent-sm:hover,
+  .lv2-dash .lv2d-btn-ghost-sm:hover,
+  .lv2-dash .lv2d-btn-pill-sm:hover { transform: none; }
+}
+
 /* Primary — plum gradient with chartreuse text. */
 .lv2-dash .lv2d-btn-primary {
   background: linear-gradient(180deg, #3F2A57 0%, #120920 100%);
@@ -936,11 +1123,7 @@ async function DashboardBody() {
                         {workspaces.length}
                       </span>
                     </div>
-                    <Link
-                      href="/workspace/new?as=client"
-                      className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold transition-colors hover:bg-black/[0.04]"
-                      style={{ color: 'var(--lv2d-primary)' }}
-                    >
+                    <Link href="/workspace/new?as=client" className="lv2d-btn-ghost-sm">
                       Add client <ArrowUpRight className="h-3 w-3" />
                     </Link>
                   </div>
@@ -1023,10 +1206,9 @@ async function DashboardBody() {
                     </div>
                     <Link
                       href={`/workspace/${workspace.id}/pipeline`}
-                      className="text-[11px] font-semibold hover:underline"
-                      style={{ color: 'var(--lv2d-primary)' }}
+                      className="lv2d-btn-ghost-sm"
                     >
-                      Open drafts board →
+                      Open drafts board <ArrowRight className="h-3 w-3" />
                     </Link>
                   </div>
                   <div className="p-5">
@@ -1192,12 +1374,8 @@ async function DashboardBody() {
                     style={{ borderBottom: '1px solid var(--lv2d-border)' }}
                   >
                     <span className="lv2d-mono-label">At a glance · last 7 days</span>
-                    <Link
-                      href="/analytics"
-                      className="text-[11px] font-semibold hover:underline"
-                      style={{ color: 'var(--lv2d-primary)' }}
-                    >
-                      Open analytics →
+                    <Link href="/analytics" className="lv2d-btn-ghost-sm">
+                      Open analytics <ArrowRight className="h-3 w-3" />
                     </Link>
                   </div>
                   <div
@@ -1327,10 +1505,9 @@ async function DashboardBody() {
                       </div>
                       <Link
                         href={`/workspace/${workspace.id}/pipeline`}
-                        className="text-[11px] font-semibold hover:underline"
-                        style={{ color: 'var(--lv2d-primary)' }}
+                        className="lv2d-btn-ghost-sm"
                       >
-                        All drafts →
+                        All drafts <ArrowRight className="h-3 w-3" />
                       </Link>
                     </div>
                     {recentOutputs.length === 0 ? (
@@ -1406,12 +1583,8 @@ async function DashboardBody() {
                           <TrendingUp className="h-3.5 w-3.5" style={{ color: 'var(--lv2d-primary)' }} />
                           <span className="lv2d-mono-label">Platform performance · 7d</span>
                         </div>
-                        <Link
-                          href="/analytics"
-                          className="text-[11px] font-semibold hover:underline"
-                          style={{ color: 'var(--lv2d-primary)' }}
-                        >
-                          Analytics →
+                        <Link href="/analytics" className="lv2d-btn-ghost-sm">
+                          Analytics <ArrowRight className="h-3 w-3" />
                         </Link>
                       </div>
                       <div className="lv2d-divide">
@@ -1496,10 +1669,9 @@ async function DashboardBody() {
                       </div>
                       <Link
                         href={`/workspace/${workspace.id}/schedule?view=calendar`}
-                        className="text-[11px] font-semibold hover:underline"
-                        style={{ color: 'var(--lv2d-primary)' }}
+                        className="lv2d-btn-ghost-sm"
                       >
-                        Calendar →
+                        Calendar <ArrowRight className="h-3 w-3" />
                       </Link>
                     </div>
                     {upcoming.length === 0 ? (
@@ -1549,8 +1721,7 @@ async function DashboardBody() {
                       {scheduled.length > 0 && (
                         <Link
                           href={`/workspace/${workspace.id}/schedule`}
-                          className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold transition-colors hover:bg-black/[0.04]"
-                          style={{ color: 'var(--lv2d-muted)' }}
+                          className="lv2d-btn-ghost-sm"
                         >
                           <span className="text-sm leading-none">+</span> Schedule post
                         </Link>
@@ -1568,12 +1739,8 @@ async function DashboardBody() {
                         />
                         <span className="lv2d-mono-label">Brand voice</span>
                       </div>
-                      <Link
-                        href="/settings/brand-voice"
-                        className="text-[11px] font-semibold hover:underline"
-                        style={{ color: 'var(--lv2d-primary)' }}
-                      >
-                        Tune →
+                      <Link href="/settings/brand-voice" className="lv2d-btn-ghost-sm">
+                        Tune <ArrowRight className="h-3 w-3" />
                       </Link>
                     </div>
                     {brandVoice ? (
@@ -1632,11 +1799,7 @@ async function DashboardBody() {
                             </div>
                           ))}
                           {bvDoneCount < bvTotalCount ? (
-                            <Link
-                              href="/settings/brand-voice"
-                              className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold hover:underline"
-                              style={{ color: 'var(--lv2d-primary)' }}
-                            >
+                            <Link href="/settings/brand-voice" className="lv2d-btn-primary-sm mt-1">
                               Finish setup <ArrowRight className="h-3 w-3" />
                             </Link>
                           ) : null}
@@ -1745,12 +1908,8 @@ async function DashboardBody() {
                         needs attention
                       </span>
                     ) : (
-                      <Link
-                        href="/settings/ai-keys"
-                        className="text-[11px] font-semibold hover:underline"
-                        style={{ color: 'var(--lv2d-primary)' }}
-                      >
-                        Manage →
+                      <Link href="/settings/ai-keys" className="lv2d-btn-ghost-sm">
+                        Manage <ArrowRight className="h-3 w-3" />
                       </Link>
                     )}
                   </div>
@@ -1805,18 +1964,7 @@ async function DashboardBody() {
                             Connected
                           </span>
                         ) : (
-                          <Link
-                            href="/settings/ai-keys"
-                            className="inline-flex h-7 items-center gap-1 rounded-full px-2.5 text-[10.5px] font-bold uppercase tracking-[0.14em] transition-all hover:-translate-y-px hover:shadow-sm"
-                            style={{
-                              background: 'var(--lv2d-primary)',
-                              color: 'var(--lv2d-accent)',
-                              fontFamily:
-                                'var(--font-inter-tight), var(--font-inter), sans-serif',
-                              boxShadow:
-                                '0 1px 0 rgba(214,255,62,0.18) inset, 0 4px 10px -4px rgba(42,26,61,0.35)',
-                            }}
-                          >
+                          <Link href="/settings/ai-keys" className="lv2d-btn-pill-sm">
                             <Plug className="h-2.5 w-2.5" />
                             Connect
                           </Link>

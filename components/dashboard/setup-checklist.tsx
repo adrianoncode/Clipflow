@@ -309,12 +309,9 @@ export function SetupChecklist({
                       Done
                     </span>
                   ) : isCurrent ? (
-                    <Link
-                      href={step.href}
-                      className="group inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/25"
-                    >
+                    <Link href={step.href} className="lv2d-btn-primary shrink-0">
                       {step.cta}
-                      <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                      <ArrowRight className="h-3 w-3" />
                     </Link>
                   ) : null}
                 </div>
