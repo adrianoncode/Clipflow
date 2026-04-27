@@ -70,7 +70,7 @@ function RoleCard({
           {features.map((f) => (
             <span
               key={f}
-              className="rounded-full border border-border/60 bg-background px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground"
+              className="rounded-full border border-border/60 bg-background px-2 py-0.5 font-bold text-[10px] uppercase tracking-wider text-muted-foreground"
             >
               {f}
             </span>

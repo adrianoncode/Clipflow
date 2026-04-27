@@ -64,7 +64,7 @@ export function NichePill({ workspaceId, niche }: NichePillProps) {
           </span>
 
           <div className="pr-8">
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
               Niche
             </p>
             <p className="mt-1 text-[14px] font-bold text-foreground">
@@ -83,7 +83,7 @@ export function NichePill({ workspaceId, niche }: NichePillProps) {
             </p>
           )}
 
-          <span className="mt-auto inline-flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70 group-hover:text-primary">
+          <span className="mt-auto inline-flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75 group-hover:text-primary">
             <Pencil className="h-2.5 w-2.5" />
             {active ? 'Swap' : 'Pick one'}
             <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
@@ -153,11 +153,11 @@ export function NichePill({ workspaceId, niche }: NichePillProps) {
             type="button"
             onClick={() => choose('')}
             disabled={isPending || !optimistic}
-            className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-destructive disabled:opacity-30"
+            className="font-bold text-[10px] font-bold uppercase tracking-[0.16em] text-primary/85 transition-colors hover:text-destructive disabled:opacity-30"
           >
             Clear selection
           </button>
-          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70">
+          <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
             <Sparkles className="mr-1 inline h-3 w-3" />
             Auto-saves on click
           </span>

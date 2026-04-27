@@ -77,7 +77,7 @@ export function AutoSubtitlesVisual() {
           <Captions className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
         </span>
         <p
-          className="font-mono text-[10px] font-bold uppercase tracking-[0.18em]"
+          className="font-bold text-[10px] font-bold uppercase tracking-[0.18em]"
           style={{ color: 'var(--lv2-muted, #5f5850)' }}
         >
           Four caption styles \u00b7 word-level sync
@@ -119,7 +119,7 @@ export function AutoSubtitlesVisual() {
                 </span>
               )}
               <span
-                className="absolute left-2 top-2 font-mono text-[8px] uppercase"
+                className="absolute left-2 top-2 font-bold text-[8px] uppercase"
                 style={{ color: 'rgba(255,255,255,.45)', letterSpacing: '0.1em' }}
               >
                 {s.label}
@@ -146,7 +146,7 @@ export function AutoReframeVisual() {
           <Crop className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
         </span>
         <p
-          className="font-mono text-[10px] font-bold uppercase tracking-[0.18em]"
+          className="font-bold text-[10px] font-bold uppercase tracking-[0.18em]"
           style={{ color: 'var(--lv2-muted, #5f5850)' }}
         >
           Face-tracked 9:16 crop
@@ -190,7 +190,7 @@ export function AutoReframeVisual() {
         />
         {/* Chip label */}
         <span
-          className="absolute right-3 top-3 rounded-md px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.1em]"
+          className="absolute right-3 top-3 rounded-md px-2 py-1 font-bold text-[9px] font-bold uppercase tracking-[0.1em]"
           style={{
             background: 'rgba(0,0,0,.7)',
             color: 'var(--lv2-accent, #D6FF3E)',
@@ -225,7 +225,7 @@ export function BRollVisual() {
           <Film className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
         </span>
         <p
-          className="font-mono text-[10px] font-bold uppercase tracking-[0.18em]"
+          className="font-bold text-[10px] font-bold uppercase tracking-[0.18em]"
           style={{ color: 'var(--lv2-muted, #5f5850)' }}
         >
           Transcript-matched Pexels stock
@@ -269,7 +269,7 @@ export function AIAvatarVisual() {
           <UserRound className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
         </span>
         <p
-          className="font-mono text-[10px] font-bold uppercase tracking-[0.18em]"
+          className="font-bold text-[10px] font-bold uppercase tracking-[0.18em]"
           style={{ color: 'var(--lv2-muted, #5f5850)' }}
         >
           D-ID talking-head \u00b7 script \u2192 MP4
@@ -305,7 +305,7 @@ export function AIAvatarVisual() {
             >
               {i === 0 ? (
                 <span
-                  className="absolute inset-x-0 bottom-0 bg-[var(--lv2-accent,#D6FF3E)] py-0.5 text-center font-mono text-[8px] font-bold uppercase"
+                  className="absolute inset-x-0 bottom-0 bg-[var(--lv2-accent,#D6FF3E)] py-0.5 text-center font-bold text-[8px] font-bold uppercase"
                   style={{ color: 'var(--lv2-accent-ink, #1a2000)' }}
                 >
                   Selected
@@ -342,7 +342,7 @@ export function AutoDubVisual() {
           <Languages className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
         </span>
         <p
-          className="font-mono text-[10px] font-bold uppercase tracking-[0.18em]"
+          className="font-bold text-[10px] font-bold uppercase tracking-[0.18em]"
           style={{ color: 'var(--lv2-muted, #5f5850)' }}
         >
           ElevenLabs voice-matched dub

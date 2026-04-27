@@ -80,7 +80,7 @@ export function VoicePill({ workspaceId, voice }: VoicePillProps) {
           </span>
 
           <div className="pr-8">
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
               Voice
             </p>
             <p className="mt-1 text-[14px] font-bold text-foreground">
@@ -108,7 +108,7 @@ export function VoicePill({ workspaceId, voice }: VoicePillProps) {
             </p>
           )}
 
-          <span className="mt-auto inline-flex items-center gap-1 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70 group-hover:text-primary">
+          <span className="mt-auto inline-flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75 group-hover:text-primary">
             <Pencil className="h-2.5 w-2.5" />
             {hasVoice ? 'Edit inline' : 'Set up'}
             <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
@@ -224,7 +224,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+      <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
         {label}
       </span>
       <div className="mt-1.5">{children}</div>

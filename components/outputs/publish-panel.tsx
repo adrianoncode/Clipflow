@@ -151,7 +151,7 @@ export function PublishPanel({
     >
       {/* Step 1 — platforms */}
       <div className="space-y-1.5">
-        <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+        <p className="font-bold text-[10px] uppercase tracking-[0.15em] text-primary/85">
           1 · Choose platforms
         </p>
         <div className="flex flex-wrap gap-2">
@@ -185,7 +185,7 @@ export function PublishPanel({
 
       {/* Step 2 — video URL */}
       <div className="space-y-1.5">
-        <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+        <p className="font-bold text-[10px] uppercase tracking-[0.15em] text-primary/85">
           2 · Video URL
         </p>
         <input
@@ -206,7 +206,7 @@ export function PublishPanel({
 
       {/* Step 3 — caption */}
       <div className="space-y-1.5">
-        <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+        <p className="font-bold text-[10px] uppercase tracking-[0.15em] text-primary/85">
           3 · Caption
         </p>
         <textarea

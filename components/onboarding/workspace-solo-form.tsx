@@ -38,7 +38,7 @@ function LiveWorkspacePreview({ name }: { name: string }) {
   const initial = displayName.charAt(0).toUpperCase()
   return (
     <div className="mt-4 overflow-hidden rounded-xl border border-border/60 bg-zinc-50/60 p-3">
-      <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="mb-2 font-bold text-[10px] uppercase tracking-[0.18em] text-primary/85">
         Preview
       </p>
       <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-white p-2.5 shadow-sm">

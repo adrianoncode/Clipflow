@@ -117,7 +117,7 @@ export default async function ReferralsPage() {
                         {paidPct}%
                       </span>
                     ) : (
-                      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/60">
+                      <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
                         No conversions
                       </span>
                     )
@@ -130,7 +130,14 @@ export default async function ReferralsPage() {
 
       {/* ── How it works (footnote-style box) ───────────────────── */}
       <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 text-[12px] text-muted-foreground">
-        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+        <p
+          className="inline-flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75"
+          style={{
+            fontFamily:
+              'var(--font-inter-tight), var(--font-inter), sans-serif',
+          }}
+        >
+          <span aria-hidden className="inline-block h-px w-5 bg-primary/40" />
           How it works
         </p>
         <ol className="mt-2 list-decimal space-y-1 pl-4 leading-relaxed">

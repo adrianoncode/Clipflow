@@ -42,7 +42,7 @@ export function ReviewOutputCard({
     >
       <div className="border-b px-4 py-3" style={{ borderColor: '#E5DDCE' }}>
         <p
-          className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em]"
+          className="font-bold text-[10px] font-semibold uppercase tracking-[0.2em]"
           style={{ color: '#7c7468' }}
         >
           Platform
@@ -64,7 +64,7 @@ export function ReviewOutputCard({
       {comments.length > 0 && (
         <div className="space-y-2 px-4 pb-2">
           <p
-            className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em]"
+            className="font-bold text-[10px] font-semibold uppercase tracking-[0.2em]"
             style={{ color: '#7c7468' }}
           >
             Comments

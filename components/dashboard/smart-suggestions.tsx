@@ -124,7 +124,7 @@ export function SmartSuggestions({ suggestions }: { suggestions: Suggestion[] })
     <div className="space-y-2.5">
       <div className="flex items-center gap-2">
         <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
           Smart suggestions
         </p>
       </div>

@@ -78,7 +78,7 @@ function ViralityBadge({ clip }: { clip: BestClip }) {
           —
         </span>
         <span
-          className="font-mono text-[8px] font-semibold uppercase tracking-[0.15em]"
+          className="font-bold text-[8px] font-semibold uppercase tracking-[0.15em]"
           style={{ color: '#7c7468' }}
         >
           no score
@@ -105,7 +105,7 @@ function ViralityBadge({ clip }: { clip: BestClip }) {
         {clip.virality_score}
       </span>
       <span
-        className="mt-0.5 font-mono text-[8px] font-bold uppercase tracking-[0.15em]"
+        className="mt-0.5 font-bold text-[8px] font-bold uppercase tracking-[0.15em]"
         style={{ color: bucket.fg }}
       >
         {bucket.label}
@@ -226,7 +226,7 @@ function ClipCard({ clip, rank }: { clip: BestClip; rank: number }) {
               }}
             />
           </div>
-          <p className="font-mono text-[9px] uppercase tracking-[0.15em]" style={{ color: '#7c7468' }}>
+          <p className="font-bold text-[9px] uppercase tracking-[0.15em]" style={{ color: '#7c7468' }}>
             at {clip.position_pct}% through content
           </p>
         </div>
@@ -269,7 +269,7 @@ export function ClipFinder({ workspaceId, contentId, initialClips }: ClipFinderP
       <div className="flex items-start justify-between gap-3">
         <div>
           <p
-            className="mb-1 font-mono text-[10px] font-semibold uppercase tracking-[0.2em]"
+            className="mb-1 font-bold text-[10px] font-semibold uppercase tracking-[0.2em]"
             style={{ color: '#7c7468' }}
           >
             AI Clip Finder
@@ -306,7 +306,7 @@ export function ClipFinder({ workspaceId, contentId, initialClips }: ClipFinderP
       {clips && clips.length > 0 && (
         <div className="space-y-3 pt-1">
           <p
-            className="font-mono text-[10px] uppercase tracking-[0.2em]"
+            className="font-bold text-[10px] uppercase tracking-[0.2em]"
             style={{ color: '#7c7468' }}
           >
             {clips.length} clip{clips.length !== 1 ? 's' : ''} · sorted by score

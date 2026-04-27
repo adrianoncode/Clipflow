@@ -68,7 +68,7 @@ export function ReviewCommentForm({
 
       {label && (
         <p
-          className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em]"
+          className="font-bold text-[10px] font-semibold uppercase tracking-[0.2em]"
           style={{ color: '#7c7468' }}
         >
           {label}

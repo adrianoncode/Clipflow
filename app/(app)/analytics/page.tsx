@@ -85,7 +85,7 @@ function BarChart({
                 style={{ height: `${pct}%` }}
               />
             </div>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
+            <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
               {shortMonth(month)}
             </span>
           </div>
@@ -289,7 +289,7 @@ export default async function AnalyticsPage() {
           <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-3.5 w-3.5 text-primary" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
                 How your posts are doing
               </p>
             </div>
@@ -310,7 +310,7 @@ export default async function AnalyticsPage() {
                   ? `${analytics.engagement.avgEngagementRate}%`
                   : '-'}
               </span>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
+              <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
                 People engaging
               </span>
             </div>
@@ -357,7 +357,7 @@ export default async function AnalyticsPage() {
           <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
             <div className="flex items-center gap-2">
               <BarChart3 className="h-3.5 w-3.5 text-primary" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
                 Top published posts
               </p>
             </div>
@@ -430,7 +430,7 @@ export default async function AnalyticsPage() {
       {/* ── Conversion funnel ── */}
       <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
         <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+          <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
             From video to live post
           </p>
           <span className="font-mono text-[10px] text-muted-foreground/60">
@@ -447,7 +447,7 @@ export default async function AnalyticsPage() {
                 className="flex flex-col gap-2 border-b border-border/40 p-5 last:border-b-0 sm:border-b-0"
               >
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60">
+                  <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
                     {i + 1}
                   </span>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">
@@ -491,7 +491,7 @@ export default async function AnalyticsPage() {
           <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
                 Drafts you forgot
               </p>
             </div>
@@ -549,7 +549,7 @@ export default async function AnalyticsPage() {
         {/* Platform coverage — spans 2/5 */}
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card lg:col-span-2">
           <div className="border-b border-border/50 px-5 py-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
               How many videos went multi-platform
             </p>
           </div>
@@ -588,7 +588,7 @@ export default async function AnalyticsPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="border-b border-border/50 px-5 py-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
               Videos you added · last 6 months
             </p>
           </div>
@@ -598,7 +598,7 @@ export default async function AnalyticsPage() {
         </section>
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="border-b border-border/50 px-5 py-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
               Posts you created · last 6 months
             </p>
           </div>
@@ -612,7 +612,7 @@ export default async function AnalyticsPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="border-b border-border/50 px-5 py-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
               Where your posts go
             </p>
           </div>
@@ -651,7 +651,7 @@ export default async function AnalyticsPage() {
 
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="border-b border-border/50 px-5 py-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
               Where your drafts are at
             </p>
           </div>
@@ -688,7 +688,7 @@ export default async function AnalyticsPage() {
       {analytics.topContent.length > 0 && (
         <section className="overflow-hidden rounded-2xl border border-border/60 bg-card">
           <div className="border-b border-border/50 px-5 py-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
               Your favorite videos
             </p>
           </div>
@@ -790,7 +790,7 @@ function KpiCard({
         <p className="font-mono text-3xl font-semibold tabular-nums tracking-tight">
           {value}
         </p>
-        <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
+        <p className="mt-1 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
           {label}
         </p>
         <p className="mt-0.5 text-[11px] text-muted-foreground/70">{helper}</p>
@@ -814,7 +814,7 @@ function EngagementStat({
       <span className="font-mono text-2xl font-semibold tabular-nums">
         {formatNum(value)}
       </span>
-      <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
+      <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
         {label}
       </span>
     </div>

@@ -71,7 +71,7 @@ export function OnboardingStepper({ activeStep }: OnboardingStepperProps) {
               </div>
               <span
                 className={cn(
-                  'font-mono text-[10px] uppercase tracking-[0.15em] transition-colors',
+                  'font-bold text-[10px] uppercase tracking-[0.15em] transition-colors',
                   isActive || isDone
                     ? 'text-foreground'
                     : 'text-muted-foreground/70',

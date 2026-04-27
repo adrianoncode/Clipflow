@@ -108,7 +108,7 @@ export function MakeVideoButton({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="font-bold text-[10px] uppercase tracking-[0.18em] text-primary/85">
               Make video
             </p>
             <DialogTitle>One-click render</DialogTitle>
@@ -124,7 +124,7 @@ export function MakeVideoButton({
 
               {/* Aspect ratio */}
               <div>
-                <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                <p className="mb-2 font-bold text-[10px] uppercase tracking-[0.15em] text-primary/85">
                   Aspect ratio
                 </p>
                 <div className="space-y-1.5">

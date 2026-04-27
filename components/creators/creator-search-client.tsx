@@ -425,7 +425,7 @@ function DiscoverPanel({
                 </p>
               </div>
               <span
-                className="hidden items-center gap-1 rounded-full border border-border/60 bg-background px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/80 transition-colors group-hover:border-primary/30 group-hover:text-primary sm:inline-flex"
+                className="hidden items-center gap-1 rounded-full border border-border/60 bg-background px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary/85 transition-colors group-hover:border-primary/30 group-hover:text-primary sm:inline-flex"
                 style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
               >
                 {p.inputPrefix}
@@ -556,7 +556,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col items-center justify-center px-1 py-2">
       <p className="font-mono text-[13px] font-bold tabular-nums text-foreground">{value}</p>
-      <p className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="font-bold text-[9px] font-bold uppercase tracking-[0.16em] text-primary/85">
         {label}
       </p>
     </div>

@@ -55,7 +55,7 @@ export function ToolsTab({ item, workspaceId, meta, currentPlan }: ToolsTabProps
     <div className="space-y-6">
       {/* Video Tools */}
       <div className="space-y-3">
-        <h3 className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+        <h3 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
           Video Tools
         </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -114,7 +114,7 @@ export function ToolsTab({ item, workspaceId, meta, currentPlan }: ToolsTabProps
 
       {/* Analysis */}
       <div className="space-y-3">
-        <h3 className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+        <h3 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
           Analysis
         </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

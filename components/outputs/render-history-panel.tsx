@@ -97,7 +97,7 @@ export function RenderHistoryPanel({ initialRenders }: RenderHistoryPanelProps) 
     <div className="rounded-2xl border border-border/60 bg-card">
       <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
         <div className="flex items-center gap-1.5">
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+          <span className="font-bold text-[10px] uppercase tracking-[0.18em] text-primary/85">
             Rendered videos
           </span>
           <span className="font-mono text-[10px] text-muted-foreground/60">
@@ -143,7 +143,7 @@ function RenderRow({ render: r }: { render: RenderRow }) {
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{formatRenderKind(r.kind)}</p>
-        <p className="mt-0.5 flex flex-wrap items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+        <p className="mt-0.5 flex flex-wrap items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider text-muted-foreground">
           <span>{r.provider}</span>
           {aspect ? (
             <>

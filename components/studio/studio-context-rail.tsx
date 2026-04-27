@@ -29,10 +29,10 @@ export async function StudioContextRail({ workspaceId }: StudioContextRailProps)
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-2">
-        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
+        <p className="font-bold text-[10px] font-bold uppercase tracking-[0.22em] text-primary/85">
           <span className="text-primary">·</span> Studio context
         </p>
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60">
+        <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
           applied on every generation
         </span>
       </div>

@@ -105,7 +105,7 @@ export function WorkspaceDeleteButton({
 
   if (!isOwner) {
     return (
-      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70">
+      <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
         Owner-only
       </span>
     )

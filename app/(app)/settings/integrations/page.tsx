@@ -269,7 +269,7 @@ function IntegrationCard({
           {integration.benefit}
         </p>
         <p
-          className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70"
+          className="mt-2 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75"
         >
           {integration.trigger}
         </p>

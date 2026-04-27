@@ -96,7 +96,7 @@ export function AuditLogList({ rows }: { rows: AuditRow[] }) {
                     <p className="truncate text-[13px] font-semibold text-foreground">
                       {formatAuditAction(row.action)}
                     </p>
-                    <p className="mt-0.5 flex flex-wrap items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                    <p className="mt-0.5 flex flex-wrap items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider text-muted-foreground">
                       <span>{row.actor_email ?? 'system'}</span>
                       {row.target_type ? (
                         <>

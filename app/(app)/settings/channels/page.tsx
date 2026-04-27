@@ -278,12 +278,20 @@ function SectionLabel({
 }) {
   return (
     <p
-      className={`font-mono text-[10px] font-bold uppercase tracking-[0.22em] ${
-        muted ? 'text-muted-foreground/70' : 'text-muted-foreground'
+      className={`inline-flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.22em] ${
+        muted ? 'text-muted-foreground/75' : 'text-primary/85'
       }`}
+      style={{
+        fontFamily:
+          'var(--font-inter-tight), var(--font-inter), sans-serif',
+      }}
     >
-      <span className={muted ? 'text-muted-foreground/50' : 'text-primary'}>{num}</span>
-      {' · '}
+      <span
+        aria-hidden
+        className={`inline-block h-px w-5 ${muted ? 'bg-muted-foreground/35' : 'bg-primary/40'}`}
+      />
+      <span className={muted ? 'text-muted-foreground/65' : 'text-primary'}>{num}</span>
+      <span className={muted ? 'text-muted-foreground/40' : 'text-primary/35'}>·</span>
       {children}
     </p>
   )
@@ -354,7 +362,7 @@ function ChannelCard({
             </Link>
           ) : null}
           {dimmed ? (
-            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/60">
+            <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
               Auto-enable
             </span>
           ) : null}
@@ -431,7 +439,7 @@ function UploadPostBundleCard({
             </span>
             <div>
               <p className="text-[14.5px] font-bold text-foreground">Upload-Post</p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
                 One key · four video platforms
               </p>
             </div>
@@ -449,7 +457,7 @@ function UploadPostBundleCard({
 
           {/* Covered platforms strip — clearly delineated, mono label */}
           <div className="rounded-xl border border-border/40 bg-muted/30 p-3">
-            <p className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary/75">
               Covered platforms
             </p>
             <div className="mt-2 flex items-center gap-2">
@@ -469,7 +477,7 @@ function UploadPostBundleCard({
             </div>
           </div>
 
-          <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70">
+          <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
             <Sparkles className="mr-1 inline h-3 w-3" />
             Free tier · 10 posts/mo, 2 profiles · upgrade from $16/mo
           </p>

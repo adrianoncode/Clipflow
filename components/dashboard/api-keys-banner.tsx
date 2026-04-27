@@ -45,7 +45,7 @@ export function ApiKeysBanner({
         <KeyRound className="h-5 w-5" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
           API keys · {connectedCount}/{totalCount} connected
         </p>
         <p className="mt-0.5 text-sm font-semibold">

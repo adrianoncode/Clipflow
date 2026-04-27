@@ -79,7 +79,7 @@ export function UploadPostConnectSlot({
                 href={spec.keyDashboardUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70 transition-colors hover:text-primary"
+                className="inline-flex items-center gap-0.5 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75 transition-colors hover:text-primary"
               >
                 Manage
                 <ExternalLink className="h-2.5 w-2.5" />
@@ -107,7 +107,7 @@ export function UploadPostConnectSlot({
             href={spec.signupUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70 transition-colors hover:text-primary"
+            className="inline-flex items-center justify-center gap-1 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75 transition-colors hover:text-primary"
           >
             Get your key
             <ExternalLink className="h-2.5 w-2.5" />

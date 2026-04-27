@@ -380,7 +380,7 @@ export function BrandKitForm({ workspaceId, initial, canEdit }: BrandKitFormProp
       {/* Live preview */}
       <div className="space-y-3">
         <p
-          className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em]"
+          className="font-bold text-[10px] font-semibold uppercase tracking-[0.2em]"
           style={{ color: '#7c7468' }}
         >
           Live preview · how renders will look
@@ -402,7 +402,7 @@ function Label({ eyebrow, title, desc }: { eyebrow: string; title: string; desc:
   return (
     <div>
       <p
-        className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.2em]"
+        className="font-bold text-[9.5px] font-semibold uppercase tracking-[0.2em]"
         style={{ color: '#2A1A3D' }}
       >
         {eyebrow}
@@ -480,7 +480,7 @@ function BrandPreview({
       {frames.map((f, i) => (
         <div key={i} className="space-y-1.5">
           <p
-            className="font-mono text-[9px] uppercase tracking-[0.18em]"
+            className="font-bold text-[9px] uppercase tracking-[0.18em]"
             style={{ color: '#7c7468' }}
           >
             {f.label}

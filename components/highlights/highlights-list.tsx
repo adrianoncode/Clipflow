@@ -168,7 +168,7 @@ function HighlightCard({
           <span>{score}</span>
           <span className="opacity-60">/100</span>
         </div>
-        <div className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-muted-foreground">
+        <div className="font-bold text-[10.5px] uppercase tracking-[0.1em] text-primary/85">
           {formatSeconds(h.start_seconds)} – {formatSeconds(h.end_seconds)} ·{' '}
           {Math.round(duration)}s
         </div>
@@ -418,7 +418,7 @@ function PublishButton({
         <input type="hidden" name="highlight_id" value={highlight.id} />
         <input type="hidden" name="platforms" value={platforms.join(',')} />
         <div>
-          <label className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+          <label className="font-bold text-[10px] uppercase tracking-[0.15em] text-primary/85">
             Caption
           </label>
           <textarea

@@ -340,11 +340,24 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
           {Array.from(groups.entries()).map(([date, items]) => (
             <div key={date}>
               <div className="mb-3 flex items-center gap-3">
-                <h2 className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60">
+                <h2
+                  className="inline-flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85"
+                  style={{
+                    fontFamily:
+                      'var(--font-inter-tight), var(--font-inter), sans-serif',
+                  }}
+                >
+                  <span aria-hidden className="inline-block h-px w-5 bg-primary/40" />
                   {date}
                 </h2>
-                <span className="h-px flex-1 bg-border/40" />
-                <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] font-bold tabular-nums text-muted-foreground">
+                <span className="h-px flex-1 bg-gradient-to-r from-border/50 via-border/30 to-transparent" />
+                <span
+                  className="inline-flex h-5 items-center rounded-full border border-border/60 bg-background px-2 text-[10.5px] font-bold tabular-nums text-muted-foreground"
+                  style={{
+                    fontFamily:
+                      'var(--font-inter-tight), var(--font-inter), sans-serif',
+                  }}
+                >
                   {items.length}
                 </span>
               </div>

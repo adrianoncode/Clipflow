@@ -30,7 +30,7 @@ export function ViralMomentsVisual() {
           <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
         </span>
         <p
-          className="font-mono text-[10px] font-bold uppercase tracking-[0.18em]"
+          className="font-bold text-[10px] font-bold uppercase tracking-[0.18em]"
           style={{ color: 'var(--lv2-muted, #5f5850)' }}
         >
           AI picked · sorted by virality
@@ -62,7 +62,7 @@ export function ViralMomentsVisual() {
                 <span className="opacity-50">/100</span>
               </span>
               <span
-                className="font-mono text-[10px] uppercase tracking-[0.08em]"
+                className="font-bold text-[10px] uppercase tracking-[0.08em]"
                 style={{ color: 'var(--lv2-muted, #5f5850)' }}
               >
                 {c.timing}

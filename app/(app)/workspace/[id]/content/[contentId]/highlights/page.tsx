@@ -47,7 +47,7 @@ export default async function HighlightsPage({ params }: HighlightsPageProps) {
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
       {/* Breadcrumb */}
       <nav
-        className="flex flex-wrap items-center gap-1 font-mono text-[10.5px] uppercase tracking-[0.12em] text-muted-foreground"
+        className="flex flex-wrap items-center gap-1 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85"
         aria-label="Breadcrumb"
       >
         <Link

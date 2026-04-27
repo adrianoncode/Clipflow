@@ -227,7 +227,7 @@ export function ClipPreviewEditor({
         {/* Header */}
         <div className="flex items-start justify-between gap-3 border-b border-border/50 px-5 py-3">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+            <p className="font-bold text-[10px] uppercase tracking-[0.15em] text-primary/85">
               Preview &amp; adjust
             </p>
             <h2 className="text-lg font-bold">{highlight.hook_text ?? 'Untitled clip'}</h2>
@@ -263,7 +263,7 @@ export function ClipPreviewEditor({
         <div className="space-y-3 px-5">
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+              <p className="font-bold text-[10px] uppercase tracking-[0.15em] text-primary/85">
                 Clip bounds
               </p>
               <p className="font-mono text-[11px] tabular-nums text-muted-foreground">
@@ -339,7 +339,7 @@ export function ClipPreviewEditor({
 
           {/* Hook text */}
           <div className="space-y-1">
-            <label className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+            <label className="font-bold text-[10px] uppercase tracking-[0.15em] text-primary/85">
               Hook overlay (first 2.5s)
             </label>
             <input
@@ -357,7 +357,7 @@ export function ClipPreviewEditor({
           {/* Custom caption override */}
           <div className="space-y-1 pt-2">
             <div className="flex items-baseline justify-between">
-              <label className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+              <label className="font-bold text-[10px] uppercase tracking-[0.15em] text-primary/85">
                 Custom caption (override)
               </label>
               <span className="text-[10.5px] text-muted-foreground/60">
@@ -380,7 +380,7 @@ export function ClipPreviewEditor({
           {wordTimings && wordTimings.length > 0 && !customCaption.trim() ? (
             <div className="space-y-1.5">
               <div className="flex items-baseline justify-between">
-                <label className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                <label className="font-bold text-[10px] uppercase tracking-[0.15em] text-primary/85">
                   Caption lines ({captionChunks.length})
                 </label>
                 {captionsEdited ? (
@@ -435,7 +435,7 @@ export function ClipPreviewEditor({
           {/* Audio gain */}
           <div className="space-y-1">
             <div className="flex items-baseline justify-between">
-              <label className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+              <label className="font-bold text-[10px] uppercase tracking-[0.15em] text-primary/85">
                 Audio level
               </label>
               <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
@@ -464,7 +464,7 @@ export function ClipPreviewEditor({
           {/* Thumbnail timestamp picker */}
           <div className="space-y-1.5">
             <div className="flex items-baseline justify-between">
-              <label className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+              <label className="font-bold text-[10px] uppercase tracking-[0.15em] text-primary/85">
                 Thumbnail frame
               </label>
               <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
@@ -500,7 +500,7 @@ export function ClipPreviewEditor({
           {/* ── B-Roll Overlay Picker (Phase A2) ── */}
           <div className="space-y-2 rounded-xl border border-border/50 bg-muted/10 p-3">
             <div className="flex items-baseline justify-between">
-              <label className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+              <label className="flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-[0.15em] text-primary/85">
                 <Film className="h-3 w-3" aria-hidden />
                 B-Roll overlays
                 {brollOverlays.length > 0 ? (
@@ -581,7 +581,7 @@ export function ClipPreviewEditor({
                         className="object-cover"
                       />
                       <span className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20" />
-                      <span className="absolute inset-x-0 bottom-0 flex items-center justify-center bg-black/55 py-0.5 font-mono text-[8.5px] font-bold uppercase tracking-[0.1em] text-white">
+                      <span className="absolute inset-x-0 bottom-0 flex items-center justify-center bg-black/55 py-0.5 font-bold text-[8.5px] font-bold uppercase tracking-[0.1em] text-white">
                         + Add
                       </span>
                     </button>

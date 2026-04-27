@@ -319,7 +319,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
           {/* ── Next Steps — bridge to Pipeline & Schedule ── */}
           <div className="rounded-2xl border border-border/50 bg-card">
             <div className="border-b border-border/40 px-5 py-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
                 Next steps
               </p>
             </div>

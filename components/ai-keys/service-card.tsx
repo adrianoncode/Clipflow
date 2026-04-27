@@ -80,7 +80,7 @@ export function ServiceCard({
                 Connected
               </span>
             ) : (
-              <span className="inline-flex items-center rounded-full border border-border/70 bg-background px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/80">
+              <span className="inline-flex items-center rounded-full border border-border/70 bg-background px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
                 Not connected
               </span>
             )}

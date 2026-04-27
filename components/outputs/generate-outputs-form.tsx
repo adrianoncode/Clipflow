@@ -176,7 +176,7 @@ function FormatOverridesPanel({
     return (
       <div className="flex items-center justify-between rounded-xl border border-dashed border-border/60 bg-muted/20 px-4 py-3">
         <div className="flex flex-col gap-0.5">
-          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+          <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
             Format
           </p>
           <p className="text-[12px] text-muted-foreground">
@@ -197,12 +197,12 @@ function FormatOverridesPanel({
   return (
     <div className="space-y-2.5 rounded-xl border border-border/60 bg-muted/20 p-3.5">
       <div className="flex items-center justify-between">
-        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+        <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
           Format per platform
         </p>
         <Link
           href="/settings/templates"
-          className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-primary"
+          className="font-bold text-[10px] font-bold uppercase tracking-[0.16em] text-primary/85 transition-colors hover:text-primary"
         >
           + New format
         </Link>
@@ -213,7 +213,7 @@ function FormatOverridesPanel({
             key={card.key}
             className="flex items-center gap-2 rounded-lg border border-border/60 bg-card px-2.5 py-1.5"
           >
-            <span className="font-mono text-[10.5px] font-bold uppercase tracking-[0.14em] text-muted-foreground/80">
+            <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
               {card.name}
             </span>
             <select

@@ -89,7 +89,7 @@ export function AddServiceKeyDialog({
           <div className="flex items-center gap-3">
             <BrandLogo provider={spec.provider} size={40} />
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+              <p className="font-bold text-[10px] uppercase tracking-[0.15em] text-primary/85">
                 Connect service
               </p>
               <DialogTitle className="text-base">{spec.name}</DialogTitle>
@@ -125,7 +125,7 @@ export function AddServiceKeyDialog({
           </div>
           {spec.setupNote ? (
             <div className="rounded-xl border border-primary/20 bg-primary/5 px-3.5 py-3">
-              <p className="mb-1 font-mono text-[9px] uppercase tracking-[0.15em] text-primary/70">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-primary/75">
                 2 · Important step
               </p>
               <p className="text-[11px] leading-relaxed text-muted-foreground">

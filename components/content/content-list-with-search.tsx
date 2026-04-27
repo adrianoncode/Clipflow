@@ -262,7 +262,7 @@ export function ContentListWithSearch({
           shouldn't get a cluttered "URL · RSS · Text" row. */}
       {visibleKindTabs.length > 2 ? (
         <div className="flex items-center gap-1.5 overflow-x-auto">
-          <span className="shrink-0 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
+          <span className="shrink-0 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
             Kind
           </span>
           {visibleKindTabs.map((tab) => {

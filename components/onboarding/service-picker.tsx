@@ -51,7 +51,7 @@ export function OnboardingServicePicker({
       {/* AI providers */}
       <section className="space-y-3">
         <div className="flex items-baseline justify-between">
-          <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          <h3 className="font-bold text-[10px] uppercase tracking-[0.2em] text-primary/85">
             AI provider · Pick at least one
           </h3>
           {hasAnyLlm ? (
@@ -60,7 +60,7 @@ export function OnboardingServicePicker({
               Required step complete
             </span>
           ) : (
-            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70">
+            <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
               required
             </span>
           )}
@@ -80,10 +80,10 @@ export function OnboardingServicePicker({
       {/* Media stack */}
       <section className="space-y-3">
         <div className="flex items-baseline justify-between">
-          <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          <h3 className="font-bold text-[10px] uppercase tracking-[0.2em] text-primary/85">
             Media stack · Optional
           </h3>
-          <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70">
+          <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
             unlock rendering &amp; voice
           </span>
         </div>
@@ -107,10 +107,10 @@ export function OnboardingServicePicker({
       {/* Publishing */}
       <section className="space-y-3">
         <div className="flex items-baseline justify-between">
-          <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          <h3 className="font-bold text-[10px] uppercase tracking-[0.2em] text-primary/85">
             Publishing · Optional
           </h3>
-          <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70">
+          <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
             auto-post to social
           </span>
         </div>
@@ -210,7 +210,7 @@ function ServiceRow({
           {spec.description}
         </p>
         {spec.freeTierNote ? (
-          <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-primary/80">
+          <p className="mt-0.5 font-bold text-[10px] uppercase tracking-wider text-primary/80">
             {spec.freeTierNote}
           </p>
         ) : null}

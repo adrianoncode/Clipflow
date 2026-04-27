@@ -94,7 +94,7 @@ export function PlanCard({ planId, interval, workspaceId, currentPlan, feature }
           landing-page tile exactly. */}
       {isHighlighted ? (
         <span
-          className="absolute -top-3 left-6 inline-flex items-center gap-1 rounded-full bg-[#D6FF3E] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#1a2000]"
+          className="absolute -top-3 left-6 inline-flex items-center gap-1 rounded-full bg-[#D6FF3E] px-2 py-0.5 font-bold text-[10px] font-bold uppercase tracking-[0.08em] text-[#1a2000]"
         >
           <Sparkles className="h-2.5 w-2.5" />
           Most popular
@@ -104,7 +104,7 @@ export function PlanCard({ planId, interval, workspaceId, currentPlan, feature }
       {/* Plan name (mono label) */}
       <p
         className={cn(
-          'font-mono text-[10px] font-bold uppercase tracking-[0.18em]',
+          'font-bold text-[10px] font-bold uppercase tracking-[0.18em]',
           isHighlighted ? 'text-primary' : 'text-muted-foreground',
         )}
       >
@@ -130,7 +130,7 @@ export function PlanCard({ planId, interval, workspaceId, currentPlan, feature }
             </span>
             <span className="text-[13px] text-muted-foreground">/mo</span>
             {planId !== 'free' ? (
-              <span className="ml-auto inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-primary">
+              <span className="ml-auto inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 font-bold text-[10px] font-bold uppercase tracking-[0.08em] text-primary">
                 2 mo free yearly
               </span>
             ) : null}
@@ -154,7 +154,7 @@ export function PlanCard({ planId, interval, workspaceId, currentPlan, feature }
       <div className="my-5 h-px w-full bg-border/60" />
 
       {/* Limits */}
-      <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
+      <p className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
         Limits
       </p>
       <ul className="mt-2.5 space-y-2">
@@ -165,7 +165,7 @@ export function PlanCard({ planId, interval, workspaceId, currentPlan, feature }
 
       {features.length > 0 ? (
         <>
-          <p className="mt-5 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/70">
+          <p className="mt-5 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
             Capabilities
           </p>
           <ul className="mt-2.5 space-y-2">
@@ -188,7 +188,7 @@ export function PlanCard({ planId, interval, workspaceId, currentPlan, feature }
           isHighlighted={isHighlighted}
         />
         {isHighlighted && !isCurrent ? (
-          <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+          <p className="mt-3 text-center font-bold text-[10px] uppercase tracking-[0.1em] text-primary/85">
             No card · cancel in 2 clicks · 14-day refund
           </p>
         ) : null}

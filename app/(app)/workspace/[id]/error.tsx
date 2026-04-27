@@ -35,7 +35,7 @@ export default function WorkspaceError({
         </div>
         <div>
           <p
-            className="mb-1 font-mono text-[10px] font-semibold uppercase tracking-[0.2em]"
+            className="mb-1 font-bold text-[10px] font-semibold uppercase tracking-[0.2em]"
             style={{ color: '#7c7468' }}
           >
             Workspace error
@@ -56,7 +56,7 @@ export default function WorkspaceError({
           </p>
           {error.digest ? (
             <p
-              className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em]"
+              className="mt-2 font-bold text-[10px] uppercase tracking-[0.18em]"
               style={{ color: '#7c7468' }}
             >
               Ref · {error.digest}

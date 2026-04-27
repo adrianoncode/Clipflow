@@ -99,7 +99,7 @@ export default async function AuditLogPage() {
             </p>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.16em] text-primary hover:underline"
+              className="inline-flex items-center gap-1 font-bold text-[10px] uppercase tracking-[0.16em] text-primary hover:underline"
             >
               <ArrowLeft className="h-3 w-3" />
               Back to dashboard
@@ -175,7 +175,7 @@ export default async function AuditLogPage() {
             label={cat.label}
             description={cat.description}
             control={
-              <span className="inline-flex items-center rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              <span className="inline-flex items-center rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 font-bold text-[10px] font-bold uppercase tracking-[0.14em] text-primary/85">
                 Logged
               </span>
             }
@@ -194,7 +194,7 @@ export default async function AuditLogPage() {
           label="Retention"
           description="Events stay queryable for 90 days, then archive cold for another 12 months."
           control={
-            <span className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-foreground">
+            <span className="font-bold text-[11px] font-bold uppercase tracking-[0.14em] text-foreground">
               90d · 365d cold
             </span>
           }
@@ -204,7 +204,7 @@ export default async function AuditLogPage() {
           description="Download every event as CSV — actor, target, metadata, IP, timestamp."
           control={
             isEmpty ? (
-              <span className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-dashed border-border/60 bg-muted/20 px-3 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">
+              <span className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-dashed border-border/60 bg-muted/20 px-3 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75">
                 <Download className="h-3 w-3" />
                 Available once events exist
               </span>

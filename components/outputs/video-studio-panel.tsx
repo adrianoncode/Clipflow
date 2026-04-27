@@ -102,7 +102,7 @@ export function VideoStudioPanel({
 
       <div className="relative flex flex-col gap-4 border-b border-primary/10 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+          <p className="font-bold text-[10px] uppercase tracking-[0.2em] text-primary">
             Video Studio
           </p>
           <h3 className="mt-1 text-lg font-semibold tracking-tight">
@@ -115,7 +115,7 @@ export function VideoStudioPanel({
         </div>
         <div className="flex items-center gap-2 sm:shrink-0">
           {renderCount > 0 ? (
-            <span className="rounded-full border border-border/60 bg-background px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+            <span className="rounded-full border border-border/60 bg-background px-2.5 py-1 font-bold text-[10px] uppercase tracking-wider text-muted-foreground">
               {renderCount} rendered
             </span>
           ) : null}
