@@ -2,7 +2,18 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Loader2 } from 'lucide-react'
+import {
+  Briefcase,
+  Building2,
+  Check,
+  Clapperboard,
+  Loader2,
+  Mic2,
+  ShoppingBag,
+  Target,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
 
 import { setActiveNicheAction } from './actions'
 import { NICHE_PRESETS, type NicheId } from '@/lib/niche/presets'
@@ -10,6 +21,51 @@ import { NICHE_PRESETS, type NicheId } from '@/lib/niche/presets'
 interface NichePickerProps {
   workspaceId: string
   initialNiche: NicheId | null
+}
+
+/** Per-niche visual identity — Lucide icon + tone-tinted gradient
+ *  chip background. Replaces the generic emoji-on-beige chip with
+ *  designed objects that carry the niche's vibe at a glance. */
+const NICHE_VISUAL: Record<
+  NicheId,
+  { Icon: LucideIcon; bg: string; fg: string; glow: string }
+> = {
+  creator: {
+    Icon: Clapperboard,
+    bg: 'linear-gradient(140deg, #FFE4F0 0%, #FFC2DC 100%)',
+    fg: '#A21769',
+    glow: 'rgba(221,42,123,0.30)',
+  },
+  podcaster: {
+    Icon: Mic2,
+    bg: 'linear-gradient(140deg, #EDE6F5 0%, #D9C8EC 100%)',
+    fg: '#5C2EA8',
+    glow: 'rgba(124,58,237,0.30)',
+  },
+  coach: {
+    Icon: Target,
+    bg: 'linear-gradient(140deg, #FFE9DA 0%, #FCC8A1 100%)',
+    fg: '#A0530B',
+    glow: 'rgba(212,88,11,0.30)',
+  },
+  saas: {
+    Icon: Briefcase,
+    bg: 'linear-gradient(140deg, #DEE9FB 0%, #B6CDF6 100%)',
+    fg: '#1B4FB8',
+    glow: 'rgba(10,102,194,0.30)',
+  },
+  ecommerce: {
+    Icon: ShoppingBag,
+    bg: 'linear-gradient(140deg, #DDF5E5 0%, #A6E3BC 100%)',
+    fg: '#0F6B4D',
+    glow: 'rgba(15,107,77,0.30)',
+  },
+  agency: {
+    Icon: Building2,
+    bg: 'linear-gradient(140deg, #F1ECDC 0%, #DBCBA0 100%)',
+    fg: '#5A4A1F',
+    glow: 'rgba(120,90,40,0.30)',
+  },
 }
 
 export function NichePicker({ workspaceId, initialNiche }: NichePickerProps) {
@@ -46,34 +102,64 @@ export function NichePicker({ workspaceId, initialNiche }: NichePickerProps) {
 
   const presetEntries = Object.values(NICHE_PRESETS)
   const activeName = selected ? NICHE_PRESETS[selected].name : null
+  const hintLine = savedAt
+    ? savedAt === 'Cleared'
+      ? 'Selection cleared — drafts will use the platform defaults only.'
+      : `${savedAt} preset is now layered on every new draft.`
+    : activeName
+      ? `${activeName} preset is currently layered on every new draft.`
+      : 'No niche layered yet — pick one to apply industry tone on top of the platform defaults.'
 
   return (
-    <section className="space-y-3">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
-          <span className="text-primary">02</span> · Niche preset
-          <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground/70">
-            {savedAt
-              ? `${savedAt === 'Cleared' ? 'cleared' : `${savedAt} active`}`
-              : activeName
-                ? `${activeName} active`
-                : 'none active — pick one to apply industry tone'}
-          </span>
-        </p>
+    <section className="space-y-4">
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div className="space-y-1">
+          <p
+            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-primary/75"
+            style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+          >
+            <span aria-hidden className="inline-block h-px w-5 bg-primary/40" />
+            02
+            <span className="text-primary/30">·</span>
+            <span className="text-muted-foreground/70">section</span>
+          </p>
+          <div className="flex items-center gap-2.5">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-primary/[0.09] text-primary">
+              <Target className="h-3.5 w-3.5" />
+            </span>
+            <h2
+              className="text-[20px] font-bold leading-tight tracking-tight text-foreground sm:text-[22px]"
+              style={{
+                fontFamily:
+                  'var(--font-inter-tight), var(--font-inter), sans-serif',
+              }}
+            >
+              Niche preset
+            </h2>
+          </div>
+          <p className="text-[13px] leading-relaxed text-muted-foreground">
+            {hintLine}
+          </p>
+        </div>
         {selected !== null ? (
           <button
             type="button"
             onClick={() => choose('')}
             disabled={isPending}
-            className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-destructive disabled:opacity-50"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border/70 bg-background px-3 text-[12px] font-semibold tracking-tight text-muted-foreground transition-all hover:-translate-y-px hover:border-destructive/40 hover:text-destructive hover:shadow-sm disabled:opacity-50 disabled:hover:translate-y-0"
+            style={{
+              fontFamily:
+                'var(--font-inter-tight), var(--font-inter), sans-serif',
+            }}
           >
+            <X className="h-3 w-3" />
             Clear selection
           </button>
         ) : null}
-      </div>
+      </header>
 
       {error ? (
-        <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive">
+        <p className="rounded-lg border border-destructive/30 bg-destructive/[0.06] px-3 py-2 text-[12px] font-semibold text-destructive">
           {error}
         </p>
       ) : null}
@@ -82,6 +168,8 @@ export function NichePicker({ workspaceId, initialNiche }: NichePickerProps) {
         {presetEntries.map((n) => {
           const isActive = selected === n.id
           const isLoading = pendingId === n.id && isPending
+          const visual = NICHE_VISUAL[n.id]
+          const Icon = visual.Icon
 
           return (
             <button
@@ -89,15 +177,55 @@ export function NichePicker({ workspaceId, initialNiche }: NichePickerProps) {
               type="button"
               onClick={() => choose(n.id)}
               disabled={isPending}
-              className={`group relative flex flex-col gap-2.5 rounded-2xl border p-4 text-left transition-all disabled:opacity-80 ${
+              className={`group relative flex flex-col gap-3 overflow-hidden rounded-2xl p-4 text-left transition-all disabled:opacity-80 ${
                 isActive
-                  ? 'border-primary/30 bg-primary/[0.04] shadow-md shadow-primary/[0.06] ring-1 ring-primary/15'
-                  : 'border-border/60 bg-card shadow-sm shadow-primary/[0.02] hover:-translate-y-px hover:border-border hover:shadow-md hover:shadow-primary/[0.04]'
+                  ? ''
+                  : 'border border-border/60 bg-card hover:-translate-y-px hover:border-border'
               }`}
+              style={
+                isActive
+                  ? {
+                      border: '1.5px solid transparent',
+                      backgroundImage:
+                        'linear-gradient(var(--card), var(--card)), linear-gradient(140deg, #7C3AED 0%, #4B0FB8 70%, #2A1A3D 100%)',
+                      backgroundOrigin: 'border-box',
+                      backgroundClip: 'padding-box, border-box',
+                      boxShadow:
+                        '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 14px 32px -18px rgba(75,15,184,0.30)',
+                    }
+                  : {
+                      boxShadow:
+                        '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 12px 28px -22px rgba(42,26,61,0.18)',
+                    }
+              }
             >
-              {/* Active indicator pill */}
+              {/* Tone-tinted glow tucked behind the icon chip */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -left-6 -top-8 h-24 w-24 rounded-full opacity-70 transition-opacity duration-300 group-hover:opacity-100"
+                style={{
+                  background: `radial-gradient(circle, ${visual.glow} 0%, transparent 60%)`,
+                }}
+              />
+              {!isActive ? (
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent"
+                />
+              ) : null}
+
+              {/* Top-right state token: Active / loader / Apply hint */}
               {isActive ? (
-                <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-primary-foreground">
+                <span
+                  className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.14em]"
+                  style={{
+                    background: 'var(--lime-soft, #D6FF3E)',
+                    color: '#1a2000',
+                    boxShadow: '0 4px 10px -4px rgba(214,255,62,0.55)',
+                    fontFamily:
+                      'var(--font-inter-tight), var(--font-inter), sans-serif',
+                  }}
+                >
                   <Check className="h-2.5 w-2.5" strokeWidth={3} />
                   Active
                 </span>
@@ -106,32 +234,69 @@ export function NichePicker({ workspaceId, initialNiche }: NichePickerProps) {
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                 </span>
               ) : (
-                <span className="absolute right-3 top-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground/0 transition-colors group-hover:text-primary">
+                <span
+                  className="absolute right-3 top-3 inline-flex items-center gap-0.5 rounded-full border border-border/60 bg-background px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.14em] text-muted-foreground/0 transition-all group-hover:border-primary/30 group-hover:text-primary"
+                  style={{
+                    fontFamily:
+                      'var(--font-inter-tight), var(--font-inter), sans-serif',
+                  }}
+                >
                   Apply →
                 </span>
               )}
 
-              <div className="flex items-start gap-3 pr-16">
+              <div className="relative flex items-start gap-3 pr-16">
                 <span
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/50 text-[20px] shadow-sm"
+                  className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
+                  style={{
+                    background: visual.bg,
+                    color: visual.fg,
+                    boxShadow:
+                      '0 1px 0 rgba(255,255,255,0.5) inset, 0 6px 14px -6px rgba(42,26,61,0.18)',
+                  }}
                   aria-hidden
                 >
-                  {n.emoji}
+                  <span
+                    className="pointer-events-none absolute inset-1 rounded-[12px]"
+                    style={{
+                      background:
+                        'linear-gradient(180deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 50%)',
+                    }}
+                  />
+                  <Icon className="relative h-[18px] w-[18px]" strokeWidth={1.85} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[13.5px] font-bold text-foreground">{n.name}</p>
-                  <p className="mt-0.5 text-[12px] leading-snug text-muted-foreground">
+                  <p
+                    className="text-[14px] font-bold leading-tight tracking-tight text-foreground"
+                    style={{
+                      fontFamily:
+                        'var(--font-inter-tight), var(--font-inter), sans-serif',
+                    }}
+                  >
+                    {n.name}
+                  </p>
+                  <p className="mt-1 text-[12.5px] leading-relaxed text-muted-foreground">
                     {n.description}
                   </p>
                 </div>
               </div>
 
-              {/* Tone preview as a mono data-sheet block */}
-              <div className="mt-auto rounded-lg border border-border/40 bg-muted/30 px-2.5 py-1.5">
-                <p className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+              {/* Tone footer — designed block, not mono inline. */}
+              <div className="relative mt-auto rounded-xl border border-border/55 bg-muted/25 px-3 py-2.5">
+                <p
+                  className="mb-1 inline-flex items-center gap-1.5 text-[9.5px] font-bold uppercase tracking-[0.18em] text-primary/70"
+                  style={{
+                    fontFamily:
+                      'var(--font-inter-tight), var(--font-inter), sans-serif',
+                  }}
+                >
+                  <span
+                    aria-hidden
+                    className="inline-block h-px w-3 bg-primary/40"
+                  />
                   Tone
                 </p>
-                <p className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-foreground/80">
+                <p className="line-clamp-3 text-[12px] leading-snug text-foreground/85">
                   {n.tone}
                 </p>
               </div>
@@ -140,8 +305,10 @@ export function NichePicker({ workspaceId, initialNiche }: NichePickerProps) {
         })}
       </div>
 
-      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70">
-        <span className="text-muted-foreground/50">↳</span> Layered on top of platform templates · changes apply to new drafts immediately
+      <p className="flex items-center gap-1.5 text-[11.5px] leading-relaxed text-muted-foreground/85">
+        <span aria-hidden className="text-primary/40">↳</span>
+        Layered on top of platform templates · changes apply to new drafts
+        immediately.
       </p>
     </section>
   )
