@@ -318,29 +318,24 @@ export function ConnectDialog({
       )
     }
     return (
-      <a
+      <ShimmerButton
+        as="a"
         href={`/api/integrations/connect?app=${integrationId}&workspace_id=${workspaceId}`}
-        className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-md"
       >
         Connect
         <ExternalLink className="h-3 w-3" />
-      </a>
+      </ShimmerButton>
     )
   }
 
   // ── Managed (Zapier / Make — just docs link) ──────────────────
   if (connectionType === 'managed') {
-    const docsUrl = MANAGED_DOCS[integrationId]
+    const docsUrl = MANAGED_DOCS[integrationId] ?? '#'
     return (
-      <a
-        href={docsUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-border py-2 text-xs font-semibold text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
-      >
+      <ShimmerButton as="a" href={docsUrl} variant="ghost" external>
         Set up in {integrationName}
         <ExternalLink className="h-3 w-3" />
-      </a>
+      </ShimmerButton>
     )
   }
 
@@ -387,12 +382,9 @@ export function ConnectDialog({
           </div>
         </div>
       ) : (
-        <button
-          onClick={() => setOpen(true)}
-          className="w-full rounded-xl bg-primary py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-md"
-        >
+        <ShimmerButton onClick={() => setOpen(true)}>
           Connect
-        </button>
+        </ShimmerButton>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -419,5 +411,104 @@ export function ConnectDialog({
         </DialogContent>
       </Dialog>
     </>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Shared shimmer button — same vocabulary as the AI keys Connect CTA.
+// Foreground-black pill with a diagonal lime gradient sweep on hover,
+// translates 1 px up. Ghost variant for the managed/docs link.
+// ---------------------------------------------------------------------------
+
+type ShimmerButtonProps = {
+  children: React.ReactNode
+  variant?: 'primary' | 'ghost'
+} & (
+  | { as?: 'button'; onClick: () => void; href?: never; external?: never }
+  | { as: 'a'; href: string; onClick?: never; external?: boolean }
+)
+
+function ShimmerButton(props: ShimmerButtonProps) {
+  const { children, variant = 'primary' } = props
+
+  const sharedClass =
+    'cf-shimmer-btn group/cta relative inline-flex w-full items-center justify-center gap-1.5 overflow-hidden rounded-xl py-2 text-xs font-bold tracking-tight transition-all duration-200 hover:-translate-y-px'
+
+  const sharedStyle: React.CSSProperties =
+    variant === 'primary'
+      ? {
+          background: 'linear-gradient(180deg, #2A2118 0%, #181511 100%)',
+          color: '#FFFDF8',
+          boxShadow:
+            'inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 2px rgba(24,21,17,0.18), 0 6px 14px -6px rgba(24,21,17,0.32)',
+          fontFamily:
+            'var(--font-inter-tight), var(--font-inter), sans-serif',
+        }
+      : {
+          background: '#FFFDF8',
+          color: '#181511',
+          border: '1px solid #E5DDCE',
+          boxShadow:
+            'inset 0 1px 0 rgba(255,255,255,0.55), 0 1px 2px rgba(24,21,17,0.04)',
+          fontFamily:
+            'var(--font-inter-tight), var(--font-inter), sans-serif',
+        }
+
+  const shimmerStyle: React.CSSProperties =
+    variant === 'primary'
+      ? {
+          background:
+            'linear-gradient(115deg, transparent 30%, rgba(214,255,62,0.42) 50%, transparent 70%)',
+        }
+      : {
+          background:
+            'linear-gradient(115deg, transparent 30%, rgba(124,58,237,0.20) 50%, transparent 70%)',
+        }
+
+  const inner = (
+    <>
+      <span
+        aria-hidden
+        className="cf-shimmer-bar pointer-events-none absolute inset-0 -translate-x-[120%]"
+        style={shimmerStyle}
+      />
+      <span className="relative z-10 inline-flex items-center justify-center gap-1.5">
+        {children}
+      </span>
+      <style jsx>{`
+        .cf-shimmer-btn:hover .cf-shimmer-bar {
+          transform: translateX(120%);
+          transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .cf-shimmer-btn .cf-shimmer-bar {
+          transition: transform 0s;
+        }
+      `}</style>
+    </>
+  )
+
+  if (props.as === 'a') {
+    return (
+      <a
+        href={props.href}
+        className={sharedClass}
+        style={sharedStyle}
+        {...(props.external
+          ? { target: '_blank', rel: 'noopener noreferrer' }
+          : {})}
+      >
+        {inner}
+      </a>
+    )
+  }
+  return (
+    <button
+      type="button"
+      onClick={props.onClick}
+      className={sharedClass}
+      style={sharedStyle}
+    >
+      {inner}
+    </button>
   )
 }

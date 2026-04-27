@@ -223,6 +223,20 @@ export default async function IntegrationsPage({
 // Cards
 // ---------------------------------------------------------------------------
 
+/**
+ * Per-integration halo glow color — radial gradient tucked behind
+ * the brand tile. Real brand colors: Slack aubergine, Discord blue,
+ * Notion-grey, Sheets green, Drive blue. Reads "this row is alive
+ * and tied to the brand", not generic.
+ */
+const INTEGRATION_GLOW: Record<string, string> = {
+  slack: 'rgba(74,21,75,0.30)',
+  discord: 'rgba(88,101,242,0.34)',
+  notion: 'rgba(15,15,15,0.26)',
+  'google-sheets': 'rgba(15,157,88,0.32)',
+  'google-drive': 'rgba(66,133,244,0.28)',
+}
+
 function IntegrationCard({
   integration,
   workspaceId,
@@ -239,44 +253,88 @@ function IntegrationCard({
       : integration.logoColor === 'dark'
         ? 'text-foreground'
         : '' // 'native' = SVG carries its own colors
+  const glow =
+    INTEGRATION_GLOW[integration.id] ?? 'rgba(124,58,237,0.22)'
+
   return (
     <div
-      className={`relative flex flex-col rounded-2xl border p-5 transition-all ${
+      className={`group relative flex flex-col overflow-hidden rounded-2xl border p-5 transition-all duration-300 ${
         isConnected
           ? 'border-emerald-200/70 bg-emerald-50/30'
-          : 'border-border/60 bg-card hover:-translate-y-px hover:border-border hover:shadow-md hover:shadow-primary/[0.04]'
+          : 'border-border/60 bg-card hover:-translate-y-px hover:border-border'
       }`}
+      style={{
+        boxShadow: isConnected
+          ? '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 12px 28px -22px rgba(16,185,129,0.20)'
+          : '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 12px 28px -22px rgba(42,26,61,0.20)',
+      }}
     >
+      {/* Per-integration halo tucked behind the logo. Subtle until
+          hover, swells on group:hover so the card visibly reacts. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -left-8 -top-12 h-36 w-36 rounded-full opacity-55 transition-opacity duration-500 group-hover:opacity-100"
+        style={{
+          background: `radial-gradient(circle, ${glow} 0%, transparent 65%)`,
+        }}
+      />
+      {/* Edge-light hairline on the top — same chassis vocabulary as
+          the rest of the premium cards. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent"
+      />
+
       {/* Top row — brand tile + status pill */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="relative flex items-start justify-between gap-3">
         <span
-          className={`flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm ${integration.tileBg} ${logoTint}`}
+          className={`flex h-14 w-14 items-center justify-center rounded-2xl shadow-md transition-transform duration-300 group-hover:-rotate-[3deg] group-hover:scale-[1.05] ${integration.tileBg} ${logoTint}`}
           aria-hidden
+          style={{
+            boxShadow:
+              '0 1px 0 rgba(255,255,255,0.18) inset, 0 6px 14px -6px rgba(42,26,61,0.18)',
+          }}
         >
-          <Logo size={22} />
+          <Logo size={24} />
         </span>
         {isConnected ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/[0.14] px-2.5 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-emerald-700">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            </span>
             Live
           </span>
         ) : null}
       </div>
 
-      <div className="mt-4 flex-1">
-        <h3 className="text-[14px] font-bold text-foreground">{integration.name}</h3>
-        <p className="mt-1 text-[12.5px] leading-snug text-muted-foreground">
+      <div className="relative mt-4 flex-1">
+        <h3
+          className="text-[16px] font-bold leading-tight tracking-tight text-foreground"
+          style={{
+            fontFamily:
+              'var(--font-inter-tight), var(--font-inter), sans-serif',
+          }}
+        >
+          {integration.name}
+        </h3>
+        <p className="mt-1.5 text-[13px] leading-relaxed text-foreground/85">
           {integration.benefit}
         </p>
         <p
-          className="mt-2 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75"
+          className="mt-3 inline-flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/75"
+          style={{
+            fontFamily:
+              'var(--font-inter-tight), var(--font-inter), sans-serif',
+          }}
         >
+          <span aria-hidden className="inline-block h-px w-4 bg-primary/40" />
           {integration.trigger}
         </p>
       </div>
 
       {workspaceId ? (
-        <div className="mt-4">
+        <div className="relative mt-5">
           <ConnectDialog
             integrationId={integration.id}
             integrationName={integration.name}
