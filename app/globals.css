@@ -533,3 +533,212 @@ section[id="social-proof"] {
   color: #7c7468 !important;
   border: 1px solid #E5DDCE !important;
 }
+
+/* ===================================================================
+ * Premium 3D button recipe — global. Mirrors the .lv2d-btn-* family
+ * scoped to the dashboard. Used by the base Button component so every
+ * primary/outline/destructive button across the app reads as the
+ * same physical object: lit-from-above gradient, multi-layer drop
+ * shadow, lift on hover, press-down on active, lime halo on the
+ * primary/destructive variants.
+ * =================================================================== */
+.cf-btn-3d {
+  position: relative;
+  isolation: isolate;
+  font-family: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif;
+  letter-spacing: -.005em;
+  transition: box-shadow .18s ease, transform .18s ease, filter .18s ease;
+}
+.cf-btn-3d::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Primary — brand plum gradient (#2A1A3D → #120920) with chartreuse
+   text. Lime inset border + lime specular bloom — same lit-from-lime
+   feel as the landing-page button, just with gradient depth. */
+.cf-btn-3d-primary {
+  background: linear-gradient(180deg, #2A1A3D 0%, #120920 100%);
+  color: #D6FF3E;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 0 0 1px rgba(214,255,62,.18),
+    inset 0 -1px 0 rgba(0,0,0,.55),
+    inset 0 -3px 6px -2px rgba(0,0,0,.40),
+    0 1px 2px rgba(42,26,61,.18),
+    0 4px 8px -2px rgba(42,26,61,.40),
+    0 14px 28px -10px rgba(42,26,61,.45);
+}
+.cf-btn-3d-primary::before {
+  background: radial-gradient(120% 90% at 50% -30%, rgba(214,255,62,.18) 0%, transparent 60%);
+  opacity: .85;
+  transition: opacity .25s ease;
+}
+.cf-btn-3d-primary:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(180deg, #3a2552 0%, #120920 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    inset 0 0 0 1px rgba(214,255,62,.32),
+    inset 0 -1px 0 rgba(0,0,0,.55),
+    inset 0 -3px 6px -2px rgba(0,0,0,.40),
+    0 2px 4px rgba(42,26,61,.20),
+    0 8px 14px -2px rgba(42,26,61,.45),
+    0 22px 38px -10px rgba(42,26,61,.50),
+    0 0 0 6px rgba(214,255,62,.07);
+}
+.cf-btn-3d-primary:hover::before { opacity: 1; }
+.cf-btn-3d-primary:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    inset 0 0 0 1px rgba(214,255,62,.18),
+    inset 0 -1px 0 rgba(0,0,0,.45),
+    inset 0 2px 4px rgba(0,0,0,.40),
+    0 1px 1px rgba(42,26,61,.30),
+    0 2px 4px -1px rgba(42,26,61,.30);
+  transition: box-shadow .05s ease, transform .05s ease;
+}
+
+/* Accent — chartreuse on accent-ink (#1a2000) text. The "Upgrade /
+   Save" variant. Matches the landing-page accent color exactly. */
+.cf-btn-3d-accent {
+  background: linear-gradient(180deg, #E5FF6A 0%, #BFE82C 100%);
+  color: #1a2000;
+  font-weight: 800;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    inset 0 -1px 0 rgba(74,90,0,.45),
+    inset 0 -3px 6px -2px rgba(74,90,0,.30),
+    0 1px 1px rgba(74,90,0,.30),
+    0 4px 8px -2px rgba(74,90,0,.35),
+    0 14px 28px -10px rgba(74,90,0,.35);
+}
+.cf-btn-3d-accent::before {
+  background: radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,.55) 0%, transparent 55%);
+}
+.cf-btn-3d-accent:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.65),
+    inset 0 -1px 0 rgba(74,90,0,.45),
+    inset 0 -3px 6px -2px rgba(74,90,0,.30),
+    0 1px 1px rgba(74,90,0,.35),
+    0 8px 14px -2px rgba(74,90,0,.40),
+    0 22px 38px -10px rgba(74,90,0,.40),
+    0 0 0 4px rgba(214,255,62,.30),
+    0 0 28px -2px rgba(214,255,62,.50);
+}
+.cf-btn-3d-accent:active {
+  transform: translateY(1px);
+  filter: brightness(.97);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.30),
+    inset 0 -1px 0 rgba(74,90,0,.35),
+    inset 0 2px 4px rgba(74,90,0,.35),
+    0 1px 1px rgba(74,90,0,.20),
+    0 2px 4px -1px rgba(74,90,0,.20);
+  transition: box-shadow .05s ease, transform .05s ease, filter .05s ease;
+}
+
+/* Ghost — paper-on-cream outline. Subtle plum halo on hover.
+   Replaces the flat shadcn `outline` variant. */
+.cf-btn-3d-ghost {
+  background: linear-gradient(180deg, #FFFDF8 0%, #F1ECDF 100%);
+  color: #2A1A3D;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 -1px 0 rgba(24,21,17,.10),
+    inset 0 -3px 6px -2px rgba(24,21,17,.06),
+    0 0 0 1px #E5DDCE,
+    0 1px 1px rgba(24,21,17,.06),
+    0 4px 8px -2px rgba(24,21,17,.10),
+    0 12px 24px -10px rgba(24,21,17,.10);
+}
+.cf-btn-3d-ghost::before {
+  background: radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,.85) 0%, transparent 55%);
+}
+.cf-btn-3d-ghost:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -1px 0 rgba(24,21,17,.10),
+    inset 0 -3px 6px -2px rgba(24,21,17,.06),
+    0 0 0 1px #CFC4AF,
+    0 1px 1px rgba(24,21,17,.08),
+    0 8px 14px -2px rgba(24,21,17,.14),
+    0 18px 32px -10px rgba(24,21,17,.14),
+    0 0 0 4px rgba(42,26,61,.05);
+}
+.cf-btn-3d-ghost:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    inset 0 -1px 0 rgba(24,21,17,.08),
+    inset 0 2px 4px rgba(24,21,17,.08),
+    0 0 0 1px #CFC4AF,
+    0 1px 1px rgba(24,21,17,.04);
+  transition: box-shadow .05s ease, transform .05s ease;
+}
+
+/* Destructive — same recipe anchored in lv2-danger #9B2018, the
+   single red used across the brand (chips, error toasts, priority
+   dots). Top of the gradient lifts to a slightly brighter red so the
+   button still reads as "lit from above". */
+.cf-btn-3d-destructive {
+  background: linear-gradient(180deg, #B82A20 0%, #6E1209 100%);
+  color: #FFF5F4;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 0 0 1px rgba(255,213,210,.18),
+    inset 0 -1px 0 rgba(0,0,0,.45),
+    inset 0 -3px 6px -2px rgba(0,0,0,.30),
+    0 1px 2px rgba(110,18,9,.30),
+    0 4px 8px -2px rgba(110,18,9,.40),
+    0 14px 28px -10px rgba(110,18,9,.45);
+}
+.cf-btn-3d-destructive::before {
+  background: radial-gradient(120% 90% at 50% -30%, rgba(255,213,210,.22) 0%, transparent 60%);
+  opacity: .85;
+  transition: opacity .25s ease;
+}
+.cf-btn-3d-destructive:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(180deg, #C5311E 0%, #6E1209 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    inset 0 0 0 1px rgba(255,213,210,.32),
+    inset 0 -1px 0 rgba(0,0,0,.45),
+    inset 0 -3px 6px -2px rgba(0,0,0,.30),
+    0 2px 4px rgba(110,18,9,.35),
+    0 8px 14px -2px rgba(110,18,9,.50),
+    0 22px 38px -10px rgba(110,18,9,.50),
+    0 0 0 6px rgba(155,32,24,.10);
+}
+.cf-btn-3d-destructive:hover::before { opacity: 1; }
+.cf-btn-3d-destructive:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    inset 0 0 0 1px rgba(255,213,210,.18),
+    inset 0 -1px 0 rgba(0,0,0,.40),
+    inset 0 2px 4px rgba(0,0,0,.40),
+    0 1px 1px rgba(110,18,9,.30),
+    0 2px 4px -1px rgba(110,18,9,.30);
+  transition: box-shadow .05s ease, transform .05s ease;
+}
+
+/* Disabled — kill the lift, dim the chassis. */
+.cf-btn-3d:disabled,
+.cf-btn-3d[aria-disabled='true'] {
+  opacity: .55;
+  transform: none;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-btn-3d { transition: none; }
+  .cf-btn-3d:hover { transform: none; }
+}

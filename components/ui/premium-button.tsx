@@ -10,7 +10,7 @@ import { motion, useMotionValue, useReducedMotion, useSpring } from 'framer-moti
  * Two layers of polish stacked:
  *
  *  STATIC — every button has these even when nothing is happening:
- *   1. Vertical brand-plum gradient (#3F2A57 → #120920) so the button
+ *   1. Vertical brand-plum gradient (#2A1A3D → #120920) so the button
  *      reads as "lit from above"
  *   2. Inner top highlight (1 px white) for the lit upper corner
  *   3. Inner bottom shadow for the soft concavity at the lower edge
@@ -127,7 +127,7 @@ export function PremiumButton(props: PremiumButtonProps) {
     variant === 'primary'
       ? {
           background:
-            'linear-gradient(180deg, #3F2A57 0%, #120920 100%)',
+            'linear-gradient(180deg, #2A1A3D 0%, #120920 100%)',
           color: '#D6FF3E',
           fontFamily:
             'var(--font-inter-tight), var(--font-inter), sans-serif',

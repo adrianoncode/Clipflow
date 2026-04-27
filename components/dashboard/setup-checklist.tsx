@@ -211,7 +211,7 @@ export function SetupChecklist({
                         className="relative flex h-[34px] w-[34px] items-center justify-center rounded-full text-[#D6FF3E]"
                         style={{
                           background:
-                            'linear-gradient(140deg, #3F2A57 0%, #120920 100%)',
+                            'linear-gradient(140deg, #2A1A3D 0%, #120920 100%)',
                           boxShadow:
                             'inset 0 1px 0 rgba(214, 255, 62, 0.18), inset 0 -1px 0 rgba(0, 0, 0, 0.40), 0 0 0 2px rgba(214, 255, 62, 0.30), 0 4px 12px -2px rgba(42, 26, 61, 0.45)',
                         }}

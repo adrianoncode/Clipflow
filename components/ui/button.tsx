@@ -5,21 +5,18 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-semibold ring-offset-background transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-bold ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none select-none',
   {
     variants: {
       variant: {
-        default:
-          'bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:bg-primary/90 hover:-translate-y-px hover:shadow-md hover:shadow-primary/25 active:translate-y-0 active:shadow-sm',
-        destructive:
-          'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 hover:-translate-y-px hover:shadow-md active:translate-y-0',
-        outline:
-          'border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground hover:border-border hover:-translate-y-px hover:shadow-md active:translate-y-0',
-        secondary:
-          'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 hover:-translate-y-px active:translate-y-0',
+        default: 'cf-btn-3d cf-btn-3d-primary',
+        destructive: 'cf-btn-3d cf-btn-3d-destructive',
+        outline: 'cf-btn-3d cf-btn-3d-ghost',
+        secondary: 'cf-btn-3d cf-btn-3d-ghost',
+        accent: 'cf-btn-3d cf-btn-3d-accent',
         ghost:
-          'hover:bg-accent hover:text-accent-foreground active:bg-accent/80',
-        link: 'text-primary underline-offset-4 hover:underline',
+          'transition-colors duration-150 hover:bg-accent hover:text-accent-foreground active:bg-accent/80',
+        link: 'text-primary underline-offset-4 transition-colors hover:underline',
       },
       size: {
         default: 'h-10 px-5 py-2',

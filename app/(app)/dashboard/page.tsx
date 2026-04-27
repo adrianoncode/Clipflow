@@ -147,7 +147,7 @@ const DASH_STYLES = `
   font-weight: 800; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
   transition: box-shadow .18s ease, transform .18s ease, filter .18s ease;
   isolation: isolate;
-  background: linear-gradient(180deg, #3F2A57 0%, #120920 100%);
+  background: linear-gradient(180deg, #2A1A3D 0%, #120920 100%);
   color: var(--lv2d-accent);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.18),
@@ -180,7 +180,7 @@ const DASH_STYLES = `
 }
 
 .lv2-dash .lv2d-btn-primary-sm {
-  background: linear-gradient(180deg, #3F2A57 0%, #120920 100%);
+  background: linear-gradient(180deg, #2A1A3D 0%, #120920 100%);
   color: var(--lv2d-accent);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.18),
@@ -311,7 +311,7 @@ const DASH_STYLES = `
 
 /* Primary — plum gradient with chartreuse text. */
 .lv2-dash .lv2d-btn-primary {
-  background: linear-gradient(180deg, #3F2A57 0%, #120920 100%);
+  background: linear-gradient(180deg, #2A1A3D 0%, #120920 100%);
   color: var(--lv2d-accent);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.18),
@@ -1007,7 +1007,7 @@ async function DashboardBody() {
                   className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-[18px] font-bold tracking-tight sm:h-16 sm:w-16 sm:text-[20px]"
                   style={{
                     background:
-                      'linear-gradient(140deg, #3F2A57 0%, #2A1A3D 60%, #120920 100%)',
+                      'linear-gradient(140deg, #2A1A3D 0%, #2A1A3D 60%, #120920 100%)',
                     color: 'var(--lv2d-accent)',
                     fontFamily:
                       'var(--font-inter-tight), var(--font-inter), sans-serif',
