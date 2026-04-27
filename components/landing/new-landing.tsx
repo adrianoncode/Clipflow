@@ -2593,27 +2593,77 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         </div>
       </section>
 
-      {/* BIG CTA */}
+      {/* BIG CTA — designed to feel like a physical surface lit from
+          above, not a flat plum slab. Gradient + paper grain + two
+          orbs (lime top-right, lime bottom-left) give the chassis
+          real depth. Right column trades placeholder avatars for an
+          actual three-step mini-flow so the eye has something to
+          land on instead of empty negative space. */}
       <section className="mx-auto max-w-[1240px] px-6 pb-28">
         <div
           className="lv2-reveal relative overflow-hidden rounded-[32px] p-14 text-white lg:p-20"
-          style={{ background: 'var(--lv2-primary)' }}
+          style={{
+            background:
+              'linear-gradient(160deg, #2A1A3D 0%, #120920 65%, #1d0f30 100%)',
+            boxShadow:
+              'inset 0 1px 0 rgba(214,255,62,.12), inset 0 0 0 1px rgba(214,255,62,.10), 0 1px 2px rgba(18,9,32,.4), 0 32px 64px -24px rgba(18,9,32,.55)',
+          }}
         >
+          {/* Top-right lime halo — primary glow source. Bumped from
+              0.22 to 0.38 so it actually reads as light. */}
           <div
-            className="lv2-orb absolute -right-20 -top-20 h-[320px] w-[320px] rounded-full"
+            className="lv2-orb absolute -right-24 -top-24 h-[380px] w-[380px] rounded-full"
             style={{
               background:
-                'radial-gradient(circle, var(--lv2-accent) 0%, transparent 60%)',
-              opacity: 0.22,
-              filter: 'blur(0)',
+                'radial-gradient(circle, var(--lv2-accent) 0%, transparent 62%)',
+              opacity: 0.38,
+            }}
+          />
+          {/* Bottom-left lime bloom — secondary light source so the
+              chassis has two dimensions of depth, not one. */}
+          <div
+            className="absolute -bottom-32 -left-24 h-[360px] w-[360px] rounded-full"
+            aria-hidden
+            style={{
+              background:
+                'radial-gradient(circle, rgba(214,255,62,.10) 0%, transparent 60%)',
+            }}
+          />
+          {/* Hairline highlight along the top edge — same trick the
+              dashboard hero uses. Reads as "this surface is lit". */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-16 top-0 h-px"
+            style={{
+              background:
+                'linear-gradient(to right, transparent, rgba(214,255,62,.45), transparent)',
+            }}
+          />
+          {/* Subtle paper grain so the dark surface isn't a dead
+              rectangle. SVG noise via data-uri keeps it a single
+              network resource. */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-[0.035] mix-blend-screen"
+            style={{
+              backgroundImage:
+                "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>\")",
             }}
           />
           <div className="relative grid items-end gap-10 md:grid-cols-[1.3fr_1fr]">
             <div>
               <p
-                className="lv2-mono-label mb-4"
-                style={{ color: 'rgba(255,255,255,.55)' }}
+                className="lv2-mono-label mb-4 inline-flex items-center gap-2"
+                style={{ color: 'rgba(214,255,62,.85)' }}
               >
+                <span
+                  aria-hidden
+                  className="inline-block h-1.5 w-1.5 rounded-full"
+                  style={{
+                    background: 'var(--lv2-accent)',
+                    boxShadow: '0 0 8px rgba(214,255,62,.7)',
+                  }}
+                />
                 Ready when you are
               </p>
               <h2
@@ -2626,47 +2676,83 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 <br />
                 in the recording.
               </h2>
-              <p className="mt-6 max-w-[540px] text-[16px] text-white/70">
+              <p className="mt-6 max-w-[540px] text-[16px] text-white/75">
                 Six minutes from upload to approved draft. No card. No onboarding call. Just drop
                 a video and see what Clipflow pulls out.
               </p>
             </div>
-            <div className="flex flex-col gap-3 md:items-start md:pb-2">
-              <Link href={signupHref} className="lv2-btn-accent px-6 py-4 text-[15px]">
-                Start free — 14 days <span>→</span>
-              </Link>
-              {/* Demo link is a mailto until we stand up a /demo
-                  Calendly surface — previously had no href at all,
-                  which silently broke every click. */}
-              <a
-                href="mailto:hi@clipflow.to?subject=Clipflow%20demo"
-                className="lv2-btn-ghost text-white/80 cursor-pointer"
-                style={{ paddingLeft: 0 }}
+
+            <div className="flex flex-col gap-4 md:items-start md:pb-2">
+              {/* Three-step mini-flow — replaces the placeholder face
+                  circles with something that actually says "this is
+                  what you get in those six minutes". Each row is a
+                  glassy plum pill so the eye lands on real content,
+                  not loading-state stand-ins. */}
+              <ul
+                className="flex flex-col gap-1.5 text-[12.5px]"
+                style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
               >
-                Book a 15-min demo
-              </a>
-              <div className="mt-4 flex items-center gap-2">
-                <div className="flex -space-x-2">
-                  {[32, 47, 26, 68].map((i) => (
+                {[
+                  { t: '0:00', l: 'Drop a recording' },
+                  { t: '2:30', l: 'AI cuts + captions + hooks' },
+                  { t: '6:00', l: 'You approve, it publishes' },
+                ].map((s) => (
+                  <li
+                    key={s.t}
+                    className="flex items-center gap-3 rounded-full px-3 py-1.5"
+                    style={{
+                      background: 'rgba(255,255,255,.04)',
+                      border: '1px solid rgba(214,255,62,.12)',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,.04)',
+                    }}
+                  >
                     <span
-                      key={i}
-                      className="lv2-face h-8 w-8 rounded-full border-2"
-                      style={{
-                        borderColor: 'var(--lv2-primary)',
-                        
-                      }}
+                      className="lv2-tabular text-[10.5px] font-bold uppercase tracking-[0.18em]"
+                      style={{ color: 'rgba(214,255,62,.85)' }}
+                    >
+                      {s.t}
+                    </span>
+                    <span
+                      aria-hidden
+                      className="h-px flex-1 min-w-[12px]"
+                      style={{ background: 'rgba(214,255,62,.18)' }}
                     />
-                  ))}
-                </div>
-                <p className="lv2-mono text-[11.5px] text-white/60">
-                  EARLY ACCESS \u00b7 FOUNDING MEMBER PRICING
-                </p>
+                    <span className="text-white/85">{s.l}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-1 flex flex-wrap items-center gap-3">
+                <Link href={signupHref} className="lv2-btn-accent px-6 py-4 text-[15px]">
+                  Start free — 14 days <span>→</span>
+                </Link>
+                <a
+                  href="mailto:hi@clipflow.to?subject=Clipflow%20demo"
+                  className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold underline-offset-4 hover:underline"
+                  style={{ color: 'rgba(214,255,62,.85)' }}
+                >
+                  Book a 15-min demo
+                  <span aria-hidden>→</span>
+                </a>
               </div>
-              <div className="lv2-mono mt-2 flex items-center gap-3 text-[11.5px] text-white/50">
+
+              <div
+                className="lv2-mono mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]"
+                style={{ color: 'rgba(255,255,255,.55)' }}
+              >
+                <span className="inline-flex items-center gap-1.5">
+                  <span
+                    aria-hidden
+                    className="h-1 w-1 rounded-full"
+                    style={{ background: 'rgba(214,255,62,.7)' }}
+                  />
+                  EARLY ACCESS · FOUNDING MEMBER PRICING
+                </span>
+                <span aria-hidden>·</span>
                 <span>NO CARD</span>
-                <span>·</span>
+                <span aria-hidden>·</span>
                 <span>CANCEL 1-CLICK</span>
-                <span>·</span>
+                <span aria-hidden>·</span>
                 <span>SOC 2</span>
               </div>
             </div>
