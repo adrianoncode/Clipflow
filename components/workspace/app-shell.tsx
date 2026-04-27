@@ -120,7 +120,43 @@ const SHELL_STYLES = `
   transition: background .12s, color .12s;
   position: relative;
 }
-.lv2-shell .lv2s-nav-item:hover { background: rgba(24,21,17,.04); color: var(--lv2s-fg); }
+.lv2-shell .lv2s-nav-item:hover {
+  /* Liquid-glass hover — translucent paper, blurred backdrop, top
+     inner highlight + soft drop. Reads as a tile floating on top of
+     the sidebar instead of a flat tinted rectangle. */
+  background: rgba(255,253,248,0.55);
+  backdrop-filter: saturate(170%) blur(10px);
+  -webkit-backdrop-filter: saturate(170%) blur(10px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.65),
+    inset 0 -1px 0 rgba(42,26,61,0.05),
+    0 4px 12px -6px rgba(42,26,61,0.10);
+  color: var(--lv2s-fg);
+}
+/* The sidebar itself goes glassy when the cursor is anywhere over it.
+   Background swaps from solid paper to translucent + heavy backdrop
+   blur, with a 1 px white inner highlight on each vertical edge —
+   the Apple "Liquid Glass" tile vocabulary, scaled to a sidebar. */
+.lv2-shell aside.lv2s-aside {
+  background: var(--lv2s-sidebar);
+  transition: background .4s ease, backdrop-filter .4s ease, box-shadow .4s ease;
+  -webkit-backdrop-filter: saturate(100%) blur(0);
+  backdrop-filter: saturate(100%) blur(0);
+}
+.lv2-shell aside.lv2s-aside:hover {
+  background: rgba(250,247,242,0.60);
+  -webkit-backdrop-filter: saturate(180%) blur(28px);
+  backdrop-filter: saturate(180%) blur(28px);
+  box-shadow:
+    inset 1px 0 0 rgba(255,255,255,0.55),
+    inset -1px 0 0 rgba(255,255,255,0.20),
+    1px 0 28px -10px rgba(42,26,61,0.10);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lv2-shell aside.lv2s-aside,
+  .lv2-shell aside.lv2s-aside:hover,
+  .lv2-shell .lv2s-nav-item:hover { transition: none !important; }
+}
 .lv2-shell .lv2s-nav-item.active {
   color: var(--lv2s-accent); font-weight: 600;
   /* Solid background on the item itself — guarantees lime text always
@@ -571,9 +607,8 @@ export function AppShell({
         <div className="flex flex-1 overflow-hidden">
           {/* ── Sidebar ──────────────────────────────────────────── */}
           <aside
-            className="hidden w-52 shrink-0 flex-col overflow-hidden lg:flex"
+            className="lv2s-aside hidden w-52 shrink-0 flex-col overflow-hidden lg:flex"
             style={{
-              background: 'var(--lv2s-sidebar)',
               borderRight: '1px solid var(--lv2s-border)',
             }}
           >
