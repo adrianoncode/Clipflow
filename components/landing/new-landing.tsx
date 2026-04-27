@@ -29,6 +29,18 @@ interface NewLandingProps {
   referralPercent: number
 }
 
+/**
+ * Append a plan id to the signup URL so the destination knows which
+ * tile the user clicked. Preserves any existing query params (e.g.
+ * the referral ref). The signup page can then highlight the chosen
+ * plan, prefill the checkout, or just show context — the click is
+ * no longer a context-free "click any button, land anywhere" feel.
+ */
+function appendPlan(href: string, plan: 'free' | 'creator' | 'studio'): string {
+  const sep = href.includes('?') ? '&' : '?'
+  return `${href}${sep}plan=${plan}`
+}
+
 export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLandingProps) {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const stepsRef = useRef<HTMLDivElement | null>(null)
@@ -2209,7 +2221,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               )}
             </ul>
             <Link
-              href={signupHref}
+              href={appendPlan(signupHref, 'free')}
               className="lv2-btn-ghost lv2-magnetic mt-6 w-full justify-center border"
               style={{ borderColor: 'var(--lv2-border)' }}
             >
@@ -2291,7 +2303,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 </li>
               ))}
             </ul>
-            <Link href={signupHref} className="lv2-btn-primary lv2-magnetic mt-6 w-full justify-center">
+            <Link href={appendPlan(signupHref, 'creator')} className="lv2-btn-primary lv2-magnetic mt-6 w-full justify-center">
               <span className="lv2-magnetic-shine" />
               <span className="lv2-magnetic-label">
                 Try Creator free for 14 days <span className="lv2-arrow">→</span>
@@ -2362,7 +2374,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 </li>
               ))}
             </ul>
-            <Link href={signupHref} className="lv2-btn-ghost lv2-magnetic mt-6 w-full justify-center border"
+            <Link href={appendPlan(signupHref, 'studio')} className="lv2-btn-ghost lv2-magnetic mt-6 w-full justify-center border"
               style={{ borderColor: 'var(--lv2-border)' }}
             >
               <span className="lv2-magnetic-shine" />
