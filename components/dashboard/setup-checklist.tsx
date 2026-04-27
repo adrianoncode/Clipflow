@@ -128,12 +128,42 @@ export function SetupChecklist({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/50 bg-card">
+    <div
+      className="relative overflow-hidden rounded-2xl border bg-card"
+      style={{
+        borderColor: '#CFC4AF',
+        background:
+          'linear-gradient(180deg, rgba(214,255,62,.06) 0%, #FFFDF8 30%)',
+        boxShadow:
+          '0 1px 0 rgba(255,255,255,.7) inset, 0 0 0 4px rgba(214,255,62,.06), 0 22px 44px -28px rgba(42,26,61,.22)',
+      }}
+    >
+      {/* Soft lime glow tucked behind the header — same trick the
+          hero uses, signals "this is the live action item". */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full"
+        style={{
+          background:
+            'radial-gradient(circle, rgba(214,255,62,.18) 0%, rgba(214,255,62,0) 60%)',
+        }}
+      />
       {/* Header */}
-      <div className="border-b border-border/40 px-6 py-4">
+      <div
+        className="relative px-6 py-4"
+        style={{ borderBottom: '1px solid rgba(207,196,175,.55)' }}
+      >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-bold text-foreground">Get started with Clipflow</h2>
+            <p
+              className="mb-1 font-mono text-[10.5px] font-bold uppercase tracking-[0.22em]"
+              style={{ color: '#5f5850' }}
+            >
+              Setup · {doneCount === 0 ? 'start here' : 'in progress'}
+            </p>
+            <h2 className="text-base font-bold tracking-tight text-foreground">
+              Get started with Clipflow
+            </h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
               {doneCount} of {steps.length} steps complete
             </p>

@@ -8,11 +8,11 @@ import {
   Check,
   CheckCircle2,
   Clock,
+  Inbox,
   Layers,
   MessageSquare,
   Plug,
   Send,
-  Sparkles,
   Star,
   TrendingDown,
   TrendingUp,
@@ -904,7 +904,7 @@ async function DashboardBody() {
       count: stats?.contentThisMonth ?? 0,
       sub: 'this month',
       tone: { bg: 'var(--lv2d-primary-soft)', fg: 'var(--lv2d-primary)' },
-      icon: <Sparkles className="h-[15px] w-[15px]" />,
+      icon: <Inbox className="h-[15px] w-[15px]" />,
       href: workspace ? `/workspace/${workspace.id}/content/new` : '/dashboard',
     },
     {
@@ -1190,19 +1190,21 @@ async function DashboardBody() {
                   >
                     <div className="flex items-center gap-2">
                       <span className="lv2d-mono-label">Your pipeline</span>
-                      <span
-                        className="lv2d-chip"
-                        style={{
-                          background: 'var(--lv2d-success-soft)',
-                          color: 'var(--lv2d-success)',
-                        }}
-                      >
+                      {hasData && (
                         <span
-                          className="lv2d-pulse h-1.5 w-1.5 rounded-full"
-                          style={{ background: 'var(--lv2d-success)' }}
-                        />{' '}
-                        live
-                      </span>
+                          className="lv2d-chip"
+                          style={{
+                            background: 'var(--lv2d-success-soft)',
+                            color: 'var(--lv2d-success)',
+                          }}
+                        >
+                          <span
+                            className="lv2d-pulse h-1.5 w-1.5 rounded-full"
+                            style={{ background: 'var(--lv2d-success)' }}
+                          />{' '}
+                          live
+                        </span>
+                      )}
                     </div>
                     <Link
                       href={`/workspace/${workspace.id}/pipeline`}
@@ -1626,6 +1628,25 @@ async function DashboardBody() {
                           Analytics <ArrowRight className="h-3 w-3" />
                         </Link>
                       </div>
+                      {platformPerf.every((p) => p.posts === 0) ? (
+                        <div className="flex flex-col items-center px-5 py-8 text-center">
+                          <div className="mb-3 flex items-center gap-2">
+                            {platformPerf.map((p) => (
+                              <PlatformDot key={p.key} platform={p.key} />
+                            ))}
+                          </div>
+                          <p className="text-[13px]" style={{ color: 'var(--lv2d-fg)' }}>
+                            No posts published yet.
+                          </p>
+                          <p
+                            className="mt-1 max-w-sm text-[11.5px]"
+                            style={{ color: 'var(--lv2d-muted)' }}
+                          >
+                            Approve a draft and schedule it — TikTok, Reels, Shorts and
+                            LinkedIn light up here once you ship.
+                          </p>
+                        </div>
+                      ) : (
                       <div className="lv2d-divide">
                         {platformPerf.map((p) => {
                           const hasData = p.posts > 0
@@ -1690,6 +1711,7 @@ async function DashboardBody() {
                         )
                         })}
                       </div>
+                      )}
                     </section>
                   )}
 
@@ -1778,9 +1800,11 @@ async function DashboardBody() {
                         />
                         <span className="lv2d-mono-label">Brand voice</span>
                       </div>
-                      <Link href="/settings/brand-voice" className="lv2d-btn-ghost-sm">
-                        Tune <ArrowRight className="h-3 w-3" />
-                      </Link>
+                      {brandVoice && (
+                        <Link href="/settings/brand-voice" className="lv2d-btn-ghost-sm">
+                          Tune <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      )}
                     </div>
                     {brandVoice ? (
                       <div className="flex items-center gap-4">
