@@ -145,9 +145,34 @@ const DASH_STYLES = `
 }
 .lv2-dash .lv2d-btn-ghost:active { transform: translateY(0); }
 .lv2-dash .lv2d-step-line {
+  position: relative;
   height: 2px;
-  background-image: linear-gradient(to right, var(--lv2d-border-strong) 60%, transparent 0);
-  background-size: 8px 2px; background-repeat: repeat-x;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--lv2d-border-strong) 100%, transparent) 0%,
+    color-mix(in srgb, var(--lv2d-primary) 30%, transparent) 100%
+  );
+  overflow: hidden;
+}
+.lv2-dash .lv2d-step-line::after {
+  content: '';
+  position: absolute; top: 0; left: -40%;
+  width: 40%; height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(214, 255, 62, 0.85) 50%,
+    transparent 100%
+  );
+  animation: lv2d-step-flow 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes lv2d-step-flow {
+  0%   { transform: translateX(0%); }
+  100% { transform: translateX(350%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lv2-dash .lv2d-step-line::after { animation: none; opacity: 0; }
 }
 .lv2-dash .lv2d-funnel-step {
   position: relative; z-index: 10;
@@ -226,10 +251,27 @@ const DASH_STYLES = `
   .lv2-dash .lv2d-card-lift { animation: none !important; transition: none !important; }
 }
 .lv2-dash .lv2d-thumb {
+  position: relative;
+  border-radius: 8px;
   background:
-    repeating-linear-gradient(115deg, rgba(42,26,61,.1) 0 4px, rgba(42,26,61,.02) 4px 12px),
-    linear-gradient(135deg, #DDD2E8, #EFE9F5);
-  border-radius: 6px;
+    radial-gradient(circle at 28% 35%, rgba(214,255,62,0.18) 0%, transparent 45%),
+    radial-gradient(circle at 75% 65%, rgba(75,15,184,0.32) 0%, transparent 50%),
+    linear-gradient(135deg, #2A1A3D 0%, #120920 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    inset 0 -1px 0 rgba(0,0,0,0.30),
+    0 1px 2px rgba(42,26,61,0.18);
+  overflow: hidden;
+}
+.lv2-dash .lv2d-thumb::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.10) 0.5px, transparent 0);
+  background-size: 6px 6px;
+  opacity: 0.55;
+  mix-blend-mode: overlay;
+  pointer-events: none;
 }
 .lv2-dash .lv2d-row-hover { transition: background .15s ease; }
 .lv2-dash .lv2d-row-hover:hover { background: rgba(42,26,61,.035); }

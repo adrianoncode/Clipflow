@@ -13,6 +13,8 @@ import {
   X,
 } from 'lucide-react'
 
+import { PremiumProgress } from '@/components/ui/premium-progress'
+
 interface SetupChecklistProps {
   hasAiKey: boolean
   contentCount: number
@@ -137,12 +139,13 @@ export function SetupChecklist({
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex h-2 w-24 overflow-hidden rounded-full bg-muted">
-              <div
-                className="rounded-full bg-primary transition-all duration-700 ease-out"
-                style={{ width: `${(doneCount / steps.length) * 100}%` }}
-              />
-            </div>
+            <PremiumProgress
+              value={doneCount}
+              max={steps.length}
+              height={8}
+              label="Setup progress"
+              className="w-32"
+            />
             <span className="font-mono text-[11px] font-bold tabular-nums text-muted-foreground">
               {doneCount}/{steps.length}
             </span>
@@ -169,19 +172,99 @@ export function SetupChecklist({
                   />
                 )}
 
-                {/* Circle indicator */}
+                {/* Circle indicator — three states, each with real depth.
+                    Done: chartreuse-tinted plum chip with inner highlight + drop glow.
+                    Current: plum-gradient with a chartreuse pulse halo around it.
+                    Future: brushed-paper chip with concave inset, etched look. */}
                 <div className="relative z-10 flex shrink-0 pt-1">
                   {step.done ? (
-                    <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-[#0F6B4D] text-white shadow-sm shadow-[#0F6B4D]/20">
-                      <Check className="h-4 w-4" strokeWidth={3} />
+                    <div
+                      className="relative flex h-[34px] w-[34px] items-center justify-center rounded-full text-[#D6FF3E]"
+                      style={{
+                        background:
+                          'linear-gradient(140deg, #2A1A3D 0%, #120920 100%)',
+                        boxShadow:
+                          'inset 0 1px 0 rgba(214, 255, 62, 0.20), inset 0 -1px 0 rgba(0, 0, 0, 0.40), 0 2px 0 rgba(255, 255, 255, 0.55), 0 4px 10px -2px rgba(214, 255, 62, 0.30), 0 8px 18px -6px rgba(42, 26, 61, 0.45)',
+                      }}
+                    >
+                      <span
+                        aria-hidden
+                        className="pointer-events-none absolute inset-1 rounded-full"
+                        style={{
+                          background:
+                            'linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 50%)',
+                        }}
+                      />
+                      <Check className="relative h-4 w-4" strokeWidth={3} />
                     </div>
                   ) : isCurrent ? (
-                    <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full border-2 border-primary bg-primary/10 text-primary shadow-sm shadow-primary/20">
-                      <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-primary" />
+                    <div className="relative">
+                      {/* Pulsing chartreuse halo around the active step */}
+                      <span
+                        aria-hidden
+                        className="cf-step-pulse pointer-events-none absolute inset-0 rounded-full"
+                        style={{
+                          boxShadow: '0 0 0 0 rgba(214, 255, 62, 0.60)',
+                        }}
+                      />
+                      <div
+                        className="relative flex h-[34px] w-[34px] items-center justify-center rounded-full text-[#D6FF3E]"
+                        style={{
+                          background:
+                            'linear-gradient(140deg, #3F2A57 0%, #120920 100%)',
+                          boxShadow:
+                            'inset 0 1px 0 rgba(214, 255, 62, 0.18), inset 0 -1px 0 rgba(0, 0, 0, 0.40), 0 0 0 2px rgba(214, 255, 62, 0.30), 0 4px 12px -2px rgba(42, 26, 61, 0.45)',
+                        }}
+                      >
+                        <span
+                          aria-hidden
+                          className="pointer-events-none absolute inset-1 rounded-full"
+                          style={{
+                            background:
+                              'linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 50%)',
+                          }}
+                        />
+                        <span
+                          aria-hidden
+                          className="relative h-2.5 w-2.5 animate-pulse rounded-full"
+                          style={{
+                            background: '#D6FF3E',
+                            boxShadow: '0 0 6px rgba(214, 255, 62, 0.85)',
+                          }}
+                        />
+                      </div>
+                      <style jsx>{`
+                        @keyframes cf-step-pulse {
+                          0% { box-shadow: 0 0 0 0 rgba(214, 255, 62, 0.55); }
+                          70% { box-shadow: 0 0 0 10px rgba(214, 255, 62, 0); }
+                          100% { box-shadow: 0 0 0 0 rgba(214, 255, 62, 0); }
+                        }
+                        .cf-step-pulse {
+                          animation: cf-step-pulse 2.2s ease-out infinite;
+                        }
+                        @media (prefers-reduced-motion: reduce) {
+                          .cf-step-pulse { animation: none; }
+                        }
+                      `}</style>
                     </div>
                   ) : (
-                    <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full border-2 border-border/50 bg-muted/30 text-muted-foreground/40">
-                      <span className="text-xs font-bold">{i + 1}</span>
+                    <div
+                      className="flex h-[34px] w-[34px] items-center justify-center rounded-full text-muted-foreground/55"
+                      style={{
+                        background: 'rgba(42, 26, 61, 0.04)',
+                        boxShadow:
+                          'inset 0 1px 2px rgba(42, 26, 61, 0.18), inset 0 -1px 0 rgba(255, 255, 255, 0.55), 0 1px 0 rgba(255, 255, 255, 0.45)',
+                      }}
+                    >
+                      <span
+                        className="text-xs font-bold tabular-nums"
+                        style={{
+                          fontFamily:
+                            'var(--font-inter-tight), var(--font-inter), sans-serif',
+                        }}
+                      >
+                        {i + 1}
+                      </span>
                     </div>
                   )}
                 </div>
