@@ -4,6 +4,7 @@ import { ArrowRight, CalendarClock, Plus, GitBranch } from 'lucide-react'
 
 import { EmptyState } from '@/components/ui/empty-state'
 import { PageHeader } from '@/components/ui/page-header'
+import { DraftsTabNav } from '@/components/pipeline/drafts-tab-nav'
 import { PipelineEmptyPreview } from '@/components/pipeline/pipeline-empty-preview'
 import {
   PipelineBoard,
@@ -147,18 +148,8 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
 
   return (
     <div className="mx-auto w-full max-w-[1400px] space-y-6 p-4 sm:p-8">
-      {/* ── Breadcrumb (kept above the header — readers expect the
-          stage trail before they hit the page title). ── */}
-      <p className="text-xs text-muted-foreground">
-        <Link href={`/workspace/${workspaceId}`} className="hover:text-foreground transition-colors">Content</Link>
-        {' → '}
-        <span className="font-medium text-foreground">Drafts</span>
-        {' → '}
-        <Link href={`/workspace/${workspaceId}/schedule`} className="hover:text-foreground transition-colors">Schedule</Link>
-      </p>
-
       <PageHeader
-        eyebrow={`${totalCount === 0 ? 'Drafts pipeline' : `${totalCount} draft${totalCount === 1 ? '' : 's'}`}`}
+        category={`${totalCount === 0 ? 'Drafts pipeline' : `${totalCount} draft${totalCount === 1 ? '' : 's'}`}`}
         title="Drafts."
         description={
           totalCount === 0
@@ -169,7 +160,7 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
           <>
             {approvedCount > 0 && (
               <Link
-                href={`/workspace/${workspaceId}/schedule`}
+                href={`/workspace/${workspaceId}/schedule?view=calendar`}
                 className="group inline-flex items-center gap-2 rounded-xl border border-emerald-200/60 bg-emerald-50/50 px-3.5 py-2 text-[13px] font-semibold text-emerald-700 transition-all hover:-translate-y-px hover:bg-emerald-100 hover:shadow-md"
               >
                 <CalendarClock className="h-3.5 w-3.5" />
@@ -186,6 +177,14 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
             </Link>
           </>
         }
+      />
+
+      {/* Tab strip — Board / Calendar / Queue. Schedule is no longer a
+          separate destination, it's a sibling view of Drafts. */}
+      <DraftsTabNav
+        workspaceId={workspaceId}
+        current="board"
+        approvedCount={approvedCount}
       />
 
       {/* ── Workflow flow strip ── */}

@@ -2,13 +2,11 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import {
   AlertTriangle,
-  ArrowRight,
   CalendarDays,
   CheckCircle2,
   Clock,
   Eye,
   Heart,
-  List,
   MessageCircle,
   Send,
   Share2,
@@ -17,7 +15,7 @@ import {
 
 import { EmptyState } from '@/components/ui/empty-state'
 import { PageHeader } from '@/components/ui/page-header'
-import { ScheduleEmptyPreview } from '@/components/scheduler/schedule-empty-preview'
+import { DraftsTabNav } from '@/components/pipeline/drafts-tab-nav'
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getScheduledPosts } from '@/lib/scheduler/get-scheduled-posts'
@@ -129,32 +127,20 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
 
   // ── Calendar View ──
   if (isCalendarView) {
+    const approvedReady = unscheduledOutputs.length
     return (
       <div className="flex min-h-full flex-col">
-        {/* View toggle */}
-        <div className="border-b border-border/60 bg-background px-4 py-2 sm:px-8">
-          <div className="mx-auto flex max-w-5xl items-center justify-between">
-            <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-0.5">
-              <Link
-                href={`/workspace/${params.id}/schedule`}
-                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <List className="h-3.5 w-3.5" />
-                List
-              </Link>
-              <span className="flex items-center gap-1.5 rounded-md bg-background px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm">
-                <CalendarDays className="h-3.5 w-3.5" />
-                Calendar
-              </span>
-            </div>
-            <Link
-              href={`/workspace/${params.id}/pipeline`}
-              className="group inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              Drafts
-              <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-            </Link>
+        {/* Unified tab strip — same Board / Calendar / Queue triplet
+            that lives on /pipeline. Calendar is just a sibling view
+            of Drafts now, not a separate destination. */}
+        <div className="border-b border-border/60 bg-background px-4 py-3 sm:px-8">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
+            <DraftsTabNav
+              workspaceId={params.id}
+              current="calendar"
+              approvedCount={approvedReady}
+              scheduledCount={posts.length}
+            />
           </div>
         </div>
 
@@ -191,48 +177,20 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
-      {/* ── Breadcrumb ── */}
-      <p className="text-xs text-muted-foreground">
-        <Link href={`/workspace/${params.id}`} className="hover:text-foreground transition-colors">Content</Link>
-        {' → '}
-        <Link href={`/workspace/${params.id}/pipeline`} className="hover:text-foreground transition-colors">Drafts</Link>
-        {' → '}
-        <span className="font-medium text-foreground">Schedule</span>
-      </p>
-
       <PageHeader
-        eyebrow={posts.length === 0 ? 'Posts queue' : `${posts.length} post${posts.length === 1 ? '' : 's'}`}
-        title="Schedule."
+        category={posts.length === 0 ? 'Posts queue' : `${posts.length} post${posts.length === 1 ? '' : 's'}`}
+        title="Queue."
         description={
           posts.length === 0
             ? undefined
             : `${upcomingCount} queued · ${publishedCount} live · ${failedCount} failed`
         }
-        actions={
-          <>
-            <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-muted/30 p-0.5">
-              <span className="flex items-center gap-1.5 rounded-md bg-background px-2.5 py-1 text-[12px] font-semibold text-foreground shadow-sm">
-                <List className="h-3.5 w-3.5" />
-                List
-              </span>
-              <Link
-                href={`/workspace/${params.id}/schedule?view=calendar`}
-                className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <CalendarDays className="h-3.5 w-3.5" />
-                Calendar
-              </Link>
-            </div>
-            <Link
-              href={`/workspace/${params.id}/pipeline`}
-              className="group inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/[0.04] px-3.5 py-2 text-[13px] font-semibold text-primary transition-all hover:-translate-y-px hover:bg-primary/10 hover:shadow-md"
-            >
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              View drafts
-              <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-          </>
-        }
+      />
+
+      <DraftsTabNav
+        workspaceId={params.id}
+        current="queue"
+        scheduledCount={posts.length}
       />
 
       {/* ── Stats strip ── */}
@@ -313,27 +271,12 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
       {posts.length === 0 ? (
         <EmptyState
           icon={CalendarDays}
-          title="Pick a time, we hit publish."
-          description="Approve drafts first, then drop them on the week. Posts go live exactly when you set them — no manual copy-paste, no app-switching."
+          title="Nothing scheduled yet."
+          description="Approve a draft on the Board, then drop it onto the calendar. Posts go live exactly when you set them — no manual copy-paste."
           actionLabel="Review drafts"
           actionHref={`/workspace/${params.id}/pipeline`}
           secondaryLabel="Open calendar"
           secondaryHref={`/workspace/${params.id}/schedule?view=calendar`}
-          steps={[
-            {
-              title: 'Approve drafts in Pipeline',
-              body: 'Reject what you don’t like, approve what you ship. Bulk-approve with shift-click.',
-            },
-            {
-              title: 'Drag onto the calendar',
-              body: 'Pick a day + time. The same post can target multiple platforms in one slot.',
-            },
-            {
-              title: 'Auto-publish does the rest',
-              body: 'When the slot hits, we push to TikTok / IG / YT / LinkedIn / X. You see status here.',
-            },
-          ]}
-          preview={<ScheduleEmptyPreview />}
         />
       ) : (
         <div className="space-y-6">

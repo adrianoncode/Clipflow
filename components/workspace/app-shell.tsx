@@ -286,13 +286,10 @@ export function AppShell({
       items: [
         { href: '/dashboard', label: 'Dashboard', icon: Home },
         { href: `/workspace/${currentWorkspaceId}`, label: 'Library', icon: FileVideo },
+        // Drafts now wraps Board / Calendar / Queue under one umbrella —
+        // Schedule used to be a sibling sidebar item but it's actually
+        // the next view of Drafts, not a separate destination.
         { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Drafts', icon: CheckSquare },
-        {
-          href: `/workspace/${currentWorkspaceId}/schedule`,
-          label: 'Schedule',
-          icon: Send,
-          requires: 'scheduling',
-        },
       ],
     },
     {
@@ -369,12 +366,6 @@ export function AppShell({
     { href: '/dashboard', label: 'Home', icon: Home },
     { href: `/workspace/${currentWorkspaceId}`, label: 'Library', icon: FileVideo },
     { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Drafts', icon: CheckSquare },
-    {
-      href: `/workspace/${currentWorkspaceId}/schedule`,
-      label: 'Schedule',
-      icon: Send,
-      requires: 'scheduling',
-    },
   ]
 
   const mobileMoreItems: NavItem[] = [
