@@ -6,6 +6,7 @@ import { ArrowUpRight, Plus, Sparkles, Tag } from 'lucide-react'
 import { BrandLogo } from '@/components/ai-keys/brand-logo'
 import { DeleteAiKeyButton } from '@/components/ai-keys/delete-ai-key-button'
 import { AddServiceKeyDialog } from '@/components/ai-keys/add-service-key-dialog'
+import { PremiumButton } from '@/components/ui/premium-button'
 import type { ServiceSpec } from '@/components/ai-keys/service-directory'
 import type { AiKeySummary } from '@/lib/ai/get-ai-keys'
 import type { AiProvider } from '@/lib/ai/providers/types'
@@ -201,7 +202,10 @@ export function ServiceCard({
 
         {isOwner && !isConnected && (
           <div className="flex shrink-0 flex-col items-stretch gap-1.5 sm:items-end">
-            <ConnectButton onClick={() => setAdding(true)} />
+            <PremiumButton onClick={() => setAdding(true)} fullWidth={false}>
+              <Plus className="h-3.5 w-3.5" />
+              Connect
+            </PremiumButton>
             <a
               href={spec.signupUrl}
               target="_blank"
