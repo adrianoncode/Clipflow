@@ -104,46 +104,170 @@ const DASH_STYLES = `
   border-radius: 999px; padding: 2px 8px;
   font-size: 10px; font-weight: 700; letter-spacing: .01em;
 }
-.lv2-dash .lv2d-btn-primary {
-  display: inline-flex; align-items: center; gap: .5rem;
-  background: var(--lv2d-primary); color: var(--lv2d-accent);
-  font-weight: 700; font-size: 13px;
-  padding: 9px 14px; border-radius: 10px;
-  box-shadow: inset 0 0 0 1px rgba(214,255,62,.15), 0 2px 10px -2px rgba(42,26,61,.35);
-  transition: transform .15s ease, background .15s ease;
+/* ─── Dashboard buttons — same 3D-physical recipe as PremiumButton.
+   One language across Settings / AI keys / Integrations / Dashboard
+   so every button reacts consistently: lit-from-above, multi-layer
+   drop shadow, lift on hover, press-down on active, chartreuse halo
+   ring on the primary/accent variants. */
+.lv2-dash .lv2d-btn-primary,
+.lv2-dash .lv2d-btn-accent,
+.lv2-dash .lv2d-btn-ghost {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: 0 16px; height: 38px;
+  border-radius: 10px;
+  font-family: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif;
+  font-weight: 700; font-size: 13px; letter-spacing: -.005em;
+  transition: box-shadow .18s ease, transform .18s ease, filter .18s ease;
+  isolation: isolate;
 }
-.lv2-dash .lv2d-btn-primary:hover { transform: translateY(-1px); background: var(--lv2d-primary-ink); }
+
+/* Primary — plum gradient with chartreuse text. */
+.lv2-dash .lv2d-btn-primary {
+  background: linear-gradient(180deg, #3F2A57 0%, #120920 100%);
+  color: var(--lv2d-accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 rgba(0,0,0,.55),
+    inset 0 -3px 6px -2px rgba(0,0,0,.4),
+    0 1px 1px rgba(18,9,32,.45),
+    0 4px 8px -2px rgba(18,9,32,.45),
+    0 14px 28px -10px rgba(18,9,32,.35);
+}
+.lv2-dash .lv2d-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    inset 0 -1px 0 rgba(0,0,0,.55),
+    inset 0 -3px 6px -2px rgba(0,0,0,.4),
+    0 1px 1px rgba(18,9,32,.50),
+    0 8px 14px -2px rgba(18,9,32,.50),
+    0 22px 38px -10px rgba(18,9,32,.45),
+    0 0 0 4px rgba(214,255,62,.10),
+    0 0 28px -2px rgba(214,255,62,.30);
+}
+
+/* Accent — chartreuse on dark plum text. The "Upgrade / Save"
+   variant. Brighter rest state, thicker halo on hover. */
 .lv2-dash .lv2d-btn-accent {
-  display: inline-flex; align-items: center; gap: .5rem;
-  background: var(--lv2d-accent); color: var(--lv2d-accent-ink);
-  font-weight: 800; font-size: 13px;
-  padding: 9px 14px; border-radius: 10px;
-  box-shadow: 0 2px 0 rgba(100,125,0,.25), inset 0 0 0 1px rgba(0,0,0,.06);
-  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+  background: linear-gradient(180deg, #E5FF6A 0%, #BFE82C 100%);
+  color: var(--lv2d-accent-ink);
+  font-weight: 800;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    inset 0 -1px 0 rgba(74,90,0,.45),
+    inset 0 -3px 6px -2px rgba(74,90,0,.30),
+    0 1px 1px rgba(74,90,0,.30),
+    0 4px 8px -2px rgba(74,90,0,.35),
+    0 14px 28px -10px rgba(74,90,0,.35);
 }
 .lv2-dash .lv2d-btn-accent:hover {
   transform: translateY(-1px);
-  filter: brightness(1.04);
+  filter: brightness(1.03);
   box-shadow:
-    0 3px 0 rgba(100,125,0,.25),
-    0 12px 24px -12px rgba(42,26,61,.32),
-    inset 0 0 0 1px rgba(0,0,0,.08);
+    inset 0 1px 0 rgba(255,255,255,.65),
+    inset 0 -1px 0 rgba(74,90,0,.45),
+    inset 0 -3px 6px -2px rgba(74,90,0,.30),
+    0 1px 1px rgba(74,90,0,.35),
+    0 8px 14px -2px rgba(74,90,0,.40),
+    0 22px 38px -10px rgba(74,90,0,.40),
+    0 0 0 4px rgba(214,255,62,.30),
+    0 0 28px -2px rgba(214,255,62,.50);
 }
-.lv2-dash .lv2d-btn-accent:active { transform: translateY(0); filter: brightness(.98); }
+
+/* Ghost — paper-on-cream outline. Subtle plum halo on hover. */
 .lv2-dash .lv2d-btn-ghost {
-  display: inline-flex; align-items: center; gap: .5rem;
-  background: var(--lv2d-card); border: 1px solid var(--lv2d-border);
-  color: var(--lv2d-fg); font-weight: 600; font-size: 13px;
-  padding: 8px 12px; border-radius: 10px;
-  transition: background .18s ease, border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+  background: linear-gradient(180deg, #FFFDF8 0%, #F1ECDF 100%);
+  color: var(--lv2d-fg);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.95),
+    inset 0 -1px 0 rgba(24,21,17,.10),
+    inset 0 -3px 6px -2px rgba(24,21,17,.06),
+    0 0 0 1px var(--lv2d-border),
+    0 1px 1px rgba(24,21,17,.06),
+    0 4px 8px -2px rgba(24,21,17,.10),
+    0 12px 24px -10px rgba(24,21,17,.10);
 }
 .lv2-dash .lv2d-btn-ghost:hover {
-  background: var(--lv2d-bg-2);
-  border-color: var(--lv2d-border-strong);
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px -12px rgba(42,26,61,.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,1),
+    inset 0 -1px 0 rgba(24,21,17,.10),
+    inset 0 -3px 6px -2px rgba(24,21,17,.06),
+    0 0 0 1px var(--lv2d-border-strong),
+    0 1px 1px rgba(24,21,17,.08),
+    0 8px 14px -2px rgba(24,21,17,.14),
+    0 18px 32px -10px rgba(24,21,17,.14),
+    0 0 0 4px rgba(42,26,61,.05);
 }
-.lv2-dash .lv2d-btn-ghost:active { transform: translateY(0); }
+
+/* Press-down — same family for all three variants. The lift
+   collapses, an inner press-shadow appears at the top, ambient
+   halo shrinks. The committed click feels earned. */
+.lv2-dash .lv2d-btn-primary:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(0,0,0,.45),
+    inset 0 2px 4px rgba(0,0,0,.45),
+    0 1px 1px rgba(18,9,32,.30),
+    0 2px 4px -1px rgba(18,9,32,.30);
+  transition: box-shadow .05s ease, transform .05s ease;
+}
+.lv2-dash .lv2d-btn-accent:active {
+  transform: translateY(1px);
+  filter: brightness(.97);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.30),
+    inset 0 -1px 0 rgba(74,90,0,.35),
+    inset 0 2px 4px rgba(74,90,0,.35),
+    0 1px 1px rgba(74,90,0,.20),
+    0 2px 4px -1px rgba(74,90,0,.20);
+  transition: box-shadow .05s ease, transform .05s ease, filter .05s ease;
+}
+.lv2-dash .lv2d-btn-ghost:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    inset 0 -1px 0 rgba(24,21,17,.08),
+    inset 0 2px 4px rgba(24,21,17,.08),
+    0 0 0 1px var(--lv2d-border-strong),
+    0 1px 1px rgba(24,21,17,.04);
+  transition: box-shadow .05s ease, transform .05s ease;
+}
+
+/* Static specular bloom — radial white at the top so each variant
+   reads as lit-from-above. Implemented as a ::before pseudo so we
+   don't have to wrap every button in extra markup. */
+.lv2-dash .lv2d-btn-primary::before,
+.lv2-dash .lv2d-btn-accent::before,
+.lv2-dash .lv2d-btn-ghost::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none;
+}
+.lv2-dash .lv2d-btn-primary::before {
+  background: radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,.18) 0%, transparent 55%);
+}
+.lv2-dash .lv2d-btn-accent::before {
+  background: radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,.55) 0%, transparent 55%);
+}
+.lv2-dash .lv2d-btn-ghost::before {
+  background: radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,.85) 0%, transparent 55%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lv2-dash .lv2d-btn-primary,
+  .lv2-dash .lv2d-btn-accent,
+  .lv2-dash .lv2d-btn-ghost {
+    transition: none;
+  }
+  .lv2-dash .lv2d-btn-primary:hover,
+  .lv2-dash .lv2d-btn-accent:hover,
+  .lv2-dash .lv2d-btn-ghost:hover {
+    transform: none;
+  }
+}
 .lv2-dash .lv2d-step-line {
   position: relative;
   height: 2px;

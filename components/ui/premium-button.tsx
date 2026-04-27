@@ -1,31 +1,39 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { useEffect, useRef } from 'react'
+import { motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
 
 /**
  * Premium 3D CTA — feels like a physical button, not a flat pill.
  *
- * The recipe (kept restrained, no orbiting beams):
- *   1. Vertical gradient — top is lighter than the bottom so the
- *      button reads as "lit from above" rather than a flat tile.
- *   2. Inner top highlight (1 px white) carves the upper edge into
- *      a real lit corner.
- *   3. Inner bottom shadow gives the bottom edge a soft concavity —
- *      you can feel where the surface curves under.
- *   4. Stacked drop shadows (1 px hairline + 4 px close + 14 px
- *      ambient + 28 px halo) build real depth — the button sits
- *      above the page, not on top of it.
- *   5. Specular bloom (radial white at the top, only ~18% opacity)
- *      simulates a soft light source. Subtle enough to read as
- *      texture, not a glow billboard.
- *   6. Hover: the close + ambient shadows grow (the button lifts
- *      higher) and a soft lime shimmer sweeps once across.
- *   7. Active: the lift collapses, top highlight dims slightly —
- *      reads as a real click-down.
+ * Two layers of polish stacked:
  *
- * The press-down state is the part most "premium" buttons skip and
- * the part that actually makes them feel real. Every interactive
- * frame has a corresponding tactile commit.
+ *  STATIC — every button has these even when nothing is happening:
+ *   1. Vertical brand-plum gradient (#3F2A57 → #120920) so the button
+ *      reads as "lit from above"
+ *   2. Inner top highlight (1 px white) for the lit upper corner
+ *   3. Inner bottom shadow for the soft concavity at the lower edge
+ *   4. 4-layer drop-shadow stack (hairline + close + ambient + halo)
+ *      so the button sits above the page, not on it
+ *   5. Specular bloom (radial white at the top, ~18% opacity)
+ *
+ *  INTERACTIVE — what fires when the cursor is on/over the button:
+ *   6. Magnetic cursor pull — the button content slides up to ±4 px
+ *      toward the cursor as you approach, springs back when you
+ *      leave. Apple's product-card trick. The pull is on a useSpring
+ *      with stiffness 220 / damping 18 so it feels physical.
+ *   7. Cursor-tracked specular — a radial bright spot tracks the
+ *      pointer position. The button looks like it's catching real
+ *      light from the cursor. CSS variables --mx/--my expose the
+ *      pointer position to a child gradient layer.
+ *   8. Chartreuse glow-halo on hover — a soft outer glow ring at
+ *      4 px / 6% opacity tells the eye "this is alive".
+ *   9. One-shot lime shimmer sweep across the surface on hover.
+ *  10. Active state — the lift collapses, an inner press-shadow
+ *      appears at the top inside (key pushed in), ambient halo
+ *      shrinks. The press-down state is what most "premium" buttons
+ *      skip; every committed click should feel earned.
  */
 
 type Variant = 'primary' | 'ghost'
@@ -58,6 +66,10 @@ type AnchorProps = Common & {
 
 export type PremiumButtonProps = ButtonProps | AnchorProps
 
+/** How far the button can pull toward the cursor, in px. */
+const MAGNETIC_PULL = 4
+/** How far inside the button the cursor-tracked specular peaks. */
+
 export function PremiumButton(props: PremiumButtonProps) {
   const {
     children,
@@ -66,25 +78,63 @@ export function PremiumButton(props: PremiumButtonProps) {
     className = '',
   } = props
 
+  const reduce = useReducedMotion()
+  const ref = useRef<HTMLElement | null>(null)
+  // Magnetic pull motion values — content shifts toward cursor.
+  const mx = useMotionValue(0)
+  const my = useMotionValue(0)
+  const sx = useSpring(mx, { stiffness: 220, damping: 18, mass: 0.4 })
+  const sy = useSpring(my, { stiffness: 220, damping: 18, mass: 0.4 })
+
+  useEffect(() => {
+    if (reduce) return
+    const el = ref.current
+    if (!el) return
+    const onMove = (e: MouseEvent) => {
+      const r = el.getBoundingClientRect()
+      const cx = r.left + r.width / 2
+      const cy = r.top + r.height / 2
+      const dx = (e.clientX - cx) / (r.width / 2)
+      const dy = (e.clientY - cy) / (r.height / 2)
+      mx.set(dx * MAGNETIC_PULL)
+      my.set(dy * MAGNETIC_PULL)
+      // Cursor-tracked specular position — fed to the radial gradient
+      // child layer via CSS variables.
+      const px = ((e.clientX - r.left) / r.width) * 100
+      const py = ((e.clientY - r.top) / r.height) * 100
+      el.style.setProperty('--cf-pbtn-mx', `${px}%`)
+      el.style.setProperty('--cf-pbtn-my', `${py}%`)
+    }
+    const onLeave = () => {
+      mx.set(0)
+      my.set(0)
+      el.style.setProperty('--cf-pbtn-mx', `50%`)
+      el.style.setProperty('--cf-pbtn-my', `0%`)
+    }
+    el.addEventListener('mousemove', onMove)
+    el.addEventListener('mouseleave', onLeave)
+    return () => {
+      el.removeEventListener('mousemove', onMove)
+      el.removeEventListener('mouseleave', onLeave)
+    }
+  }, [mx, my, reduce])
+
   const baseClass = `cf-pbtn group/cta relative inline-flex items-center justify-center gap-1.5 overflow-hidden rounded-xl px-4 text-[12.5px] font-bold leading-none tracking-tight ${
     fullWidth ? 'h-10 w-full' : 'h-10'
   } ${className}`
 
-  // Two state-aware shadow stacks. The :hover and :active swaps
-  // happen via the styled-jsx block below so the transitions can
-  // animate the depth properly.
   const baseStyle: React.CSSProperties =
     variant === 'primary'
       ? {
-          // Brand plum gradient — same palette as the landing's
-          // lv2-btn-primary (#2A1A3D → #120920). Foreground swaps to
-          // chartreuse so the click reads as "brand action", not as
-          // a generic dark-pill.
           background:
             'linear-gradient(180deg, #3F2A57 0%, #120920 100%)',
           color: '#D6FF3E',
           fontFamily:
             'var(--font-inter-tight), var(--font-inter), sans-serif',
+          // Initialise the cursor-tracked variables so the specular
+          // is centered above the button at rest.
+          ['--cf-pbtn-mx' as string]: '50%',
+          ['--cf-pbtn-my' as string]: '0%',
         }
       : {
           background:
@@ -92,10 +142,11 @@ export function PremiumButton(props: PremiumButtonProps) {
           color: '#2A1A3D',
           fontFamily:
             'var(--font-inter-tight), var(--font-inter), sans-serif',
+          ['--cf-pbtn-mx' as string]: '50%',
+          ['--cf-pbtn-my' as string]: '0%',
         }
 
-  // The specular bloom layer — soft radial white at the top that
-  // simulates a light source. Subtle (16-18% opacity).
+  // Static specular bloom — soft top light, low opacity.
   const specularStyle: React.CSSProperties = {
     background:
       variant === 'primary'
@@ -103,21 +154,37 @@ export function PremiumButton(props: PremiumButtonProps) {
         : 'radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,0.85) 0%, transparent 55%)',
   }
 
-  // Single shimmer sweep — fires once on hover, no orbit drama.
+  // Cursor-tracked specular — peaks where the cursor is.
+  const cursorSpecularStyle: React.CSSProperties = {
+    background:
+      variant === 'primary'
+        ? 'radial-gradient(80px circle at var(--cf-pbtn-mx) var(--cf-pbtn-my), rgba(214,255,62,0.30) 0%, transparent 70%)'
+        : 'radial-gradient(80px circle at var(--cf-pbtn-mx) var(--cf-pbtn-my), rgba(42,26,61,0.18) 0%, transparent 70%)',
+    opacity: 0,
+    transition: 'opacity 0.25s ease',
+  }
+
+  // Hover sweep — single shimmer pass across the surface.
   const shimmerStyle: React.CSSProperties = {
     background:
       variant === 'primary'
-        ? 'linear-gradient(115deg, transparent 35%, rgba(214,255,62,0.22) 50%, transparent 65%)'
-        : 'linear-gradient(115deg, transparent 35%, rgba(42,26,61,0.16) 50%, transparent 65%)',
+        ? 'linear-gradient(115deg, transparent 35%, rgba(214,255,62,0.30) 50%, transparent 65%)'
+        : 'linear-gradient(115deg, transparent 35%, rgba(42,26,61,0.20) 50%, transparent 65%)',
   }
 
   const inner = (
     <>
-      {/* Top specular bloom */}
+      {/* Static top specular bloom */}
       <span
         aria-hidden
         className="pointer-events-none absolute inset-0 rounded-xl"
         style={specularStyle}
+      />
+      {/* Cursor-tracked specular — only visible on hover, peaks where pointer is */}
+      <span
+        aria-hidden
+        className="cf-pbtn-cursor-spec pointer-events-none absolute inset-0 rounded-xl"
+        style={cursorSpecularStyle}
       />
       {/* Hover shimmer sweep */}
       <span
@@ -125,9 +192,15 @@ export function PremiumButton(props: PremiumButtonProps) {
         className="cf-pbtn-shimmer pointer-events-none absolute inset-0 -translate-x-[120%]"
         style={shimmerStyle}
       />
-      <span className="relative z-10 inline-flex items-center justify-center gap-1.5">
+      {/* Magnetic-pulled content. Wrapping in a motion.span lets us
+          spring the pull while the outer button retains its stable
+          bounding box for the shadow stack. */}
+      <motion.span
+        className="relative z-10 inline-flex items-center justify-center gap-1.5"
+        style={reduce ? undefined : { x: sx, y: sy }}
+      >
         {children}
-      </span>
+      </motion.span>
 
       <style jsx>{`
         .cf-pbtn {
@@ -154,9 +227,9 @@ export function PremiumButton(props: PremiumButtonProps) {
           transition: box-shadow 0.18s ease, transform 0.18s ease;
         }
         .cf-pbtn:hover {
-          /* Hover — button lifts off the page. Translate -1 px and
-             grow the close + ambient drops; top inner highlight
-             brightens slightly so the lit edge reads stronger. */
+          /* Hover — button lifts. Outer chartreuse glow ring fades
+             in around the chassis to telegraph alive-ness. Cursor-
+             tracked specular comes online. */
           transform: translateY(-1px);
           box-shadow: ${variant === 'primary'
             ? `
@@ -166,7 +239,8 @@ export function PremiumButton(props: PremiumButtonProps) {
             0 1px 1px rgba(18, 9, 32, 0.50),
             0 8px 14px -2px rgba(18, 9, 32, 0.50),
             0 22px 38px -10px rgba(18, 9, 32, 0.45),
-            0 0 0 4px rgba(214, 255, 62, 0.06)`
+            0 0 0 4px rgba(214, 255, 62, 0.10),
+            0 0 28px -2px rgba(214, 255, 62, 0.30)`
             : `
             inset 0 1px 0 rgba(255, 255, 255, 1),
             inset 0 -1px 0 rgba(24, 21, 17, 0.10),
@@ -174,11 +248,16 @@ export function PremiumButton(props: PremiumButtonProps) {
             0 0 0 1px rgba(207, 196, 175, 0.95),
             0 1px 1px rgba(24, 21, 17, 0.08),
             0 8px 14px -2px rgba(24, 21, 17, 0.14),
-            0 18px 32px -10px rgba(24, 21, 17, 0.14)`};
+            0 18px 32px -10px rgba(24, 21, 17, 0.14),
+            0 0 0 4px rgba(42, 26, 61, 0.05)`};
+        }
+        .cf-pbtn:hover .cf-pbtn-cursor-spec {
+          opacity: 1;
         }
         .cf-pbtn:active {
-          /* Active — collapse the lift, dim the top highlight. The
-             ambient halo also shrinks so it reads as "pressed in". */
+          /* Active — collapse the lift, dim highlights, ambient
+             halo shrinks. Inner press-shadow at the top reads as
+             "key pushed in". */
           transform: translateY(1px);
           box-shadow: ${variant === 'primary'
             ? `
@@ -226,6 +305,7 @@ export function PremiumButton(props: PremiumButtonProps) {
   if (props.as === 'a') {
     return (
       <a
+        ref={ref as React.RefObject<HTMLAnchorElement>}
         href={props.href}
         className={baseClass}
         style={baseStyle}
@@ -240,6 +320,7 @@ export function PremiumButton(props: PremiumButtonProps) {
 
   return (
     <button
+      ref={ref as React.RefObject<HTMLButtonElement>}
       type={props.type ?? 'button'}
       onClick={props.onClick}
       disabled={props.disabled}
