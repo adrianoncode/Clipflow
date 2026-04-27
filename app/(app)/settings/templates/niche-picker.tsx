@@ -7,6 +7,7 @@ import {
   Building2,
   Check,
   Clapperboard,
+  Layers,
   Loader2,
   Mic2,
   ShoppingBag,
@@ -305,10 +306,14 @@ export function NichePicker({ workspaceId, initialNiche }: NichePickerProps) {
         })}
       </div>
 
-      <p className="flex items-center gap-1.5 text-[11.5px] leading-relaxed text-muted-foreground/85">
-        <span aria-hidden className="text-primary/40">↳</span>
-        Layered on top of platform templates · changes apply to new drafts
-        immediately.
+      <p className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background px-3 py-1.5 text-[11.5px] leading-snug text-muted-foreground/90">
+        <Layers className="h-3 w-3 text-primary/70" />
+        <span>
+          Layered on top of platform templates ·{' '}
+          <span className="font-semibold text-foreground/85">
+            changes apply to new drafts immediately
+          </span>
+        </span>
       </p>
     </section>
   )
