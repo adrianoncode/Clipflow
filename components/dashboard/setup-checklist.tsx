@@ -305,9 +305,19 @@ export function SetupChecklist({
                     step.done
                       ? 'opacity-60'
                       : isCurrent
-                        ? 'bg-primary/[0.04] ring-1 ring-primary/15'
+                        ? ''
                         : 'opacity-40'
                   }`}
+                  style={
+                    isCurrent
+                      ? {
+                          background:
+                            'linear-gradient(180deg, rgba(255,255,255,.7) 0%, rgba(214,255,62,.08) 100%)',
+                          boxShadow:
+                            '0 0 0 1px rgba(42,26,61,.10), 0 1px 0 rgba(255,255,255,.9) inset, 0 8px 18px -10px rgba(42,26,61,.18)',
+                        }
+                      : undefined
+                  }
                 >
                   <div
                     className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${

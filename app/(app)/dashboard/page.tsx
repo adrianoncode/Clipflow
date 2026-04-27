@@ -1251,7 +1251,7 @@ async function DashboardBody() {
                                     s.count === 0
                                       ? 'var(--lv2d-muted)'
                                       : 'var(--lv2d-fg)',
-                                  opacity: s.count === 0 ? 0.55 : 1,
+                                  opacity: s.count === 0 ? 0.7 : 1,
                                 }}
                               >
                                 {s.count === 0 ? '—' : s.count}
@@ -1456,10 +1456,20 @@ async function DashboardBody() {
                       icon: Star,
                       spark: null,
                       href: `/workspace/${workspace.id}/pipeline`,
-                      tone: {
-                        bg: 'var(--lv2d-accent)',
-                        fg: 'var(--lv2d-accent-ink)',
-                      },
+                      // Muted by default — promote to chartreuse only
+                      // when a user has actually starred something. The
+                      // loudest cell on the strip should reward action,
+                      // not advertise emptiness.
+                      tone:
+                        stats.starredOutputs > 0
+                          ? {
+                              bg: 'var(--lv2d-accent)',
+                              fg: 'var(--lv2d-accent-ink)',
+                            }
+                          : {
+                              bg: 'var(--lv2d-muted-2)',
+                              fg: 'var(--lv2d-muted)',
+                            },
                     },
                   ].map((m) => (
                     <Link
@@ -1488,7 +1498,7 @@ async function DashboardBody() {
                                 m.value === 0
                                   ? 'var(--lv2d-muted)'
                                   : 'var(--lv2d-fg)',
-                              opacity: m.value === 0 ? 0.55 : 1,
+                              opacity: m.value === 0 ? 0.7 : 1,
                             }}
                           >
                             {m.value === 0 ? '—' : m.value}
@@ -1736,11 +1746,38 @@ async function DashboardBody() {
                       </Link>
                     </div>
                     {upcoming.length === 0 ? (
-                      <div
-                        className="px-5 py-8 text-center"
-                        style={{ color: 'var(--lv2d-muted)' }}
-                      >
-                        <p className="text-[12.5px]">Nothing scheduled yet.</p>
+                      <div className="px-5 py-6">
+                        {/* Faint week-skeleton — 7 columns suggesting
+                            "this week, days you can fill". Reads as
+                            calendar grid, not as broken state. */}
+                        <div
+                          className="mb-4 grid grid-cols-7 gap-1"
+                          aria-hidden
+                        >
+                          {Array.from({ length: 7 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className="h-8 rounded-md"
+                              style={{
+                                background:
+                                  i === 0
+                                    ? 'var(--lv2d-primary-soft)'
+                                    : 'var(--lv2d-muted-2)',
+                                border:
+                                  i === 0
+                                    ? '1px dashed var(--lv2d-primary)'
+                                    : '1px dashed var(--lv2d-border-strong)',
+                                opacity: i === 0 ? 0.6 : 0.45,
+                              }}
+                            />
+                          ))}
+                        </div>
+                        <p
+                          className="text-center text-[12.5px]"
+                          style={{ color: 'var(--lv2d-muted)' }}
+                        >
+                          Nothing scheduled yet.
+                        </p>
                       </div>
                     ) : (
                       <div className="lv2d-divide">
@@ -2048,12 +2085,40 @@ async function DashboardBody() {
                     </div>
                   </div>
                   {activity.length === 0 ? (
-                    <div
-                      className="px-5 py-10 text-center"
-                      style={{ color: 'var(--lv2d-muted)' }}
-                    >
-                      <p className="text-[13px]">No activity yet.</p>
-                      <p className="mt-1 text-[11.5px]">
+                    <div className="px-5 py-8">
+                      {/* Ghost activity rows — three faint placeholder
+                          lines so the panel has shape, not just a void.
+                          Reads as "history will fill here" instead of
+                          "this widget is dead". */}
+                      <ul className="space-y-3" aria-hidden>
+                        {[0, 1, 2].map((i) => (
+                          <li
+                            key={i}
+                            className="flex items-center gap-3"
+                            style={{ opacity: 0.55 - i * 0.13 }}
+                          >
+                            <span
+                              className="h-6 w-6 shrink-0 rounded-full"
+                              style={{ background: 'var(--lv2d-muted-2)' }}
+                            />
+                            <span
+                              className="h-2.5 flex-1 rounded-full"
+                              style={{
+                                background:
+                                  'repeating-linear-gradient(90deg, var(--lv2d-border) 0 5px, transparent 5px 10px)',
+                              }}
+                            />
+                            <span
+                              className="h-2.5 w-12 shrink-0 rounded-full"
+                              style={{ background: 'var(--lv2d-muted-2)' }}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                      <p
+                        className="mt-5 text-center text-[12.5px]"
+                        style={{ color: 'var(--lv2d-muted)' }}
+                      >
                         Team actions and AI runs show up here.
                       </p>
                     </div>
