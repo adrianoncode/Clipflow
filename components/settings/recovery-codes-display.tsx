@@ -110,7 +110,7 @@ export function RecoveryCodesDisplay({
             type="button"
             disabled={!saved}
             onClick={onAcknowledge}
-            className="rounded-md bg-foreground px-3 py-1.5 text-xs font-semibold text-background transition-opacity disabled:opacity-40"
+            className="cf-btn-3d cf-btn-3d-primary rounded-md px-3 py-1.5 text-xs font-semibold disabled:opacity-40"
           >
             Done
           </button>

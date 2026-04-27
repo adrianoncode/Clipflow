@@ -112,11 +112,11 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="group inline-flex h-11 shrink-0 items-center gap-2 rounded-xl bg-foreground px-4 text-[13px] font-bold text-background shadow-sm shadow-foreground/[0.18] transition-all hover:-translate-y-px hover:shadow-md hover:shadow-foreground/[0.28] disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-sm"
+      className="cf-btn-3d cf-btn-3d-primary inline-flex h-11 shrink-0 items-center gap-2 rounded-xl px-4 text-[13px] disabled:opacity-50"
     >
       <Search className="h-3.5 w-3.5" />
       {pending ? 'Searching…' : 'Search'}
-      <kbd className="ml-0.5 hidden h-4 items-center rounded border border-white/20 bg-white/10 px-1 font-mono text-[10px] font-bold sm:inline-flex">
+      <kbd className="ml-0.5 hidden h-4 items-center rounded border border-[rgba(214,255,62,0.3)] bg-[rgba(214,255,62,0.12)] px-1 font-mono text-[10px] font-bold sm:inline-flex">
         ⏎
       </kbd>
     </button>
@@ -169,7 +169,7 @@ export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearch
                   }}
                   className={`group relative inline-flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-[12.5px] font-semibold transition-all ${
                     isActive
-                      ? 'bg-foreground text-background shadow-sm shadow-foreground/20'
+                      ? 'cf-btn-3d cf-btn-3d-primary'
                       : 'border border-border/60 bg-background text-muted-foreground hover:-translate-y-px hover:border-foreground/20 hover:text-foreground hover:shadow-sm'
                   }`}
                 >

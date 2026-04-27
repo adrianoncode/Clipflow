@@ -87,11 +87,7 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
           canCreate ? (
             <Link
               href={`/workspace/${params.id}/content/new`}
-              className="group inline-flex h-10 items-center gap-1.5 rounded-xl bg-foreground px-4 text-[13px] font-bold tracking-tight text-background shadow-sm shadow-foreground/[0.18] transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-foreground/[0.28]"
-              style={{
-                fontFamily:
-                  'var(--font-inter-tight), var(--font-inter), sans-serif',
-              }}
+              className="cf-btn-3d cf-btn-3d-primary inline-flex h-10 items-center gap-1.5 rounded-xl px-4 text-[13px]"
             >
               <Plus className="h-3.5 w-3.5" />
               Import recording

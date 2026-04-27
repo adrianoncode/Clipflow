@@ -237,7 +237,7 @@ export function SmartImportBox({ workspaceId, hasOpenAiKey }: SmartImportBoxProp
             disabled={!canSubmit}
             className={`relative mt-0.5 inline-flex h-11 shrink-0 items-center gap-1.5 rounded-xl px-3.5 text-[12.5px] font-bold tracking-tight transition-all sm:h-12 sm:px-4 ${
               canSubmit
-                ? 'bg-foreground text-background shadow-sm shadow-foreground/[0.18] hover:-translate-y-px hover:shadow-md hover:shadow-foreground/[0.28]'
+                ? 'cf-btn-3d cf-btn-3d-primary'
                 : 'cursor-not-allowed border border-border/60 bg-background text-muted-foreground/70'
             }`}
             style={{

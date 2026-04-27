@@ -437,10 +437,10 @@ function ShimmerButton(props: ShimmerButtonProps) {
   const sharedStyle: React.CSSProperties =
     variant === 'primary'
       ? {
-          background: 'linear-gradient(180deg, #2A2118 0%, #181511 100%)',
-          color: '#FFFDF8',
+          background: 'linear-gradient(180deg, #2A1A3D 0%, #120920 100%)',
+          color: '#D6FF3E',
           boxShadow:
-            'inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 2px rgba(24,21,17,0.18), 0 6px 14px -6px rgba(24,21,17,0.32)',
+            'inset 0 1px 0 rgba(255,255,255,0.10), inset 0 0 0 1px rgba(214,255,62,0.18), 0 1px 2px rgba(42,26,61,0.18), 0 6px 14px -6px rgba(42,26,61,0.40)',
           fontFamily:
             'var(--font-inter-tight), var(--font-inter), sans-serif',
         }

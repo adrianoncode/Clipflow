@@ -264,11 +264,12 @@ export default function HelpCenterPage() {
               href="mailto:support@clipflow.to"
               className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl px-3.5 text-[13px] font-bold tracking-tight transition-all hover:-translate-y-px hover:shadow-md"
               style={{
-                background: '#181511',
-                color: '#FFFDF8',
+                background: 'linear-gradient(180deg, #2A1A3D 0%, #120920 100%)',
+                color: '#D6FF3E',
                 fontFamily:
                   'var(--font-inter-tight), var(--font-inter), sans-serif',
-                boxShadow: '0 1px 0 rgba(255,255,255,0.06) inset, 0 6px 14px -8px rgba(24,21,17,0.4)',
+                boxShadow:
+                  '0 1px 0 rgba(255,255,255,0.10) inset, inset 0 0 0 1px rgba(214,255,62,0.18), 0 6px 14px -8px rgba(42,26,61,0.45)',
               }}
             >
               <Mail className="h-3.5 w-3.5" />

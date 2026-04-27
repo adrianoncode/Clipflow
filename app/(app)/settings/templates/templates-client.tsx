@@ -67,10 +67,7 @@ function SubmitBtn() {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-foreground px-4 text-[13px] font-bold tracking-tight text-background shadow-sm shadow-foreground/[0.18] transition-all hover:-translate-y-px hover:shadow-md disabled:opacity-50 disabled:hover:translate-y-0"
-      style={{
-        fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
-      }}
+      className="cf-btn-3d cf-btn-3d-primary inline-flex h-10 items-center gap-1.5 rounded-xl px-4 text-[13px] disabled:opacity-50"
     >
       {pending ? (
         <>

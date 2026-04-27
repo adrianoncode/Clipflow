@@ -274,7 +274,7 @@ export function ContentListWithSearch({
                 onClick={() => setKindFilter(tab.value)}
                 className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors ${
                   isActive
-                    ? 'bg-foreground text-background'
+                    ? 'bg-[#2A1A3D] text-[#D6FF3E]'
                     : 'bg-muted/60 text-muted-foreground hover:bg-muted'
                 }`}
               >

@@ -261,10 +261,7 @@ function ActionRow({
     <>
       <Link
         href={href}
-        className="group inline-flex items-center gap-2 rounded-xl bg-foreground px-4 py-2.5 text-[13px] font-bold tracking-tight text-background shadow-sm shadow-foreground/[0.18] transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-foreground/[0.28]"
-        style={{
-          fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
-        }}
+        className="cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px]"
       >
         {label}
         <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
