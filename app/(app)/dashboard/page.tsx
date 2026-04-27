@@ -25,6 +25,8 @@ import {
 import { Sparkline } from '@/components/dashboard/sparkline'
 import { SmartSuggestions } from '@/components/dashboard/smart-suggestions'
 import { SetupChecklist } from '@/components/dashboard/setup-checklist'
+import { BrandLogo } from '@/components/ai-keys/brand-logo'
+import type { AiProvider } from '@/lib/ai/providers/types'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
@@ -1558,8 +1560,16 @@ async function DashboardBody() {
                     style={{ borderBottom: '1px solid var(--lv2d-border)' }}
                   >
                     <div className="flex items-center gap-2">
-                      <Plug className="h-3.5 w-3.5" style={{ color: 'var(--lv2d-primary)' }} />
-                      <span className="lv2d-mono-label">Integrations</span>
+                      <span className="lv2d-mono-label">AI providers</span>
+                      <span
+                        className="lv2d-mono lv2d-tabular rounded-full px-2 py-0.5 text-[10px] font-bold"
+                        style={{
+                          background: 'var(--lv2d-muted-2)',
+                          color: 'var(--lv2d-muted)',
+                        }}
+                      >
+                        {integrationsConnected}/{integrationRows.length}
+                      </span>
                     </div>
                     {integrationsNeedAttention > 0 ? (
                       <span
@@ -1580,17 +1590,37 @@ async function DashboardBody() {
                   </div>
                   <div className="lv2d-divide">
                     {integrationRows.map((it) => (
-                      <div key={it.key} className="flex items-center gap-3 px-5 py-3">
-                        <span
-                          className={`h-2 w-2 rounded-full ${it.ok ? '' : 'lv2d-pulse'}`}
-                          style={{
-                            background: it.ok ? 'var(--lv2d-success)' : 'var(--lv2d-warn)',
-                          }}
-                        />
+                      <div
+                        key={it.key}
+                        className="lv2d-row-hover flex items-center gap-3 px-5 py-3"
+                      >
+                        <BrandLogo provider={it.key as AiProvider} size={36} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-semibold">{it.name}</p>
+                          <div className="flex items-center gap-1.5">
+                            <p
+                              className="text-[13.5px] font-bold tracking-tight"
+                              style={{
+                                fontFamily:
+                                  'var(--font-inter-tight), var(--font-inter), sans-serif',
+                              }}
+                            >
+                              {it.name}
+                            </p>
+                            {it.ok ? (
+                              <span className="relative flex h-1.5 w-1.5">
+                                <span
+                                  className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-70"
+                                  style={{ background: 'var(--lv2d-success)' }}
+                                />
+                                <span
+                                  className="relative inline-flex h-1.5 w-1.5 rounded-full"
+                                  style={{ background: 'var(--lv2d-success)' }}
+                                />
+                              </span>
+                            ) : null}
+                          </div>
                           <p
-                            className="truncate text-[11px]"
+                            className="truncate text-[11.5px] leading-snug"
                             style={{ color: 'var(--lv2d-muted)' }}
                           >
                             {it.sub}
@@ -1598,21 +1628,31 @@ async function DashboardBody() {
                         </div>
                         {it.ok ? (
                           <span
-                            className="lv2d-chip"
+                            className="inline-flex h-7 items-center gap-1 rounded-full px-2.5 text-[10.5px] font-bold uppercase tracking-[0.14em]"
                             style={{
                               background: 'var(--lv2d-success-soft)',
                               color: 'var(--lv2d-success)',
+                              fontFamily:
+                                'var(--font-inter-tight), var(--font-inter), sans-serif',
                             }}
                           >
-                            connected
+                            Connected
                           </span>
                         ) : (
                           <Link
                             href="/settings/ai-keys"
-                            className="lv2d-chip"
-                            style={{ background: 'var(--lv2d-warn)', color: 'white' }}
+                            className="inline-flex h-7 items-center gap-1 rounded-full px-2.5 text-[10.5px] font-bold uppercase tracking-[0.14em] transition-all hover:-translate-y-px hover:shadow-sm"
+                            style={{
+                              background: 'var(--lv2d-primary)',
+                              color: 'var(--lv2d-accent)',
+                              fontFamily:
+                                'var(--font-inter-tight), var(--font-inter), sans-serif',
+                              boxShadow:
+                                '0 1px 0 rgba(214,255,62,0.18) inset, 0 4px 10px -4px rgba(42,26,61,0.35)',
+                            }}
                           >
-                            connect →
+                            <Plug className="h-2.5 w-2.5" />
+                            Connect
                           </Link>
                         )}
                       </div>
