@@ -57,19 +57,23 @@ export function PlanCard({
   const plan = PLANS[planId]
   const isCurrent = planId === currentPlan
   const isHighlighted = !!plan.highlight
-  const price = interval === 'annual' ? plan.annualPrice : plan.monthlyPrice
-  const monthly =
-    interval === 'annual' ? Math.round(price / 12 / 100) : Math.round(price / 100)
+  // Both `monthlyPrice` and `annualPrice` are already stored as the
+  // monthly equivalent in cents (annualPrice is "billed annually,
+  // expressed as the per-month rate"). Don't divide by 12 again.
+  const monthlyCents =
+    interval === 'annual' ? plan.annualPrice : plan.monthlyPrice
+  const monthly = Math.round(monthlyCents / 100)
+  const annualTotal = Math.round((plan.annualPrice * 12) / 100)
 
   // Feature list — matches the landing copy 1:1 per plan, falling
   // back to the data-driven derivation for any plan we add later.
   const features = buildFeatureList(planId, plan)
 
   const subtitle =
-    price === 0
+    monthlyCents === 0
       ? 'Free forever'
       : interval === 'annual'
-        ? `Billed annually · $${Math.round(price / 100)}/yr`
+        ? `Billed annually · $${annualTotal}/yr`
         : 'Billed monthly'
 
   return (
@@ -127,9 +131,9 @@ export function PlanCard({
             color: TOKENS.primary,
           }}
         >
-          ${price === 0 ? 0 : monthly}
+          ${monthlyCents === 0 ? 0 : monthly}
         </span>
-        {price !== 0 ? (
+        {monthlyCents !== 0 ? (
           <span className="text-[13px]" style={{ color: TOKENS.muted }}>
             /mo
           </span>
