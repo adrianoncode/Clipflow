@@ -2185,7 +2185,10 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         <div className="lv2-reveal-stagger mx-auto grid max-w-[1040px] gap-4 md:grid-cols-3">
           <PricingTilt className="lv2-card lv2-ring-soft lv2-card-hover lv2-beam p-6">
           <div>
-            <p className="lv2-mono-label mb-2">Starter</p>
+            <p className="lv2-mono-label mb-1">Starter</p>
+            <p className="mb-2 text-[11.5px] font-medium" style={{ color: 'var(--lv2-muted)' }}>
+              Test drive — no card needed
+            </p>
             <p className="lv2-display text-[52px] leading-none" style={{ color: 'var(--lv2-primary)' }}>
               $0
             </p>
@@ -2207,10 +2210,13 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             </ul>
             <Link
               href={signupHref}
-              className="lv2-btn-ghost mt-6 w-full justify-center border"
+              className="lv2-btn-ghost lv2-magnetic mt-6 w-full justify-center border"
               style={{ borderColor: 'var(--lv2-border)' }}
             >
-              Start free
+              <span className="lv2-magnetic-shine" />
+              <span className="lv2-magnetic-label">
+                Try Clipflow free <span className="lv2-arrow">→</span>
+              </span>
             </Link>
           </div>
           </PricingTilt>
@@ -2230,8 +2236,16 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             >
               MOST POPULAR
             </span>
-            <p className="lv2-mono-label mb-2" style={{ color: 'var(--lv2-primary)' }}>
+            <p className="lv2-mono-label mb-1" style={{ color: 'var(--lv2-primary)' }}>
               Creator
+            </p>
+            <p className="mb-2 inline-flex items-center gap-1.5 text-[11.5px] font-medium" style={{ color: 'var(--lv2-muted)' }}>
+              <span
+                aria-hidden
+                className="inline-block h-1.5 w-1.5 rounded-full"
+                style={{ background: 'var(--lv2-accent)' }}
+              />
+              Picked by 60% of creators this month
             </p>
             <div className="flex items-baseline gap-1.5">
               <p
@@ -2245,13 +2259,18 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               </p>
               <span
                 className="lv2-chip ml-auto"
-                style={{ background: 'var(--lv2-primary-soft)', color: 'var(--lv2-primary)' }}
+                style={{
+                  background: 'var(--lv2-accent)',
+                  color: 'var(--lv2-accent-ink)',
+                  boxShadow: '0 4px 12px -4px rgba(214,255,62,0.55)',
+                }}
               >
-                2 mo free yearly
+                Save $120/yr
               </span>
             </div>
             <p className="mt-1 text-[12.5px]" style={{ color: 'var(--lv2-muted)' }}>
-              Billed monthly
+              Billed monthly · or{' '}
+              <strong style={{ color: 'var(--lv2-primary)' }}>$19/mo</strong> annual
             </p>
             <div className="lv2-rule my-5" />
             <ul className="space-y-2.5 text-[13px]">
@@ -2272,8 +2291,11 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 </li>
               ))}
             </ul>
-            <Link href={signupHref} className="lv2-btn-primary mt-6 w-full justify-center">
-              Start 14-day trial <span className="lv2-arrow">→</span>
+            <Link href={signupHref} className="lv2-btn-primary lv2-magnetic mt-6 w-full justify-center">
+              <span className="lv2-magnetic-shine" />
+              <span className="lv2-magnetic-label">
+                Try Creator free for 14 days <span className="lv2-arrow">→</span>
+              </span>
             </Link>
             <p
               className="lv2-mono mt-3 text-center text-[10px]"
@@ -2286,7 +2308,15 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
 
           <PricingTilt className="lv2-card lv2-ring-soft lv2-card-hover lv2-beam p-6">
           <div>
-            <p className="lv2-mono-label mb-2">Studio</p>
+            <p className="lv2-mono-label mb-1">Studio</p>
+            <p className="mb-2 inline-flex items-center gap-1.5 text-[11.5px] font-medium" style={{ color: 'var(--lv2-muted)' }}>
+              <span
+                aria-hidden
+                className="inline-block h-1.5 w-1.5 rounded-full"
+                style={{ background: 'var(--lv2-primary)' }}
+              />
+              Best for agencies running 3+ clients
+            </p>
             <div className="flex items-baseline gap-1.5">
               <p
                 className="lv2-display text-[52px] leading-none"
@@ -2299,13 +2329,18 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
               </p>
               <span
                 className="lv2-chip ml-auto"
-                style={{ background: 'var(--lv2-primary-soft)', color: 'var(--lv2-primary)' }}
+                style={{
+                  background: 'var(--lv2-accent)',
+                  color: 'var(--lv2-accent-ink)',
+                  boxShadow: '0 4px 12px -4px rgba(214,255,62,0.55)',
+                }}
               >
-                2 mo free yearly
+                Save $240/yr
               </span>
             </div>
             <p className="mt-1 text-[12.5px]" style={{ color: 'var(--lv2-muted)' }}>
-              For social-media managers &amp; agencies
+              For social-media managers · or{' '}
+              <strong style={{ color: 'var(--lv2-primary)' }}>$79/mo</strong> annual
             </p>
             <div className="lv2-rule my-5" />
             <ul className="space-y-2.5 text-[13px]">
@@ -2327,10 +2362,13 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 </li>
               ))}
             </ul>
-            <Link href={signupHref} className="lv2-btn-ghost mt-6 w-full justify-center border"
+            <Link href={signupHref} className="lv2-btn-ghost lv2-magnetic mt-6 w-full justify-center border"
               style={{ borderColor: 'var(--lv2-border)' }}
             >
-              Start 14-day trial <span className="lv2-arrow">→</span>
+              <span className="lv2-magnetic-shine" />
+              <span className="lv2-magnetic-label">
+                Try Studio free for 14 days <span className="lv2-arrow">→</span>
+              </span>
             </Link>
             <p
               className="lv2-mono mt-3 text-center text-[10px]"
