@@ -86,26 +86,39 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
   const gatedRequiredPlan = gatedFeature ? FEATURE_MIN_PLAN[gatedFeature] : null
 
   return (
-    <div className="space-y-8">
-      <div>
+    <div className="space-y-10">
+      {/* Centered hero — matches the landing #pricing section so users
+          land in the exact same visual rhythm they signed up under. */}
+      <div className="text-center">
         <p
-          className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
-          style={{ color: '#7c7468', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+          className="mb-3 inline-block text-[10.5px] uppercase tracking-[0.22em]"
+          style={{
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            color: '#5f5850',
+            fontWeight: 600,
+          }}
         >
-          Workspace · Billing
+          Pricing
         </p>
         <h1
-          className="text-[44px] leading-[1.02]"
+          className="text-[44px] leading-[1.02] sm:text-[52px]"
           style={{
             fontFamily: 'var(--font-instrument-serif), serif',
             letterSpacing: '-.015em',
             color: '#2A1A3D',
           }}
         >
-          Plan &amp; usage
+          Simple. Obvious. No seat tax.
         </h1>
-        <p className="mt-1 text-sm" style={{ color: '#7c7468' }}>
-          BYOK — pay your AI provider at cost. We take zero markup on tokens.
+        <p
+          className="mx-auto mt-4 max-w-[520px] text-[15px] leading-relaxed"
+          style={{ color: '#5f5850' }}
+        >
+          Start free. Upgrade when you hit the ceiling. Cancel in two clicks.{' '}
+          <span style={{ color: '#2A1A3D' }} className="font-semibold">
+            BYOK
+          </span>{' '}
+          — pay your AI provider at cost, zero markup on tokens.
         </p>
       </div>
 
