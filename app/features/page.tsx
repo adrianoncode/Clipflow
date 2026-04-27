@@ -8,7 +8,7 @@ import { ALL_FEATURE_IDS, FEATURES } from '@/lib/landing/features'
 export const metadata: Metadata = {
   title: 'Features — everything Clipflow does for you',
   description:
-    'Brand Voice, Clip Finder, Brand Kit, A/B Hook Testing, Scheduler, White-label Review, Thumbnail Studio, Idea Generator. One tool for the whole repurposing pipeline.',
+    'Brand Voice, Clip Finder, Brand Kit, A/B Hook Testing, Scheduler, White-label Review, Thumbnail Studio, Creator Research. One tool for the whole repurposing pipeline.',
   alternates: { canonical: 'https://clipflow.to/features' },
 }
 

@@ -1346,7 +1346,7 @@ export const GUIDES: Guide[] = [
               },
               {
                 title: 'Internal review pass',
-                body: 'Your team reviews in the Pipeline board. Edit inline or regenerate single platforms that miss.',
+                body: 'Your team reviews on the Drafts board. Edit inline or regenerate single platforms that miss.',
               },
               {
                 title: 'Move drafts to Approved',
@@ -1362,7 +1362,7 @@ export const GUIDES: Guide[] = [
               },
               {
                 title: 'Iterate until client-approved',
-                body: 'Comments land back in your Pipeline board. Address them, regenerate if needed, move to approved when done.',
+                body: 'Comments land back on your Drafts board. Address them, regenerate if needed, move to approved when done.',
               },
               {
                 title: 'Schedule the week',
@@ -1595,7 +1595,7 @@ export const GUIDES: Guide[] = [
               },
               {
                 title: 'Go to the Drafts board',
-                body: 'Sidebar → Drafts. You will see the Pipeline board with Draft / Review / Approved / Exported columns.',
+                body: 'Sidebar → Drafts. You will see the Drafts board with Draft / Review / Approved / Exported columns.',
               },
               {
                 title: 'Select the drafts you want refreshed',
