@@ -68,25 +68,40 @@ const LEGAL_STYLES = `
   border-radius: 6px; color: var(--lv2L-fg);
 }
 
-/* Updated-date chip used across legal pages. */
+/* Designer-grade eyebrow — matches the system used across settings,
+   library, and creator-research. Hairline lead, Inter-Tight tracking
+   wide caps in plum, no more grey-mono boilerplate. */
 .lv2-legal .lv2L-eyebrow {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-family: var(--font-jetbrains-mono), monospace;
-  font-size: 10px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif;
+  font-size: 10.5px; font-weight: 700;
   letter-spacing: .22em; text-transform: uppercase;
-  color: var(--lv2L-muted);
+  color: color-mix(in srgb, var(--lv2L-primary) 80%, transparent);
   margin-bottom: 18px;
 }
 .lv2-legal .lv2L-eyebrow::before {
   content: ''; display: inline-block;
-  width: 6px; height: 6px; border-radius: 999px;
-  background: var(--lv2L-primary);
+  width: 22px; height: 1px;
+  background: color-mix(in srgb, var(--lv2L-primary) 38%, transparent);
 }
 .lv2-legal .lv2L-card {
+  position: relative;
   background: var(--lv2L-card);
   border: 1px solid var(--lv2L-border);
-  border-radius: 14px; padding: 16px 18px;
-  box-shadow: 0 1px 0 rgba(24,21,17,.03), 0 12px 24px -18px rgba(42,26,61,.15);
+  border-radius: 18px; padding: 18px 20px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.55) inset,
+    0 1px 2px rgba(24,21,17,.04),
+    0 14px 32px -22px rgba(42,26,61,.22);
+}
+.lv2-legal .lv2L-card::after {
+  content: ''; position: absolute; left: 1.25rem; right: 1.25rem; top: 0; height: 1px;
+  background: linear-gradient(to right,
+    transparent,
+    color-mix(in srgb, var(--lv2L-primary) 30%, transparent),
+    transparent);
+  pointer-events: none;
 }
 `
 
