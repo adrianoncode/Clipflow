@@ -28,6 +28,7 @@ const SCHEDULER_PLATFORM: Record<OutputPlatform, string> = {
   instagram_reels: 'instagram',
   youtube_shorts: 'youtube_shorts',
   linkedin: 'linkedin',
+  pinterest: 'pinterest',
 }
 
 const PLATFORM_DESCRIPTIONS: Record<OutputPlatform, string> = {
@@ -35,6 +36,7 @@ const PLATFORM_DESCRIPTIONS: Record<OutputPlatform, string> = {
   instagram_reels: 'Aesthetic short-form, caption-driven',
   youtube_shorts: 'Up to 60s, educational tone OK',
   linkedin: 'Text-first post, professional but human',
+  pinterest: '2:3 vertical pin, search-optimized title + description',
 }
 
 type SectionKey = 'hooks' | 'track' | 'schedule'

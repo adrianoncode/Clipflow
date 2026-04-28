@@ -41,6 +41,7 @@ export const COMPOSIO_APP_SLUGS: Record<string, string> = {
   youtube:          'youtube',
   instagram:        'instagram',
   facebook:         'facebook',
+  pinterest:        'pinterest',
   // Note: X (Twitter) deliberately excluded — Composio has no managed
   // OAuth credentials for it because X's API is BYO ($100/mo Basic).
   // Add custom-auth support if/when a user wants to bring their own
@@ -48,7 +49,7 @@ export const COMPOSIO_APP_SLUGS: Record<string, string> = {
 }
 
 export const COMPOSIO_CHANNEL_IDS = new Set([
-  'linkedin', 'youtube', 'instagram', 'facebook',
+  'linkedin', 'youtube', 'instagram', 'facebook', 'pinterest',
 ])
 
 export function isComposioOAuth(integrationId: string): boolean {

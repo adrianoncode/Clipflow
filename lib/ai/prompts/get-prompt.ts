@@ -1,5 +1,6 @@
 import { buildInstagramReelsPrompt } from '@/lib/ai/prompts/instagram-reels'
 import { buildLinkedInPrompt } from '@/lib/ai/prompts/linkedin'
+import { buildPinterestPrompt } from '@/lib/ai/prompts/pinterest'
 import { buildTikTokPrompt } from '@/lib/ai/prompts/tiktok'
 import type { PromptBuilder } from '@/lib/ai/prompts/types'
 import { buildYouTubeShortsPrompt } from '@/lib/ai/prompts/youtube-shorts'
@@ -20,5 +21,7 @@ export function getPromptBuilder(platform: OutputPlatform): PromptBuilder {
       return buildYouTubeShortsPrompt
     case 'linkedin':
       return buildLinkedInPrompt
+    case 'pinterest':
+      return buildPinterestPrompt
   }
 }

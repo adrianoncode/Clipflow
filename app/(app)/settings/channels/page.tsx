@@ -14,6 +14,7 @@ import {
   FacebookLogo,
   InstagramLogo,
   LinkedInLogo,
+  PinterestLogo,
   ThreadsLogo,
   TikTokLogo,
   UploadPostLogo,
@@ -73,6 +74,14 @@ const DIRECT_CHANNELS: ChannelDef[] = [
     tileBg: 'bg-[#1877F2]',
     Logo: FacebookLogo,
     note: 'Push clips and link posts to a Facebook Page you manage.',
+  },
+  {
+    id: 'pinterest',
+    name: 'Pinterest',
+    provider: 'composio',
+    tileBg: 'bg-[#E60023]',
+    Logo: PinterestLogo,
+    note: 'Pin vertical clips to a board — auto-resized to 2:3 from the same source.',
   },
 ]
 
@@ -147,9 +156,11 @@ export default async function ChannelsPage({
   const connectedProviderSet = new Set(keys.map((k) => k.provider))
   const hasUploadPost = publishServices.some((s) => connectedProviderSet.has(s.provider))
 
-  // Total connection count for the hero status pill — includes the
-  // four direct OAuth channels, Upload-Post if connected, and the
-  // X bring-your-own-keys connection. Reads as "X of 6 wired".
+  // Total connection count for the hero status pill — includes every
+  // direct OAuth channel (LinkedIn, YouTube, Instagram, Facebook,
+  // Pinterest), Upload-Post if connected, and the X bring-your-own-keys
+  // connection. Reads as "X of N wired" — N grows when a new direct
+  // channel is added.
   const totalChannels = DIRECT_CHANNELS.length + 1 /* Upload-Post */ + 1 /* X */
   const connectedCount =
     connectedChannelIds.size + (hasUploadPost ? 1 : 0) + (xConnection ? 1 : 0)
@@ -271,7 +282,7 @@ export default async function ChannelsPage({
         <SectionLabel num="01">
           Direct connect
           <span className="ml-2 font-medium normal-case tracking-normal text-muted-foreground/70">
-            OAuth via Composio · 4 destinations
+            OAuth via Composio · {DIRECT_CHANNELS.length} destinations
           </span>
         </SectionLabel>
         <div className="grid gap-3 sm:grid-cols-2">

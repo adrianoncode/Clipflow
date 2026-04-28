@@ -98,6 +98,28 @@ export function FacebookLogo({ size = 18, className }: LogoProps) {
 }
 
 // ---------------------------------------------------------------------------
+// Pinterest — the official "P" pin mark, drawn as white-on-red so it
+// reads from the brand-red tile (#E60023). The seriffed top of the P
+// + the angled descender are the distinguishing details vs a generic
+// circle-P.
+// ---------------------------------------------------------------------------
+export function PinterestLogo({ size = 18, className }: LogoProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path d="M12.04 0C5.42 0 .04 5.38.04 12c0 5.07 3.16 9.41 7.61 11.16-.1-.95-.2-2.4.04-3.43.22-.94 1.42-5.99 1.42-5.99s-.36-.73-.36-1.81c0-1.69.98-2.96 2.21-2.96 1.04 0 1.54.78 1.54 1.72 0 1.05-.67 2.62-1.01 4.07-.29 1.22.61 2.21 1.81 2.21 2.18 0 3.85-2.29 3.85-5.6 0-2.93-2.11-4.98-5.12-4.98-3.49 0-5.54 2.61-5.54 5.32 0 1.05.41 2.18.91 2.79.1.12.11.23.08.35-.09.39-.31 1.22-.35 1.39-.06.22-.18.27-.42.16-1.55-.72-2.52-2.99-2.52-4.81 0-3.92 2.85-7.52 8.21-7.52 4.31 0 7.66 3.07 7.66 7.18 0 4.28-2.7 7.73-6.45 7.73-1.26 0-2.44-.66-2.84-1.43l-.77 2.95c-.28 1.08-1.04 2.43-1.55 3.25 1.17.36 2.4.55 3.69.55 6.62 0 12-5.37 12-12C24.04 5.38 18.66 0 12.04 0z" />
+    </svg>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // TikTok — white musical-note mark on the brand black tile (with the
 // signature cyan/red offset shadows fused into a single recognisable
 // mark for small sizes).

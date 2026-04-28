@@ -21,7 +21,12 @@ export type WorkspaceType = 'personal' | 'team' | 'client'
 export type WorkspaceRole = 'owner' | 'editor' | 'viewer' | 'client'
 export type ContentKind = 'video' | 'text' | 'youtube' | 'url' | 'rss'
 export type ContentStatus = 'uploading' | 'processing' | 'ready' | 'failed'
-export type OutputPlatform = 'tiktok' | 'instagram_reels' | 'youtube_shorts' | 'linkedin'
+export type OutputPlatform =
+  | 'tiktok'
+  | 'instagram_reels'
+  | 'youtube_shorts'
+  | 'linkedin'
+  | 'pinterest'
 export type OutputState = 'draft' | 'review' | 'approved' | 'exported'
 export type OnboardingRoleType = 'solo' | 'team' | 'agency'
 export type AiProvider =

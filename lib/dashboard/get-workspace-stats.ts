@@ -186,6 +186,7 @@ export async function getWorkspaceStats(workspaceId: string): Promise<WorkspaceS
       instagram_reels: platformCounts['instagram_reels'] ?? 0,
       youtube_shorts: platformCounts['youtube_shorts'] ?? 0,
       linkedin: platformCounts['linkedin'] ?? 0,
+      pinterest: platformCounts['pinterest'] ?? 0,
     },
     contentThisMonth: contentThisMonthResult.count ?? 0,
     outputsThisMonth: outputsThisMonthResult.count ?? 0,
