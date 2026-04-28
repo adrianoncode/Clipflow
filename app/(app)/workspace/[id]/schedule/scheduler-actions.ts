@@ -4,8 +4,40 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { getUser } from '@/lib/auth/get-user'
 import { createClient } from '@/lib/supabase/server'
+import {
+  listPinterestBoards,
+  type PinterestBoard,
+} from '@/lib/publish/composio-publish'
+
+// ---------------------------------------------------------------------------
+// fetchPinterestBoardsAction — read-only helper for the schedule UI.
+// Returns the user's Pinterest boards via Composio. Cheap-ish: hits
+// Pinterest once per call. The dialog calls it lazily on open.
+// ---------------------------------------------------------------------------
+
+export async function fetchPinterestBoardsAction(
+  workspaceId: string,
+): Promise<
+  | { ok: true; boards: PinterestBoard[] }
+  | { ok: false; error: string }
+> {
+  if (!workspaceId) return { ok: false, error: 'No workspace.' }
+  const check = await requireWorkspaceMember(workspaceId)
+  if (!check.ok) return { ok: false, error: 'Not a member.' }
+
+  try {
+    const boards = await listPinterestBoards(workspaceId)
+    return { ok: true, boards }
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : 'Failed to load boards.',
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,6 +58,10 @@ const schedulePostSchema = z.object({
   platform: z.string().min(1),
   scheduledFor: z.string().min(1),
   socialAccountId: z.string().uuid().optional(),
+  // Pinterest only — required when platform === 'pinterest', otherwise
+  // we have no way to know which board the pin should land on. The UI
+  // enforces this via a board picker; we double-check on the server.
+  pinterestBoardId: z.string().min(1).optional(),
 })
 
 export async function schedulePostAction(
@@ -38,6 +74,8 @@ export async function schedulePostAction(
     platform: formData.get('platform')?.toString() ?? '',
     scheduledFor: formData.get('scheduled_for')?.toString() ?? '',
     socialAccountId: formData.get('social_account_id')?.toString() || undefined,
+    pinterestBoardId:
+      formData.get('pinterest_board_id')?.toString() || undefined,
   }
 
   const parsed = schedulePostSchema.safeParse(raw)
@@ -45,7 +83,18 @@ export async function schedulePostAction(
     return { ok: false, error: parsed.error.errors[0]?.message ?? 'Invalid input.' }
   }
 
-  const { workspaceId, outputId, platform, scheduledFor, socialAccountId } = parsed.data
+  const { workspaceId, outputId, platform, scheduledFor, socialAccountId, pinterestBoardId } =
+    parsed.data
+
+  // Server-side guard: Pinterest pins MUST have a board picked. The
+  // UI prevents submitting without one, but a tampered request would
+  // otherwise create an unschedulable scheduled_posts row.
+  if (platform === 'pinterest' && !pinterestBoardId) {
+    return {
+      ok: false,
+      error: 'Pinterest pins need a board — pick one before scheduling.',
+    }
+  }
 
   const user = await getUser()
   if (!user) redirect('/login')
@@ -64,6 +113,15 @@ export async function schedulePostAction(
     return { ok: false, error: 'Output not found in this workspace.' }
   }
 
+  // Pinterest's board choice rides along in the metadata JSONB column —
+  // the publish worker reads it back at fire-time and passes it as
+  // pinterestBoardId to the Composio publish action. Other platforms
+  // get a clean empty metadata object.
+  const metadata: Record<string, string> = {}
+  if (platform === 'pinterest' && pinterestBoardId) {
+    metadata.pinterest_board_id = pinterestBoardId
+  }
+
   const { error } = await supabase.from('scheduled_posts').insert({
     workspace_id: workspaceId,
     output_id: outputId,
@@ -72,6 +130,7 @@ export async function schedulePostAction(
     social_account_id: socialAccountId ?? null,
     status: 'scheduled',
     created_by: user.id,
+    metadata,
   })
 
   if (error) return { ok: false, error: error.message }

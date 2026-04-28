@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
-import { CalendarClock, CheckCircle2, X } from 'lucide-react'
+import { CalendarClock, CheckCircle2, Loader2, X } from 'lucide-react'
 
-import { schedulePostAction } from '@/app/(app)/workspace/[id]/schedule/scheduler-actions'
+import {
+  fetchPinterestBoardsAction,
+  schedulePostAction,
+} from '@/app/(app)/workspace/[id]/schedule/scheduler-actions'
 import type { SchedulerActionState } from '@/app/(app)/workspace/[id]/schedule/scheduler-actions'
 
 interface ScheduleOutputDialogProps {
@@ -15,12 +18,12 @@ interface ScheduleOutputDialogProps {
   contentTitle: string | null
 }
 
-function SubmitButton() {
+function SubmitButton({ disabled = false }: { disabled?: boolean }) {
   const { pending } = useFormStatus()
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={pending || disabled}
       className="cf-btn-3d cf-btn-3d-primary flex-1 rounded-xl px-4 py-2 text-xs disabled:opacity-50"
     >
       {pending ? 'Scheduling…' : 'Schedule'}
@@ -40,6 +43,36 @@ export function ScheduleOutputDialog({
     schedulePostAction,
     {},
   )
+
+  const isPinterest = platform === 'pinterest'
+
+  // Pinterest board picker state — lazy-loaded the first time the
+  // dialog is opened for a Pinterest output.
+  const [boards, setBoards] = useState<
+    Array<{ id: string; name: string; pinCount?: number }>
+  >([])
+  const [boardsLoading, setBoardsLoading] = useState(false)
+  const [boardsError, setBoardsError] = useState<string | null>(null)
+  const [selectedBoard, setSelectedBoard] = useState<string>('')
+
+  useEffect(() => {
+    if (!open || !isPinterest || boards.length > 0 || boardsLoading) return
+    setBoardsLoading(true)
+    setBoardsError(null)
+    fetchPinterestBoardsAction(workspaceId)
+      .then((res) => {
+        if (res.ok) {
+          setBoards(res.boards)
+          if (res.boards[0]) setSelectedBoard(res.boards[0].id)
+        } else {
+          setBoardsError(res.error)
+        }
+      })
+      .catch((err) => {
+        setBoardsError(err instanceof Error ? err.message : 'Load failed.')
+      })
+      .finally(() => setBoardsLoading(false))
+  }, [open, isPinterest, workspaceId, boards.length, boardsLoading])
 
   // Success state — show confirmation inline
   if (state.ok === true) {
@@ -109,12 +142,58 @@ export function ScheduleOutputDialog({
           className="w-full rounded-lg border border-border/60 bg-background px-2.5 py-2 text-xs font-medium transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
 
+        {/* Pinterest board picker — only shown when scheduling a pin.
+            Lazy-loaded on dialog open. Three states:
+              loading  → spinner row
+              error    → error line + retry hint
+              ready    → real <select> with the user's boards */}
+        {isPinterest ? (
+          <div className="space-y-1">
+            <label className="block text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+              Pinterest board
+            </label>
+            {boardsLoading ? (
+              <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-background px-2.5 py-2 text-xs text-muted-foreground">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Loading your boards…
+              </div>
+            ) : boardsError ? (
+              <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-2.5 py-2 text-[11px] text-destructive">
+                Couldn&rsquo;t load boards: {boardsError}. Reconnect Pinterest in
+                Settings → Channels.
+              </p>
+            ) : boards.length === 0 ? (
+              <p className="rounded-lg border border-amber-200/60 bg-amber-50/40 px-2.5 py-2 text-[11px] text-amber-800">
+                No boards on this account yet. Create one in Pinterest, then come
+                back.
+              </p>
+            ) : (
+              <select
+                name="pinterest_board_id"
+                required
+                value={selectedBoard}
+                onChange={(e) => setSelectedBoard(e.target.value)}
+                className="w-full rounded-lg border border-border/60 bg-background px-2.5 py-2 text-xs font-medium transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                {boards.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                    {typeof b.pinCount === 'number' ? ` · ${b.pinCount} pins` : ''}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        ) : null}
+
         {state.ok === false && (
           <p className="text-[10px] text-destructive">{state.error}</p>
         )}
 
         <div className="flex items-center gap-2">
-          <SubmitButton />
+          <SubmitButton
+            disabled={isPinterest && (boardsLoading || !selectedBoard)}
+          />
           <button
             type="button"
             onClick={() => setOpen(false)}

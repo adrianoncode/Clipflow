@@ -46,7 +46,7 @@ export async function renderHighlightClip(params: {
   wordTimings?: WordTiming[] | null
   fallbackSubtitleText?: string | null
   captionStyle?: CaptionStyle
-  aspectRatio?: '9:16' | '16:9' | '1:1'
+  aspectRatio?: '9:16' | '16:9' | '1:1' | '2:3'
   priority?: 'normal' | 'high'
   /**
    * Horizontal crop anchor in -0.5..0.5 (0 = center, -0.5 = far-left,

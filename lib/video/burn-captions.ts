@@ -67,7 +67,7 @@ export async function burnCaptions(params: {
   subtitles: Array<{ text: string; start: number; end: number }>
   wordTimings?: Array<{ word: string; start: number; end: number }>
   uiStyle?: SubtitleUiStyle
-  aspectRatio?: '16:9' | '9:16' | '1:1'
+  aspectRatio?: '16:9' | '9:16' | '1:1' | '2:3'
 }): Promise<{ ok: true; renderId: string } | { ok: false; error: string }> {
   const { videoUrl, subtitles, wordTimings, aspectRatio } = params
   const uiStyle = params.uiStyle ?? 'classic'

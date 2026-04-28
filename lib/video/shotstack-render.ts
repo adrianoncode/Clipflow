@@ -179,7 +179,12 @@ export interface RenderInput {
   /** Output format */
   resolution?: 'sd' | 'hd' | '1080'
   /** Aspect ratio */
-  aspectRatio?: '16:9' | '9:16' | '1:1'
+  /**
+   * Output aspect ratio. 2:3 maps to a 1000×1500 vertical pin (Pinterest's
+   * preferred dimensions); other values map to standard short-form
+   * resolutions below.
+   */
+  aspectRatio?: '16:9' | '9:16' | '1:1' | '2:3'
   /** Caption visual style — defaults to tiktok-bold */
   captionStyle?: CaptionStyle
   /** Optional hook text shown at the very start (0–2.5 s) */
@@ -375,12 +380,16 @@ export async function submitRender(input: RenderInput): Promise<
     ? { src: input.audioUrl, effect: 'fadeOut' }
     : undefined
 
-  // Determine output size
+  // Determine output size. Pinterest's optimal pin is 1000×1500
+  // (2:3); 9:16 short-form is 1080×1920; everything else falls back
+  // to 1:1 (1080×1080) or 16:9 landscape (1920×1080).
   const outputSize = input.aspectRatio === '9:16'
     ? { width: 1080, height: 1920 }
-    : input.aspectRatio === '1:1'
-      ? { width: 1080, height: 1080 }
-      : { width: 1920, height: 1080 }
+    : input.aspectRatio === '2:3'
+      ? { width: 1000, height: 1500 }
+      : input.aspectRatio === '1:1'
+        ? { width: 1080, height: 1080 }
+        : { width: 1920, height: 1080 }
 
   // Shotstack webhook callback — only set when the app URL + secret are
   // both configured in the environment (i.e. production deployments).
