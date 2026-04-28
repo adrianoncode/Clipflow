@@ -46,12 +46,7 @@ export function AuditLogList({ rows }: { rows: AuditRow[] }) {
     : rows.filter((r) => r.action.startsWith(`${filter}.`))
 
   if (rows.length === 0) {
-    return (
-      <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 p-10 text-center text-sm text-muted-foreground">
-        No audit events yet. Actions taken in this workspace (invites, approvals,
-        publishes, key rotations) will show up here.
-      </div>
-    )
+    return <AuditLogEmptyPreview />
   }
 
   return (
@@ -136,6 +131,165 @@ export function AuditLogList({ rows }: { rows: AuditRow[] }) {
           })}
         </ul>
       </div>
+    </div>
+  )
+}
+
+/**
+ * Empty-state preview for the audit log. Shows three faux events
+ * (invite, approval, publish) so an owner reads the populated shape
+ * — mono-spaced timestamps, action chips, actor avatars — instead
+ * of just a "nothing here" paragraph. The first row pulses on a
+ * muted lime halo to suggest "this is where new events land".
+ */
+function AuditLogEmptyPreview() {
+  const ghosts = [
+    {
+      time: '14:32',
+      bucket: 'members',
+      bucketBg: 'bg-violet-50',
+      bucketFg: 'text-violet-700',
+      action: 'Member invited',
+      actor: 'AB',
+      actorBg: 'bg-violet-100 text-violet-700',
+      detail: 'sarah@acme.co · editor role',
+      pulse: true,
+    },
+    {
+      time: '14:28',
+      bucket: 'content',
+      bucketBg: 'bg-emerald-50',
+      bucketFg: 'text-emerald-700',
+      action: 'Draft approved',
+      actor: 'JL',
+      actorBg: 'bg-emerald-100 text-emerald-700',
+      detail: 'Hook — "The 3 metrics…" · TikTok',
+      pulse: false,
+    },
+    {
+      time: '14:11',
+      bucket: 'billing',
+      bucketBg: 'bg-amber-50',
+      bucketFg: 'text-amber-700',
+      action: 'Plan changed',
+      actor: 'AB',
+      actorBg: 'bg-amber-100 text-amber-700',
+      detail: 'Free → Creator (monthly)',
+      pulse: false,
+    },
+  ]
+  return (
+    <div
+      className="cf-audit-empty relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5"
+      style={{
+        boxShadow:
+          '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(42,26,61,.04), 0 14px 32px -18px rgba(42,26,61,.18)',
+      }}
+    >
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-10 top-0 h-px"
+        style={{
+          background:
+            'linear-gradient(to right, transparent, rgba(42,26,61,.32), transparent)',
+        }}
+      />
+      <div className="mb-4 flex items-baseline justify-between">
+        <p
+          className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em]"
+          style={{ color: '#5f5850', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+        >
+          <span
+            className="inline-block h-1.5 w-1.5 rounded-full"
+            style={{
+              background: '#D6FF3E',
+              boxShadow: '0 0 8px rgba(214,255,62,.7)',
+            }}
+          />
+          What lands here
+        </p>
+        <p className="text-[11px]" style={{ color: 'rgba(95,88,80,.7)' }}>
+          Invites · approvals · publishes · key rotations
+        </p>
+      </div>
+      <ul className="space-y-2" aria-hidden>
+        {ghosts.map((g, i) => (
+          <li
+            key={i}
+            className={`relative flex items-center gap-3 rounded-xl border border-border/40 bg-card px-3.5 py-2.5 ${
+              g.pulse ? 'cf-audit-empty-pulse' : ''
+            }`}
+            style={{ opacity: 1 - i * 0.18 }}
+          >
+            <span
+              className="lv2-tabular w-12 shrink-0 text-[10.5px]"
+              style={{
+                color: '#5f5850',
+                fontFamily: 'var(--font-jetbrains-mono), monospace',
+              }}
+            >
+              {g.time}
+            </span>
+            <span
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${g.actorBg}`}
+            >
+              {g.actor}
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p
+                  className="truncate text-[12.5px] font-semibold"
+                  style={{ color: '#181511' }}
+                >
+                  {g.action}
+                </p>
+                <span
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.14em] ${g.bucketBg} ${g.bucketFg}`}
+                >
+                  {g.bucket}
+                </span>
+              </div>
+              <p
+                className="truncate text-[11px]"
+                style={{ color: 'rgba(95,88,80,.85)' }}
+              >
+                {g.detail}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <p
+        className="mt-4 text-center text-[12px]"
+        style={{ color: 'rgba(95,88,80,.85)' }}
+      >
+        No audit events yet — actions you take in this workspace will start filling this list.
+      </p>
+      <style jsx>{`
+        @keyframes cf-audit-pulse {
+          0%,
+          100% {
+            box-shadow:
+              0 1px 0 rgba(255, 255, 255, 0.55) inset,
+              0 1px 2px rgba(24, 21, 17, 0.04);
+          }
+          50% {
+            box-shadow:
+              0 1px 0 rgba(255, 255, 255, 0.55) inset,
+              0 0 0 1px rgba(214, 255, 62, 0.4),
+              0 0 14px -2px rgba(214, 255, 62, 0.4);
+          }
+        }
+        .cf-audit-empty-pulse {
+          animation: cf-audit-pulse 3.2s
+            cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .cf-audit-empty-pulse {
+            animation: none;
+          }
+        }
+      `}</style>
     </div>
   )
 }
