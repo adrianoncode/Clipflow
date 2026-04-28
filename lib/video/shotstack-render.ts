@@ -52,14 +52,51 @@ export interface ShotstackSubtitle {
 
 /**
  * Visual style presets for captions.
- * - tiktok-bold  : Huge white text, fat black stroke — the viral TikTok look
- * - minimal      : Clean small white text, no stroke
- * - neon         : Yellow glow, high contrast
- * - white-bar    : Text on a semi-transparent black pill — Instagram Reels style
+ *
+ * Two families:
+ *
+ *   STATIC — one HTML clip per cue. Text is rendered as a single block.
+ *     - tiktok-bold  : Huge white text, fat black stroke
+ *     - minimal      : Clean small white text, no stroke
+ *     - neon         : Yellow glow, high contrast
+ *     - white-bar    : Text on a semi-transparent black pill
+ *
+ *   ANIMATED — emitted as one HTML clip per WORD. The Shotstack pipeline
+ *   sees them as a normal subtitles array; the only difference is each
+ *   subtitle is short (one word, one beat). When played back at video
+ *   rate this reads as word-by-word animation. Helper below
+ *   (`buildAnimatedSubtitlesFromWords`) emits the right shape.
+ *
+ *     - karaoke      : One word at a time on a lime block, plum text.
+ *                      Reads like a karaoke ball without literally
+ *                      drawing one.
+ *     - beasty       : One word at a time, scaled-up bold all-caps,
+ *                      colour rotates through a 5-colour palette.
  */
-export type CaptionStyle = 'tiktok-bold' | 'minimal' | 'neon' | 'white-bar'
+export type CaptionStyle =
+  | 'tiktok-bold'
+  | 'minimal'
+  | 'neon'
+  | 'white-bar'
+  | 'karaoke'
+  | 'beasty'
 
-function buildCaptionHtml(text: string, style: CaptionStyle): string {
+/**
+ * Five-colour palette used by the Beasty animated style. Same colours
+ * (and order) as the browser-preview Beasty so the rendered MP4
+ * matches what the user saw in the editor.
+ */
+const BEASTY_PALETTE = ['#D6FF3E', '#FFFFFF', '#FF6B6B', '#7DDBFF', '#FFE66D']
+
+function buildCaptionHtml(
+  text: string,
+  style: CaptionStyle,
+  /**
+   * Optional per-word index — only used by Beasty so the colour stays
+   * stable across words across replays. Other styles ignore it.
+   */
+  wordIndex?: number,
+): string {
   const escaped = escapeHtml(text)
   switch (style) {
     case 'tiktok-bold':
@@ -70,9 +107,54 @@ function buildCaptionHtml(text: string, style: CaptionStyle): string {
       return `<p style="font-family:'Arial Black',Arial;font-size:58px;font-weight:800;color:#FFE600;text-shadow:0 0 12px rgba(255,230,0,0.9),0 0 30px rgba(255,230,0,0.5),2px 2px 0 #000;text-align:center;padding:16px 24px;">${escaped}</p>`
     case 'white-bar':
       return `<div style="display:inline-block;background:rgba(0,0,0,0.72);border-radius:12px;padding:10px 28px;"><p style="font-family:Arial;font-size:44px;font-weight:700;color:#FFFFFF;text-align:center;margin:0;">${escaped}</p></div>`
+    case 'karaoke':
+      // Lime block, plum text, uppercase — matches the browser
+      // preview's "active word" highlight. Each subtitle is one word
+      // so the lime block "jumps" word-to-word at speech rate.
+      return `<div style="display:inline-block;background:#D6FF3E;border-radius:8px;padding:8px 16px;box-shadow:0 0 14px rgba(214,255,62,0.5);"><p style="font-family:'Arial Black',Arial;font-size:54px;font-weight:900;color:#1a2000;text-align:center;margin:0;letter-spacing:-0.5px;">${escaped}</p></div>`
+    case 'beasty': {
+      // Big all-caps single word, colour cycled through the palette.
+      // wordIndex defaults to 0 so a static call (cue-level) still
+      // renders deterministically.
+      const colour = BEASTY_PALETTE[(wordIndex ?? 0) % BEASTY_PALETTE.length]
+      return `<p style="font-family:'Arial Black',Arial;font-size:64px;font-weight:900;color:${colour};text-transform:uppercase;-webkit-text-stroke:3px #000000;text-shadow:0 0 18px rgba(214,255,62,0.35),3px 3px 0 #000;text-align:center;padding:14px 24px;line-height:1.05;letter-spacing:-0.5px;">${escaped}</p>`
+    }
     default:
       return `<p style="font-family:Arial;font-size:48px;font-weight:bold;color:white;text-shadow:2px 2px 10px rgba(0,0,0,0.9);text-align:center;padding:20px;">${escaped}</p>`
   }
+}
+
+/** True for caption styles that should be rendered word-by-word. */
+export function isAnimatedCaptionStyle(style: CaptionStyle): boolean {
+  // TikTok-bold reads as animated visually because the browser preview
+  // shows one word at a time, but the render-engine variant is the
+  // same per-cue HTML. Only Karaoke + Beasty actually need word-level
+  // clip generation.
+  return style === 'karaoke' || style === 'beasty'
+}
+
+/**
+ * Convert word timings into Shotstack subtitle clips for an animated
+ * style. Each word becomes its own clip — Shotstack can't keyframe
+ * within a single text element, so animation = many short clips.
+ *
+ * The clip length is the word's spoken duration with a small minimum
+ * floor (140ms) so very short words like "a" still register as a beat.
+ * Whitespace-only entries are dropped so we don't emit invisible clips.
+ */
+export function buildAnimatedSubtitlesFromWords(
+  words: Array<{ word: string; start: number; end: number }>,
+  _style: 'karaoke' | 'beasty',
+): ShotstackSubtitle[] {
+  const MIN_LEN = 0.14
+  const out: ShotstackSubtitle[] = []
+  for (const w of words) {
+    const text = w.word.trim()
+    if (!text) continue
+    const length = Math.max(w.end - w.start, MIN_LEN)
+    out.push({ text, start: w.start, length })
+  }
+  return out
 }
 
 export interface RenderBrandKit {
@@ -170,13 +252,15 @@ export async function submitRender(input: RenderInput): Promise<
     })
   }
 
-  // Track 2: Subtitles (styled captions)
+  // Track 2: Subtitles (styled captions). Pass the per-clip index so
+  // animated styles (Beasty) can pick a stable colour from their
+  // palette per word — wraps around the 5-colour rotation.
   if (input.subtitles && input.subtitles.length > 0) {
     tracks.push({
-      clips: input.subtitles.map((sub) => ({
+      clips: input.subtitles.map((sub, i) => ({
         asset: {
           type: 'html',
-          html: buildCaptionHtml(sub.text, captionStyle),
+          html: buildCaptionHtml(sub.text, captionStyle, i),
           width: 1080,
           height: 220,
         },

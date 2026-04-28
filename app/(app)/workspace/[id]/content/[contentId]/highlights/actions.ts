@@ -35,8 +35,11 @@ const findSchema = z.object({
 const renderSchema = z.object({
   workspace_id: z.string().uuid(),
   highlight_id: z.string().uuid(),
+  // Two extra animated styles since the v2 subtitles editor —
+  // 'karaoke' and 'beasty'. Existing rows continue to work; the
+  // underlying clip-render maps any of these to the right HTML.
   caption_style: z
-    .enum(['tiktok-bold', 'minimal', 'neon', 'white-bar'])
+    .enum(['tiktok-bold', 'minimal', 'neon', 'white-bar', 'karaoke', 'beasty'])
     .optional(),
 })
 
@@ -221,7 +224,13 @@ export async function renderHighlightAction(
 async function submitHighlightRender(params: {
   workspaceId: string
   highlightId: string
-  captionStyleOverride?: 'tiktok-bold' | 'minimal' | 'neon' | 'white-bar'
+  captionStyleOverride?:
+    | 'tiktok-bold'
+    | 'minimal'
+    | 'neon'
+    | 'white-bar'
+    | 'karaoke'
+    | 'beasty'
 }): Promise<
   | { ok: true; renderId: string; contentId: string }
   | { ok: false; error: string; skipped?: boolean }
@@ -400,7 +409,7 @@ const adjustSchema = z.object({
     .union([z.coerce.number().min(-0.5).max(0.5), z.literal('')])
     .optional(),
   caption_style: z
-    .enum(['tiktok-bold', 'minimal', 'neon', 'white-bar'])
+    .enum(['tiktok-bold', 'minimal', 'neon', 'white-bar', 'karaoke', 'beasty'])
     .optional(),
   hook_text: z.string().max(120).optional(),
 

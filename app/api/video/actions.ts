@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 
 import { getUser } from '@/lib/auth/get-user'
 import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
-import { burnCaptions, type CaptionStyle } from '@/lib/video/burn-captions'
+import { burnCaptions, type SubtitleUiStyle } from '@/lib/video/burn-captions'
 import { assembleBRollVideo } from '@/lib/video/assemble-broll'
 import { renderBrandedVideo } from '@/lib/video/brand-template'
 import { clipVideo, batchClipVideo } from '@/lib/video/clip-video'
@@ -99,7 +99,18 @@ export async function burnCaptionsAction(
   const contentId = formData.get('content_id')?.toString() || null
   const videoUrl = formData.get('video_url')?.toString() ?? ''
   const subtitlesJson = formData.get('subtitles')?.toString() ?? '[]'
-  const style = formData.get('caption_style')?.toString() ?? 'boxed'
+  const wordsJson = formData.get('word_timings')?.toString() ?? ''
+  const uiStyleRaw = formData.get('caption_style')?.toString() ?? 'classic'
+  const uiStyle = ([
+    'classic',
+    'bold-yellow',
+    'minimal',
+    'karaoke',
+    'tiktok-bold',
+    'beasty',
+  ] as const).includes(uiStyleRaw as SubtitleUiStyle)
+    ? (uiStyleRaw as SubtitleUiStyle)
+    : 'classic'
   const aspectRatio = (formData.get('aspect_ratio')?.toString() ?? '9:16') as
     | '9:16'
     | '16:9'
@@ -114,6 +125,19 @@ export async function burnCaptionsAction(
     return { ok: false, error: 'Invalid subtitle data.' }
   }
 
+  // Word timings are optional — only required when an animated style
+  // is picked. We accept the same JSON-array shape as `subtitles`.
+  let wordTimings: Array<{ word: string; start: number; end: number }> | undefined
+  if (wordsJson) {
+    try {
+      const parsed = JSON.parse(wordsJson)
+      if (Array.isArray(parsed)) wordTimings = parsed
+    } catch {
+      // Bad JSON falls through to undefined → animated styles will
+      // gracefully fall back to cue-mode rendering.
+    }
+  }
+
   if (subtitles.length === 0)
     return { ok: false, error: 'No subtitles provided.' }
 
@@ -123,7 +147,8 @@ export async function burnCaptionsAction(
   const result = await burnCaptions({
     videoUrl,
     subtitles,
-    captionStyle: { style: style as CaptionStyle['style'] },
+    wordTimings,
+    uiStyle,
     aspectRatio,
   })
 
@@ -133,7 +158,7 @@ export async function burnCaptionsAction(
     renderId: result.renderId,
     workspaceId,
     contentId,
-    metadata: { style, aspectRatio, subtitleCount: subtitles.length },
+    metadata: { style: uiStyle, aspectRatio, subtitleCount: subtitles.length },
   })
   return { ok: true, renderId: result.renderId, renderRowId }
 }
