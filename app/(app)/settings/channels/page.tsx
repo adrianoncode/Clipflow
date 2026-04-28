@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { cookies } from 'next/headers'
-import { AlertTriangle, ArrowRight, Check, ChevronDown, Clock, Sparkles } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Check, ChevronDown, Clock, Radio, Sparkles } from 'lucide-react'
 
 import { SERVICE_DIRECTORY } from '@/components/ai-keys/service-directory'
 import { UploadPostConnectSlot } from '@/components/channels/upload-post-connect-slot'
+import { SettingsHero } from '@/components/settings/settings-hero'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { createClient } from '@/lib/supabase/server'
@@ -146,8 +147,94 @@ export default async function ChannelsPage({
   const connectedProviderSet = new Set(keys.map((k) => k.provider))
   const hasUploadPost = publishServices.some((s) => connectedProviderSet.has(s.provider))
 
+  // Total connection count for the hero status pill — includes the
+  // four direct OAuth channels, Upload-Post if connected, and the
+  // X bring-your-own-keys connection. Reads as "X of 6 wired".
+  const totalChannels = DIRECT_CHANNELS.length + 1 /* Upload-Post */ + 1 /* X */
+  const connectedCount =
+    connectedChannelIds.size + (hasUploadPost ? 1 : 0) + (xConnection ? 1 : 0)
+  const allConnected = connectedCount === totalChannels
+
   return (
     <div className="space-y-8">
+      <SettingsHero
+        visual={
+          <span
+            className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white sm:h-16 sm:w-16"
+            style={{
+              background:
+                'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
+              boxShadow:
+                '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(42,26,61,0.55)',
+            }}
+            aria-hidden
+          >
+            <span
+              className="pointer-events-none absolute inset-1 rounded-[14px]"
+              style={{
+                background:
+                  'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 45%)',
+              }}
+            />
+            <Radio className="relative h-6 w-6 sm:h-7 sm:w-7" strokeWidth={1.6} />
+          </span>
+        }
+        eyebrow={`${currentWorkspace.name} · Channels`}
+        title="Where your posts go live."
+        body={
+          connectedCount === 0
+            ? 'Wire up the platforms you publish to. Approved drafts ship straight to the destinations you connect — no copy-paste, no Buffer middleman.'
+            : `${connectedCount} of ${totalChannels} destinations wired. Approved drafts publish straight to the connected ones.`
+        }
+        action={
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.18em]"
+            style={{
+              background: allConnected
+                ? 'rgba(15,107,77,.12)'
+                : connectedCount > 0
+                  ? 'rgba(214,255,62,.18)'
+                  : 'rgba(42,26,61,.06)',
+              color: allConnected
+                ? '#0F6B4D'
+                : connectedCount > 0
+                  ? '#1a2000'
+                  : '#5f5850',
+              border: `1px solid ${
+                allConnected
+                  ? 'rgba(15,107,77,.25)'
+                  : connectedCount > 0
+                    ? 'rgba(214,255,62,.40)'
+                    : 'rgba(42,26,61,.12)'
+              }`,
+              fontFamily:
+                'var(--font-inter-tight), var(--font-inter), sans-serif',
+            }}
+          >
+            <span
+              aria-hidden
+              className="inline-block h-1.5 w-1.5 rounded-full"
+              style={{
+                background: allConnected
+                  ? '#0F6B4D'
+                  : connectedCount > 0
+                    ? '#D6FF3E'
+                    : '#7c7468',
+                boxShadow:
+                  connectedCount > 0
+                    ? '0 0 8px rgba(214,255,62,.7)'
+                    : 'none',
+              }}
+            />
+            {allConnected
+              ? 'All wired'
+              : connectedCount > 0
+                ? `${connectedCount}/${totalChannels} live`
+                : 'Nothing wired'}
+          </span>
+        }
+      />
+
       {searchParams.error ? (
         <FeedbackBanner tone="error">
           <p className="font-semibold text-destructive">Connection failed</p>
