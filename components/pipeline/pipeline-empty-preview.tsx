@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * Mini kanban-board preview shown inside the Pipeline empty state.
  * Mocks the four columns (Draft / Review / Approved / Published) with
@@ -44,39 +46,131 @@ const COLUMNS: Array<{
 
 export function PipelineEmptyPreview() {
   return (
-    <div className="grid grid-cols-2 gap-2 rounded-2xl border bg-background p-2 shadow-sm sm:grid-cols-4">
-      {COLUMNS.map((col) => (
-        <div key={col.label} className="rounded-xl bg-muted/30 p-2">
-          <div className="mb-1.5 flex items-center gap-1.5 px-1.5">
-            <span className={`h-1.5 w-1.5 rounded-full ${col.dot}`} aria-hidden />
-            <span className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
-              {col.label}
-            </span>
-            <span
-              className="ml-auto rounded-full bg-background px-1.5 py-px text-[10px] font-bold tabular-nums text-muted-foreground"
-              style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
-            >
-              {col.cards.length}
-            </span>
-          </div>
-          <div className="space-y-1.5">
-            {col.cards.map((c, i) => (
-              <div
-                key={i}
-                className="rounded-lg border bg-card px-2 py-1.5 shadow-[0_1px_0_rgba(24,21,17,0.04)]"
+    <div
+      aria-hidden
+      className="cf-pipeline-preview relative grid grid-cols-2 gap-2 rounded-2xl border border-border/60 p-2 sm:grid-cols-4"
+      style={{
+        background:
+          'linear-gradient(180deg, #FFFDF8 0%, #F3EDE3 100%)',
+        boxShadow:
+          '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(42,26,61,.04), 0 14px 32px -18px rgba(42,26,61,.18)',
+      }}
+    >
+      {/* Top-edge hairline highlight, same trick as the dashboard hero. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-6 top-0 h-px"
+        style={{
+          background:
+            'linear-gradient(to right, transparent, rgba(42,26,61,.32), transparent)',
+        }}
+      />
+      {COLUMNS.map((col, colIdx) => {
+        const isApproved = col.label === 'Approved'
+        return (
+          <div
+            key={col.label}
+            className="relative rounded-xl p-2"
+            style={
+              isApproved
+                ? {
+                    background:
+                      'linear-gradient(180deg, rgba(214,255,62,.10) 0%, rgba(214,255,62,.02) 100%)',
+                    boxShadow: 'inset 0 0 0 1px rgba(214,255,62,.30)',
+                  }
+                : {
+                    background: 'rgba(42,26,61,.03)',
+                    boxShadow: 'inset 0 0 0 1px rgba(42,26,61,.06)',
+                  }
+            }
+          >
+            <div className="mb-1.5 flex items-center gap-1.5 px-1.5">
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${col.dot}`}
                 aria-hidden
+              />
+              <span className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+                {col.label}
+              </span>
+              <span
+                className="lv2-tabular ml-auto rounded-full px-1.5 py-px text-[10px] font-bold"
+                style={{
+                  fontFamily: 'var(--font-jetbrains-mono), monospace',
+                  background: isApproved
+                    ? 'rgba(214,255,62,.30)'
+                    : 'rgba(255,255,255,.85)',
+                  color: isApproved ? '#1a2000' : '#5f5850',
+                }}
               >
-                <p className="line-clamp-2 text-[11px] font-semibold leading-snug text-foreground">
-                  {c.title}
-                </p>
-                <span className="mt-1 inline-block rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.06em] text-primary">
-                  {c.tag}
-                </span>
-              </div>
-            ))}
+                {col.cards.length}
+              </span>
+            </div>
+            <div className="space-y-1.5">
+              {col.cards.map((c, i) => {
+                const isFirstCardOfFirstColumn = colIdx === 0 && i === 0
+                return (
+                  <div
+                    key={i}
+                    className={`relative rounded-lg border border-border/50 bg-card px-2 py-1.5 ${
+                      isFirstCardOfFirstColumn ? 'cf-pipeline-preview-card-active' : ''
+                    }`}
+                    style={{
+                      boxShadow:
+                        '0 1px 0 rgba(255,255,255,.55) inset, 0 1px 2px rgba(24,21,17,.04)',
+                    }}
+                  >
+                    <p className="line-clamp-2 text-[11px] font-semibold leading-snug text-foreground">
+                      {c.title}
+                    </p>
+                    <span
+                      className="mt-1 inline-block rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em]"
+                      style={{
+                        background:
+                          isApproved
+                            ? '#D6FF3E'
+                            : 'rgba(42,26,61,.08)',
+                        color: isApproved ? '#1a2000' : '#2A1A3D',
+                      }}
+                    >
+                      {c.tag}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
+      <style jsx>{`
+        /* The first card on the leftmost column lifts on a slow loop —
+           subtle "drag-me" affordance so the eye reads the kanban as
+           interactive, not a static snapshot. */
+        @keyframes cf-pipeline-card-pulse {
+          0%,
+          100% {
+            transform: translateY(0);
+            box-shadow:
+              0 1px 0 rgba(255, 255, 255, 0.55) inset,
+              0 1px 2px rgba(24, 21, 17, 0.04);
+          }
+          50% {
+            transform: translateY(-2px);
+            box-shadow:
+              0 1px 0 rgba(255, 255, 255, 0.7) inset,
+              0 0 0 1px rgba(214, 255, 62, 0.35),
+              0 8px 18px -8px rgba(42, 26, 61, 0.2);
+          }
+        }
+        .cf-pipeline-preview-card-active {
+          animation: cf-pipeline-card-pulse 3.2s
+            cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .cf-pipeline-preview-card-active {
+            animation: none;
+          }
+        }
+      `}</style>
     </div>
   )
 }

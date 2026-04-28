@@ -206,6 +206,7 @@ export function ContentListWithSearch({
         actionHref={`/workspace/${workspaceId}/content/new`}
         secondaryLabel="See the playbook →"
         secondaryHref="/playbook/your-first-24-hours-with-clipflow"
+        preview={<LibraryGhostPreview />}
       />
     )
   }
@@ -482,3 +483,118 @@ const ContentRow = memo(function ContentRow({
     </div>
   )
 })
+
+/**
+ * Ghost preview shown inside the EmptyState when the library is fresh.
+ * Three faux content rows — fading from sharp at the top to ghosted at
+ * the bottom — answer the user's first question: "what does a populated
+ * library look like?". The top row pulses on the "Processing" pill so
+ * the eye registers "this is alive, your row will land here". Each
+ * row is purely decorative: aria-hidden, no clicks, no real data.
+ */
+function LibraryGhostPreview() {
+  const rows = [
+    {
+      icon: Youtube,
+      iconBg: 'bg-red-50',
+      iconFg: 'text-red-600',
+      title: 'How we 4×ed our content output',
+      meta: 'YouTube · 12:04',
+      status: 'Processing',
+      statusDot: 'bg-amber-500',
+      statusBg: 'bg-amber-50',
+      statusFg: 'text-amber-700',
+      pulse: true,
+      opacity: 1,
+    },
+    {
+      icon: Video,
+      iconBg: 'bg-blue-50',
+      iconFg: 'text-blue-600',
+      title: 'Founder essay — pricing changes',
+      meta: 'Upload · 7:21',
+      status: 'Ready',
+      statusDot: 'bg-emerald-500',
+      statusBg: 'bg-emerald-50',
+      statusFg: 'text-emerald-700',
+      pulse: false,
+      opacity: 0.7,
+    },
+    {
+      icon: FileText,
+      iconBg: 'bg-violet-50',
+      iconFg: 'text-violet-600',
+      title: 'Newsletter draft · Q3 retro',
+      meta: 'Text · 1.2k words',
+      status: 'Ready',
+      statusDot: 'bg-emerald-500',
+      statusBg: 'bg-emerald-50',
+      statusFg: 'text-emerald-700',
+      pulse: false,
+      opacity: 0.4,
+    },
+  ]
+  return (
+    <div className="space-y-1.5" aria-hidden>
+      <p
+        className="mb-3 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em]"
+        style={{
+          color: 'var(--lv2-muted, #5f5850)',
+          fontFamily: 'var(--font-jetbrains-mono), monospace',
+        }}
+      >
+        <span
+          className="inline-block h-1.5 w-1.5 rounded-full"
+          style={{ background: '#D6FF3E', boxShadow: '0 0 8px rgba(214,255,62,.7)' }}
+        />
+        What it looks like
+      </p>
+      {rows.map((row, i) => {
+        const Icon = row.icon
+        return (
+          <div
+            key={i}
+            className="relative flex items-center gap-3 rounded-xl border border-border/50 bg-card px-3.5 py-2.5"
+            style={{
+              opacity: row.opacity,
+              boxShadow:
+                '0 1px 0 rgba(255,255,255,.55) inset, 0 1px 2px rgba(42,26,61,.04)',
+            }}
+          >
+            <span
+              className="flex h-4 w-4 shrink-0 items-center justify-center rounded-md border border-border/70 bg-background"
+              aria-hidden
+            />
+            <div
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${row.iconBg}`}
+            >
+              <Icon className={`h-4 w-4 ${row.iconFg}`} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[12.5px] font-semibold text-foreground">
+                {row.title}
+              </p>
+              <p className="mt-0.5 text-[10.5px] text-muted-foreground">{row.meta}</p>
+            </div>
+            <span
+              className={`flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold ${row.statusBg} ${row.statusFg}`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${row.statusDot} ${
+                  row.pulse ? 'animate-pulse' : ''
+                }`}
+              />
+              {row.status}
+            </span>
+          </div>
+        )
+      })}
+      <p
+        className="mt-3 text-center text-[10.5px]"
+        style={{ color: 'var(--lv2-muted, #5f5850)' }}
+      >
+        Drop one in to fill these rows.
+      </p>
+    </div>
+  )
+}
