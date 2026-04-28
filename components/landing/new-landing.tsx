@@ -18,7 +18,6 @@ import {
   WordReveal,
 } from './hero-motion'
 import { CaptionTypewriter } from './caption-typewriter'
-import { BentoShowcase } from './bento-showcase'
 // import { Testimonials } from './testimonials' // removed with fake-quote cleanup; see comment at former use-site
 import { ComparisonMatrix } from './comparison-matrix'
 import { StickyCta } from './sticky-cta'
@@ -1782,10 +1781,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         </div>
       </section>
 
-      {/* BENTO FEATURE SHOWCASE — six mini-demos of real Clipflow
-          mechanics, so visitors see the product behavior (not just
-          claims) before the pricing wall. */}
-      <BentoShowcase />
+      {/* BENTO FEATURE SHOWCASE removed — being redesigned. */}
 
       {/* TESTIMONIAL SECTION temporarily removed — shipping without
           fabricated quotes while we collect real early-user feedback.
