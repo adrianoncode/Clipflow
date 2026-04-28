@@ -3,6 +3,7 @@
 import {
   BarChart3,
   Clapperboard,
+  Eraser,
   Globe,
   MessageSquare,
   Move,
@@ -107,6 +108,20 @@ export function ToolsTab({ item, workspaceId, meta, currentPlan }: ToolsTabProps
               description="Translate and dub your video into other languages."
               href={`/workspace/${workspaceId}/content/${item.id}/dub`}
               locked={gate('autoDub', currentPlan)}
+            />
+          )}
+          {/* Audio cleanup — finds "um / äh / o sea / you know" and
+              friends across EN/DE/ES so creators can ship a tighter
+              edit without manually scrubbing the transcript. Only
+              shown for video — no audio-source items go through the
+              cut pipeline yet. */}
+          {item.kind === 'video' && (
+            <ToolCard
+              icon={<Eraser className="h-4 w-4 text-muted-foreground" />}
+              label="Audio cleanup"
+              description="Trim filler words (um, äh, o sea) automatically — multilingual."
+              href={`/workspace/${workspaceId}/content/${item.id}/cleanup`}
+              locked={gate('brollAutomation', currentPlan)}
             />
           )}
         </div>

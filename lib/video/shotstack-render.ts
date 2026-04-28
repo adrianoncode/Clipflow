@@ -42,6 +42,13 @@ export interface ShotstackClip {
    * bleeds through. Omitted for the base video (always 1.0).
    */
   opacity?: number
+  /**
+   * Source-level trim — seconds into the source asset where this clip
+   * starts playing. The clip then plays for `length` seconds. Used by
+   * the cleanup pipeline to splice multiple kept ranges out of a
+   * single source video into one continuous output timeline.
+   */
+  trim?: number
 }
 
 export interface ShotstackSubtitle {
@@ -291,18 +298,26 @@ export async function submitRender(input: RenderInput): Promise<
             clip.type === 'video' &&
             typeof clip.volume === 'number' &&
             clip.volume !== 1
-          const asset = hasVolume
-            ? {
-                type: 'video' as const,
-                src: clip.src,
-                volume: clip.volume,
-              }
-            : {
-                type: (clip.type === 'video' ? 'video' : 'image') as
-                  | 'video'
-                  | 'image',
-                src: clip.src,
-              }
+          // Source-level trim — only applies to video clips, and only
+          // when the caller asked for a non-zero offset into the
+          // source. Shotstack's `trim` lives on the asset, not the
+          // outer clip wrapper.
+          const hasTrim =
+            clip.type === 'video' &&
+            typeof clip.trim === 'number' &&
+            clip.trim > 0
+          const asset =
+            clip.type === 'video'
+              ? {
+                  type: 'video' as const,
+                  src: clip.src,
+                  ...(hasVolume ? { volume: clip.volume } : {}),
+                  ...(hasTrim ? { trim: clip.trim } : {}),
+                }
+              : {
+                  type: 'image' as const,
+                  src: clip.src,
+                }
           return {
             asset,
             start: clip.start,
