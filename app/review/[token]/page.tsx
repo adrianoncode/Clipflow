@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { Clock } from 'lucide-react'
 
 import { getReviewPageData } from '@/lib/review/get-review-page-data'
 import { ReviewCommentForm } from '@/components/review/review-comment-form'
@@ -138,12 +139,101 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
       <div className="mx-auto max-w-5xl space-y-8 px-4 py-10 sm:px-8">
         {outputs.length === 0 ? (
           <div
-            className="rounded-2xl border border-dashed p-10 text-center"
-            style={{ borderColor: '#CFC4AF', background: '#FFFDF8' }}
+            className="relative overflow-hidden rounded-2xl border p-10 sm:p-14"
+            style={{
+              borderColor: '#CFC4AF',
+              background:
+                'linear-gradient(180deg, rgba(214,255,62,.04) 0%, #FFFDF8 40%)',
+              boxShadow:
+                '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(42,26,61,.04), 0 22px 44px -28px rgba(42,26,61,.22)',
+            }}
           >
-            <p style={{ color: '#7c7468' }}>
-              No drafts yet. The team will share them here once they&rsquo;re ready.
-            </p>
+            {/* Hairline + lime corner glow — same vocabulary as the
+                rest of the empty-state previews. */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-10 top-0 h-px"
+              style={{
+                background:
+                  'linear-gradient(to right, transparent, rgba(42,26,61,.32), transparent)',
+              }}
+            />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full"
+              style={{
+                background:
+                  'radial-gradient(circle, rgba(214,255,62,.22) 0%, rgba(214,255,62,0) 60%)',
+              }}
+            />
+            <div className="relative flex flex-col items-center gap-4 text-center">
+              {/* Plum monogram chip — matches the dashboard hero */}
+              <span
+                className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white"
+                style={{
+                  background:
+                    'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
+                  boxShadow:
+                    '0 1px 0 rgba(255,255,255,.18) inset, 0 10px 24px -12px rgba(42,26,61,.55)',
+                }}
+                aria-hidden
+              >
+                <span
+                  className="pointer-events-none absolute inset-1 rounded-[14px]"
+                  style={{
+                    background:
+                      'linear-gradient(180deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 45%)',
+                  }}
+                />
+                <Clock className="relative h-6 w-6" strokeWidth={1.7} />
+              </span>
+              <h2
+                className="text-[26px] leading-[1.06] tracking-tight sm:text-[30px]"
+                style={{
+                  fontFamily: 'var(--font-instrument-serif), serif',
+                  letterSpacing: '-.015em',
+                  color: accent,
+                }}
+              >
+                Drafts are on the way.
+              </h2>
+              <p
+                className="max-w-md text-[14px] leading-relaxed"
+                style={{ color: '#5f5850' }}
+              >
+                The team is putting the final touches on this batch. As soon as the
+                first draft is ready, it&rsquo;ll show up right here for you to
+                approve or send back with notes — no login, no install, just this link.
+              </p>
+              <p
+                className="mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.22em]"
+                style={{
+                  background: 'rgba(214,255,62,.12)',
+                  color: '#1a2000',
+                  fontFamily: 'var(--font-jetbrains-mono), monospace',
+                  border: '1px solid rgba(214,255,62,.35)',
+                }}
+              >
+                <span
+                  className="inline-block h-1.5 w-1.5 rounded-full"
+                  style={{
+                    background: '#D6FF3E',
+                    boxShadow: '0 0 8px rgba(214,255,62,.7)',
+                    animation: 'cf-review-empty-pulse 2.4s ease-in-out infinite',
+                  }}
+                />
+                Bookmark this link
+              </p>
+            </div>
+            <style>{`
+              @keyframes cf-review-empty-pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: .35; }
+              }
+              @media (prefers-reduced-motion: reduce) {
+                [style*="cf-review-empty-pulse"] { animation: none !important; }
+              }
+            `}</style>
           </div>
         ) : (
           <>
