@@ -24,6 +24,8 @@ import { getAnalytics } from '@/lib/dashboard/get-analytics'
 import { PLATFORM_LABELS, PLATFORM_DOT_COLORS as PLATFORM_COLOR } from '@/lib/platforms'
 import { RefreshStatsButton } from '@/components/analytics/refresh-stats-button'
 import { createClient } from '@/lib/supabase/server'
+import { EmptyState } from '@/components/ui/empty-state'
+import { AnalyticsEmptyPreview } from '@/components/analytics/analytics-empty-preview'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Analytics' }
@@ -177,7 +179,7 @@ export default async function AnalyticsPage() {
   const hasAnyData = analytics.totalContent > 0 || analytics.totalOutputs > 0
   if (!hasAnyData) {
     return (
-      <div className="mx-auto w-full max-w-3xl space-y-6 p-4 sm:p-8">
+      <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
         <div>
           <p
             className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
@@ -196,21 +198,16 @@ export default async function AnalyticsPage() {
             How your posts perform.
           </h1>
         </div>
-        <div className="rounded-2xl border border-dashed border-border/60 bg-card p-10 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary/60">
-            <Upload className="h-5 w-5" />
-          </div>
-          <h2 className="mt-4 text-base font-semibold">No analytics yet</h2>
-          <p className="mx-auto mt-1.5 max-w-sm text-sm text-muted-foreground">
-            Add your first video and turn it into posts — your weekly velocity, approval rate, and engagement data all live here once you start shipping.
-          </p>
-          <Link
-            href={`/workspace/${currentWorkspace.id}/content/new`}
-            className="cf-btn-3d cf-btn-3d-primary mt-5 inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm"
-          >
-            Add your first video
-          </Link>
-        </div>
+        <EmptyState
+          icon={BarChart3}
+          title="Where your numbers will live."
+          description="Velocity, approval rate, views, engagement — every metric below populates the moment you ship your first post. Until then, here's the shape of the dashboard."
+          actionLabel="Add your first video"
+          actionHref={`/workspace/${currentWorkspace.id}/content/new`}
+          secondaryLabel="See the playbook →"
+          secondaryHref="/playbook/your-first-24-hours-with-clipflow"
+          preview={<AnalyticsEmptyPreview />}
+        />
       </div>
     )
   }

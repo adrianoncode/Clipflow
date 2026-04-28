@@ -16,6 +16,7 @@ import {
 import { EmptyState } from '@/components/ui/empty-state'
 import { PageHeader } from '@/components/ui/page-header'
 import { DraftsTabNav } from '@/components/pipeline/drafts-tab-nav'
+import { ScheduleEmptyPreview } from '@/components/scheduler/schedule-empty-preview'
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getScheduledPosts } from '@/lib/scheduler/get-scheduled-posts'
@@ -277,6 +278,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
           actionHref={`/workspace/${params.id}/pipeline`}
           secondaryLabel="Open calendar"
           secondaryHref={`/workspace/${params.id}/schedule?view=calendar`}
+          preview={<ScheduleEmptyPreview />}
         />
       ) : (
         <div className="space-y-6">
