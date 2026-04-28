@@ -116,12 +116,12 @@ export function EmptyState({
       />
 
       <div
-        className={`relative grid gap-8 p-6 sm:p-9 ${
+        className={`relative grid gap-8 p-6 sm:p-9 grid-cols-[minmax(0,1fr)] ${
           hasAside ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-10' : ''
         }`}
       >
         {/* Left: visual + title + body + CTA */}
-        <div className="flex flex-col">
+        <div className="flex min-w-0 flex-col">
           <VisualChip Icon={Icon} />
           <h2
             className="mt-5 text-[26px] leading-[1.06] tracking-tight text-foreground sm:text-[30px]"
@@ -173,7 +173,7 @@ export function EmptyState({
             </ol>
           ) : null}
 
-          <div className="mt-7 flex items-center gap-3">
+          <div className="mt-7 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
             <ActionRow
               label={actionLabel}
               href={actionHref}
@@ -185,7 +185,7 @@ export function EmptyState({
 
         {/* Right: optional rich preview */}
         {preview ? (
-          <aside className="relative">
+          <aside className="relative min-w-0">
             <div
               aria-hidden
               className="pointer-events-none absolute inset-0 -m-3 rounded-3xl"

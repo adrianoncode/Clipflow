@@ -301,7 +301,7 @@ export function SetupChecklist({
 
                 {/* Content */}
                 <div
-                  className={`flex min-w-0 flex-1 items-center gap-3 rounded-xl px-4 py-3 transition-all ${
+                  className={`flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-3 rounded-xl px-4 py-3 transition-all ${
                     step.done
                       ? 'opacity-60'
                       : isCurrent
@@ -330,7 +330,7 @@ export function SetupChecklist({
                   >
                     <StepIcon className="h-4 w-4" />
                   </div>
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 basis-[160px]">
                     <p
                       className={`text-sm font-semibold ${
                         step.done
@@ -349,7 +349,10 @@ export function SetupChecklist({
                       Done
                     </span>
                   ) : isCurrent ? (
-                    <Link href={step.href} className="lv2d-btn-primary shrink-0">
+                    <Link
+                      href={step.href}
+                      className="lv2d-btn-primary w-full shrink-0 justify-center sm:w-auto sm:justify-start"
+                    >
                       {step.cta}
                       <ArrowRight className="h-3 w-3" />
                     </Link>
