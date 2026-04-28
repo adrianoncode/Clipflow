@@ -68,7 +68,7 @@ export function UpgradeGate({
       {/* CTA */}
       <Link
         href={`/billing?workspace_id=${workspaceId}&plan=${requiredPlan}`}
-        className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md"
+        className="cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm"
       >
         <Zap className="h-4 w-4" />
         Upgrade to {planName(requiredPlan)}
@@ -103,7 +103,7 @@ export function UpgradeInline({
       </div>
       <Link
         href={`/billing?workspace_id=${workspaceId}&plan=${requiredPlan}`}
-        className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+        className="cf-btn-3d cf-btn-3d-primary shrink-0 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs"
       >
         <Zap className="h-3 w-3" />
         Upgrade

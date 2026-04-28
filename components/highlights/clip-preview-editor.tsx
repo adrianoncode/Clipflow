@@ -542,7 +542,7 @@ export function ClipPreviewEditor({
                 type="button"
                 onClick={runBrollSearch}
                 disabled={brollSearching || !brollQuery.trim()}
-                className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground disabled:opacity-50"
+                className="cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-[11px] disabled:opacity-50"
               >
                 {brollSearching ? (
                   <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
@@ -851,7 +851,7 @@ function CaptionStylePicker({
           onClick={() => onChange(s.id)}
           className={`rounded-full px-2.5 py-1 text-[10.5px] font-semibold transition-all ${
             value === s.id
-              ? 'bg-primary text-primary-foreground ring-2 ring-primary/20'
+              ? 'bg-[#2A1A3D] text-[#D6FF3E] ring-2 ring-[#D6FF3E]/20'
               : 'bg-muted/40 text-muted-foreground hover:bg-muted'
           }`}
         >
@@ -868,7 +868,7 @@ function SaveSubmit() {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-70"
+      className="cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs disabled:opacity-70"
     >
       {pending ? (
         <>

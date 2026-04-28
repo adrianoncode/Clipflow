@@ -152,7 +152,7 @@ export function ThumbnailStudio({
                   onClick={() => setLayout(l.id)}
                   className={`flex-1 rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition-colors ${
                     layout === l.id
-                      ? 'border-primary bg-primary text-primary-foreground'
+                      ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
                       : 'border-border/60 text-muted-foreground hover:border-border'
                   }`}
                   title={`${l.ratio} · ${l.size}`}
@@ -174,7 +174,7 @@ export function ThumbnailStudio({
                   onClick={() => setVariant(v.id)}
                   className={`flex-1 rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition-colors ${
                     variant === v.id
-                      ? 'border-primary bg-primary text-primary-foreground'
+                      ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
                       : 'border-border/60 text-muted-foreground hover:border-border'
                   }`}
                 >
@@ -197,7 +197,7 @@ export function ThumbnailStudio({
           <a
             href={src}
             download={`clipflow-thumbnail-${layout}-${variant}.png`}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md"
+            className="cf-btn-3d cf-btn-3d-primary ml-auto inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs"
           >
             <Download className="h-3.5 w-3.5" />
             Download

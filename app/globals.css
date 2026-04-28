@@ -555,15 +555,18 @@ section[id="social-proof"] {
   pointer-events: none;
 }
 
-/* Primary — brand plum gradient (#2A1A3D → #120920) with chartreuse
+/* Primary — brand plum gradient (#3A2552 → #1A0F30) with chartreuse
    text. Lime inset border + lime specular bloom — same lit-from-lime
-   feel as the landing-page button, just with gradient depth. */
+   feel as the landing-page button. Top of the gradient is brighter
+   than the canonical lv2-primary so the button reads as "plum brand"
+   instead of "black slab" at small sizes. The lime inset ring is
+   bumped to .28 (was .18) so the brand cue actually registers. */
 .cf-btn-3d-primary {
-  background: linear-gradient(180deg, #2A1A3D 0%, #120920 100%);
+  background: linear-gradient(180deg, #3A2552 0%, #1A0F30 100%);
   color: #D6FF3E;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.10),
-    inset 0 0 0 1px rgba(214,255,62,.18),
+    inset 0 1px 0 rgba(255,255,255,.14),
+    inset 0 0 0 1px rgba(214,255,62,.28),
     inset 0 -1px 0 rgba(0,0,0,.55),
     inset 0 -3px 6px -2px rgba(0,0,0,.40),
     0 1px 2px rgba(42,26,61,.18),
@@ -577,16 +580,16 @@ section[id="social-proof"] {
 }
 .cf-btn-3d-primary:hover {
   transform: translateY(-1px);
-  background: linear-gradient(180deg, #3a2552 0%, #120920 100%);
+  background: linear-gradient(180deg, #4a3066 0%, #1A0F30 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.14),
-    inset 0 0 0 1px rgba(214,255,62,.32),
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 0 0 1px rgba(214,255,62,.45),
     inset 0 -1px 0 rgba(0,0,0,.55),
     inset 0 -3px 6px -2px rgba(0,0,0,.40),
     0 2px 4px rgba(42,26,61,.20),
     0 8px 14px -2px rgba(42,26,61,.45),
     0 22px 38px -10px rgba(42,26,61,.50),
-    0 0 0 6px rgba(214,255,62,.07);
+    0 0 0 6px rgba(214,255,62,.10);
 }
 .cf-btn-3d-primary:hover::before { opacity: 1; }
 .cf-btn-3d-primary:active {

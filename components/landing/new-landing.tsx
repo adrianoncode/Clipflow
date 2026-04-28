@@ -2537,60 +2537,191 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         </div>
       </section>
 
-      {/* FAQ */}
-      <section id="faq" className="mx-auto max-w-[900px] px-6 py-20">
+      {/* FAQ — every row carries its category, an index, and a lime
+          activation tab on the left edge so the section reads as a
+          curated list rather than five identical pills. The toggle
+          rotates 45° to form an × when open, and the open card gains
+          a soft plum gradient + lime inner ring so it feels physically
+          attached to the brand instead of just expanding text. */}
+      <section id="faq" className="mx-auto max-w-[920px] px-6 py-20">
+        <p
+          className="lv2-mono-label lv2-reveal mb-3 text-center"
+          style={{ color: 'var(--lv2-muted)' }}
+        >
+          FAQ · five things people ask
+        </p>
         <h2
           className="lv2-display lv2-reveal mb-10 text-center text-[44px] leading-[1]"
           style={{ color: 'var(--lv2-primary)' }}
         >
           <WordReveal text="Questions, answered." />
         </h2>
-        <div className="lv2-reveal-stagger space-y-3">
+        <div className="lv2-reveal-stagger space-y-2.5">
           {[
             {
+              cat: 'Voice',
               q: 'Will my captions sound AI-generated?',
               a: "No. The brand voice engine reads everything you've already published and writes in your exact pattern. Most users can't tell which captions were AI vs. human — that's the point.",
             },
             {
+              cat: 'Billing',
               q: 'What happens if I go over my minutes?',
               a: 'We email you at 80%, 95%, and 100%. At 100%, processing pauses until you upgrade or top up. No surprise bills.',
             },
             {
+              cat: 'Privacy',
               q: 'Do you store my raw footage?',
               a: 'Only while we process it. Raw files are deleted after 30 days by default; clips and transcripts stay as long as your workspace does.',
             },
             {
+              cat: 'Platforms',
               q: 'Which platforms can I publish to?',
               a: 'TikTok, YouTube (Shorts + long-form), Instagram (Reels + feed), LinkedIn, and X. More on the roadmap — vote at /requests.',
             },
             {
+              cat: 'Account',
               q: 'Can I cancel anytime?',
               a: `Two clicks. No "hold on, let me transfer you." Your clips stay; billing stops immediately.`,
             },
-          ].map((f) => (
-            <details key={f.q} className="lv2-faq lv2-card cursor-pointer p-5 transition-colors">
-              <summary className="flex items-center justify-between gap-4 text-[15px] font-semibold [&::-webkit-details-marker]:hidden">
-                <span>{f.q}</span>
+          ].map((f, i) => (
+            <details key={f.q} className="lv2-faq-row group/faq relative cursor-pointer">
+              {/* Lime activation tab on the left edge — fades in on
+                  hover, locks bright on open. Same trick the dashboard
+                  funnel-step uses to say "this row is selected". */}
+              <span
+                aria-hidden
+                className="lv2-faq-tab pointer-events-none absolute left-0 top-1/2 h-10 w-[3px] -translate-y-1/2 rounded-r-full"
+                style={{ background: 'var(--lv2-accent)' }}
+              />
+              <summary className="flex items-center gap-4 px-5 py-4 text-[15px] font-semibold [&::-webkit-details-marker]:hidden">
+                <span
+                  className="lv2-tabular shrink-0 text-[10px] font-bold tracking-[0.2em]"
+                  style={{
+                    color: 'var(--lv2-muted)',
+                    fontFamily: 'var(--font-jetbrains-mono), monospace',
+                  }}
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span
+                  className="lv2-faq-cat shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]"
+                  style={{
+                    background: 'var(--lv2-primary-soft)',
+                    color: 'var(--lv2-primary)',
+                  }}
+                >
+                  {f.cat}
+                </span>
+                <span className="flex-1">{f.q}</span>
                 <span
                   aria-hidden
-                  className="lv2-faq-toggle inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[18px] leading-none transition-transform duration-200"
+                  className="lv2-faq-toggle relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-300"
                   style={{
                     color: 'var(--lv2-primary)',
                     background: 'var(--lv2-primary-soft)',
                   }}
                 >
-                  +
+                  <span className="absolute h-px w-3" style={{ background: 'currentColor' }} />
+                  <span
+                    className="lv2-faq-toggle-cross absolute h-3 w-px transition-transform duration-300"
+                    style={{ background: 'currentColor' }}
+                  />
                 </span>
               </summary>
-              <p
-                className="mt-3 text-[13.5px] leading-relaxed"
-                style={{ color: 'var(--lv2-muted)' }}
-              >
-                {f.a}
-              </p>
+              <div className="lv2-faq-body overflow-hidden">
+                <p
+                  className="px-5 pb-5 pl-[88px] text-[13.5px] leading-relaxed"
+                  style={{ color: 'var(--lv2-muted)' }}
+                >
+                  {f.a}
+                </p>
+              </div>
             </details>
           ))}
         </div>
+        <style jsx>{`
+          .lv2-faq-row {
+            background: var(--lv2-card);
+            border: 1px solid var(--lv2-border);
+            border-radius: 14px;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease,
+              transform 0.18s ease, background 0.18s ease;
+          }
+          .lv2-faq-row:hover {
+            border-color: var(--lv2-border-strong);
+            transform: translateY(-1px);
+            box-shadow:
+              0 1px 0 rgba(255, 255, 255, 0.6) inset,
+              0 1px 2px rgba(24, 21, 17, 0.04),
+              0 12px 28px -16px rgba(42, 26, 61, 0.18);
+          }
+          .lv2-faq-row[open] {
+            border-color: rgba(214, 255, 62, 0.45);
+            background: linear-gradient(
+              180deg,
+              rgba(214, 255, 62, 0.05) 0%,
+              var(--lv2-card) 60%
+            );
+            box-shadow:
+              0 1px 0 rgba(255, 255, 255, 0.7) inset,
+              0 0 0 4px rgba(214, 255, 62, 0.06),
+              0 14px 32px -18px rgba(42, 26, 61, 0.22);
+          }
+          /* Left lime tab — invisible at rest, halfway visible on
+             hover, full when the row is open. */
+          .lv2-faq-tab {
+            opacity: 0;
+            transition: opacity 0.18s ease, height 0.22s ease;
+          }
+          .lv2-faq-row:hover .lv2-faq-tab {
+            opacity: 0.55;
+          }
+          .lv2-faq-row[open] .lv2-faq-tab {
+            opacity: 1;
+            height: 60%;
+            box-shadow: 0 0 12px rgba(214, 255, 62, 0.55);
+          }
+          /* Toggle: + at rest, rotates to × when open. The horizontal
+             bar stays put, the vertical bar rotates 90° on close-state
+             so we get a clean rotation to ×. */
+          .lv2-faq-row[open] .lv2-faq-toggle {
+            background: var(--lv2-primary);
+            color: var(--lv2-accent);
+            transform: rotate(45deg);
+          }
+          .lv2-faq-row[open] .lv2-faq-toggle-cross {
+            transform: scaleY(0);
+          }
+          /* Animated body reveal — slides + fades instead of pop. */
+          .lv2-faq-body {
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+              opacity 0.32s ease;
+          }
+          .lv2-faq-row[open] .lv2-faq-body {
+            max-height: 320px;
+            opacity: 1;
+          }
+          /* The category chip recolors when the row opens. */
+          .lv2-faq-row[open] .lv2-faq-cat {
+            background: var(--lv2-primary);
+            color: var(--lv2-accent);
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .lv2-faq-row,
+            .lv2-faq-tab,
+            .lv2-faq-toggle,
+            .lv2-faq-toggle-cross,
+            .lv2-faq-body {
+              transition: none !important;
+            }
+            .lv2-faq-row:hover {
+              transform: none;
+            }
+          }
+        `}</style>
       </section>
 
       {/* BIG CTA — designed to feel like a physical surface lit from

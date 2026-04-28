@@ -170,7 +170,7 @@ export default async function PipelinePage({ params }: PipelinePageProps) {
             )}
             <Link
               href={`/workspace/${workspaceId}/content/new`}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-[13px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25"
+              className="cf-btn-3d cf-btn-3d-primary inline-flex h-10 items-center gap-2 rounded-xl px-4 text-[13px]"
             >
               <Plus className="h-3.5 w-3.5" />
               Import

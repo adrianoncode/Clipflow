@@ -64,7 +64,7 @@ function SubmitButton({ hasExisting }: { hasExisting: boolean }) {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 disabled:cursor-wait disabled:opacity-70 disabled:hover:translate-y-0"
+      className="cf-btn-3d cf-btn-3d-primary inline-flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 text-sm disabled:cursor-wait disabled:opacity-70"
     >
       {pending ? (
         <>

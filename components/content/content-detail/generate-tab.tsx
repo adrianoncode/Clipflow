@@ -60,7 +60,7 @@ export function GenerateTab({
               : 'Create TikTok, Instagram, YouTube & LinkedIn drafts in one pass.'}
           </p>
         </div>
-        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all group-hover:shadow-md">
+        <span className="cf-btn-3d cf-btn-3d-primary inline-flex shrink-0 items-center gap-1.5 rounded-xl px-4 py-2 text-xs">
           {hasExistingOutputs ? 'View' : 'Generate'}
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
         </span>
