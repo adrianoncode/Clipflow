@@ -11,6 +11,11 @@ import {
   listPinterestBoards,
   type PinterestBoard,
 } from '@/lib/publish/composio-publish'
+import { generatePlan } from '@/lib/planner/generate-plan'
+import type {
+  ApprovedDraftPreview,
+  PlanSlot,
+} from '@/lib/planner/build-plan'
 
 // ---------------------------------------------------------------------------
 // fetchPinterestBoardsAction — read-only helper for the schedule UI.
@@ -311,3 +316,249 @@ export async function quickScheduleAction(
   return { ok: true, message: `Scheduled for ${new Date(scheduledFor).toLocaleString()}` }
 }
 
+
+
+// ---------------------------------------------------------------------------
+// generateContentPlanAction — fetches approved drafts + brand context
+// for the workspace and asks generatePlan() for next-week slots. Cached
+// in workspace.metadata.plan for 24h so reload doesn't re-bill the LLM.
+// ---------------------------------------------------------------------------
+
+export interface GeneratePlanState
+  extends Record<string, unknown> {
+  ok?: boolean
+  error?: string
+  slots?: PlanSlot[]
+  generatedAt?: string
+  aiUsed?: boolean
+  aiError?: string
+  cached?: boolean
+}
+
+const generatePlanSchema = z.object({
+  workspaceId: z.string().uuid(),
+  /** Pass 'true' as a form value to force a re-generation past the cache. */
+  forceRefresh: z.string().optional(),
+})
+
+const PLAN_CACHE_TTL_MS = 24 * 60 * 60 * 1000
+
+export async function generateContentPlanAction(
+  _prev: GeneratePlanState,
+  formData: FormData,
+): Promise<GeneratePlanState> {
+  const parsed = generatePlanSchema.safeParse({
+    workspaceId: formData.get('workspace_id'),
+    forceRefresh: formData.get('force_refresh'),
+  })
+  if (!parsed.success) {
+    return { ok: false, error: 'Invalid input.' }
+  }
+
+  const { workspaceId, forceRefresh } = parsed.data
+
+  const member = await requireWorkspaceMember(workspaceId)
+  if (!member.ok) return { ok: false, error: 'Not a member.' }
+
+  const supabase = await createClient()
+
+  // Pull workspace branding for niche/tone/cadence/timezone.
+  const { data: ws } = await supabase
+    .from('workspaces')
+    .select('branding, name')
+    .eq('id', workspaceId)
+    .maybeSingle()
+  const branding = (ws?.branding ?? {}) as Record<string, unknown>
+
+  // Cache check — 24h TTL unless force_refresh=true.
+  const cached =
+    branding.plan && typeof branding.plan === 'object'
+      ? (branding.plan as Record<string, unknown>)
+      : null
+  if (cached && forceRefresh !== 'true') {
+    const generatedAt =
+      typeof cached.generatedAt === 'string' ? cached.generatedAt : null
+    const ageMs = generatedAt
+      ? Date.now() - new Date(generatedAt).getTime()
+      : Number.POSITIVE_INFINITY
+    if (
+      ageMs < PLAN_CACHE_TTL_MS &&
+      Array.isArray(cached.slots) &&
+      cached.slots.length > 0
+    ) {
+      return {
+        ok: true,
+        slots: cached.slots as PlanSlot[],
+        generatedAt: generatedAt ?? undefined,
+        aiUsed: cached.aiUsed === true,
+        cached: true,
+      }
+    }
+  }
+
+  // Fetch approved outputs for the workspace — the plan pool. The
+  // outputs table stores body as a free-text caption and metadata
+  // as JSON (hook + tags live there). We pull the IDs whose latest
+  // state is 'approved' via the same `output_states`-aware query
+  // shape used everywhere else, but for slice A we keep it simple
+  // and rely on the latest output_state row per output. Cap at 50
+  // so the LLM payload stays bounded.
+  const { data: outputs } = await supabase
+    .from('outputs')
+    .select('id, platform, body, metadata, current_state, created_at')
+    .eq('workspace_id', workspaceId)
+    .eq('current_state', 'approved')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  const drafts: ApprovedDraftPreview[] = (outputs ?? []).map((o) => {
+    const meta = (o.metadata ?? {}) as Record<string, unknown>
+    const hook =
+      typeof meta.hook === 'string'
+        ? meta.hook
+        : (o.body ?? '').toString().split('\n')[0] ?? ''
+    const tags = Array.isArray(meta.hashtags)
+      ? (meta.hashtags as unknown[]).filter(
+          (t): t is string => typeof t === 'string',
+        )
+      : Array.isArray(meta.tags)
+        ? (meta.tags as unknown[]).filter(
+            (t): t is string => typeof t === 'string',
+          )
+        : []
+    return {
+      id: String(o.id),
+      platform: o.platform as ApprovedDraftPreview['platform'],
+      hook: hook.slice(0, 200),
+      caption_preview:
+        typeof o.body === 'string' ? o.body.slice(0, 240) : '',
+      tags,
+      created_at:
+        typeof o.created_at === 'string' ? o.created_at : '',
+    }
+  })
+
+  if (drafts.length === 0) {
+    return {
+      ok: false,
+      error:
+        'No approved drafts to plan. Approve a draft on the Board first, then come back.',
+    }
+  }
+
+  // Compute "Monday of next week" in workspace timezone (best effort —
+  // we use the server's clock; full per-workspace TZ comes in slice C).
+  const now = new Date()
+  const monday = new Date(now)
+  const day = monday.getDay() // 0 = Sun
+  const diff = (1 - day + 7) % 7 || 7 // Always next Monday
+  monday.setDate(monday.getDate() + diff)
+  monday.setHours(0, 0, 0, 0)
+
+  const result = await generatePlan({
+    workspaceId,
+    weekStarting: monday,
+    drafts,
+    brand: {
+      niche:
+        typeof branding.niche === 'string' ? (branding.niche as string) : null,
+      tone:
+        typeof branding.tone === 'string' ? (branding.tone as string) : null,
+      timezone: 'UTC',
+    },
+  })
+
+  if ('ok' in result && result.ok === false) {
+    return { ok: false, error: result.error }
+  }
+  if (!('slots' in result)) {
+    return { ok: false, error: 'Plan generator returned no slots.' }
+  }
+
+  // Persist on workspace.branding.plan for the cache hit on next load.
+  try {
+    const nextBranding = {
+      ...branding,
+      plan: {
+        slots: result.slots,
+        generatedAt: result.generatedAt,
+        aiUsed: result.aiUsed,
+      },
+    }
+    await supabase
+      .from('workspaces')
+      .update({ branding: nextBranding as never })
+      .eq('id', workspaceId)
+  } catch {
+    // Cache write is non-fatal — the plan already returned.
+  }
+
+  return {
+    ok: true,
+    slots: result.slots,
+    generatedAt: result.generatedAt,
+    aiUsed: result.aiUsed,
+    aiError: result.aiError,
+    cached: false,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// commitPlanSlotAction — turns one suggested slot into a real
+// scheduled_posts row. Used by the Plan tab's per-slot "Schedule" button.
+// ---------------------------------------------------------------------------
+
+const commitPlanSlotSchema = z.object({
+  workspaceId: z.string().uuid(),
+  outputId: z.string().uuid(),
+  platform: z.string().min(1),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  time: z.string().regex(/^\d{2}:\d{2}$/),
+})
+
+export async function commitPlanSlotAction(
+  _prev: SchedulerActionState,
+  formData: FormData,
+): Promise<SchedulerActionState> {
+  const parsed = commitPlanSlotSchema.safeParse({
+    workspaceId: formData.get('workspace_id'),
+    outputId: formData.get('output_id'),
+    platform: formData.get('platform'),
+    date: formData.get('date'),
+    time: formData.get('time'),
+  })
+  if (!parsed.success) {
+    return { ok: false, error: 'Invalid input.' }
+  }
+
+  const { workspaceId, outputId, platform, date, time } = parsed.data
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const member = await requireWorkspaceMember(workspaceId)
+  if (!member.ok) return { ok: false, error: 'Not a member.' }
+
+  const supabase = await createClient()
+  const scheduledFor = new Date(`${date}T${time}:00`)
+  if (Number.isNaN(scheduledFor.getTime())) {
+    return { ok: false, error: 'Bad date/time.' }
+  }
+
+  const { error } = await supabase.from('scheduled_posts').insert({
+    workspace_id: workspaceId,
+    output_id: outputId,
+    platform,
+    scheduled_for: scheduledFor.toISOString(),
+    status: 'scheduled',
+    created_by: user.id,
+  })
+
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath(`/workspace/${workspaceId}/schedule`)
+  return {
+    ok: true,
+    message: `Scheduled for ${scheduledFor.toLocaleString()}`,
+  }
+}

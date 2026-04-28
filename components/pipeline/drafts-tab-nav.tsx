@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { CalendarDays, KanbanSquare, ListChecks } from 'lucide-react'
+import { CalendarDays, KanbanSquare, ListChecks, Sparkles } from 'lucide-react'
 
 /**
  * Three-tab strip that ties Drafts (Board), Calendar, and Queue
@@ -22,7 +22,7 @@ export function DraftsTabNav({
   scheduledCount,
 }: {
   workspaceId: string
-  current: 'board' | 'calendar' | 'queue'
+  current: 'board' | 'calendar' | 'queue' | 'plan'
   /** Optional badge counts. Skip props when you don't have them. */
   approvedCount?: number
   scheduledCount?: number
@@ -48,6 +48,13 @@ export function DraftsTabNav({
       href: `/workspace/${workspaceId}/schedule`,
       Icon: ListChecks,
       count: scheduledCount,
+    },
+    {
+      id: 'plan' as const,
+      label: 'Plan',
+      href: `/workspace/${workspaceId}/schedule?view=plan`,
+      Icon: Sparkles,
+      count: undefined,
     },
   ]
 

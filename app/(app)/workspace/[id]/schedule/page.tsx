@@ -17,6 +17,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { PageHeader } from '@/components/ui/page-header'
 import { DraftsTabNav } from '@/components/pipeline/drafts-tab-nav'
 import { ScheduleEmptyPreview } from '@/components/scheduler/schedule-empty-preview'
+import { PlanClient } from '@/components/scheduler/plan-client'
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getScheduledPosts } from '@/lib/scheduler/get-scheduled-posts'
@@ -70,6 +71,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
   if (!user) redirect('/login')
 
   const isCalendarView = searchParams.view === 'calendar'
+  const isPlanView = searchParams.view === 'plan'
 
   // Fold every per-workspace fetch into a single Promise.all — previously
   // getWorkspaces, getWorkspacePlan, and the posts/aiKeys batch each
@@ -124,6 +126,29 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
   async function handleReschedule(fd: FormData) {
     'use server'
     return reschedulePostAction({ ok: undefined }, fd)
+  }
+
+  // ── Plan View ──
+  // The Plan tab is a thin client surface — it asks the action layer
+  // to generate the next-week plan, then renders the slots. We don't
+  // pre-fetch on the server because the LLM call is metered; the user
+  // explicitly opts in by hitting "Generate plan".
+  if (isPlanView) {
+    return (
+      <div className="flex min-h-full flex-col">
+        <div className="border-b border-border/60 bg-background px-4 py-3 sm:px-8">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
+            <DraftsTabNav
+              workspaceId={params.id}
+              current="plan"
+              approvedCount={unscheduledOutputs.length}
+              scheduledCount={posts.length}
+            />
+          </div>
+        </div>
+        <PlanClient workspaceId={params.id} />
+      </div>
+    )
   }
 
   // ── Calendar View ──
