@@ -310,7 +310,7 @@ function RenderSubmit({ isRendering, label }: { isRendering: boolean; label: str
     <button
       type="submit"
       disabled={busy}
-      className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 disabled:cursor-wait disabled:opacity-70 disabled:hover:translate-y-0"
+      className="cf-btn-3d cf-btn-3d-primary inline-flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs disabled:cursor-wait disabled:opacity-70"
     >
       {busy ? (
         <>
@@ -361,7 +361,7 @@ function RenderAllSubmit() {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-bold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 disabled:opacity-70"
+      className="cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs disabled:opacity-70"
     >
       {pending ? (
         <>
@@ -404,7 +404,7 @@ function PublishButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90"
+        className="cf-btn-3d cf-btn-3d-primary inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs"
       >
         <Send className="h-3.5 w-3.5" /> Post
       </button>
@@ -438,7 +438,7 @@ function PublishButton({
               onClick={() => togglePlatform(p)}
               className={`rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold uppercase transition-colors ${
                 platforms.includes(p)
-                  ? 'bg-primary text-primary-foreground'
+                  ? 'bg-[#2A1A3D] text-[#D6FF3E]'
                   : 'bg-muted text-muted-foreground hover:bg-muted/60'
               }`}
             >
@@ -474,7 +474,7 @@ function PublishSubmit() {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1 text-[11px] font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-70"
+      className="cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-[11px] disabled:opacity-70"
     >
       {pending ? (
         <>

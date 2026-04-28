@@ -188,7 +188,7 @@ function RenderRow({ render: r }: { render: RenderRow }) {
           <a
             href={r.url}
             download
-            className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+            className="cf-btn-3d cf-btn-3d-primary inline-flex h-8 items-center justify-center rounded-md px-3 text-xs"
           >
             <Download className="mr-1 h-3 w-3" />
             MP4

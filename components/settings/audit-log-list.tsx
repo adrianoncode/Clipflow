@@ -66,7 +66,7 @@ export function AuditLogList({ rows }: { rows: AuditRow[] }) {
             onClick={() => setFilter(bucket)}
             className={`rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize transition-colors ${
               filter === bucket
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-[#2A1A3D] text-[#D6FF3E]'
                 : 'bg-muted/60 text-muted-foreground hover:bg-muted'
             }`}
           >

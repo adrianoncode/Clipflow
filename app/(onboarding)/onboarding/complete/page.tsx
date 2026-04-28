@@ -190,7 +190,7 @@ export default async function OnboardingCompletePage() {
               OpenAI, Anthropic, or Google — each offers free credits. Takes under a minute. You can also do this later from Settings.
             </p>
           </div>
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-xl bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground shadow-sm transition-transform group-hover:translate-x-0.5">
+          <span className="cf-btn-3d cf-btn-3d-primary inline-flex shrink-0 items-center gap-1 rounded-xl px-3 py-1.5 text-[11px] transition-transform group-hover:translate-x-0.5">
             <KeyRound className="h-3 w-3" />
             Connect
           </span>
@@ -206,7 +206,7 @@ export default async function OnboardingCompletePage() {
                 ? `/workspace/${currentWorkspace.id}/content/new`
                 : '/dashboard'
             }
-            className="group inline-flex h-12 items-center gap-2 rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30"
+            className="cf-btn-3d cf-btn-3d-primary group inline-flex h-12 items-center gap-2 rounded-full px-7 text-sm"
           >
             <Sparkles className="h-4 w-4" />
             Import your first video
@@ -215,7 +215,7 @@ export default async function OnboardingCompletePage() {
         ) : (
           <Link
             href="/settings/ai-keys"
-            className="group inline-flex h-12 items-center gap-2 rounded-full bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30"
+            className="cf-btn-3d cf-btn-3d-primary group inline-flex h-12 items-center gap-2 rounded-full px-7 text-sm"
           >
             <KeyRound className="h-4 w-4" />
             Connect AI provider

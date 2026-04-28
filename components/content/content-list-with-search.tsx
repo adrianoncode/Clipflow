@@ -237,7 +237,7 @@ export function ContentListWithSearch({
                 onClick={() => setStatusFilter(tab.value)}
                 className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all duration-150 ${
                   isActive
-                    ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20'
+                    ? 'bg-[#2A1A3D] text-[#D6FF3E] shadow-sm shadow-[#2A1A3D]/30'
                     : 'border border-border/60 text-muted-foreground hover:border-border hover:text-foreground'
                 }`}
               >
@@ -309,7 +309,7 @@ export function ContentListWithSearch({
             <span
               className={`flex h-4 w-4 items-center justify-center rounded border transition-colors ${
                 allFilteredSelected
-                  ? 'border-primary bg-primary text-primary-foreground'
+                  ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
                   : 'border-border/60 bg-background hover:border-primary/40'
               }`}
               aria-hidden

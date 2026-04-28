@@ -260,7 +260,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
           </div>
           <Link
             href="/settings/channels"
-            className="shrink-0 rounded-xl bg-primary px-4 py-2 text-[11px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-md"
+            className="cf-btn-3d cf-btn-3d-primary shrink-0 rounded-xl px-4 py-2 text-[11px]"
           >
             Connect
           </Link>

@@ -73,7 +73,7 @@ export default async function InvitePage({ params }: InvitePageProps) {
                 </p>
                 <a
                   href={`/login?next=/invite/${params.token}`}
-                  className="inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
+                  className="cf-btn-3d cf-btn-3d-primary inline-flex h-9 w-full items-center justify-center rounded-md px-4 text-sm"
                 >
                   Log in to accept
                 </a>

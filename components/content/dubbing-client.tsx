@@ -43,7 +43,7 @@ function SubmitButton({ language }: { language: string | null }) {
     <button
       type="submit"
       disabled={pending || !language}
-      className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+      className="cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm disabled:opacity-60"
     >
       {pending ? (
         <>

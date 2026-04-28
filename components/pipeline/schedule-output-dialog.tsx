@@ -21,7 +21,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="flex-1 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-md disabled:opacity-50"
+      className="cf-btn-3d cf-btn-3d-primary flex-1 rounded-xl px-4 py-2 text-xs disabled:opacity-50"
     >
       {pending ? 'Scheduling…' : 'Schedule'}
     </button>

@@ -174,7 +174,7 @@ export function SubtitlesClient({
                   onClick={() => setSubtitleStyle(s)}
                   className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
                     subtitleStyle === s
-                      ? 'border-primary bg-primary text-primary-foreground'
+                      ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
                       : 'hover:bg-accent'
                   }`}
                 >

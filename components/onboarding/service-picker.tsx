@@ -149,7 +149,7 @@ export function OnboardingServicePicker({
           href="/onboarding/complete"
           className={
             hasAnyLlm
-              ? 'inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90'
+              ? 'cf-btn-3d cf-btn-3d-primary inline-flex h-10 items-center gap-2 rounded-lg px-5 text-sm'
               : 'pointer-events-none inline-flex h-10 items-center gap-2 rounded-lg bg-muted px-5 text-sm font-medium text-muted-foreground'
           }
           aria-disabled={!hasAnyLlm}

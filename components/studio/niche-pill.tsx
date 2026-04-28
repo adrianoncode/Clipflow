@@ -127,7 +127,7 @@ export function NichePill({ workspaceId, niche }: NichePillProps) {
                 }`}
               >
                 {isActive ? (
-                  <span className="absolute right-2 top-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <span className="absolute right-2 top-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#2A1A3D] text-[#D6FF3E]">
                     <Check className="h-2.5 w-2.5" strokeWidth={3} />
                   </span>
                 ) : isLoading ? (

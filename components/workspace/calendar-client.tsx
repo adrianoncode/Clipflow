@@ -236,7 +236,7 @@ export function CalendarClient({
         </div>
         <Link
           href={`/workspace/${workspaceId}/schedule`}
-          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm"
         >
           + Schedule new
         </Link>

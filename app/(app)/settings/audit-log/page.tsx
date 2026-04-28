@@ -78,7 +78,7 @@ export default async function AuditLogPage() {
             </div>
             <Link
               href={`/billing?plan=agency&feature=auditLog`}
-              className="mt-1 inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-[13px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:shadow-md"
+              className="cf-btn-3d cf-btn-3d-primary mt-1 inline-flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-[13px]"
             >
               Upgrade to {requiredPlanName}
             </Link>

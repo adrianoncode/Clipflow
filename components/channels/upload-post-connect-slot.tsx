@@ -93,7 +93,7 @@ export function UploadPostConnectSlot({
             <button
               type="button"
               onClick={() => setAdding(true)}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 text-[13px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:shadow-md"
+              className="cf-btn-3d cf-btn-3d-primary inline-flex h-10 items-center justify-center gap-1.5 rounded-lg px-3.5 text-[13px]"
             >
               <Plus className="h-3.5 w-3.5" />
               Connect Upload-Post

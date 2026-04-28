@@ -110,8 +110,8 @@ function SaveBtn({ floating = false }: { floating?: boolean }) {
       disabled={pending}
       className={
         floating
-          ? 'inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-[12px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:shadow-md disabled:opacity-60 disabled:translate-y-0'
-          : 'inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3 text-[12px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:shadow-md disabled:opacity-60 disabled:translate-y-0'
+          ? 'cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[12px] disabled:opacity-60'
+          : 'cf-btn-3d cf-btn-3d-primary inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-[12px] disabled:opacity-60'
       }
     >
       {pending ? (

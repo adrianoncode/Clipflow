@@ -206,7 +206,7 @@ export default async function AnalyticsPage() {
           </p>
           <Link
             href={`/workspace/${currentWorkspace.id}/content/new`}
-            className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:-translate-y-px hover:shadow-md"
+            className="cf-btn-3d cf-btn-3d-primary mt-5 inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm"
           >
             Add your first video
           </Link>

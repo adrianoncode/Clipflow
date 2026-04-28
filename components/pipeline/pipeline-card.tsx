@@ -105,7 +105,7 @@ function SubmitButton({
       disabled={pending}
       className={
         isNext
-          ? 'flex w-full items-center justify-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1.5 text-[11px] font-semibold text-primary transition-all hover:bg-primary hover:text-primary-foreground hover:shadow-sm disabled:opacity-50'
+          ? 'flex w-full items-center justify-center gap-1 rounded-lg bg-[#2A1A3D]/10 px-2.5 py-1.5 text-[11px] font-semibold text-[#2A1A3D] transition-all hover:bg-[#2A1A3D] hover:text-[#D6FF3E] hover:shadow-sm disabled:opacity-50'
           : 'flex items-center justify-center rounded-lg border border-border/60 px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition-all hover:border-border hover:text-foreground disabled:opacity-50'
       }
       aria-label={label}
@@ -162,7 +162,7 @@ export function PipelineCard({
             aria-label={selected ? 'Deselect' : 'Select'}
             className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-all ${
               selected
-                ? 'border-primary bg-primary text-primary-foreground'
+                ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
                 : 'border-border/70 bg-background opacity-60 hover:border-primary/40 hover:opacity-100 group-hover:opacity-100'
             }`}
           >
@@ -240,7 +240,7 @@ export function PipelineCard({
           />
           <Link
             href={`/workspace/${workspaceId}/content/${contentId}/outputs#video-studio`}
-            className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-primary/10 px-2 py-1.5 text-[10px] font-semibold text-primary transition-all hover:bg-primary hover:text-primary-foreground"
+            className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-[#2A1A3D]/10 px-2 py-1.5 text-[10px] font-semibold text-[#2A1A3D] transition-all hover:bg-[#2A1A3D] hover:text-[#D6FF3E]"
           >
             <Clapperboard className="h-3 w-3" />
             Render MP4

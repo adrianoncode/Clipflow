@@ -287,7 +287,7 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
                   </p>
                   <Link
                     href={`/billing?plan=agency&feature=clientReviewLink`}
-                    className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-sm"
+                    className="cf-btn-3d cf-btn-3d-primary mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs"
                   >
                     <Sparkles className="h-3 w-3" />
                     Upgrade to unlock

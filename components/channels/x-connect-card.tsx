@@ -103,7 +103,7 @@ export function XConnectCard({ workspaceId, isOwner, connected }: XConnectCardPr
           <button
             type="button"
             onClick={() => setExpanded(true)}
-            className="shrink-0 self-center rounded-lg bg-primary px-3 py-1.5 text-[12px] font-semibold text-primary-foreground transition-all hover:-translate-y-px hover:shadow-sm"
+            className="cf-btn-3d cf-btn-3d-primary shrink-0 self-center rounded-lg px-3 py-1.5 text-[12px]"
           >
             Set up
           </button>
@@ -279,7 +279,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[12px] font-semibold text-primary-foreground transition-all hover:-translate-y-px hover:shadow-sm disabled:opacity-60 disabled:translate-y-0"
+      className="cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] disabled:opacity-60"
     >
       {pending ? (
         <>

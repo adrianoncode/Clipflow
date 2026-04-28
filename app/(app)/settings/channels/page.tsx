@@ -355,7 +355,7 @@ function ChannelCard({
           {p.provider === 'composio' && isOwner && !isConnected ? (
             <Link
               href={`/api/integrations/connect?app=${p.id}&scope=channel&workspace_id=${workspaceId}`}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[12px] font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-px hover:shadow-md"
+              className="cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px]"
             >
               Connect
               <ArrowRight className="h-3 w-3" />
