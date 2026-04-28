@@ -70,21 +70,7 @@ export function HighlightsList({
   ).length
 
   if (items.length === 0) {
-    return (
-      <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border/60 bg-muted/[0.06] py-16 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/[0.08] text-primary">
-          <Wand2 className="h-6 w-6" aria-hidden />
-        </div>
-        <div className="max-w-md space-y-2 px-4">
-          <p className="text-lg font-bold">No viral moments yet</p>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Click <span className="font-semibold">Find viral moments</span> and Clipflow will
-            scan the transcript for 20–60s segments with hooks, emotional peaks, and
-            quotable one-liners.
-          </p>
-        </div>
-      </div>
-    )
+    return <HighlightsEmptyPreview />
   }
 
   return (
@@ -516,4 +502,275 @@ function formatSeconds(s: number): string {
   const m = Math.floor(s / 60)
   const sec = Math.floor(s % 60)
   return `${m}:${sec.toString().padStart(2, '0')}`
+}
+
+/**
+ * Empty state for the Highlights tab. Hero copy on the left, two
+ * ghost clip cards on the right showing what AI-found moments look
+ * like (timestamp range, score chip, transcript preview, render
+ * button). The first card pulses subtly to suggest "this is what
+ * lands here when you click Find viral moments".
+ */
+function HighlightsEmptyPreview() {
+  const ghosts = [
+    {
+      range: '02:14 → 02:48',
+      score: 92,
+      title: '"The 3 metrics that actually matter for retention"',
+      transcript:
+        'So the move that doubled our retention wasn\'t fancy onboarding — it was figuring out which three numbers …',
+      pulse: true,
+    },
+    {
+      range: '08:51 → 09:22',
+      score: 78,
+      title: 'Pricing change story — the 2× moment',
+      transcript:
+        'We were terrified to raise prices. The day we did, conversion went up 19% — turns out the cheaper plan was actually …',
+      pulse: false,
+    },
+  ]
+  return (
+    <div className="space-y-5">
+      <div
+        className="relative overflow-hidden rounded-3xl border border-border/60 bg-card"
+        style={{
+          boxShadow:
+            '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(42,26,61,.04), 0 22px 44px -28px rgba(42,26,61,.22)',
+        }}
+      >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -left-16 -top-20 h-56 w-56 rounded-full"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(42,26,61,.16) 0%, rgba(42,26,61,0) 60%)',
+          }}
+        />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(214,255,62,.18) 0%, rgba(214,255,62,0) 60%)',
+          }}
+        />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-10 top-0 h-px"
+          style={{
+            background:
+              'linear-gradient(to right, transparent, rgba(42,26,61,.32), transparent)',
+          }}
+        />
+        <div className="relative grid gap-8 p-6 sm:p-9 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-10">
+          <div className="flex flex-col">
+            <span
+              className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white"
+              style={{
+                background:
+                  'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
+                boxShadow:
+                  '0 1px 0 rgba(255,255,255,.18) inset, 0 10px 24px -12px rgba(42,26,61,.55)',
+              }}
+              aria-hidden
+            >
+              <span
+                className="pointer-events-none absolute inset-1 rounded-[14px]"
+                style={{
+                  background:
+                    'linear-gradient(180deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 45%)',
+                }}
+              />
+              <Wand2 className="relative h-5 w-5" strokeWidth={1.7} />
+            </span>
+            <h2
+              className="mt-5 text-[26px] leading-[1.06] tracking-tight sm:text-[30px]"
+              style={{
+                fontFamily: 'var(--font-instrument-serif), serif',
+                letterSpacing: '-.015em',
+                color: '#2A1A3D',
+              }}
+            >
+              The best 30 seconds of your video, found.
+            </h2>
+            <p className="mt-2.5 max-w-[460px] text-[14px] leading-relaxed text-muted-foreground">
+              Click <b style={{ color: '#2A1A3D' }}>Find viral moments</b> and Clipflow scans the
+              transcript for hooks, emotional peaks, and quotable one-liners. Three to eight
+              clip-ready segments, scored top-down.
+            </p>
+            <ol className="mt-6 space-y-3">
+              {[
+                {
+                  t: 'AI scores the transcript',
+                  b: 'Hook strength · pacing · sentiment · quotability — every 20–60s window gets a score.',
+                },
+                {
+                  t: 'You preview, edit, render',
+                  b: 'Trim the in/out, tweak the caption, pick a subtitle style. One click renders the MP4.',
+                },
+              ].map((s, i) => (
+                <li key={i} className="flex gap-3">
+                  <span
+                    className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10.5px] font-bold text-white"
+                    style={{
+                      background:
+                        'linear-gradient(140deg, #2A1A3D 0%, #120920 100%)',
+                      fontFamily:
+                        'var(--font-inter-tight), var(--font-inter), sans-serif',
+                      boxShadow:
+                        '0 1px 0 rgba(255,255,255,.18) inset, 0 4px 10px -4px rgba(42,26,61,.55)',
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <p
+                      className="text-[13.5px] font-bold tracking-tight text-foreground"
+                      style={{
+                        fontFamily:
+                          'var(--font-inter-tight), var(--font-inter), sans-serif',
+                      }}
+                    >
+                      {s.t}
+                    </p>
+                    <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted-foreground">
+                      {s.b}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          {/* Ghost clip cards on the right */}
+          <aside className="cf-highlights-preview relative space-y-3" aria-hidden>
+            <p
+              className="mb-1 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em]"
+              style={{
+                color: '#5f5850',
+                fontFamily: 'var(--font-jetbrains-mono), monospace',
+              }}
+            >
+              <span
+                className="inline-block h-1.5 w-1.5 rounded-full"
+                style={{
+                  background: '#D6FF3E',
+                  boxShadow: '0 0 8px rgba(214,255,62,.7)',
+                }}
+              />
+              What AI returns
+            </p>
+            {ghosts.map((g, i) => (
+              <div
+                key={i}
+                className={`relative overflow-hidden rounded-2xl border border-border/60 bg-card ${
+                  g.pulse ? 'cf-highlights-preview-pulse' : ''
+                }`}
+                style={{
+                  opacity: 1 - i * 0.15,
+                  boxShadow:
+                    '0 1px 0 rgba(255,255,255,.6) inset, 0 1px 2px rgba(42,26,61,.04)',
+                }}
+              >
+                {/* Faux thumbnail strip with timecode rail */}
+                <div
+                  className="relative flex h-16 items-end overflow-hidden"
+                  style={{
+                    background:
+                      'linear-gradient(135deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
+                  }}
+                >
+                  {/* Audio waveform mock */}
+                  <svg
+                    className="absolute inset-0"
+                    viewBox="0 0 200 64"
+                    preserveAspectRatio="none"
+                    width="100%"
+                    height="100%"
+                  >
+                    {Array.from({ length: 40 }).map((_, j) => {
+                      const h = 6 + Math.abs(Math.sin(j * 0.7 + i)) * 36
+                      return (
+                        <rect
+                          key={j}
+                          x={j * 5}
+                          y={32 - h / 2}
+                          width="3"
+                          height={h}
+                          rx="1"
+                          fill="#D6FF3E"
+                          opacity="0.55"
+                        />
+                      )
+                    })}
+                  </svg>
+                  <div className="relative z-10 flex w-full items-center justify-between px-3 pb-2">
+                    <span
+                      className="lv2-tabular rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-bold backdrop-blur-sm"
+                      style={{
+                        color: '#D6FF3E',
+                        fontFamily:
+                          'var(--font-jetbrains-mono), monospace',
+                      }}
+                    >
+                      {g.range}
+                    </span>
+                    <span
+                      className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                      style={{
+                        background: '#D6FF3E',
+                        color: '#1a2000',
+                      }}
+                    >
+                      {g.score}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-2 p-3">
+                  <p
+                    className="line-clamp-2 text-[13px] font-semibold leading-snug"
+                    style={{ color: '#181511' }}
+                  >
+                    {g.title}
+                  </p>
+                  <p
+                    className="line-clamp-2 text-[11px] leading-relaxed"
+                    style={{ color: '#5f5850' }}
+                  >
+                    {g.transcript}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </aside>
+        </div>
+      </div>
+      <style jsx>{`
+        @keyframes cf-highlights-pulse {
+          0%,
+          100% {
+            box-shadow:
+              0 1px 0 rgba(255, 255, 255, 0.6) inset,
+              0 1px 2px rgba(42, 26, 61, 0.04);
+          }
+          50% {
+            box-shadow:
+              0 1px 0 rgba(255, 255, 255, 0.6) inset,
+              0 0 0 1px rgba(214, 255, 62, 0.4),
+              0 0 16px -2px rgba(214, 255, 62, 0.4);
+          }
+        }
+        .cf-highlights-preview-pulse {
+          animation: cf-highlights-pulse 3s
+            cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .cf-highlights-preview-pulse {
+            animation: none;
+          }
+        }
+      `}</style>
+    </div>
+  )
 }
