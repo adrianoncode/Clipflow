@@ -12,7 +12,30 @@ import {
 import type { SubtitleCue } from '@/lib/subtitles/generate-subtitles'
 import type { WordTimestamp } from '@/lib/ai/transcription/transcribe-with-timestamps'
 
-type SubtitleStyle = 'classic' | 'bold-yellow' | 'minimal'
+type SubtitleStyle =
+  | 'classic'
+  | 'bold-yellow'
+  | 'minimal'
+  // Animated, word-level styles. They require wordTimestamps to look
+  // right; if timings are missing we fall back to a per-cue render.
+  | 'karaoke'
+  | 'tiktok-bold'
+  | 'beasty'
+
+const ANIMATED_STYLES: ReadonlySet<SubtitleStyle> = new Set([
+  'karaoke',
+  'tiktok-bold',
+  'beasty',
+])
+
+const STYLE_LABEL: Record<SubtitleStyle, string> = {
+  classic: 'Classic',
+  'bold-yellow': 'Bold Yellow',
+  minimal: 'Minimal',
+  karaoke: 'Karaoke',
+  'tiktok-bold': 'TikTok Bold',
+  beasty: 'Beasty',
+}
 
 interface SubtitlesClientProps {
   workspaceId: string
@@ -40,7 +63,14 @@ function downloadFile(content: string, filename: string, mimeType = 'text/plain'
   URL.revokeObjectURL(url)
 }
 
-const STYLE_CLASSES: Record<SubtitleStyle, string> = {
+/**
+ * Static-style class maps. Animated styles use their own renderers
+ * (see AnimatedSubtitleOverlay below) so they don't appear here —
+ * the static lookup is keyed by a narrowed type.
+ */
+type StaticSubtitleStyle = Exclude<SubtitleStyle, 'karaoke' | 'tiktok-bold' | 'beasty'>
+
+const STYLE_CLASSES: Record<StaticSubtitleStyle, string> = {
   'classic':
     'text-white text-[1.1rem] font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]',
   'bold-yellow':
@@ -49,7 +79,7 @@ const STYLE_CLASSES: Record<SubtitleStyle, string> = {
     'text-white/90 text-sm font-normal',
 }
 
-const STYLE_BG: Record<SubtitleStyle, string> = {
+const STYLE_BG: Record<StaticSubtitleStyle, string> = {
   'classic': 'bg-black/60 px-3 py-1 rounded',
   'bold-yellow': 'bg-black/70 px-3 py-1.5 rounded',
   'minimal': 'bg-black/30 px-2 py-0.5 rounded',
@@ -62,13 +92,14 @@ export function SubtitlesClient({
   initialCues,
   initialSrt,
   initialVtt,
-  wordTimestamps: _wordTimestamps,
+  wordTimestamps,
 }: SubtitlesClientProps) {
   const [cues, setCues] = useState<SubtitleCue[] | null>(initialCues)
   const [srt, setSrt] = useState<string | null>(initialSrt)
   const [vtt, setVtt] = useState<string | null>(initialVtt)
   const [error, setError] = useState<string | null>(null)
   const [currentCue, setCurrentCue] = useState<SubtitleCue | null>(null)
+  const [currentTime, setCurrentTime] = useState(0)
   const [subtitleStyle, setSubtitleStyle] = useState<SubtitleStyle>('classic')
   const [showCueList, setShowCueList] = useState(false)
   const [isEstimated, setIsEstimated] = useState(false)
@@ -76,15 +107,23 @@ export function SubtitlesClient({
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPending, startTransition] = useTransition()
 
-  // Sync subtitle overlay with video playback
+  const hasWordTimings = !!wordTimestamps && wordTimestamps.length > 0
+  const isAnimated = ANIMATED_STYLES.has(subtitleStyle) && hasWordTimings
+
+  // Sync subtitle overlay with video playback. We track currentTime
+  // separately because the animated word-level renderers need a fast
+  // ticking time, not just cue boundaries.
   useEffect(() => {
     const video = videoRef.current
-    if (!video || !cues) return
+    if (!video) return
 
     function onTimeUpdate() {
       const t = video!.currentTime
-      const active = cues!.find((c) => t >= c.start && t <= c.end) ?? null
-      setCurrentCue(active)
+      setCurrentTime(t)
+      if (cues) {
+        const active = cues.find((c) => t >= c.start && t <= c.end) ?? null
+        setCurrentCue(active)
+      }
     }
 
     video.addEventListener('timeupdate', onTimeUpdate)
@@ -165,22 +204,61 @@ export function SubtitlesClient({
             <CardDescription>Subtitles are overlaid on the video in real time.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Style selector */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground">Style:</span>
-              {(['classic', 'bold-yellow', 'minimal'] as const).map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSubtitleStyle(s)}
-                  className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
-                    subtitleStyle === s
-                      ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
-                      : 'hover:bg-accent'
-                  }`}
-                >
-                  {s === 'classic' ? 'Classic' : s === 'bold-yellow' ? 'Bold Yellow' : 'Minimal'}
-                </button>
-              ))}
+            {/* Style selector — split into static and animated rows
+                because they're conceptually different: static styles
+                render the full cue text, animated styles light up
+                word-by-word using transcription word timings.
+                Animated row is disabled until word timings exist. */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="w-14 shrink-0 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                  Static
+                </span>
+                {(['classic', 'bold-yellow', 'minimal'] as const).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setSubtitleStyle(s)}
+                    className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
+                      subtitleStyle === s
+                        ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
+                        : 'hover:bg-accent'
+                    }`}
+                  >
+                    {STYLE_LABEL[s]}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="w-14 shrink-0 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                  Animated
+                </span>
+                {(['karaoke', 'tiktok-bold', 'beasty'] as const).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setSubtitleStyle(s)}
+                    disabled={!hasWordTimings}
+                    title={
+                      hasWordTimings
+                        ? `${STYLE_LABEL[s]} — word-by-word`
+                        : 'Word-level timings not generated yet for this video.'
+                    }
+                    className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
+                      subtitleStyle === s
+                        ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
+                        : hasWordTimings
+                          ? 'hover:bg-accent'
+                          : 'cursor-not-allowed opacity-40'
+                    }`}
+                  >
+                    {STYLE_LABEL[s]}
+                  </button>
+                ))}
+                {!hasWordTimings ? (
+                  <span className="ml-1 text-[10px] text-muted-foreground/70">
+                    Needs word-level timings
+                  </span>
+                ) : null}
+              </div>
             </div>
 
             {/* Video + overlay container */}
@@ -193,18 +271,33 @@ export function SubtitlesClient({
                 className="w-full"
                 preload="metadata"
               />
-              {/* Subtitle overlay */}
-              {currentCue && (
+              {/* Subtitle overlay — branches on animated vs static.
+                  Static styles render the active cue's full text;
+                  animated styles render word-by-word using the
+                  transcription word timings. */}
+              {isAnimated && wordTimestamps ? (
+                <AnimatedSubtitleOverlay
+                  style={subtitleStyle as 'karaoke' | 'tiktok-bold' | 'beasty'}
+                  words={wordTimestamps}
+                  time={currentTime}
+                />
+              ) : currentCue && !ANIMATED_STYLES.has(subtitleStyle) ? (
                 <div
                   className="pointer-events-none absolute bottom-[12%] left-0 right-0 flex justify-center px-4"
                   aria-live="polite"
                   aria-atomic="true"
                 >
-                  <span className={`${STYLE_BG[subtitleStyle]} ${STYLE_CLASSES[subtitleStyle]} text-center`}>
+                  <span
+                    className={`${
+                      STYLE_BG[subtitleStyle as StaticSubtitleStyle]
+                    } ${
+                      STYLE_CLASSES[subtitleStyle as StaticSubtitleStyle]
+                    } text-center`}
+                  >
                     {currentCue.text}
                   </span>
                 </div>
-              )}
+              ) : null}
             </div>
           </CardContent>
         </Card>
@@ -282,6 +375,195 @@ export function SubtitlesClient({
           )}
         </Card>
       ) : null}
+    </div>
+  )
+}
+
+/* ─── Animated subtitle overlay ──────────────────────────────────────
+   Three word-level styles, each rendered live in the browser using the
+   transcription word timings. We pick a small "phrase window" around
+   the current word so users see context, not just one word floating —
+   ~6 words back, ~3 words ahead — then highlight the active word per
+   style. The window scrolls with playback. Pure presentation, no
+   side-effects beyond the time prop. */
+function AnimatedSubtitleOverlay({
+  style,
+  words,
+  time,
+}: {
+  style: 'karaoke' | 'tiktok-bold' | 'beasty'
+  words: WordTimestamp[]
+  time: number
+}) {
+  // Find the currently-spoken word (or the next one if we're between).
+  let activeIdx = -1
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i]!
+    if (time >= w.start && time <= w.end + 0.05) {
+      activeIdx = i
+      break
+    }
+    if (time < w.start) {
+      activeIdx = i
+      break
+    }
+  }
+  if (activeIdx < 0) return null
+
+  // Phrase window — show a few words of context around the active one.
+  const back = style === 'tiktok-bold' ? 1 : 5
+  const ahead = style === 'tiktok-bold' ? 0 : 3
+  const start = Math.max(0, activeIdx - back)
+  const end = Math.min(words.length, activeIdx + ahead + 1)
+  const window = words.slice(start, end)
+  const localActive = activeIdx - start
+
+  if (style === 'tiktok-bold') {
+    // One-or-two-word burst — huge, all-caps, centered. Scales in
+    // when the word becomes active; lime drop-shadow under the
+    // active word so it pops on busy backgrounds.
+    const w = words[activeIdx]!
+    return (
+      <div
+        className="pointer-events-none absolute bottom-[18%] left-0 right-0 flex justify-center px-4"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <span
+          key={activeIdx}
+          className="cf-anim-tiktok inline-block text-center"
+          style={{
+            fontFamily:
+              'var(--font-inter-tight), var(--font-inter), sans-serif',
+            color: '#FFFFFF',
+            fontWeight: 900,
+            fontSize: 'clamp(22px, 4.2vw, 44px)',
+            letterSpacing: '-0.01em',
+            textTransform: 'uppercase',
+            textShadow:
+              '0 0 14px rgba(214,255,62,.55), -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000',
+          }}
+        >
+          {w.word.trim()}
+        </span>
+        <style jsx>{`
+          @keyframes cf-anim-tiktok-pop {
+            from {
+              transform: translateY(8px) scale(0.85);
+              opacity: 0;
+            }
+            to {
+              transform: translateY(0) scale(1);
+              opacity: 1;
+            }
+          }
+          .cf-anim-tiktok {
+            animation: cf-anim-tiktok-pop 0.18s
+              cubic-bezier(0.22, 0.61, 0.36, 1) both;
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .cf-anim-tiktok {
+              animation: none;
+            }
+          }
+        `}</style>
+      </div>
+    )
+  }
+
+  if (style === 'beasty') {
+    // Word colors rotate — fixed palette so the same word always
+    // shows the same color across replays. Active word scales up
+    // and gains a stronger shadow for emphasis.
+    const palette = ['#D6FF3E', '#FFFFFF', '#FF6B6B', '#7DDBFF', '#FFE66D']
+    return (
+      <div
+        className="pointer-events-none absolute bottom-[14%] left-0 right-0 flex justify-center px-4"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <span
+          className="inline-flex flex-wrap items-end justify-center gap-1.5 text-center"
+          style={{
+            fontFamily:
+              'var(--font-inter-tight), var(--font-inter), sans-serif',
+            fontWeight: 900,
+            fontSize: 'clamp(18px, 3.4vw, 32px)',
+            textTransform: 'uppercase',
+            letterSpacing: '-0.005em',
+          }}
+        >
+          {window.map((w, i) => {
+            const isActive = i === localActive
+            const color = palette[(start + i) % palette.length]
+            return (
+              <span
+                key={start + i}
+                className="cf-anim-beasty inline-block transition-transform"
+                style={{
+                  color,
+                  transform: isActive ? 'scale(1.18)' : 'scale(1)',
+                  textShadow: isActive
+                    ? '0 0 16px rgba(214,255,62,.45), -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000'
+                    : '-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000',
+                  opacity: isActive ? 1 : 0.85,
+                }}
+              >
+                {w.word.trim()}
+              </span>
+            )
+          })}
+        </span>
+      </div>
+    )
+  }
+
+  // Karaoke — classic block of words, active one gets a lime fill.
+  // Words already spoken stay white; future words muted. Reads as
+  // "ball bouncing along" without a literal ball.
+  return (
+    <div
+      className="pointer-events-none absolute bottom-[12%] left-0 right-0 flex justify-center px-4"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <span
+        className="inline-flex flex-wrap items-baseline justify-center gap-1 rounded-lg px-3 py-1.5 text-center"
+        style={{
+          background: 'rgba(0,0,0,.65)',
+          backdropFilter: 'blur(2px)',
+          fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
+          fontWeight: 800,
+          fontSize: 'clamp(15px, 2.8vw, 26px)',
+          letterSpacing: '-0.005em',
+        }}
+      >
+        {window.map((w, i) => {
+          const isActive = i === localActive
+          const isPast = i < localActive
+          const color = isActive
+            ? '#1a2000'
+            : isPast
+              ? '#FFFFFF'
+              : 'rgba(255,255,255,.55)'
+          const background = isActive ? '#D6FF3E' : 'transparent'
+          return (
+            <span
+              key={start + i}
+              className="rounded px-1 transition-colors duration-100"
+              style={{
+                color,
+                background,
+                boxShadow: isActive
+                  ? '0 0 12px rgba(214,255,62,.45)'
+                  : 'none',
+              }}
+            >
+              {w.word.trim()}
+            </span>
+          )
+        })}
+      </span>
     </div>
   )
 }
