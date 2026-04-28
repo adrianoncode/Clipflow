@@ -5,8 +5,12 @@ import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
+import { Users2 } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { PageHeading } from '@/components/workspace/page-heading'
+import { ClientsEmptyPreview } from '@/components/workspaces/clients-empty-preview'
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
@@ -50,35 +54,16 @@ export default async function ClientsPage() {
       </div>
 
       {clientWorkspaces.length === 0 ? (
-        <div className="flex flex-col items-center gap-5 rounded-2xl border border-dashed border-border/60 bg-muted/[0.06] py-16 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/[0.06] text-primary/30">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-7 w-7"
-              aria-hidden
-            >
-              <path d="M18 21a8 8 0 0 0-16 0" />
-              <circle cx="10" cy="8" r="5" />
-              <path d="M22 20v-2a4 4 0 0 0-3-3.87" />
-              <path d="M17 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-          </div>
-          <div className="max-w-md space-y-2 px-4">
-            <p className="text-lg font-bold text-foreground">No client workspaces yet</p>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              Create a dedicated workspace per client — each one gets its own
-              brand kit, content library, review links, and team seats.
-            </p>
-          </div>
-          <Button asChild>
-            <Link href="/workspace/new?as=client">+ Create client workspace</Link>
-          </Button>
-        </div>
+        <EmptyState
+          icon={Users2}
+          title="One workspace per client."
+          description="Create a dedicated workspace for every brand you run — each one ships with its own brand kit, content library, review links, and team seats. Switch between them from the workspace picker in the top bar."
+          actionLabel="Create client workspace"
+          actionHref="/workspace/new?as=client"
+          secondaryLabel="See the playbook →"
+          secondaryHref="/playbook/your-first-24-hours-with-clipflow"
+          preview={<ClientsEmptyPreview />}
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {clientWorkspaces.map((w) => (
