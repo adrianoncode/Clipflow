@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState, useTransition, useCallback } from 'react'
 import { Eye, Heart, MessageCircle, Share2 } from 'lucide-react'
 
+import { AutoDistributeButton } from '@/components/scheduler/auto-distribute-button'
 import {
   PLATFORM_LABELS,
   PLATFORM_SOLID_COLORS as PLATFORM_COLORS,
@@ -271,6 +272,20 @@ export function CalendarClient({
                 </span>
               )}
             </h2>
+
+            {/* One-click distribute — picks platform-default best times
+                (Tuesday 8:30am for LinkedIn, Thursday 6pm for Shorts,
+                etc.) and inserts scheduled_posts rows for each draft.
+                Faster than dragging 8 cards onto the grid one at a
+                time, and respects per-platform cadence caps. */}
+            {unscheduledOutputs.length > 0 && (
+              <div className="mb-3">
+                <AutoDistributeButton
+                  workspaceId={workspaceId}
+                  count={unscheduledOutputs.length}
+                />
+              </div>
+            )}
 
             {unscheduledOutputs.length === 0 ? (
               <p className="text-xs text-muted-foreground">

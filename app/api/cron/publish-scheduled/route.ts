@@ -39,13 +39,20 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient()
 
-  // Find posts due for publishing (scheduled_for <= now, status = 'scheduled')
+  // Find posts due for publishing. A post is due when:
+  //   - status = 'scheduled'
+  //   - scheduled_for <= now            (its real time has come, or)
+  //   - next_retry_at <= now            (backoff window elapsed)
+  // Slice 13 retry rows are status=scheduled with retry_count>0 and a
+  // future next_retry_at, so the same cron picks them up automatically
+  // once the backoff is up.
   const now = new Date().toISOString()
   const { data: duePosts } = await supabase
     .from('scheduled_posts')
-    .select('id, platform, output_id, workspace_id')
+    .select('id, platform, output_id, workspace_id, retry_count')
     .eq('status', 'scheduled')
     .lte('scheduled_for', now)
+    .or(`next_retry_at.is.null,next_retry_at.lte.${now}`)
     .limit(10)
 
   if (!duePosts?.length) {
@@ -193,10 +200,36 @@ export async function POST(req: NextRequest) {
 
       results.push({ id: post.id, platform: post.platform, ok: true })
     } else {
-      await supabase
-        .from('scheduled_posts')
-        .update({ status: 'failed', error_message: publishError ?? 'Unknown error' })
-        .eq('id', post.id)
+      // Slice 13 — exponential backoff. Below MAX_RETRIES we stay in
+      // status='scheduled' but stamp next_retry_at so this same cron
+      // picks the row up again after the window. At/above the cap, the
+      // post terminally fails and the user sees the error in the queue.
+      const nextCount = (post.retry_count ?? 0) + 1
+      const MAX_RETRIES = 3
+      if (nextCount > MAX_RETRIES) {
+        await supabase
+          .from('scheduled_posts')
+          .update({
+            status: 'failed',
+            error_message: publishError ?? 'Unknown error',
+            retry_count: nextCount,
+            next_retry_at: null,
+          })
+          .eq('id', post.id)
+      } else {
+        // 2^n minutes: 2 / 4 / 8. Capped at the schema's smallint.
+        const minutes = Math.pow(2, nextCount)
+        const nextAt = new Date(Date.now() + minutes * 60 * 1000).toISOString()
+        await supabase
+          .from('scheduled_posts')
+          .update({
+            status: 'scheduled',
+            error_message: publishError ?? 'Unknown error',
+            retry_count: nextCount,
+            next_retry_at: nextAt,
+          })
+          .eq('id', post.id)
+      }
 
       results.push({ id: post.id, platform: post.platform, ok: false, error: publishError })
     }

@@ -12,10 +12,14 @@ import {
   type PinterestBoard,
 } from '@/lib/publish/composio-publish'
 import { generatePlan } from '@/lib/planner/generate-plan'
-import type {
-  ApprovedDraftPreview,
-  PlanSlot,
+import {
+  attachDraftsToSlots,
+  pickCandidateSlots,
+  type ApprovedDraftPreview,
+  type PlanSlot,
 } from '@/lib/planner/build-plan'
+import { OUTPUT_PLATFORMS, type OutputPlatform } from '@/lib/platforms'
+import { getUnscheduledOutputs } from '@/lib/scheduler/get-unscheduled-outputs'
 
 // ---------------------------------------------------------------------------
 // fetchPinterestBoardsAction — read-only helper for the schedule UI.
@@ -316,7 +320,107 @@ export async function quickScheduleAction(
   return { ok: true, message: `Scheduled for ${new Date(scheduledFor).toLocaleString()}` }
 }
 
+// ---------------------------------------------------------------------------
+// autoDistributeApprovedAction — picks best-time slots for each unscheduled
+// approved draft this week and inserts the scheduled_posts rows. Uses the
+// same `pickCandidateSlots` + `attachDraftsToSlots` engine as the AI Plan
+// tab, minus the LLM polish — purely deterministic, fast, and free.
+// ---------------------------------------------------------------------------
 
+export interface AutoDistributeState
+  extends Record<string, unknown> {
+  ok?: boolean
+  error?: string
+  /** Number of drafts that landed in a slot. Smaller than the input
+   *  count when no platform-best-time matched a draft's platform. */
+  scheduled?: number
+}
+
+const autoDistributeSchema = z.object({
+  workspaceId: z.string().uuid(),
+})
+
+export async function autoDistributeApprovedAction(
+  _prev: AutoDistributeState,
+  formData: FormData,
+): Promise<AutoDistributeState> {
+  const parsed = autoDistributeSchema.safeParse({
+    workspaceId: formData.get('workspace_id'),
+  })
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.errors[0]?.message ?? 'Invalid input.' }
+  }
+
+  const { workspaceId } = parsed.data
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const member = await requireWorkspaceMember(workspaceId)
+  if (!member.ok) return { ok: false, error: 'Not a workspace member.' }
+
+  const unscheduled = await getUnscheduledOutputs(workspaceId)
+  // Drop anything whose platform isn't in our planner table — the
+  // unscheduled list can include exotic kinds (e.g. legacy data) that
+  // wouldn't get a slot anyway.
+  const plannable = unscheduled.filter((o) =>
+    (OUTPUT_PLATFORMS as readonly string[]).includes(o.platform),
+  )
+  if (plannable.length === 0) {
+    return { ok: false, error: 'No approved drafts waiting to schedule.' }
+  }
+
+  // Build the planner's view of the drafts. We don't have hooks/tags
+  // here, so seed minimal placeholders — pickCandidateSlots only uses
+  // platform + count, not body, so the rest doesn't matter for the
+  // deterministic pass.
+  const draftPreviews: ApprovedDraftPreview[] = plannable.map((o) => ({
+    id: o.id,
+    platform: o.platform as OutputPlatform,
+    hook: o.contentTitle ?? '',
+    caption_preview: o.body?.slice(0, 200) ?? '',
+    tags: [],
+    created_at: new Date().toISOString(),
+  }))
+
+  // Anchor the week to the next Monday (so "this week" doesn't try to
+  // re-schedule into yesterday's slots that already passed). If today
+  // is Monday we use today.
+  const now = new Date()
+  const weekStarting = new Date(now)
+  const dow = now.getDay() // 0=Sun, 1=Mon, ...
+  const offsetToMonday = (1 - dow + 7) % 7
+  weekStarting.setDate(now.getDate() + offsetToMonday)
+  weekStarting.setHours(0, 0, 0, 0)
+
+  const candidates = pickCandidateSlots(
+    weekStarting,
+    { niche: null, tone: null, timezone: 'UTC' },
+    draftPreviews,
+  )
+  const slots = attachDraftsToSlots(candidates, draftPreviews).filter(
+    (s) => s.draftId !== null,
+  )
+
+  if (slots.length === 0) {
+    return { ok: false, error: 'No matching slots — all platforms at cadence cap or no defaults available.' }
+  }
+
+  const supabase = await createClient()
+  const rows = slots.map((s) => ({
+    workspace_id: workspaceId,
+    output_id: s.draftId!,
+    platform: s.platform,
+    scheduled_for: new Date(`${s.date}T${s.time}:00`).toISOString(),
+    status: 'scheduled' as const,
+    created_by: user.id,
+  }))
+
+  const { error } = await supabase.from('scheduled_posts').insert(rows)
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath(`/workspace/${workspaceId}/schedule`)
+  return { ok: true, scheduled: rows.length }
+}
 
 // ---------------------------------------------------------------------------
 // generateContentPlanAction — fetches approved drafts + brand context

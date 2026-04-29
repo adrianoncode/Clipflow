@@ -15,7 +15,8 @@ import {
 
 import { EmptyState } from '@/components/ui/empty-state'
 import { PageHeader } from '@/components/ui/page-header'
-import { DraftsTabNav } from '@/components/pipeline/drafts-tab-nav'
+import { CreateStepper } from '@/components/create/create-stepper'
+import { ScheduleViewTabs } from '@/components/scheduler/schedule-view-tabs'
 import { ScheduleEmptyPreview } from '@/components/scheduler/schedule-empty-preview'
 import { PlanClient } from '@/components/scheduler/plan-client'
 import { getUser } from '@/lib/auth/get-user'
@@ -136,9 +137,14 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
   if (isPlanView) {
     return (
       <div className="flex min-h-full flex-col">
+        <div className="px-4 pt-4 sm:px-8 sm:pt-6">
+          <div className="mx-auto max-w-5xl">
+            <CreateStepper workspaceId={params.id} activeStep={6} />
+          </div>
+        </div>
         <div className="border-b border-border/60 bg-background px-4 py-3 sm:px-8">
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
-            <DraftsTabNav
+            <ScheduleViewTabs
               workspaceId={params.id}
               current="plan"
               approvedCount={unscheduledOutputs.length}
@@ -156,12 +162,18 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
     const approvedReady = unscheduledOutputs.length
     return (
       <div className="flex min-h-full flex-col">
-        {/* Unified tab strip — same Board / Calendar / Queue triplet
-            that lives on /pipeline. Calendar is just a sibling view
-            of Drafts now, not a separate destination. */}
+        <div className="px-4 pt-4 sm:px-8 sm:pt-6">
+          <div className="mx-auto max-w-5xl">
+            <CreateStepper workspaceId={params.id} activeStep={6} />
+          </div>
+        </div>
+        {/* Schedule has 3 sub-views: Calendar (drag-drop), Queue (list),
+            Plan (AI-generated week). Pipeline (= Approve, Step 5) lives
+            separately in the sidebar — the Stepper-Header above marks
+            the section transition. */}
         <div className="border-b border-border/60 bg-background px-4 py-3 sm:px-8">
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
-            <DraftsTabNav
+            <ScheduleViewTabs
               workspaceId={params.id}
               current="calendar"
               approvedCount={approvedReady}
@@ -203,6 +215,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
+      <CreateStepper workspaceId={params.id} activeStep={6} />
       <PageHeader
         category={posts.length === 0 ? 'Posts queue' : `${posts.length} post${posts.length === 1 ? '' : 's'}`}
         title="Queue."
@@ -213,7 +226,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
         }
       />
 
-      <DraftsTabNav
+      <ScheduleViewTabs
         workspaceId={params.id}
         current="queue"
         scheduledCount={posts.length}
