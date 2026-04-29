@@ -17,7 +17,7 @@ import { CreateStepper } from '@/components/create/create-stepper'
 import { SettingsHero } from '@/components/settings/settings-hero'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
-import { getContentItems } from '@/lib/content/get-content-items'
+import { getContentItems, getLatestContentId } from '@/lib/content/get-content-items'
 import { findDuplicateIds } from '@/lib/content/find-duplicates'
 
 interface WorkspaceHomePageProps {
@@ -36,10 +36,11 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
   // the layout share the same result. The items fetch doesn't depend
   // on membership — RLS hides rows for non-members anyway. AI keys come
   // along to gate the Smart-Import-Box's OpenAI warning.
-  const [workspaces, items, aiKeys] = await Promise.all([
+  const [workspaces, items, aiKeys, latestContentId] = await Promise.all([
     getWorkspaces(),
     getContentItems(params.id, { limit: PAGE_SIZE, offset }),
     getAiKeys(params.id),
+    getLatestContentId(params.id),
   ])
 
   const workspace = workspaces.find((w) => w.id === params.id)
@@ -65,7 +66,11 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-7 p-4 sm:p-8">
-      <CreateStepper workspaceId={params.id} activeStep={1} />
+      <CreateStepper
+        workspaceId={params.id}
+        activeStep={1}
+        contentId={latestContentId ?? undefined}
+      />
       <RecentImportsStrip workspaceId={params.id} items={items} />
       {canCreate ? (
         <SmartImportBox

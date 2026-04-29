@@ -15,8 +15,11 @@ import { usePathname } from 'next/navigation'
  * Mobile: nur Nummern, Labels ab sm: sichtbar.
  *
  * Steps 2-4 sind per-Video — sie brauchen einen contentId um deep-linkable
- * zu sein. Aus Library/Pipeline/Schedule (kein contentId) bleiben sie als
- * ghost-Pills sichtbar (read-only, zeigen den Flow), aber nicht klickbar.
+ * zu sein. Auf einer Per-Video-Page = der aktuelle contentId. Auf
+ * Library/Pipeline/Schedule = der zuletzt importierte contentId (vom
+ * Server-Page mitgeliefert) damit der User direkt zu Step 2/3/4 springen
+ * kann ohne den Flow von vorn zu durchlaufen. Wenn das Workspace noch
+ * keine Recordings hat, bleiben Steps 2-4 als ghost-Pills (read-only).
  */
 
 const STEPS = [

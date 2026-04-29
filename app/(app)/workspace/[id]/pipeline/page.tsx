@@ -14,6 +14,7 @@ import {
   type PipelineColumn,
 } from '@/components/pipeline/pipeline-board'
 import { getUser } from '@/lib/auth/get-user'
+import { getLatestContentId } from '@/lib/content/get-content-items'
 import { getOutputLatestVersions } from '@/lib/outputs/get-output-versions'
 import { createClient } from '@/lib/supabase/server'
 import { PLATFORM_LABELS, PLATFORM_SOFT_COLORS as PLATFORM_BADGE_COLORS } from '@/lib/platforms'
@@ -86,7 +87,7 @@ export default async function PipelinePage({ params, searchParams }: PipelinePag
   // off together and validate membership when results return. If the
   // user isn't a member, RLS hides the outputs rows anyway — membership
   // check is defence in depth plus the 404 affordance.
-  const [membershipResult, outputsResult] = await Promise.all([
+  const [membershipResult, outputsResult, latestContentId] = await Promise.all([
     supabase
       .from('workspace_members')
       .select('role')
@@ -101,6 +102,7 @@ export default async function PipelinePage({ params, searchParams }: PipelinePag
       .eq('workspace_id', workspaceId)
       .order('created_at', { ascending: false })
       .limit(200),
+    getLatestContentId(workspaceId),
   ])
 
   if (!membershipResult.data) notFound()
@@ -179,7 +181,11 @@ export default async function PipelinePage({ params, searchParams }: PipelinePag
 
   return (
     <div className="mx-auto w-full max-w-[1400px] space-y-6 p-4 sm:p-8">
-      <CreateStepper workspaceId={workspaceId} activeStep={5} />
+      <CreateStepper
+        workspaceId={workspaceId}
+        activeStep={5}
+        contentId={latestContentId ?? undefined}
+      />
       <PageHeader
         category={`${totalCount === 0 ? 'Drafts pipeline' : `${totalCount} draft${totalCount === 1 ? '' : 's'}`}`}
         title="Drafts."

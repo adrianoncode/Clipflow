@@ -61,6 +61,35 @@ export const getContentItems = cache(
 )
 
 /**
+ * ID of the most-recently-imported content item in a workspace, or
+ * null if the workspace has none yet. Used by the workflow stepper to
+ * make Steps 2-4 (per-video pages) deep-linkable from Library /
+ * Pipeline / Schedule — clicking a step lands on the latest video so
+ * the user can navigate the workflow without going through Step 1
+ * again.
+ */
+export const getLatestContentId = cache(
+  async (workspaceId: string): Promise<string | null> => {
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from('content_items')
+      .select('id')
+      .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (error) {
+      log.error('getLatestContentId failed', error, { workspaceId })
+      return null
+    }
+
+    return data?.id ?? null
+  },
+)
+
+/**
  * Paginated version that also returns total count and hasMore flag.
  */
 export const getContentItemsPaginated = cache(

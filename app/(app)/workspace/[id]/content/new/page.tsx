@@ -6,6 +6,7 @@ import { SmartImportBox } from '@/components/content/smart-import-box'
 import { CreateStepper } from '@/components/create/create-stepper'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
+import { getLatestContentId } from '@/lib/content/get-content-items'
 
 export const metadata = {
   title: 'Import a recording · Clipflow',
@@ -39,9 +40,15 @@ export default async function NewContentPage({ params }: NewContentPageProps) {
     hasOpenAiKey = keys.some((k) => k.provider === 'openai')
   }
 
+  const latestContentId = await getLatestContentId(params.id)
+
   return (
     <div className="mx-auto w-full max-w-4xl space-y-10 p-4 sm:p-8">
-      <CreateStepper workspaceId={params.id} activeStep={1} />
+      <CreateStepper
+        workspaceId={params.id}
+        activeStep={1}
+        contentId={latestContentId ?? undefined}
+      />
       {/* ── Breadcrumb ── modern sans, hairline slashes */}
       <nav
         className="flex flex-wrap items-center gap-1 text-[12px] text-muted-foreground/80"

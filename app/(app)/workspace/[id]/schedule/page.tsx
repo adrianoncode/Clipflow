@@ -24,6 +24,7 @@ import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getScheduledPosts } from '@/lib/scheduler/get-scheduled-posts'
 import { getUnscheduledOutputs } from '@/lib/scheduler/get-unscheduled-outputs'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
+import { getLatestContentId } from '@/lib/content/get-content-items'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { checkPlanAccess } from '@/lib/billing/plans'
@@ -78,13 +79,14 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
   // getWorkspaces, getWorkspacePlan, and the posts/aiKeys batch each
   // awaited in sequence, costing three round-trips on every Schedule
   // render. Membership + plan-gate redirects happen after the batch.
-  const [workspaces, currentPlan, posts, aiKeys, unscheduledOutputs] =
+  const [workspaces, currentPlan, posts, aiKeys, unscheduledOutputs, latestContentId] =
     await Promise.all([
       getWorkspaces(),
       getWorkspacePlan(params.id),
       getScheduledPosts(params.id),
       getAiKeys(params.id),
       isCalendarView ? getUnscheduledOutputs(params.id) : Promise.resolve([]),
+      getLatestContentId(params.id),
     ])
 
   const workspace = workspaces.find((w) => w.id === params.id)
@@ -139,7 +141,11 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
       <div className="flex min-h-full flex-col">
         <div className="px-4 pt-4 sm:px-8 sm:pt-6">
           <div className="mx-auto max-w-5xl">
-            <CreateStepper workspaceId={params.id} activeStep={6} />
+            <CreateStepper
+              workspaceId={params.id}
+              activeStep={6}
+              contentId={latestContentId ?? undefined}
+            />
           </div>
         </div>
         <div className="border-b border-border/60 bg-background px-4 py-3 sm:px-8">
@@ -164,7 +170,11 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
       <div className="flex min-h-full flex-col">
         <div className="px-4 pt-4 sm:px-8 sm:pt-6">
           <div className="mx-auto max-w-5xl">
-            <CreateStepper workspaceId={params.id} activeStep={6} />
+            <CreateStepper
+              workspaceId={params.id}
+              activeStep={6}
+              contentId={latestContentId ?? undefined}
+            />
           </div>
         </div>
         {/* Schedule has 3 sub-views: Calendar (drag-drop), Queue (list),
@@ -215,7 +225,11 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
-      <CreateStepper workspaceId={params.id} activeStep={6} />
+      <CreateStepper
+        workspaceId={params.id}
+        activeStep={6}
+        contentId={latestContentId ?? undefined}
+      />
       <PageHeader
         category={posts.length === 0 ? 'Posts queue' : `${posts.length} post${posts.length === 1 ? '' : 's'}`}
         title="Queue."
