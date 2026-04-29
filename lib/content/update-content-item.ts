@@ -10,6 +10,12 @@ export interface UpdateContentItemPatch {
   transcript?: string | null
   title?: string | null
   metadata?: Json
+  /** Sub-phase shown in the Recent-Imports-Strip + per-video status banner.
+   *  Free-form text (queued | uploading | detect | transcribe | index | …).
+   *  Reset to null when status flips to ready/failed. */
+  processing_phase?: string | null
+  /** 0-100 progress hint within the current phase. Optional. */
+  processing_progress?: number | null
 }
 
 export type UpdateContentItemResult =

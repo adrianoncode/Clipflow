@@ -11,6 +11,11 @@ export interface ContentItemListRow {
   title: string | null
   source_url: string | null
   created_at: string
+  /** Sub-phase inside status=uploading|processing. Null when ready/failed
+   *  or for legacy rows pre-Slice-8 migration. */
+  processing_phase: string | null
+  /** 0-100 hint for the current phase. Optional. */
+  processing_progress: number | null
 }
 
 interface GetContentItemsOptions {
@@ -40,7 +45,7 @@ export const getContentItems = cache(
     const offset = options.offset ?? 0
     const { data, error } = await supabase
       .from('content_items')
-      .select('id, kind, status, title, source_url, created_at')
+      .select('id, kind, status, title, source_url, created_at, processing_phase, processing_progress')
       .eq('workspace_id', workspaceId)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
@@ -69,7 +74,7 @@ export const getContentItemsPaginated = cache(
 
     const { data, error, count } = await supabase
       .from('content_items')
-      .select('id, kind, status, title, source_url, created_at', { count: 'exact' })
+      .select('id, kind, status, title, source_url, created_at, processing_phase, processing_progress', { count: 'exact' })
       .eq('workspace_id', workspaceId)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })

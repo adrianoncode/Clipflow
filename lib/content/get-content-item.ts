@@ -10,6 +10,10 @@ export interface ContentItemRow {
   project_id: string | null
   kind: ContentKind
   status: ContentStatus
+  /** Sub-phase inside status=uploading|processing. Free-form text. */
+  processing_phase: string | null
+  /** 0-100 progress hint within the current phase. Optional. */
+  processing_progress: number | null
   title: string | null
   source_url: string | null
   transcript: string | null
@@ -30,7 +34,7 @@ export const getContentItem = cache(
     const { data, error } = await supabase
       .from('content_items')
       .select(
-        'id, workspace_id, project_id, kind, status, title, source_url, transcript, metadata, created_by, created_at, updated_at',
+        'id, workspace_id, project_id, kind, status, processing_phase, processing_progress, title, source_url, transcript, metadata, created_by, created_at, updated_at',
       )
       .eq('id', id)
       .eq('workspace_id', workspaceId)

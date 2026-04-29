@@ -11,7 +11,11 @@ import {
 } from 'lucide-react'
 
 import { ContentListWithSearch } from '@/components/content/content-list-with-search'
+import { RecentImportsStrip } from '@/components/content/recent-imports-strip'
+import { SmartImportBox } from '@/components/content/smart-import-box'
+import { CreateStepper } from '@/components/create/create-stepper'
 import { SettingsHero } from '@/components/settings/settings-hero'
+import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getContentItems } from '@/lib/content/get-content-items'
 import { findDuplicateIds } from '@/lib/content/find-duplicates'
@@ -30,15 +34,18 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
   // Parallelize the workspace-list lookup and the content-items fetch.
   // getWorkspaces is cached via React.cache so downstream callers in
   // the layout share the same result. The items fetch doesn't depend
-  // on membership — RLS hides rows for non-members anyway.
-  const [workspaces, items] = await Promise.all([
+  // on membership — RLS hides rows for non-members anyway. AI keys come
+  // along to gate the Smart-Import-Box's OpenAI warning.
+  const [workspaces, items, aiKeys] = await Promise.all([
     getWorkspaces(),
     getContentItems(params.id, { limit: PAGE_SIZE, offset }),
+    getAiKeys(params.id),
   ])
 
   const workspace = workspaces.find((w) => w.id === params.id)
   if (!workspace) notFound()
   const canCreate = workspace.role === 'owner' || workspace.role === 'editor'
+  const hasOpenAiKey = aiKeys.some((k) => k.provider === 'openai')
   const duplicateIds = findDuplicateIds(items)
 
   // Quick stats
@@ -58,6 +65,15 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-7 p-4 sm:p-8">
+      <CreateStepper workspaceId={params.id} activeStep={1} />
+      <RecentImportsStrip workspaceId={params.id} items={items} />
+      {canCreate ? (
+        <SmartImportBox
+          workspaceId={params.id}
+          hasOpenAiKey={hasOpenAiKey}
+          mode="inline"
+        />
+      ) : null}
       <SettingsHero
         visual={
           <span

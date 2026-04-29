@@ -23,6 +23,7 @@ import { fetchRssFeed } from '@/lib/content/fetch-rss-feed'
 import { fetchYoutubeTranscript } from '@/lib/content/fetch-youtube-transcript'
 import { fetchUrlText } from '@/lib/content/fetch-url-text'
 import { mimeForExtension, videoStoragePath } from '@/lib/content/storage-paths'
+import { setProcessingPhase } from '@/lib/content/processing-phase'
 import { updateContentItem } from '@/lib/content/update-content-item'
 import { createClient } from '@/lib/supabase/server'
 import type { Json } from '@/lib/supabase/types'
@@ -32,6 +33,27 @@ import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
 // actions (new/page.tsx and [contentId]/page.tsx). Server Action modules
 // may only export async functions, so the const lives where Next.js
 // actually reads it — the page segment config.
+
+/**
+ * Slice 15 — extract the YouTube video ID from any of the URL shapes
+ * we accept (watch, youtu.be, shorts, embed). Returns null when the
+ * input doesn't look like a YouTube URL we can normalize. Used by
+ * createYoutubeContentAction's duplicate-detection step so re-pasting
+ * the same video in different formats still hits the existing row.
+ */
+function canonicalizeYoutubeUrl(url: string): string | null {
+  const v = url.trim()
+  // youtu.be/VIDEO_ID
+  let m = v.match(/youtu\.be\/([\w-]{6,})/i)
+  if (m) return m[1] ?? null
+  // youtube.com/watch?v=VIDEO_ID
+  m = v.match(/[?&]v=([\w-]{6,})/i)
+  if (m) return m[1] ?? null
+  // youtube.com/shorts/VIDEO_ID  | /live/VIDEO_ID  | /embed/VIDEO_ID
+  m = v.match(/youtube\.com\/(?:shorts|live|embed)\/([\w-]{6,})/i)
+  if (m) return m[1] ?? null
+  return null
+}
 
 // ---------------------------------------------------------------------------
 // Types shared with the client forms
@@ -50,7 +72,7 @@ export type RetryTranscriptionState =
   | { ok: true }
   | { ok: false; error: string }
 
-export type TextFormState = { error?: string }
+export type TextFormState = { error?: string; ok?: boolean; contentId?: string }
 
 // ---------------------------------------------------------------------------
 // Video — Step 1: insert content_items row
@@ -125,7 +147,12 @@ async function runTranscription(params: {
   const transition = await updateContentItem(
     params.contentId,
     params.workspaceId,
-    { source_url: path, status: 'processing' },
+    {
+      source_url: path,
+      status: 'processing',
+      processing_phase: 'detect',
+      processing_progress: null,
+    },
     { status: 'uploading' },
   )
   if (!transition.ok) {
@@ -142,6 +169,8 @@ async function runTranscription(params: {
   ): Promise<StartTranscriptionResult> {
     await updateContentItem(params.contentId, params.workspaceId, {
       status: 'failed',
+      processing_phase: null,
+      processing_progress: null,
       metadata: { error: { code, message } },
     })
     revalidatePath(`/workspace/${params.workspaceId}/content/${params.contentId}`)
@@ -175,6 +204,11 @@ async function runTranscription(params: {
     return fail('file_too_large', 'This file exceeds the 25MB Whisper limit.')
   }
 
+  // Phase transition: about to call Whisper. The "detect" phase covered
+  // download + provider key prep; "transcribe" is the long one (10-180s
+  // depending on length) and is what the user mostly waits on.
+  await setProcessingPhase(params.contentId, params.workspaceId, 'transcribe')
+
   const filename = `source.${params.ext}`
   const mimeType = mimeForExtension(params.ext)
   const result = await transcribe({
@@ -188,6 +222,12 @@ async function runTranscription(params: {
   if (!result.ok) {
     return fail(result.code, result.message)
   }
+
+  // Whisper returned. Indexing = persisting transcript + extracting
+  // metadata (duration, word timings via metadata merge below). Quick
+  // phase, but worth showing so the strip's last visible label isn't
+  // a stale "transcribe" while the row is actually being finalized.
+  await setProcessingPhase(params.contentId, params.workspaceId, 'index')
 
   // Store duration from Whisper when available — editor exports (EDL,
   // chapters) use it for real timestamps instead of 300s fallback.
@@ -210,6 +250,8 @@ async function runTranscription(params: {
   const ready = await updateContentItem(params.contentId, params.workspaceId, {
     transcript: result.text,
     status: 'ready',
+    processing_phase: null,
+    processing_progress: null,
     ...(mergedMetadata ? { metadata: mergedMetadata } : {}),
   })
   if (!ready.ok) {
@@ -377,6 +419,13 @@ export async function createTextContentAction(
     title: parsed.data.title ?? 'Untitled',
   })
 
+  // Inline mode: callers (Library SmartImportBox) want to stay on the
+  // current page and queue more items. They opt in via the `inline`
+  // formData flag. Default keeps the legacy redirect-to-detail flow
+  // for /content/new and other forms that expect navigation.
+  if (formData.get('inline') === 'true') {
+    return { ok: true, contentId: result.id }
+  }
   redirect(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
 }
 
@@ -384,7 +433,15 @@ export async function createTextContentAction(
 // YouTube URL — fetch captions + store as ready content item
 // ---------------------------------------------------------------------------
 
-export type YoutubeFormState = { error?: string }
+export type YoutubeFormState = {
+  error?: string
+  ok?: boolean
+  contentId?: string
+  /** Slice 15 — populated when a duplicate is detected. Lets the
+   *  SmartImportBox link the user straight to the existing item
+   *  instead of forcing them to scroll the library. */
+  duplicateOf?: { contentId: string; title: string | null }
+}
 
 export async function createYoutubeContentAction(
   _prev: YoutubeFormState,
@@ -400,6 +457,31 @@ export async function createYoutubeContentAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  // Slice 15 — duplicate detection. Match on the canonicalized YouTube
+  // URL so v=ABC, youtu.be/ABC, and shorts/ABC all collapse to one.
+  // We only check this workspace + non-deleted rows; a user re-importing
+  // after a delete is allowed.
+  const canonicalUrl = canonicalizeYoutubeUrl(parsed.data.url)
+  if (canonicalUrl) {
+    const supabase = createClient()
+    const { data: existing } = await supabase
+      .from('content_items')
+      .select('id, title')
+      .eq('workspace_id', parsed.data.workspace_id)
+      .eq('kind', 'youtube')
+      .ilike('source_url', `%${canonicalUrl}%`)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (existing) {
+      return {
+        error: 'This video is already in your library.',
+        duplicateOf: { contentId: existing.id, title: existing.title },
+      }
+    }
+  }
 
   const limit = await checkLimit(parsed.data.workspace_id, 'content_items')
   if (!limit.ok) {
@@ -434,6 +516,9 @@ export async function createYoutubeContentAction(
     title: fetched.title,
   })
 
+  if (formData.get('inline') === 'true') {
+    return { ok: true, contentId: result.id }
+  }
   redirect(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
 }
 
@@ -441,7 +526,7 @@ export async function createYoutubeContentAction(
 // Website/Blog URL — scrape text + store as ready content item
 // ---------------------------------------------------------------------------
 
-export type UrlFormState = { error?: string }
+export type UrlFormState = { error?: string; ok?: boolean; contentId?: string }
 
 export async function createUrlContentAction(
   _prev: UrlFormState,
@@ -491,6 +576,9 @@ export async function createUrlContentAction(
     title: fetched.title,
   })
 
+  if (formData.get('inline') === 'true') {
+    return { ok: true, contentId: result.id }
+  }
   redirect(`/workspace/${parsed.data.workspace_id}/content/${result.id}`)
 }
 
