@@ -28,15 +28,10 @@ export function getComposioClient(): Composio {
 }
 
 /**
- * Maps our internal IDs to Composio v3 toolkit slugs (lowercase).
- * Covers two categories:
- *   - Workflow (notion, sheets, drive) → /settings/integrations
- *   - Channels (linkedin, x, youtube, ig, fb) → /settings/channels
+ * Maps our internal channel IDs to Composio v3 toolkit slugs (lowercase).
+ * Used by /settings/channels to OAuth into publishing destinations.
  */
 export const COMPOSIO_APP_SLUGS: Record<string, string> = {
-  notion:           'notion',
-  'google-drive':   'googledrive',
-  'google-sheets':  'googlesheets',
   linkedin:         'linkedin',
   youtube:          'youtube',
   instagram:        'instagram',
@@ -48,16 +43,8 @@ export const COMPOSIO_APP_SLUGS: Record<string, string> = {
   // X Dev app.
 }
 
-export const COMPOSIO_CHANNEL_IDS = new Set([
-  'linkedin', 'youtube', 'instagram', 'facebook', 'pinterest',
-])
-
 export function isComposioOAuth(integrationId: string): boolean {
   return integrationId in COMPOSIO_APP_SLUGS
-}
-
-export function isComposioChannel(integrationId: string): boolean {
-  return COMPOSIO_CHANNEL_IDS.has(integrationId)
 }
 
 // ---------------------------------------------------------------------------

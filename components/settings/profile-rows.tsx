@@ -220,7 +220,7 @@ export function DeleteAccountButton() {
             <DialogTitle className="text-destructive">Delete your account?</DialogTitle>
             <DialogDescription className="text-[12.5px]">
               This will permanently delete your account, every workspace you
-              own, all content, drafts, and integrations. If you have an active
+              own, and all content and drafts. If you have an active
               subscription, it will be cancelled immediately. Cannot be undone.
             </DialogDescription>
           </DialogHeader>

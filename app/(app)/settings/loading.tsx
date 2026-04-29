@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 /**
  * Generic loading skeleton for the settings sub-layout. Covers every
  * settings tab (profile, workspace, brand voice, AI keys, channels,
- * integrations, security, audit log, templates, referrals, extension)
+ * security, audit log, templates, referrals, extension)
  * since they all follow the same PageHeading → sectioned cards rhythm.
  */
 export default function SettingsLoading() {

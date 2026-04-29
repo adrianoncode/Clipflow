@@ -4,30 +4,23 @@ import { cookies } from 'next/headers'
 import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import {
   initiateComposioConnection,
-  isComposioChannel,
   isComposioOAuth,
 } from '@/lib/integrations/composio'
 
 const WORKSPACE_COOKIE = 'clipflow.current_workspace'
-
-type Scope = 'channel' | 'integration'
-
-function scopeSettingsPath(scope: Scope): string {
-  return scope === 'channel' ? '/settings/channels' : '/settings/integrations'
-}
+const SETTINGS_PATH = '/settings/channels'
 
 /**
- * GET /api/integrations/connect?app=notion&workspace_id=xxx
+ * GET /api/integrations/connect?app=linkedin&workspace_id=xxx
  *
- * Kicks off a Composio OAuth flow. Redirects the user to the provider's
- * OAuth consent screen. On completion, Composio calls our callback
- * route.
+ * Kicks off a Composio OAuth flow for a publishing channel. Redirects
+ * the user to the provider's OAuth consent screen. On completion,
+ * Composio calls our callback route.
  *
- * Authz: previously auth-only — a logged-in user could pass any
- * workspace_id and seed the pending cookie with it. The callback then
- * wrote to that workspace's integrations config. Now we verify the
- * caller is a member of the target workspace before starting the
- * OAuth dance.
+ * Authz: verify the caller is a member of the target workspace before
+ * starting the OAuth dance — otherwise a logged-in user could pass any
+ * workspace_id and seed the pending cookie with it, then the callback
+ * would write a connection into another tenant's workspace.
  */
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -37,21 +30,9 @@ export async function GET(req: NextRequest) {
     cookies().get(WORKSPACE_COOKIE)?.value ??
     ''
 
-  // Scope defaults by integration type: social platforms → channel,
-  // everything else → integration. An explicit ?scope= param wins so
-  // we can force-override if needed later.
-  const paramScope = searchParams.get('scope')
-  const scope: Scope =
-    paramScope === 'channel' || paramScope === 'integration'
-      ? paramScope
-      : isComposioChannel(integrationId)
-        ? 'channel'
-        : 'integration'
-  const settingsPath = scopeSettingsPath(scope)
-
   if (!integrationId || !workspaceId) {
     return NextResponse.redirect(
-      new URL(`${settingsPath}?error=missing_params`, req.url),
+      new URL(`${SETTINGS_PATH}?error=missing_params`, req.url),
     )
   }
 
@@ -61,25 +42,23 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL('/login', req.url))
     }
     return NextResponse.redirect(
-      new URL(`${settingsPath}?error=not_a_member`, req.url),
+      new URL(`${SETTINGS_PATH}?error=not_a_member`, req.url),
     )
   }
 
   if (!isComposioOAuth(integrationId)) {
     return NextResponse.redirect(
-      new URL(`${settingsPath}?error=not_oauth`, req.url),
+      new URL(`${SETTINGS_PATH}?error=not_oauth`, req.url),
     )
   }
 
-  // Store workspace + integrationId + scope in a short-lived cookie
-  // so the callback route knows where to save the connection.
-  const pending = JSON.stringify({ workspaceId, integrationId, scope })
+  const pending = JSON.stringify({ workspaceId, integrationId })
   const response = await initiateComposioConnection(workspaceId, integrationId)
 
   if ('error' in response) {
     return NextResponse.redirect(
       new URL(
-        `${settingsPath}?error=${encodeURIComponent(response.error)}`,
+        `${SETTINGS_PATH}?error=${encodeURIComponent(response.error)}`,
         req.url,
       ),
     )
@@ -88,7 +67,7 @@ export async function GET(req: NextRequest) {
   const redirect = NextResponse.redirect(response.redirectUrl)
   redirect.cookies.set('composio_pending', pending, {
     httpOnly: true,
-    maxAge: 600, // 10 minutes
+    maxAge: 600,
     path: '/',
     sameSite: 'lax',
   })

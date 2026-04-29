@@ -88,7 +88,7 @@ export function DeleteAccountSection() {
             <p className="text-sm font-semibold text-destructive">Delete account</p>
             <p className="mt-0.5 text-xs text-muted-foreground">
               Permanently delete your account and everything connected to it —
-              workspaces, content, drafts, integrations. This cannot be undone
+              workspaces, content, and drafts. This cannot be undone
               and support cannot recover the data afterwards.
               {' '}
               <span className="font-medium text-foreground">
@@ -113,7 +113,7 @@ export function DeleteAccountSection() {
             <DialogTitle className="text-destructive">Delete your account?</DialogTitle>
             <DialogDescription>
               This will permanently delete your account, every workspace you
-              own, all content, drafts, and integrations. If you have an active
+              own, and all content and drafts. If you have an active
               subscription, it will be cancelled immediately. This action cannot
               be undone.
             </DialogDescription>

@@ -5,7 +5,6 @@ import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { notifyPostPublished } from '@/lib/notifications/triggers'
 import { publishToSocial, type PublishablePlatform } from '@/lib/publish/route'
 import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
-import { dispatchIntegrations } from '@/lib/integrations/dispatch-integrations'
 
 // Re-exported for UI components that still import this name from here.
 export type PublishPlatform = PublishablePlatform
@@ -40,9 +39,9 @@ export async function publishOutputAction(
   if (!workspaceId) return { ok: false, error: 'Missing workspace.' }
 
   // Verify the caller actually belongs to this workspace + has write
-  // access before firing webhooks, notifications, or integration
-  // dispatches — all three accept the raw workspaceId and would
-  // otherwise fan out to another tenant's systems.
+  // access before firing webhooks or notifications — both accept the
+  // raw workspaceId and would otherwise fan out to another tenant's
+  // systems.
   const check = await requireWorkspaceMember(workspaceId)
   if (!check.ok) return { ok: false, error: check.message }
   if (check.role !== 'owner' && check.role !== 'editor') {
@@ -100,13 +99,6 @@ export async function publishOutputAction(
       })
     }
   } catch {}
-
-  // Fire-and-forget integration dispatch
-  dispatchIntegrations(workspaceId, 'post.published', {
-    title: caption.trim().slice(0, 120),
-    platform: postedTo.join(', '),
-    workspaceUrl: `/workspace/${workspaceId}`,
-  })
 
   return { ok: true, postedTo, ...(failed.length > 0 ? { failed } : {}) }
 }

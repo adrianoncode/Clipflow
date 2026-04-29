@@ -40,7 +40,6 @@ const SECTIONS = [
 // surfacing the Profile/Security/Billing nav above them is noise.
 const HIDE_NAV_PREFIXES = [
   '/settings/channels',
-  '/settings/integrations',
   '/settings/ai-keys',
   '/settings/brand-voice',
   '/settings/brand-kit',

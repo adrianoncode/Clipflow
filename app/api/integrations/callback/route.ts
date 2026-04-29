@@ -8,21 +8,16 @@ import { createClient } from '@/lib/supabase/server'
 /**
  * GET /api/integrations/callback
  *
- * Composio redirects here after the user completes (or cancels) OAuth.
- * We mark the integration as connected in the workspace branding JSON
- * and redirect back to the integrations settings page.
+ * Composio redirects here after the user completes (or cancels) OAuth
+ * for a publishing channel. We persist the connection into the
+ * workspace branding JSON under `branding.channels` and redirect back
+ * to /settings/channels.
  *
- * Authz: we re-check workspace membership here even though /connect
- * already did. Reason: the pending cookie is httpOnly but a user who
- * lost their membership between /connect and /callback (unlikely but
- * possible) should not be able to complete the write. Defense in
- * depth — if /connect ever regresses, the callback still holds.
+ * Authz: re-check workspace membership here even though /connect did.
+ * Defense in depth — if /connect ever regresses, the callback still
+ * holds.
  */
-type Scope = 'channel' | 'integration'
-
-function scopePath(scope: Scope): string {
-  return scope === 'channel' ? '/settings/channels' : '/settings/integrations'
-}
+const SETTINGS_PATH = '/settings/channels'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -38,26 +33,21 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get('status') ?? ''
   const failed = status && status !== 'success'
 
-  // Read pending integration info from the cookie set in /connect
   const pendingRaw = cookies().get('composio_pending')?.value
   let workspaceId = ''
   let integrationId = ''
-  let scope: Scope = 'integration'
 
   if (pendingRaw) {
     try {
       const pending = JSON.parse(pendingRaw)
       workspaceId = pending.workspaceId ?? ''
       integrationId = pending.integrationId ?? ''
-      if (pending.scope === 'channel') scope = 'channel'
     } catch { /* ignore */ }
   }
 
-  const basePath = scopePath(scope)
-
   if (!workspaceId || !integrationId) {
     return NextResponse.redirect(
-      new URL(`${basePath}?error=session_expired`, req.url),
+      new URL(`${SETTINGS_PATH}?error=session_expired`, req.url),
     )
   }
 
@@ -67,7 +57,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL('/login', req.url))
     }
     const res = NextResponse.redirect(
-      new URL(`${basePath}?error=not_a_member`, req.url),
+      new URL(`${SETTINGS_PATH}?error=not_a_member`, req.url),
     )
     res.cookies.set('composio_pending', '', { maxAge: 0, path: '/' })
     return res
@@ -75,9 +65,6 @@ export async function GET(req: NextRequest) {
   const user = { id: check.userId }
 
   if (connectionId && !failed) {
-    // Persist under branding.channels or branding.integrations depending
-    // on the scope — so the Integrations page doesn't light up LinkedIn
-    // just because the user connected it for publishing.
     const supabase = createClient()
     const { data: ws } = await supabase
       .from('workspaces')
@@ -86,10 +73,9 @@ export async function GET(req: NextRequest) {
       .single()
 
     const branding = (ws?.branding ?? {}) as Record<string, unknown>
-    const bucketKey = scope === 'channel' ? 'channels' : 'integrations'
-    const bucket = (branding[bucketKey] ?? {}) as Record<string, unknown>
+    const channels = (branding.channels ?? {}) as Record<string, unknown>
 
-    bucket[integrationId] = {
+    channels[integrationId] = {
       connectionId,
       connectedAppName,
       connected_at: new Date().toISOString(),
@@ -100,14 +86,14 @@ export async function GET(req: NextRequest) {
     await supabase
       .from('workspaces')
       .update({
-        branding: JSON.parse(JSON.stringify({ ...branding, [bucketKey]: bucket })),
+        branding: JSON.parse(JSON.stringify({ ...branding, channels })),
       })
       .eq('id', workspaceId)
 
-    revalidatePath(basePath)
+    revalidatePath(SETTINGS_PATH)
   }
 
-  const settingsUrl = new URL(basePath, req.url)
+  const settingsUrl = new URL(SETTINGS_PATH, req.url)
   if (connectionId && !failed) {
     settingsUrl.searchParams.set('connected', integrationId)
   } else {
@@ -115,7 +101,6 @@ export async function GET(req: NextRequest) {
   }
 
   const res = NextResponse.redirect(settingsUrl)
-  // Clear the pending cookie
   res.cookies.set('composio_pending', '', { maxAge: 0, path: '/' })
   return res
 }

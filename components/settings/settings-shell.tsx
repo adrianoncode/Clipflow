@@ -12,7 +12,6 @@ import { SettingsNav } from '@/components/settings/settings-nav'
 // pure client check.
 const FULL_BLEED_PREFIXES = [
   '/settings/channels',
-  '/settings/integrations',
   '/settings/ai-keys',
   '/settings/brand-voice',
   '/settings/brand-kit',

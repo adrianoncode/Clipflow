@@ -22,7 +22,6 @@ const SLUG_OVERRIDES: Record<string, string> = {
   'brand-voice': 'Brand Voice',
   'audit-log': 'Audit log',
   channels: 'Channels',
-  integrations: 'Integrations',
   profile: 'Profile',
   security: 'Security',
   workspace: 'Workspace',
