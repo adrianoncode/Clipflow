@@ -14,8 +14,6 @@ import {
 import {
   BarChart3,
   BookOpen,
-  Calendar,
-  CheckSquare,
   FileVideo,
   Gift,
   Home,
@@ -268,19 +266,17 @@ export function AppShell({
       )
     if (href === '/settings/channels') return pathname.startsWith('/settings/channels')
     if (href === '/settings/audit-log') return pathname.startsWith('/settings/audit-log')
-    // Library is the entry to the Create-Section. It stays active while
-    // the user is drilling into per-video pages (content/[contentId]/*),
-    // because Steps 2-4 (Source/Highlights/Drafts) live as tabs under
-    // that subtree. Pipeline + Schedule are siblings, so they're excluded
-    // by the explicit checks above.
+    // "Create content" is the single entry into the 6-step workflow.
+    // It stays active across every step (Library = step 1, content/* =
+    // steps 2-4, pipeline = step 5, schedule = step 6). The stepper
+    // handles navigation between steps.
     if (href === `/workspace/${currentWorkspaceId}`) {
       return (
         pathname === href ||
-        pathname.startsWith(`/workspace/${currentWorkspaceId}/content`)
+        pathname.startsWith(`/workspace/${currentWorkspaceId}/content`) ||
+        pathname.startsWith(`/workspace/${currentWorkspaceId}/pipeline`) ||
+        pathname.startsWith(`/workspace/${currentWorkspaceId}/schedule`)
       )
-    }
-    if (href === `/workspace/${currentWorkspaceId}/schedule`) {
-      return pathname === href || pathname.startsWith(href + '/')
     }
     return pathname === href || pathname.startsWith(href + '/')
   }
@@ -297,14 +293,13 @@ export function AppShell({
       ],
     },
     {
-      // Create-Section — alle 6 Workflow-Steps unter einem Dach.
-      // Stepper-Header läuft persistent über Library / Pipeline / Schedule.
-      // Templates + Creators sind die Tools die den Erstell-Flow füttern.
+      // Create-Section — ein Workflow-Eintrag. Der 6-Step-Stepper im
+      // Page-Header übernimmt die Navigation zwischen Import → Process →
+      // Highlights → Drafts → Approve → Schedule. Templates + Creators
+      // sind die Tools die den Erstell-Flow füttern.
       label: 'Create',
       items: [
-        { href: `/workspace/${currentWorkspaceId}`, label: 'Library', icon: FileVideo },
-        { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: CheckSquare },
-        { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Calendar },
+        { href: `/workspace/${currentWorkspaceId}`, label: 'Workflow', icon: Sparkles },
         { href: '/settings/templates', label: 'Templates', icon: LayoutTemplate },
         {
           href: `/workspace/${currentWorkspaceId}/research`,
@@ -367,8 +362,7 @@ export function AppShell({
 
   const mobileItems: NavItem[] = [
     { href: '/dashboard', label: 'Home', icon: Home },
-    { href: `/workspace/${currentWorkspaceId}`, label: 'Library', icon: FileVideo },
-    { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Drafts', icon: CheckSquare },
+    { href: `/workspace/${currentWorkspaceId}`, label: 'Create', icon: Sparkles },
   ]
 
   const mobileMoreItems: NavItem[] = [
