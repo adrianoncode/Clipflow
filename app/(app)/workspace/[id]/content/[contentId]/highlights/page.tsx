@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ChevronRight, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 
 import { FindMomentsButton } from '@/components/highlights/find-moments-button'
 import { HighlightsList } from '@/components/highlights/highlights-list'
@@ -43,32 +43,11 @@ export default async function HighlightsPage({ params }: HighlightsPageProps) {
   const canEdit = member.role === 'owner' || member.role === 'editor'
   const hasTranscript = Boolean(item.transcript && item.transcript.trim().length >= 200)
 
+  // Layout (../layout.tsx) renders the Stepper + Per-Video header + tab
+  // nav. This page is the body of the "Highlights" tab — pure content,
+  // no chassis duplication.
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
-      {/* Breadcrumb */}
-      <nav
-        className="flex flex-wrap items-center gap-1 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85"
-        aria-label="Breadcrumb"
-      >
-        <Link
-          href={`/workspace/${params.id}`}
-          className="rounded-md px-1.5 py-0.5 transition-colors hover:bg-muted/60 hover:text-foreground"
-        >
-          Content
-        </Link>
-        <ChevronRight className="h-3 w-3 text-muted-foreground/40" />
-        <Link
-          href={`/workspace/${params.id}/content/${params.contentId}`}
-          className="max-w-[220px] truncate rounded-md px-1.5 py-0.5 transition-colors hover:bg-muted/60 hover:text-foreground"
-        >
-          {item.title ?? 'Untitled'}
-        </Link>
-        <ChevronRight className="h-3 w-3 text-muted-foreground/40" />
-        <span className="rounded-md px-1.5 py-0.5 font-semibold text-foreground">
-          Viral moments
-        </span>
-      </nav>
-
+    <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <PageHeading
           eyebrow="AI · Highlight clips"
@@ -100,12 +79,12 @@ export default async function HighlightsPage({ params }: HighlightsPageProps) {
         <div className="rounded-xl border border-amber-200/60 bg-amber-50/40 p-4 text-sm text-amber-900">
           <p className="font-semibold">Transcript not ready yet</p>
           <p className="mt-1 text-xs opacity-80">
-            Viral-moment detection needs the Whisper transcript. Head back to{' '}
+            Viral-moment detection needs the Whisper transcript. Head to the{' '}
             <Link
               href={`/workspace/${params.id}/content/${params.contentId}`}
               className="font-semibold underline"
             >
-              the content page
+              Source tab
             </Link>{' '}
             and wait for transcription to complete (or retry if it failed).
           </p>

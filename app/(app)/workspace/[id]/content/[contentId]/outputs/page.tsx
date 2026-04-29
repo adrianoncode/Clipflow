@@ -4,16 +4,14 @@ import {
   ArrowRight,
   CalendarClock,
   CheckCircle2,
-  ChevronRight,
-  Film,
   FileText,
+  Film,
   Link2,
   Rss,
   Sparkles,
   Youtube,
 } from 'lucide-react'
 
-import { Badge } from '@/components/ui/badge'
 import { SeoPanel } from '@/components/outputs/seo-panel'
 import { ThumbnailStudio } from '@/components/outputs/thumbnail-studio'
 import { getBrandKit } from '@/lib/brand-kit/get-brand-kit'
@@ -23,19 +21,9 @@ import { GenerateOutputsForm } from '@/components/outputs/generate-outputs-form'
 import { StudioContextRail } from '@/components/studio/studio-context-rail'
 import { OutputsGrid } from '@/components/outputs/outputs-grid'
 import { RegenerateButton } from '@/components/outputs/regenerate-button'
-import { ReviewLinkPanel } from '@/components/outputs/review-link-panel'
-import { VideoStudioPanel } from '@/components/outputs/video-studio-panel'
-import { RenderHistoryPanel } from '@/components/outputs/render-history-panel'
-import { ReviewCommentsPanel } from '@/components/review/review-comments-panel'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getOutputs } from '@/lib/content/get-outputs'
-import { getLongLivedSourceUrl } from '@/lib/content/get-signed-url'
-import { getReviewLinksForContent } from '@/lib/review/get-review-links-for-content'
-import { getReviewCommentsForContent } from '@/lib/review/get-review-comments-for-content'
-import { listRenders } from '@/lib/video/renders/list-renders'
-import { getPlanFeatures } from '@/lib/billing/plans'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
-import { EditorExportPanel } from '@/components/content/editor-export-panel'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getWorkspaceTemplates } from '@/lib/templates/get-templates'
 import type { ContentKind } from '@/lib/supabase/types'
@@ -81,19 +69,17 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
     redirect(`/workspace/${params.id}/content/${params.contentId}`)
   }
 
-  const [outputs, reviewLinks, reviewComments, renders, plan, aiKeys, longLivedSourceUrl, brandKit, customTemplates] =
-    await Promise.all([
-      getOutputs(params.contentId, params.id),
-      getReviewLinksForContent(params.contentId, params.id),
-      getReviewCommentsForContent(params.contentId, params.id),
-      listRenders({ workspaceId: params.id, contentId: params.contentId, limit: 12 }),
-      getWorkspacePlan(params.id),
-      getAiKeys(params.id),
-      getLongLivedSourceUrl(item.source_url),
-      getBrandKit(params.id),
-      getWorkspaceTemplates(params.id),
-    ])
-  const planFeatures = getPlanFeatures(plan)
+  // Slice 5 page-detox: source-context fetches (renders / review links /
+  // editor-export source URL) moved up to /content/[id]/page.tsx, where
+  // they feed the per-video Tools tab. This page now only loads what the
+  // OutputsGrid + SEO + Thumbnail sections actually use.
+  const [outputs, plan, aiKeys, brandKit, customTemplates] = await Promise.all([
+    getOutputs(params.contentId, params.id),
+    getWorkspacePlan(params.id),
+    getAiKeys(params.id),
+    getBrandKit(params.id),
+    getWorkspaceTemplates(params.id),
+  ])
   // Publish-ready = ANY connected destination, not just Upload-Post.
   // Composio channels (LinkedIn/YouTube/IG/FB) and BYO X keys also count.
   let hasPublishKey = aiKeys.some((k) => k.provider === 'upload-post')
@@ -112,62 +98,22 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
   }
   const title = item.title ?? 'Untitled'
   const kindCfg = KIND_CONFIG[item.kind] ?? KIND_CONFIG.text
-  const KindIcon = kindCfg.icon
 
+  // Layout (../layout.tsx) renders the Stepper + Per-Video header + tab
+  // nav. This page is the body of the "Drafts" tab — pure content, no
+  // chassis duplication.
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-8">
-      {/* ── Breadcrumb ── */}
-      <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Link
-          href={`/workspace/${params.id}/content`}
-          className="underline-offset-4 hover:text-foreground hover:underline"
-        >
-          Content
-        </Link>
-        <ChevronRight className="h-3 w-3" />
-        <Link
-          href={`/workspace/${params.id}/content/${params.contentId}`}
-          className="max-w-[180px] truncate underline-offset-4 hover:text-foreground hover:underline"
-        >
-          {title}
-        </Link>
-        <ChevronRight className="h-3 w-3" />
-        <span className="font-medium text-foreground">Outputs</span>
-      </nav>
-
-      {/* ── Page header ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <h1
-              className="text-[36px] leading-[1.05]"
-              style={{
-                fontFamily: 'var(--font-instrument-serif), serif',
-                letterSpacing: '-.015em',
-                color: '#2A1A3D',
-              }}
-            >
-              {title}
-            </h1>
-            <Badge
-              variant="secondary"
-              className="gap-1 text-[11px] font-medium"
-            >
-              <KindIcon className="h-3 w-3" />
-              {kindCfg.label}
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Platform-specific drafts generated from your transcript.
-          </p>
-        </div>
-        {outputs.length > 0 ? (
+    <div className="space-y-6">
+      {/* Header actions (Export-all / Regenerate) — only when there's
+          drafts to act on. Title + kind already render in the layout. */}
+      {outputs.length > 0 ? (
+        <div className="flex justify-end">
           <div className="flex flex-wrap gap-2">
             <ExportAllButton outputs={outputs} contentTitle={title} />
             <RegenerateButton workspaceId={params.id} contentId={params.contentId} />
           </div>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       {outputs.length === 0 ? (
         /* ── Empty state: Studio context + Generate form ── */
@@ -224,97 +170,29 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
             <ArrowRight className="h-5 w-5 shrink-0 text-violet-400 transition-transform group-hover:translate-x-1 group-hover:text-violet-600" />
           </Link>
 
-          {/* ── AI Tools & Advanced panels (collapsible) ── */}
-          <details className="group rounded-2xl border border-border/50 bg-card" open={false}>
-            <summary className="flex cursor-pointer items-center justify-between px-5 py-4 text-sm font-semibold [&::-webkit-details-marker]:hidden">
-              <span className="flex items-center gap-2">
-                <span className="transition-transform group-open:rotate-90">▶</span>
-                AI Tools & Advanced
-                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
-                  {6 + (renders.length > 0 ? 1 : 0) + (reviewComments.length > 0 ? 1 : 0)}
-                </span>
-              </span>
-              <span className="text-xs font-normal text-muted-foreground">
-                Video Studio, SEO, Reviews &amp; more
-              </span>
-            </summary>
-            <div className="space-y-4 border-t border-border/40 p-4">
-              {/* Video Studio — prominent reminder */}
-              <VideoStudioPanel
-                workspaceId={params.id}
-                contentId={params.contentId}
-                isVideo={item.kind === 'video'}
-                renderCount={renders.length}
-              />
+          {/* Per-output addons — kept on the Drafts page because they
+              attach to specific platform outputs (SEO metadata for blog/
+              YouTube cards, thumbnails for the visual platforms). The
+              "AI Tools & Advanced"-Drawer that buried these is gone:
+              they were hidden behind a click-to-expand and felt like
+              scratch features. Surfaced as honest sections instead.
 
-              {/* Render history */}
-              <RenderHistoryPanel initialRenders={renders} />
-
-              <SeoPanel
-                workspaceId={params.id}
-                contentId={params.contentId}
-                initialSeo={
-                  ((outputs[0]?.metadata as Record<string, unknown> | null)?.seo as null | { primary_keyword: string; secondary_keywords: string[]; seo_title: string; meta_description: string; hashtag_strategy: string }) ?? null
-                }
-              />
-
-              {/* Thumbnail Studio — generates YouTube / LinkedIn / Square
-                  thumbnails from this content's title using the brand kit
-                  (if set) for color + logo text. Closes the "no thumbnail
-                  feature" gap called out in the audit. */}
-              <ThumbnailStudio
-                defaultTitle={item.title ?? 'Your headline goes here'}
-                defaultSub={`${kindCfg.label.toUpperCase()}${item.title ? '' : ' · Draft'}`}
-                brandAccent={brandKit?.accentColor}
-                brandName={brandKit?.introText ?? 'Clipflow'}
-              />
-              {/* Client review links are Studio-only. On Creator/Free
-                  we show a locked card that points to /billing with the
-                  feature query param so the upsell banner names it. */}
-              {planFeatures.clientReviewLink ? (
-                <ReviewLinkPanel
-                  workspaceId={params.id}
-                  contentId={params.contentId}
-                  links={reviewLinks}
-                />
-              ) : (
-                <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 p-5">
-                  <p className="text-sm font-semibold">Client review links</p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Share a no-login link with a client to collect feedback on
-                    these drafts. White-label, optional expiry. Available on
-                    the Studio plan.
-                  </p>
-                  <Link
-                    href={`/billing?plan=agency&feature=clientReviewLink`}
-                    className="cf-btn-3d cf-btn-3d-primary mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs"
-                  >
-                    <Sparkles className="h-3 w-3" />
-                    Upgrade to unlock
-                  </Link>
-                </div>
-              )}
-              <ReviewCommentsPanel comments={reviewComments} />
-
-              {/* Editor Export — CapCut, Premiere etc. */}
-              <EditorExportPanel
-                contentId={params.contentId}
-                contentTitle={title}
-                transcript={item.transcript ?? ''}
-                srt={((item.metadata as Record<string, unknown> | null)?.srt as string) ?? null}
-                vtt={((item.metadata as Record<string, unknown> | null)?.vtt as string) ?? null}
-                clips={((item.metadata as Record<string, unknown> | null)?.best_clips as Array<{
-                  quote: string
-                  reason: string
-                  position_pct: number
-                  type: string
-                  estimated_duration: string
-                }>) ?? null}
-                estimatedDurationSec={((item.metadata as Record<string, unknown> | null)?.duration_seconds as number) ?? null}
-                sourceUrl={longLivedSourceUrl}
-              />
-            </div>
-          </details>
+              Slice 5 follow-up moved Source-context tools (Render history,
+              Editor export) and Collaboration (Review link, Comments) to
+              the per-video Tools tab. */}
+          <SeoPanel
+            workspaceId={params.id}
+            contentId={params.contentId}
+            initialSeo={
+              ((outputs[0]?.metadata as Record<string, unknown> | null)?.seo as null | { primary_keyword: string; secondary_keywords: string[]; seo_title: string; meta_description: string; hashtag_strategy: string }) ?? null
+            }
+          />
+          <ThumbnailStudio
+            defaultTitle={item.title ?? 'Your headline goes here'}
+            defaultSub={`${kindCfg.label.toUpperCase()}${item.title ? '' : ' · Draft'}`}
+            brandAccent={brandKit?.accentColor}
+            brandName={brandKit?.introText ?? 'Clipflow'}
+          />
 
           {/* ── Next Steps — bridge to Pipeline & Schedule ── */}
           <div className="rounded-2xl border border-border/50 bg-card">

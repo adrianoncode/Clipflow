@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import {
   BarChart3,
   Clapperboard,
@@ -15,9 +16,16 @@ import {
 
 import { AutoTagButton } from '@/components/content/auto-tag-button'
 import { ClipFinder } from '@/components/content/clip-finder'
+import { EditorExportPanel } from '@/components/content/editor-export-panel'
 import { SentimentAnalysisButton } from '@/components/content/sentiment-analysis-button'
+import { RenderHistoryPanel } from '@/components/outputs/render-history-panel'
+import { ReviewLinkPanel } from '@/components/outputs/review-link-panel'
+import { ReviewCommentsPanel } from '@/components/review/review-comments-panel'
 import type { BestClip, SentimentResult } from '@/app/(app)/workspace/[id]/content/[contentId]/actions'
 import type { ContentItemRow } from '@/lib/content/get-content-item'
+import type { RenderRow } from '@/lib/video/renders/list-renders'
+import type { ReviewLinkRow } from '@/lib/review/get-review-links-for-content'
+import type { InternalReviewComment } from '@/lib/review/get-review-comments-for-content'
 import {
   checkPlanAccess,
   FEATURE_MIN_PLAN,
@@ -31,6 +39,13 @@ interface ToolsTabProps {
   workspaceId: string
   meta: Record<string, unknown> | null
   currentPlan: BillingPlan
+  /** Source-context data — moved here from /outputs page in the Slice 5
+   *  page-detox. Defaults make this safe even when caller hasn't fetched. */
+  renders?: RenderRow[]
+  longLivedSourceUrl?: string
+  reviewLinks?: ReviewLinkRow[]
+  reviewComments?: InternalReviewComment[]
+  canCreateReviewLink?: boolean
 }
 
 /** Build the locked descriptor for a ToolCard, or `undefined` when the
@@ -44,13 +59,30 @@ function gate(
   return { requiredPlan: FEATURE_MIN_PLAN[feature], feature }
 }
 
-export function ToolsTab({ item, workspaceId, meta, currentPlan }: ToolsTabProps) {
+export function ToolsTab({
+  item,
+  workspaceId,
+  meta,
+  currentPlan,
+  renders = [],
+  longLivedSourceUrl,
+  reviewLinks = [],
+  reviewComments = [],
+  canCreateReviewLink = false,
+}: ToolsTabProps) {
   const currentTags = Array.isArray(meta?.tags) ? (meta.tags as string[]) : []
   const initialSentiment: SentimentResult | null =
     meta && 'sentiment' in meta ? (meta.sentiment as SentimentResult) : null
   const initialClips: BestClip[] | null = Array.isArray(meta?.best_clips)
     ? (meta.best_clips as BestClip[])
     : null
+  const transcript = item.transcript ?? ''
+  const srt = (meta?.srt as string | undefined) ?? null
+  const vtt = (meta?.vtt as string | undefined) ?? null
+  const estimatedDurationSec =
+    typeof meta?.duration_seconds === 'number'
+      ? (meta.duration_seconds as number)
+      : null
 
   return (
     <div className="space-y-6">
@@ -182,6 +214,61 @@ export function ToolsTab({ item, workspaceId, meta, currentPlan }: ToolsTabProps
             />
           </div>
         </div>
+      </div>
+
+      {/* Source — moved from /outputs in the Slice 5 page-detox. These
+          are about the source video itself (renders of the source +
+          export of source assets to external editors), not about
+          per-platform drafts, so they belong here in the per-video tab. */}
+      <div className="space-y-3">
+        <h3 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
+          Source
+        </h3>
+        <RenderHistoryPanel initialRenders={renders} />
+        <EditorExportPanel
+          contentId={item.id}
+          contentTitle={item.title ?? 'Untitled'}
+          transcript={transcript}
+          srt={srt}
+          vtt={vtt}
+          clips={initialClips}
+          estimatedDurationSec={estimatedDurationSec}
+          sourceUrl={longLivedSourceUrl ?? null}
+        />
+      </div>
+
+      {/* Collaboration — review-link sharing + reviewer comments live
+          here for now. They're scoped to a single content_item, so the
+          per-video page is a clean home until Step 5 (Pipeline) gets
+          its own collaboration surface in a later slice. */}
+      <div className="space-y-3">
+        <h3 className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85">
+          Collaboration
+        </h3>
+        {canCreateReviewLink ? (
+          <ReviewLinkPanel
+            workspaceId={workspaceId}
+            contentId={item.id}
+            links={reviewLinks}
+          />
+        ) : (
+          <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 p-5">
+            <p className="text-sm font-semibold">Client review links</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Share a no-login link with a client to collect feedback on
+              these drafts. White-label, optional expiry. Available on
+              the Studio plan.
+            </p>
+            <Link
+              href={`/billing?plan=agency&feature=clientReviewLink`}
+              className="cf-btn-3d cf-btn-3d-primary mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs"
+            >
+              <Sparkles className="h-3 w-3" />
+              Upgrade to unlock
+            </Link>
+          </div>
+        )}
+        <ReviewCommentsPanel comments={reviewComments} />
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { Loader2 } from 'lucide-react'
 
 import {
   Card,
@@ -11,19 +11,19 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { FormMessage } from '@/components/ui/form-message'
-import { ContentStatusBadge } from '@/components/content/content-status-badge'
 import { RetryTranscriptionButton } from '@/components/content/retry-transcription-button'
 import { VideoPlayer } from '@/components/content/video-player'
 import { AutoGenerateTrigger } from '@/components/content/auto-generate-trigger'
 import { DeleteContentButton } from '@/components/content/delete-content-button'
-import { RenameContentForm } from '@/components/content/rename-content-form'
 import type { ContentItemRow } from '@/lib/content/get-content-item'
 import type { BillingPlan } from '@/lib/billing/plans'
+import type { RenderRow } from '@/lib/video/renders/list-renders'
+import type { ReviewLinkRow } from '@/lib/review/get-review-links-for-content'
+import type { InternalReviewComment } from '@/lib/review/get-review-comments-for-content'
 
 import {
   TabNav,
   type ContentDetailTab,
-  formatDate,
   readErrorMessage,
 } from './content-detail/shared'
 import { OverviewTab } from './content-detail/overview-tab'
@@ -36,7 +36,18 @@ interface ContentDetailViewProps {
   hasExistingOutputs: boolean
   outputCount?: number
   signedUrl?: string
+  /** Long-lived URL for source-context tools (Editor Export needs a URL
+   *  that survives past the short-lived player URL). */
+  longLivedSourceUrl?: string
   currentPlan: BillingPlan
+  /** Source-context data — moved here from /outputs page in the Step 4
+   *  page-detox so the per-video page owns everything that's about the
+   *  source video, and Outputs stays focused on the per-platform drafts. */
+  renders?: RenderRow[]
+  reviewLinks?: ReviewLinkRow[]
+  reviewComments?: InternalReviewComment[]
+  /** Plan-gate for the client-review-link feature. */
+  canCreateReviewLink?: boolean
 }
 
 /**
@@ -54,10 +65,14 @@ export function ContentDetailView({
   hasExistingOutputs,
   outputCount = 0,
   signedUrl,
+  longLivedSourceUrl,
   currentPlan,
+  renders = [],
+  reviewLinks = [],
+  reviewComments = [],
+  canCreateReviewLink = false,
 }: ContentDetailViewProps) {
   const [activeTab, setActiveTab] = useState<ContentDetailTab>('overview')
-  const title = item.title ?? 'Untitled'
   const isReady = item.status === 'ready'
   const hasTranscript = isReady && !!item.transcript
 
@@ -70,60 +85,27 @@ export function ContentDetailView({
     ? item.transcript.split(/\s+/).filter(Boolean).length
     : 0
 
+  // Layout (../layout.tsx) renders the Stepper + Per-Video header + tab
+  // nav. This view is the body of the "Source" tab — pure content, no
+  // chassis duplication.
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6 p-4 sm:p-8">
-      {/* ── Header ── */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <Link
-            href={`/workspace/${workspaceId}`}
-            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            ← Back to workspace
-          </Link>
-          <RenameContentForm
-            workspaceId={workspaceId}
-            contentId={item.id}
-            currentTitle={title}
-          />
-          <p className="text-xs text-muted-foreground">
-            {item.kind === 'video'
-              ? 'Video / audio'
-              : item.kind === 'youtube'
-                ? 'YouTube'
-                : item.kind === 'url'
-                  ? 'Website'
-                  : 'Text'}{' '}
-            · added {formatDate(item.created_at)}
-          </p>
-        </div>
-        <ContentStatusBadge status={item.status} />
-      </div>
-
+    <div className="space-y-6">
       {/* ── Video player ── */}
       {signedUrl && (
         <VideoPlayer signedUrl={signedUrl} title={item.title ?? undefined} />
       )}
 
-      {/* ── Status banners ── */}
+      {/* Compact inline status pill — replaces the old big "Transcribing…
+          Auto-refreshing every 3s" Card so the user can see the player
+          + tabs immediately and the phase update is unobtrusive. The
+          full progress experience for active items lives in the
+          Recent-Imports-Strip on the Library page (Slice 2). */}
       {(item.status === 'uploading' || item.status === 'processing') && (
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle>
-              {item.status === 'uploading'
-                ? 'Waiting for upload to finish'
-                : 'Transcribing...'}
-            </CardTitle>
-            <CardDescription>
-              {item.status === 'uploading'
-                ? 'This page will refresh automatically.'
-                : 'Whisper is turning your audio into text. This can take a minute or two.'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Auto-refreshing every 3 seconds...
-          </CardContent>
-        </Card>
+        <ProcessingPhasePill
+          status={item.status}
+          phase={item.processing_phase}
+          progress={item.processing_progress}
+        />
       )}
 
       {item.status === 'failed' && (
@@ -188,7 +170,17 @@ export function ContentDetailView({
           )}
 
           {activeTab === 'tools' && (
-            <ToolsTab item={item} workspaceId={workspaceId} meta={meta} currentPlan={currentPlan} />
+            <ToolsTab
+              item={item}
+              workspaceId={workspaceId}
+              meta={meta}
+              currentPlan={currentPlan}
+              renders={renders}
+              longLivedSourceUrl={longLivedSourceUrl}
+              reviewLinks={reviewLinks}
+              reviewComments={reviewComments}
+              canCreateReviewLink={canCreateReviewLink}
+            />
           )}
         </>
       )}
@@ -200,3 +192,47 @@ export function ContentDetailView({
     </div>
   )
 }
+
+/** Maps the Slice 8 sub-phase to a friendly label. Returns null for
+ *  unknown phases — caller falls back to the generic status text. */
+function phaseLabel(phase: string | null): string | null {
+  switch (phase) {
+    case 'queued':
+      return 'Queued'
+    case 'uploading':
+      return 'Uploading…'
+    case 'detect':
+      return 'Detecting language…'
+    case 'transcribe':
+      return 'Transcribing…'
+    case 'index':
+      return 'Indexing…'
+    default:
+      return null
+  }
+}
+
+function ProcessingPhasePill({
+  status,
+  phase,
+  progress,
+}: {
+  status: 'uploading' | 'processing'
+  phase: string | null
+  progress: number | null
+}) {
+  const label =
+    phaseLabel(phase) ?? (status === 'uploading' ? 'Uploading…' : 'Transcribing…')
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-50/70 px-3 py-1.5 text-[12px] font-semibold text-amber-800">
+      <Loader2 className="h-3 w-3 animate-spin" strokeWidth={2.4} />
+      <span>{label}</span>
+      {progress != null ? (
+        <span className="font-mono tabular-nums text-amber-700/80">
+          {progress}%
+        </span>
+      ) : null}
+    </div>
+  )
+}
+

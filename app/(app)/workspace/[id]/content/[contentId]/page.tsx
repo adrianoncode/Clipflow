@@ -3,9 +3,13 @@ import { notFound } from 'next/navigation'
 import { ContentDetailView } from '@/components/content/content-detail-view'
 import { RealtimeStatusWatcher } from '@/components/content/realtime-status-watcher'
 import { getContentItem } from '@/lib/content/get-content-item'
-import { getSignedUrl } from '@/lib/content/get-signed-url'
+import { getLongLivedSourceUrl, getSignedUrl } from '@/lib/content/get-signed-url'
 import { hasOutputs } from '@/lib/content/has-outputs'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
+import { getPlanFeatures } from '@/lib/billing/plans'
+import { listRenders } from '@/lib/video/renders/list-renders'
+import { getReviewLinksForContent } from '@/lib/review/get-review-links-for-content'
+import { getReviewCommentsForContent } from '@/lib/review/get-review-comments-for-content'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -52,23 +56,38 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
   // outputs exist. Fold it in — the query is cheap (index-only count)
   // and we just ignore the result when hasExistingOutputs=false.
   const supabase = createClient()
-  const [hasExistingOutputs, signedUrl, currentPlan, outputCountResult] =
-    await Promise.all([
-      item.status === 'ready'
-        ? hasOutputs(params.contentId, params.id)
-        : Promise.resolve(false),
-      needsSignedUrl ? getSignedUrl(item.source_url!) : Promise.resolve(null),
-      getWorkspacePlan(params.id),
-      item.status === 'ready'
-        ? supabase
-            .from('outputs')
-            .select('id', { count: 'exact', head: true })
-            .eq('content_id', params.contentId)
-            .eq('workspace_id', params.id)
-        : Promise.resolve({ count: 0 }),
-    ])
+  const [
+    hasExistingOutputs,
+    signedUrl,
+    longLivedSourceUrl,
+    currentPlan,
+    outputCountResult,
+    renders,
+    reviewLinks,
+    reviewComments,
+  ] = await Promise.all([
+    item.status === 'ready'
+      ? hasOutputs(params.contentId, params.id)
+      : Promise.resolve(false),
+    needsSignedUrl ? getSignedUrl(item.source_url!) : Promise.resolve(null),
+    item.source_url ? getLongLivedSourceUrl(item.source_url) : Promise.resolve(null),
+    getWorkspacePlan(params.id),
+    item.status === 'ready'
+      ? supabase
+          .from('outputs')
+          .select('id', { count: 'exact', head: true })
+          .eq('content_id', params.contentId)
+          .eq('workspace_id', params.id)
+      : Promise.resolve({ count: 0 }),
+    item.status === 'ready'
+      ? listRenders({ workspaceId: params.id, contentId: params.contentId, limit: 12 })
+      : Promise.resolve([]),
+    getReviewLinksForContent(params.contentId, params.id),
+    getReviewCommentsForContent(params.contentId, params.id),
+  ])
 
   const outputCount = hasExistingOutputs ? outputCountResult.count ?? 0 : 0
+  const planFeatures = getPlanFeatures(currentPlan)
 
   return (
     <>
@@ -83,7 +102,12 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
         hasExistingOutputs={hasExistingOutputs}
         outputCount={outputCount}
         signedUrl={signedUrl ?? undefined}
+        longLivedSourceUrl={longLivedSourceUrl ?? undefined}
         currentPlan={currentPlan}
+        renders={renders}
+        reviewLinks={reviewLinks}
+        reviewComments={reviewComments}
+        canCreateReviewLink={planFeatures.clientReviewLink}
       />
     </>
   )

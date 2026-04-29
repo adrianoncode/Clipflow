@@ -14,6 +14,7 @@ import {
 import {
   BarChart3,
   BookOpen,
+  Calendar,
   CheckSquare,
   FileVideo,
   Gift,
@@ -23,7 +24,6 @@ import {
   Lock,
   LogOut,
   MoreHorizontal,
-  Plug,
   Plus,
   Radio,
   ScrollText,
@@ -257,20 +257,28 @@ export function AppShell({
   function isActive(href: string): boolean {
     if (href === '/dashboard') return pathname === href
     // /settings stays highlighted for every settings sub-route EXCEPT the
-    // two that get their own top-level sidebar entries (Channels and
-    // Integrations). Otherwise clicking e.g. "Channels" would light both
-    // the Channels row AND the Settings row simultaneously.
+    // ones that get their own top-level sidebar entries (Channels).
+    // Otherwise clicking e.g. "Channels" would light both the Channels
+    // row AND the Settings row simultaneously.
     if (href === '/settings')
       return (
         pathname.startsWith('/settings') &&
-        !pathname.startsWith('/settings/integrations') &&
         !pathname.startsWith('/settings/channels') &&
         !pathname.startsWith('/settings/audit-log')
       )
-    if (href === '/settings/integrations') return pathname.startsWith('/settings/integrations')
     if (href === '/settings/channels') return pathname.startsWith('/settings/channels')
     if (href === '/settings/audit-log') return pathname.startsWith('/settings/audit-log')
-    if (href === `/workspace/${currentWorkspaceId}`) return pathname === href
+    // Library is the entry to the Create-Section. It stays active while
+    // the user is drilling into per-video pages (content/[contentId]/*),
+    // because Steps 2-4 (Source/Highlights/Drafts) live as tabs under
+    // that subtree. Pipeline + Schedule are siblings, so they're excluded
+    // by the explicit checks above.
+    if (href === `/workspace/${currentWorkspaceId}`) {
+      return (
+        pathname === href ||
+        pathname.startsWith(`/workspace/${currentWorkspaceId}/content`)
+      )
+    }
     if (href === `/workspace/${currentWorkspaceId}/schedule`) {
       return pathname === href || pathname.startsWith(href + '/')
     }
@@ -282,19 +290,21 @@ export function AppShell({
 
   const groups: NavGroup[] = [
     {
-      label: 'Workspace',
+      label: 'Insights',
       items: [
         { href: '/dashboard', label: 'Dashboard', icon: Home },
-        { href: `/workspace/${currentWorkspaceId}`, label: 'Library', icon: FileVideo },
-        // Drafts now wraps Board / Calendar / Queue under one umbrella —
-        // Schedule used to be a sibling sidebar item but it's actually
-        // the next view of Drafts, not a separate destination.
-        { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Drafts', icon: CheckSquare },
+        { href: '/analytics', label: 'Analytics', icon: BarChart3 },
       ],
     },
     {
+      // Create-Section — alle 6 Workflow-Steps unter einem Dach.
+      // Stepper-Header läuft persistent über Library / Pipeline / Schedule.
+      // Templates + Creators sind die Tools die den Erstell-Flow füttern.
       label: 'Create',
       items: [
+        { href: `/workspace/${currentWorkspaceId}`, label: 'Library', icon: FileVideo },
+        { href: `/workspace/${currentWorkspaceId}/pipeline`, label: 'Pipeline', icon: CheckSquare },
+        { href: `/workspace/${currentWorkspaceId}/schedule`, label: 'Schedule', icon: Calendar },
         { href: '/settings/templates', label: 'Templates', icon: LayoutTemplate },
         {
           href: `/workspace/${currentWorkspaceId}/research`,
@@ -332,17 +342,10 @@ export function AppShell({
         ]
       : []),
     {
-      label: 'Insights',
-      items: [
-        { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-      ],
-    },
-    {
       label: 'Connect',
       items: [
         { href: '/settings/channels', label: 'Channels', icon: Radio },
         { href: '/settings/ai-keys', label: 'AI keys', icon: Key },
-        { href: '/settings/integrations', label: 'Integrations', icon: Plug },
       ],
     },
   ]

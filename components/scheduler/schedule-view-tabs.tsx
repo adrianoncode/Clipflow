@@ -1,40 +1,30 @@
 import Link from 'next/link'
-import { CalendarDays, KanbanSquare, ListChecks, Sparkles } from 'lucide-react'
+import { CalendarDays, ListChecks, Sparkles } from 'lucide-react'
 
 /**
- * Three-tab strip that ties Drafts (Board), Calendar, and Queue
- * together into one perceived section. Replaces the old "Schedule"
- * sidebar item — schedule is part of the drafts flow, not a separate
- * destination.
+ * Local view-tabs for the Schedule page (Step 6 in the Create-Section
+ * workflow). Only switches between sub-views OF /schedule itself —
+ * Calendar, Queue, and Plan. The cross-section "Board" link from the
+ * old DraftsTabNav has moved to the global sidebar (Pipeline = Step 5).
  *
- * Routes the tabs map to:
- *   board    → /workspace/[id]/pipeline
- *   calendar → /workspace/[id]/schedule?view=calendar
- *   queue    → /workspace/[id]/schedule
- *
- * The URLs stay stable (existing bookmarks, deep links, plan-gate
- * redirects all keep working) — only the navigation framing changes.
+ * Stable URLs:
+ *   queue     → /workspace/[id]/schedule
+ *   calendar  → /workspace/[id]/schedule?view=calendar
+ *   plan      → /workspace/[id]/schedule?view=plan
  */
-export function DraftsTabNav({
+export function ScheduleViewTabs({
   workspaceId,
   current,
   approvedCount,
   scheduledCount,
 }: {
   workspaceId: string
-  current: 'board' | 'calendar' | 'queue' | 'plan'
-  /** Optional badge counts. Skip props when you don't have them. */
+  current: 'queue' | 'calendar' | 'plan'
+  /** Badge counts — pass when known, omit otherwise. */
   approvedCount?: number
   scheduledCount?: number
 }) {
   const tabs = [
-    {
-      id: 'board' as const,
-      label: 'Board',
-      href: `/workspace/${workspaceId}/pipeline`,
-      Icon: KanbanSquare,
-      count: undefined,
-    },
     {
       id: 'calendar' as const,
       label: 'Calendar',
@@ -60,7 +50,7 @@ export function DraftsTabNav({
 
   return (
     <nav
-      aria-label="Drafts views"
+      aria-label="Schedule views"
       className="inline-flex items-center gap-1 rounded-2xl border border-border/60 bg-card p-1"
       style={{
         boxShadow:
