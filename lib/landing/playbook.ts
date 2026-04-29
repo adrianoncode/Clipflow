@@ -195,7 +195,7 @@ export const GUIDES: Guide[] = [
         content: [
           {
             type: 'paragraph',
-            text: 'Click the + New content button top-left. You have four import paths: upload MP4, paste YouTube link, paste RSS feed URL, or paste plain text. Pick whichever matches your source.',
+            text: 'Click + New content top-left, or land on the workflow home (Step 1 — Import). One Smart-Import box accepts everything: drop an MP4, paste a YouTube link, paste a website URL, paste an RSS feed, or type raw text. Clipflow auto-detects the source, no per-format tabs to pick.',
           },
           {
             type: 'dos-donts',
@@ -238,7 +238,7 @@ export const GUIDES: Guide[] = [
               },
               {
                 title: 'Review the output in Drafts',
-                body: 'Sidebar → Drafts. Four fresh drafts ready for review. Each card shows the caption, platform, and a virality-like ranking signal.',
+                body: 'Click step 5 (Approve) on the workflow stepper — that opens the cross-video drafts board. Four fresh drafts ready for review, each card shows the caption, platform, and a virality-like ranking signal. The stepper is clickable end-to-end so you can jump straight there from any step.',
               },
             ],
           },
@@ -273,7 +273,7 @@ export const GUIDES: Guide[] = [
           },
           {
             type: 'paragraph',
-            text: 'After saving, go back to Drafts, select all four drafts, and click Bulk regenerate. The new drafts will be noticeably closer to how you actually write. If they are not, the Brand Voice copy is too vague — rewrite it more specifically.',
+            text: 'After saving, jump back via step 5 (Approve) on the workflow stepper, select all four drafts, and click Bulk regenerate. The new drafts will be noticeably closer to how you actually write. If they are not, the Brand Voice copy is too vague — rewrite it more specifically.',
           },
         ],
       },
@@ -283,7 +283,7 @@ export const GUIDES: Guide[] = [
         content: [
           {
             type: 'paragraph',
-            text: 'On the Drafts board, read each draft. Minor edit: click inline and retype. Major miss: click Regenerate for a single-platform retry. Happy with it: swipe it right to Approved.',
+            text: 'On the Drafts board (workflow step 5 — Approve), read each draft. Minor edit: click inline and retype. Major miss: click Regenerate for a single-platform retry. Happy with it: swipe it right to Approved.',
           },
           {
             type: 'callout',
@@ -299,7 +299,7 @@ export const GUIDES: Guide[] = [
         content: [
           {
             type: 'paragraph',
-            text: 'If you have Upload-Post connected, go to Schedule, drag your Approved drafts onto the calendar, set a time, done. If not, click Export on each draft — you will get a clean caption + any rendered assets to paste into each platform manually.',
+            text: 'If you have Upload-Post connected, click step 6 (Schedule) on the workflow stepper, drag your Approved drafts onto the calendar, set a time, done. If not, click Export on each draft — you will get a clean caption + any rendered assets to paste into each platform manually.',
           },
           {
             type: 'callout',
@@ -625,7 +625,7 @@ export const GUIDES: Guide[] = [
             type: 'callout',
             variant: 'tip',
             title: 'Bulk-regenerate on voice change',
-            body: 'After updating Brand Voice, go to Drafts, select all unpublished drafts, click Regenerate. Every pending post gets refreshed against the new voice in one shot. This is the move that saves agencies hours per client.',
+            body: 'After updating Brand Voice, jump to step 5 (Approve) on the workflow stepper, select all unpublished drafts, click Regenerate. Every pending post gets refreshed against the new voice in one shot. This is the move that saves agencies hours per client.',
           },
         ],
       },
@@ -682,7 +682,7 @@ export const GUIDES: Guide[] = [
               },
               {
                 title: 'Subscribe to your podcast RSS feed (3 min)',
-                body: 'Import content → RSS tab. Paste the feed URL. Check "Auto-import new episodes". Clipflow polls daily at 6 AM UTC — new episodes land as content automatically.',
+                body: 'Open Workflow → Step 1 (Import). Paste your feed URL into the Smart-Import box — Clipflow auto-detects RSS. Check "Auto-import new episodes". Clipflow polls daily at 6 AM UTC — new episodes land as content automatically.',
                 tip: 'Find your RSS URL in your podcast host settings. Transistor / Buzzsprout / Simplecast all surface it prominently. Apple Podcasts URLs do not work — you need the raw feed.',
               },
               {
@@ -785,7 +785,7 @@ export const GUIDES: Guide[] = [
         content: [
           {
             type: 'paragraph',
-            text: 'Open Schedule. Drag your three approved drafts onto the calendar — each one across multiple platforms. Suggested cadence for podcasters:',
+            text: 'Click step 6 (Schedule) on the workflow stepper. Drag your three approved drafts onto the calendar — each one across multiple platforms. Suggested cadence for podcasters:',
           },
           {
             type: 'visual',
@@ -816,13 +816,13 @@ export const GUIDES: Guide[] = [
         content: [
           {
             type: 'paragraph',
-            text: 'Open Analytics. See which clip is outperforming. Grab the hook of the winning clip and paste it as your new example hook in Brand Voice. This is the feedback loop that compounds weekly — every episode makes the next one sharper.',
+            text: 'Open Dashboard (Insights). See which clip is outperforming. Grab the hook of the winning clip and paste it as your new example hook in Brand Voice. This is the feedback loop that compounds weekly — every episode makes the next one sharper.',
           },
           {
             type: 'callout',
             variant: 'pro',
             title: 'The weekly review ritual (5 min)',
-            body: 'Every Friday: open Analytics, sort by engagement, find the #1 post. Update Brand Voice example hook with its opener. Next week\u2019s generations inherit what worked.',
+            body: 'Every Friday: open Dashboard, sort by engagement, find the #1 post. Update Brand Voice example hook with its opener. Next week\u2019s generations inherit what worked.',
           },
         ],
       },
@@ -1142,7 +1142,7 @@ export const GUIDES: Guide[] = [
               },
               {
                 title: 'After 5-10 posts, review patterns',
-                body: 'Go to Analytics, sort by engagement. Which hook structures show up most? Bias future generations toward those.',
+                body: 'Open Dashboard, sort by engagement. Which hook structures show up most? Bias future generations toward those.',
               },
             ],
           },
@@ -1346,7 +1346,7 @@ export const GUIDES: Guide[] = [
               },
               {
                 title: 'Internal review pass',
-                body: 'Your team reviews on the Drafts board. Edit inline or regenerate single platforms that miss.',
+                body: 'Your team reviews on the Drafts board (workflow step 5 — Approve). Edit inline or regenerate single platforms that miss.',
               },
               {
                 title: 'Move drafts to Approved',
@@ -1362,7 +1362,7 @@ export const GUIDES: Guide[] = [
               },
               {
                 title: 'Iterate until client-approved',
-                body: 'Comments land back on your Drafts board. Address them, regenerate if needed, move to approved when done.',
+                body: 'Comments land back on your Drafts board (step 5). Address them, regenerate if needed, move to approved when done.',
               },
               {
                 title: 'Schedule the week',
@@ -1453,12 +1453,12 @@ export const GUIDES: Guide[] = [
             type: 'steps',
             items: [
               {
-                title: 'Click "+ New content" in the top-left',
-                body: 'Sidebar → + New content. This opens the import picker with four tabs: Upload / YouTube / Text / RSS.',
+                title: 'Open Workflow → Step 1 (Import)',
+                body: 'Click "+ New content" top-left, or click step 1 on the workflow stepper. Either lands you on the Smart-Import box — one universal field, no tabs to pick.',
               },
               {
-                title: 'Open the YouTube tab',
-                body: 'Paste the full URL — both short (youtu.be) and long (youtube.com/watch) formats work.',
+                title: 'Paste the YouTube URL',
+                body: 'Drop the link straight into the Smart-Import field — both short (youtu.be) and long (youtube.com/watch) formats work. Clipflow auto-detects YouTube and switches to transcript-fetch mode.',
               },
               {
                 title: 'Hit Import',
@@ -1495,7 +1495,7 @@ export const GUIDES: Guide[] = [
         content: [
           {
             type: 'paragraph',
-            text: 'Go to Drafts in the sidebar. Your four drafts sit in the Draft column. Click the one tagged "TikTok" to open it.',
+            text: 'Click step 5 (Approve) on the workflow stepper to open the Drafts board. Your four drafts sit in the Draft column. Click the one tagged "TikTok" to open it.',
           },
           {
             type: 'dos-donts',
@@ -1534,7 +1534,7 @@ export const GUIDES: Guide[] = [
         content: [
           {
             type: 'paragraph',
-            text: 'Hit Approve on the draft. If Upload-Post is connected (Settings → Channels), go to Schedule and drop it onto today\u2019s calendar slot. If not, click Export — you get a clean caption to paste into TikTok manually.',
+            text: 'Hit Approve on the draft. If Upload-Post is connected (Settings → Channels), click step 6 (Schedule) on the workflow stepper and drop it onto today\u2019s calendar slot. If not, click Export — you get a clean caption to paste into TikTok manually.',
           },
           {
             type: 'callout',
@@ -1595,7 +1595,7 @@ export const GUIDES: Guide[] = [
               },
               {
                 title: 'Go to the Drafts board',
-                body: 'Sidebar → Drafts. You will see the Drafts board with Draft / Review / Approved / Exported columns.',
+                body: 'Click step 5 (Approve) on the workflow stepper. You will see the Drafts board with Draft / Review / Approved / Exported columns. The stepper is clickable from anywhere — you do not need to walk through Steps 1-4 to land here.',
               },
               {
                 title: 'Select the drafts you want refreshed',
@@ -1715,8 +1715,8 @@ export const GUIDES: Guide[] = [
           {
             type: 'steps',
             items: [
-              { title: 'Open New content', body: 'Click Import content from the workspace home, or paste /workspace/[id]/content/new directly.' },
-              { title: 'Paste or drop the source', body: 'YouTube link, MP4/MP3 upload, or podcast RSS \u2014 all four flows work. Skip text-only if you want to render.' },
+              { title: 'Open Step 1 (Import)', body: 'Click + New content top-left, or click step 1 on the workflow stepper. Either lands you on the Smart-Import box.' },
+              { title: 'Paste or drop the source', body: 'Smart-Import auto-detects what you give it: YouTube link, MP4/MP3 upload, podcast RSS, or pasted script. Skip text-only if you want to render.' },
               { title: 'Wait for Ready', body: 'Status badge flips from Processing to Ready once Whisper finishes. Usually 30\u2013120 seconds depending on length.' },
               { title: 'Open the content detail page', body: 'The Highlights button lives in the Tools tab and on the workspace home for any item already in the Ready state.' },
             ],
