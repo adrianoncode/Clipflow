@@ -12,7 +12,6 @@ import {
   useSpring,
 } from 'framer-motion'
 import {
-  BarChart3,
   BookOpen,
   FileVideo,
   Gift,
@@ -289,7 +288,6 @@ export function AppShell({
       label: 'Insights',
       items: [
         { href: '/dashboard', label: 'Dashboard', icon: Home },
-        { href: '/analytics', label: 'Analytics', icon: BarChart3 },
       ],
     },
     {

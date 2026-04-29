@@ -117,6 +117,6 @@ export async function notifyWeeklySummary(params: {
     type: 'weekly_summary',
     title: 'Your weekly summary',
     body: `This week: ${params.contentCount} content items, ${params.outputCount} outputs generated.`,
-    link: '/analytics',
+    link: '/dashboard',
   }).catch(() => {})
 }

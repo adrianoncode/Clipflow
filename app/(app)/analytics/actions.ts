@@ -180,7 +180,7 @@ export async function refreshWorkspaceStatsAction(
   }
 
   log.info('manual stats refresh', { workspaceId, fetched, failed })
-  revalidatePath('/analytics')
+  revalidatePath('/dashboard')
 
   return { ok: true, fetched, failed, lastFetchedAt: new Date().toISOString() }
 }
