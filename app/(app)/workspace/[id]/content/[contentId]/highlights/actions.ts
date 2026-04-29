@@ -48,6 +48,12 @@ const deleteSchema = z.object({
   highlight_id: z.string().uuid(),
 })
 
+const toggleSelectionSchema = z.object({
+  workspace_id: z.string().uuid(),
+  highlight_id: z.string().uuid(),
+  selected: z.union([z.literal('true'), z.literal('false')]),
+})
+
 // ---------------------------------------------------------------------------
 // Find viral moments
 // ---------------------------------------------------------------------------
@@ -150,8 +156,18 @@ export async function findViralMomentsAction(
   // Insert drafts — use admin client so the batch insert isn't
   // slowed by per-row RLS evaluation. Workspace membership was
   // already enforced above.
+  //
+  // Slice 10: seed `selected_for_drafts` for the top 3 by virality
+  // score so the user lands on a sensible default selection. They
+  // can de-/re-select via the per-card checkbox afterwards. Tie-
+  // breakers fall back to the AI's emit order (typically already
+  // sorted high-to-low by score).
   const admin = createAdminClient()
-  const rows = detection.moments.map((m) => ({
+  const sortedScores = [...detection.moments]
+    .map((m, idx) => ({ idx, score: m.virality_score ?? 0 }))
+    .sort((a, b) => b.score - a.score || a.idx - b.idx)
+  const topIndices = new Set(sortedScores.slice(0, 3).map((s) => s.idx))
+  const rows = detection.moments.map((m, idx) => ({
     content_id,
     workspace_id,
     start_seconds: m.start_seconds,
@@ -160,6 +176,7 @@ export async function findViralMomentsAction(
     reason: m.reason,
     virality_score: m.virality_score,
     status: 'draft' as const,
+    selected_for_drafts: topIndices.has(idx),
     created_by: check.userId,
   }))
 
@@ -680,6 +697,56 @@ export async function renderAllHighlightsAction(
 
   revalidatePath(`/workspace/${workspace_id}/content/${content_id}/highlights`)
   return { ok: true, submitted, failed }
+}
+
+// ---------------------------------------------------------------------------
+// Toggle selection — Slice 10
+// ---------------------------------------------------------------------------
+// Reviewer flips selected_for_drafts on a single highlight. The find-
+// moments pass seeds top-3 by virality_score; this lets the reviewer
+// add or remove highlights from that selection before triggering the
+// per-platform Drafts step.
+
+export type ToggleSelectionState =
+  | { ok?: undefined }
+  | { ok: true }
+  | { ok: false; error: string }
+
+export async function toggleHighlightSelectionAction(
+  _prev: ToggleSelectionState,
+  formData: FormData,
+): Promise<ToggleSelectionState> {
+  const parsed = toggleSelectionSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    highlight_id: formData.get('highlight_id'),
+    selected: formData.get('selected'),
+  })
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+  const { workspace_id, highlight_id, selected } = parsed.data
+
+  const check = await requireWorkspaceMember(workspace_id)
+  if (!check.ok) return { ok: false, error: check.message }
+  if (check.role !== 'owner' && check.role !== 'editor') {
+    return { ok: false, error: 'Only editors and owners can re-select highlights.' }
+  }
+
+  const supabase = createClient()
+  const { data: row, error: lookupError } = await supabase
+    .from('content_highlights')
+    .update({ selected_for_drafts: selected === 'true' })
+    .eq('id', highlight_id)
+    .eq('workspace_id', workspace_id)
+    .select('content_id')
+    .maybeSingle()
+
+  if (lookupError || !row) {
+    return { ok: false, error: 'Could not update selection.' }
+  }
+
+  revalidatePath(`/workspace/${workspace_id}/content/${row.content_id}/highlights`)
+  return { ok: true }
 }
 
 // ---------------------------------------------------------------------------

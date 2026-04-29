@@ -25,6 +25,12 @@ export interface HighlightRow {
    *  clip-preview-editor — stores customCaptionText, audioGainDb,
    *  thumbnailSeconds under metadata.edits. */
   metadata: Json
+  /** Slice 10: reviewer-picked candidates that feed the per-platform
+   *  Drafts step. Server seeds top-3 by virality_score on find-moments. */
+  selected_for_drafts: boolean
+  /** Slice 10: set when the reviewer manually tunes timing/hook/caption.
+   *  Re-Find passes preserve these rows. */
+  is_user_edited: boolean
   created_at: string
 }
 
@@ -41,7 +47,7 @@ export async function listHighlights(
   const { data, error } = await supabase
     .from('content_highlights')
     .select(
-      'id, content_id, workspace_id, start_seconds, end_seconds, hook_text, reason, virality_score, status, render_id, video_url, render_error, caption_style, aspect_ratio, crop_x, thumbnail_url, metadata, created_at',
+      'id, content_id, workspace_id, start_seconds, end_seconds, hook_text, reason, virality_score, status, render_id, video_url, render_error, caption_style, aspect_ratio, crop_x, thumbnail_url, metadata, selected_for_drafts, is_user_edited, created_at',
     )
     .eq('content_id', contentId)
     .eq('workspace_id', workspaceId)

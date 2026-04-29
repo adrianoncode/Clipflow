@@ -15,14 +15,19 @@ import {
   Zap,
 } from 'lucide-react'
 
+import Link from 'next/link'
+import { ArrowRight, Check } from 'lucide-react'
+
 import {
   deleteHighlightAction,
   publishHighlightAction,
   renderAllHighlightsAction,
   renderHighlightAction,
+  toggleHighlightSelectionAction,
   type PublishHighlightState,
   type RenderAllState,
   type RenderHighlightState,
+  type ToggleSelectionState,
 } from '@/app/(app)/workspace/[id]/content/[contentId]/highlights/actions'
 import { ClipPreviewEditor } from '@/components/highlights/clip-preview-editor'
 import type { WordTiming } from '@/lib/highlights/caption-chunks'
@@ -102,6 +107,19 @@ export function HighlightsList({
         ))}
       </div>
 
+      {/* Bottom-Sticky "Make drafts" CTA — Slice 10. Counts highlights
+          where selected_for_drafts=true (server seeds top-3 by score on
+          find-moments; reviewer can toggle). Lives just above the
+          editor-modal so it's always visible while scrolling the list. */}
+      {canEdit ? (
+        <MakeDraftsBar
+          workspaceId={workspaceId}
+          contentId={contentId}
+          selectedCount={items.filter((h) => h.selected_for_drafts).length}
+          totalCount={items.length}
+        />
+      ) : null}
+
       {editing && sourceVideoUrl ? (
         <ClipPreviewEditor
           key={editing.id}
@@ -145,14 +163,25 @@ function HighlightCard({
         : 'text-muted-foreground bg-muted border-border/60'
 
   return (
-    <article className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
-      {/* Header: score + timing */}
+    <article
+      className={`flex flex-col gap-3 rounded-2xl border p-4 shadow-sm transition-shadow hover:shadow-md ${
+        h.selected_for_drafts
+          ? 'border-primary/40 bg-primary/[0.03]'
+          : 'border-border/60 bg-card'
+      }`}
+    >
+      {/* Header: selection + score + timing */}
       <div className="flex items-start justify-between gap-2">
-        <div
-          className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-mono text-[11px] font-bold tabular-nums ${scoreColor}`}
-        >
-          <span>{score}</span>
-          <span className="opacity-60">/100</span>
+        <div className="flex items-center gap-2">
+          {canEdit ? (
+            <SelectionCheckbox workspaceId={workspaceId} highlight={h} />
+          ) : null}
+          <div
+            className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-mono text-[11px] font-bold tabular-nums ${scoreColor}`}
+          >
+            <span>{score}</span>
+            <span className="opacity-60">/100</span>
+          </div>
         </div>
         <div className="font-bold text-[10.5px] uppercase tracking-[0.1em] text-primary/85">
           {formatSeconds(h.start_seconds)} – {formatSeconds(h.end_seconds)} ·{' '}
@@ -771,6 +800,119 @@ function HighlightsEmptyPreview() {
           }
         }
       `}</style>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Slice 10 — Selection layer
+// ---------------------------------------------------------------------------
+
+const initialToggleState: ToggleSelectionState = {}
+
+function SelectionCheckbox({
+  workspaceId,
+  highlight,
+}: {
+  workspaceId: string
+  highlight: HighlightRow
+}) {
+  const [, action] = useFormState(
+    toggleHighlightSelectionAction,
+    initialToggleState,
+  )
+  const selected = highlight.selected_for_drafts
+
+  return (
+    <form action={action}>
+      <input type="hidden" name="workspace_id" value={workspaceId} />
+      <input type="hidden" name="highlight_id" value={highlight.id} />
+      <input type="hidden" name="selected" value={selected ? 'false' : 'true'} />
+      <CheckboxButton selected={selected} />
+    </form>
+  )
+}
+
+function CheckboxButton({ selected }: { selected: boolean }) {
+  const { pending } = useFormStatus()
+  return (
+    <button
+      type="submit"
+      aria-label={selected ? 'Deselect highlight' : 'Select highlight for drafts'}
+      aria-pressed={selected}
+      disabled={pending}
+      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all ${
+        selected
+          ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
+          : 'border-border/70 bg-background text-transparent hover:border-primary/40'
+      } ${pending ? 'opacity-60' : ''}`}
+    >
+      {pending ? (
+        <Loader2 className="h-3 w-3 animate-spin" />
+      ) : selected ? (
+        <Check className="h-3 w-3" strokeWidth={3} />
+      ) : null}
+    </button>
+  )
+}
+
+function MakeDraftsBar({
+  workspaceId,
+  contentId,
+  selectedCount,
+  totalCount,
+}: {
+  workspaceId: string
+  contentId: string
+  selectedCount: number
+  totalCount: number
+}) {
+  if (totalCount === 0) return null
+  const disabled = selectedCount === 0
+
+  return (
+    <div className="sticky bottom-4 z-30 flex items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-card/95 px-4 py-3 shadow-[0_12px_32px_-16px_rgba(42,26,61,0.35)] backdrop-blur sm:px-5">
+      <div className="flex min-w-0 items-center gap-2.5">
+        <span
+          aria-hidden
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white ${
+            disabled ? 'bg-muted-foreground/40' : 'bg-[#2A1A3D]'
+          }`}
+        >
+          <Wand2 className="h-3.5 w-3.5" />
+        </span>
+        <p
+          className="min-w-0 truncate text-[13px] font-bold"
+          style={{
+            fontFamily:
+              'var(--font-inter-tight), var(--font-inter), sans-serif',
+          }}
+        >
+          {selectedCount === 0
+            ? 'Pick highlights to turn into platform drafts'
+            : `${selectedCount} of ${totalCount} selected · ready to draft`}
+        </p>
+      </div>
+      <Link
+        href={`/workspace/${workspaceId}/content/${contentId}/outputs`}
+        aria-disabled={disabled}
+        tabIndex={disabled ? -1 : 0}
+        onClick={(e) => {
+          if (disabled) e.preventDefault()
+        }}
+        className={`group inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl px-3.5 text-[12.5px] font-bold tracking-tight transition-all ${
+          disabled
+            ? 'cursor-not-allowed bg-muted text-muted-foreground'
+            : 'bg-[#2A1A3D] text-[#D6FF3E] hover:-translate-y-px hover:bg-[#1A0F2A]'
+        }`}
+        style={{
+          fontFamily:
+            'var(--font-inter-tight), var(--font-inter), sans-serif',
+        }}
+      >
+        Make drafts {selectedCount > 0 ? `(${selectedCount})` : ''}
+        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+      </Link>
     </div>
   )
 }
