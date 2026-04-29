@@ -34,6 +34,13 @@ export interface RunOnePlatformInput {
    *   <uuid>    → use this specific custom template
    */
   templateOverride?: string
+  /**
+   * Slice 17 — when a reviewer rejected a previous version with a
+   * comment, the regen pipeline passes those notes here so the LLM
+   * can address them in the new draft. Free-form bullet list.
+   * Empty/undefined when this is a fresh generation.
+   */
+  revisionNotes?: string[]
 }
 
 export type RunOnePlatformResult =
@@ -83,13 +90,19 @@ export async function runOnePlatform(
     input.templateOverride,
   )
 
+  // Slice 17 — append reviewer revision notes so the regen LLM can
+  // actually act on the feedback ("Hook weak", "Off-brand", etc.). The
+  // notes go LAST so they have the strongest recency bias on the model.
+  const revisionInstruction = buildRevisionInstruction(input.revisionNotes)
+
   const system =
     prompt.system +
     (langInstruction ?? '') +
     brandVoiceInstruction +
     personaInstruction +
     nicheInstruction +
-    templateInstruction
+    templateInstruction +
+    revisionInstruction
 
   const gen = await generate({ provider, apiKey, model, system, user: prompt.user })
   if (!gen.ok) {
@@ -106,12 +119,37 @@ export async function runOnePlatform(
     provider,
     model,
     userId,
+    // Tag the version source so the history reflects WHY this draft
+    // exists — fresh AI gen vs. reviewer-rejected regen with notes.
+    versionSource:
+      input.revisionNotes && input.revisionNotes.length > 0
+        ? 'reject_regen'
+        : 'ai',
   })
 
   if (!insert.ok) {
     return { platform, ok: false, error: insert.error }
   }
   return { platform, ok: true }
+}
+
+// ---------------------------------------------------------------------------
+// Slice 17 — reviewer revision notes
+// ---------------------------------------------------------------------------
+
+/**
+ * Builds the trailing system-prompt block that tells the LLM about the
+ * reviewer's last rejection. Returns empty string when no notes were
+ * captured — fresh generations skip this block entirely.
+ *
+ * Notes are bullet-listed verbatim. The reason chip ("Hook weak") and
+ * the optional free-text both already pre-pend a structured cue, so we
+ * don't reinterpret them — the LLM gets exactly what the reviewer wrote.
+ */
+function buildRevisionInstruction(notes: string[] | undefined): string {
+  if (!notes || notes.length === 0) return ''
+  const bullets = notes.map((n) => `- ${n}`).join('\n')
+  return `\n\nReviewer feedback on the previous version. Address each point in the new draft:\n${bullets}\n`
 }
 
 // ---------------------------------------------------------------------------

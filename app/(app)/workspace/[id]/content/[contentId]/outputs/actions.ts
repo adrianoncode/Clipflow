@@ -40,7 +40,6 @@ import type { OutputPlatform } from '@/lib/supabase/types'
 import { notifyOutputsGenerated, notifyOutputApproved } from '@/lib/notifications/triggers'
 import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
 import { log } from '@/lib/log'
-import { dispatchIntegrations } from '@/lib/integrations/dispatch-integrations'
 
 // NOTE: `export const maxDuration = 300` lives on the route segment
 // (outputs/page.tsx). Next 14 'use server' modules may only export
@@ -284,7 +283,13 @@ export async function updateOutputAction(
   const structured = { hook, script, caption, hashtags }
   const body = renderOutputMarkdown(platform, structured)
 
-  const result = await updateOutput({ outputId: output_id, workspaceId: workspace_id, body, structured })
+  const result = await updateOutput({
+    outputId: output_id,
+    workspaceId: workspace_id,
+    body,
+    structured,
+    userId: user.id,
+  })
   if (!result.ok) return { ok: false, error: result.error }
 
   revalidatePath(`/workspace/${workspace_id}/content`)
@@ -369,44 +374,6 @@ export async function transitionOutputStateAction(
     }
   }
 
-  if (new_state === 'approved' || new_state === 'exported') {
-    try {
-      void (async () => {
-        try {
-          const sb = createClient()
-          const { data: out } = await sb
-            .from('outputs')
-            .select('platform, body, content_id')
-            .eq('id', output_id)
-            .eq('workspace_id', workspace_id)
-            .maybeSingle()
-          if (!out) return
-          const { data: ci } = await sb
-            .from('content_items')
-            .select('title')
-            .eq('id', out.content_id)
-            .eq('workspace_id', workspace_id)
-            .maybeSingle()
-          const event = new_state === 'approved' ? 'output.approved' as const : 'output.exported' as const
-          dispatchIntegrations(workspace_id, event, {
-            title: ci?.title ?? 'Untitled',
-            body: (out.body as string | null) ?? undefined,
-            platform: out.platform ?? undefined,
-            workspaceUrl: `/workspace/${workspace_id}/content/${out.content_id}/outputs`,
-          })
-        } catch (err) {
-          log.error('dispatchIntegrations failed', err, {
-            workspaceId: workspace_id,
-            event: new_state,
-            outputId: output_id,
-          })
-        }
-      })()
-    } catch (outerErr) {
-      log.error('dispatchIntegrations dispatch failed', outerErr)
-    }
-  }
-
   return { ok: true }
 }
 
@@ -459,6 +426,33 @@ export async function regenerateOutputAction(
   const apiKey = pick.apiKey
   const model = DEFAULT_MODELS[provider]
 
+  // Slice 17 — read any reviewer revision notes off the existing output
+  // BEFORE we delete it, so the regen prompt can address the reviewer's
+  // feedback. Notes from past reject cycles compound — the LLM sees
+  // every reason the reviewer has flagged so far.
+  const supabase = createClient()
+  const { data: existing } = await supabase
+    .from('outputs')
+    .select('metadata')
+    .eq('id', output_id)
+    .eq('workspace_id', workspace_id)
+    .maybeSingle()
+  const prevMeta =
+    existing?.metadata && typeof existing.metadata === 'object' && !Array.isArray(existing.metadata)
+      ? (existing.metadata as Record<string, unknown>)
+      : {}
+  const prevNotes = Array.isArray(prevMeta.revision_notes)
+    ? (prevMeta.revision_notes as Array<{ reason?: string; notes?: string }>)
+    : []
+  const revisionLines = prevNotes.flatMap((n) => {
+    const reason = (n.reason ?? '').trim()
+    const text = (n.notes ?? '').trim()
+    if (reason && text) return [`${reason}: ${text}`]
+    if (reason) return [reason]
+    if (text) return [text]
+    return []
+  })
+
   const deleted = await deleteSingleOutput(output_id, workspace_id)
   if (!deleted.ok) {
     return { ok: false, code: 'unknown', error: deleted.error }
@@ -475,6 +469,7 @@ export async function regenerateOutputAction(
     workspaceId: workspace_id,
     contentId: content_id,
     userId: user.id,
+    revisionNotes: revisionLines.length > 0 ? revisionLines : undefined,
   })
 
   if (!result.ok) {
@@ -482,6 +477,127 @@ export async function regenerateOutputAction(
   }
 
   revalidatePath(`/workspace/${workspace_id}/content/${content_id}/outputs`)
+  return { ok: true }
+}
+
+// ---------------------------------------------------------------------------
+// Reject with reason — Pipeline Slice 11
+// ---------------------------------------------------------------------------
+// Reviewer rejects a draft. We store the reason + free-text note as a
+// revision_note on the output's metadata (append-only history) and
+// transition the output back to `draft` so it shows up in the Draft
+// column for re-work.
+//
+// The Drafts column then shows the revision-note count as a badge so
+// the next pass knows what to fix. Re-generation with the note as LLM
+// context is a follow-up slice — for now the note is human-readable
+// guidance the user reads before they edit/regen.
+
+const rejectOutputSchema = zod.object({
+  workspace_id: zod.string().uuid(),
+  output_id: zod.string().uuid(),
+  reason: zod.string().max(60),
+  notes: zod.string().max(600).optional().default(''),
+})
+
+export interface RevisionNote {
+  reason: string
+  notes: string
+  at: string
+  by: string
+}
+
+export type RejectOutputState =
+  | { ok?: undefined }
+  | { ok: true }
+  | { ok: false; error: string }
+
+export async function rejectOutputAction(
+  _prev: RejectOutputState,
+  formData: FormData,
+): Promise<RejectOutputState> {
+  const parsed = rejectOutputSchema.safeParse({
+    workspace_id: formData.get('workspace_id'),
+    output_id: formData.get('output_id'),
+    reason: formData.get('reason') ?? '',
+    notes: formData.get('notes') ?? '',
+  })
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }
+  }
+
+  const { workspace_id, output_id, reason, notes } = parsed.data
+  const trimmedReason = reason.trim()
+  if (!trimmedReason) {
+    return { ok: false, error: 'Pick a reason or write a note.' }
+  }
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const member = await requireWorkspaceMember(workspace_id)
+  if (!member.ok) return { ok: false, error: 'Not a workspace member.' }
+
+  // Read current metadata to append rather than overwrite. The note
+  // history grows over multiple reject cycles so the user sees the
+  // full conversation when they look at a draft that's been bounced
+  // around twice.
+  const supabase = createClient()
+  const { data: existing } = await supabase
+    .from('outputs')
+    .select('metadata')
+    .eq('id', output_id)
+    .eq('workspace_id', workspace_id)
+    .maybeSingle()
+
+  const prevMeta =
+    existing?.metadata && typeof existing.metadata === 'object' && !Array.isArray(existing.metadata)
+      ? (existing.metadata as Record<string, unknown>)
+      : {}
+  const prevNotes = Array.isArray(prevMeta.revision_notes)
+    ? (prevMeta.revision_notes as RevisionNote[])
+    : []
+
+  const newNote: RevisionNote = {
+    reason: trimmedReason,
+    notes: notes.trim(),
+    at: new Date().toISOString(),
+    by: user.id,
+  }
+
+  const nextMeta = {
+    ...prevMeta,
+    revision_notes: [...prevNotes, newNote],
+  }
+  const { error: metaError } = await supabase
+    .from('outputs')
+    .update({
+      // RevisionNote has typed fields and TS won't auto-widen to Json;
+      // round-trip through stringify to get a plain index-signature
+      // shape that satisfies the Database['outputs'].Update type.
+      metadata: JSON.parse(JSON.stringify(nextMeta)),
+    })
+    .eq('id', output_id)
+    .eq('workspace_id', workspace_id)
+
+  if (metaError) {
+    return { ok: false, error: metaError.message }
+  }
+
+  // State transition runs through the same engine as Approve / Move-back
+  // so output_states gets a clean audit row. We always send back to
+  // `draft` — the spec's "needs-revision" is a UI label, not a real
+  // schema state (the existing enum is draft|review|approved|exported).
+  const transition = await transitionOutputState({
+    outputId: output_id,
+    workspaceId: workspace_id,
+    newState: 'draft',
+    changedBy: user.id,
+  })
+  if (!transition.ok) return { ok: false, error: transition.error }
+
+  revalidatePath(`/workspace/${workspace_id}/pipeline`)
+  revalidatePath(`/workspace/${workspace_id}/content`)
   return { ok: true }
 }
 

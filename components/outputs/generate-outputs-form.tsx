@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 import {
   Briefcase,
@@ -21,6 +21,7 @@ import {
   generateOutputsAction,
   type GenerateOutputsState,
 } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
+import { createClient } from '@/lib/supabase/client'
 import type { OutputTemplate } from '@/lib/templates/get-templates'
 
 const initialState: GenerateOutputsState = {}
@@ -141,16 +142,94 @@ function PlatformCardsRow({
 }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {PLATFORM_CARDS.map((card) => (
-        <PlatformCard
-          key={card.key}
-          card={card}
-          pending={isPending}
-          generated={generatedPlatforms.includes(card.key)}
-        />
-      ))}
+      {PLATFORM_CARDS.map((card) => {
+        const generated = generatedPlatforms.includes(card.key)
+        return (
+          <PlatformCard
+            key={card.key}
+            card={card}
+            // While the action is in flight, only mark cards "pending"
+            // that haven't streamed in yet. Realtime fills generated
+            // ones one-by-one — the user sees LinkedIn flip to ✓ at 4s
+            // even though TikTok is still drafting at 12s.
+            pending={isPending && !generated}
+            generated={generated}
+          />
+        )
+      })}
     </div>
   )
+}
+
+/**
+ * Live-streaming wrapper for the platform-status strip — Slice 12.
+ *
+ * Subscribes to outputs INSERT for this content_id while the form is
+ * pending and pushes each new platform into a local Set. Combined with
+ * the server's final `state.generated` array (which arrives once the
+ * full Promise.allSettled returns), the cards flip to ✓ in the order
+ * the LLM finishes them, not all-at-once when the action returns.
+ *
+ * Falls back to the post-submit final state when realtime is offline
+ * or the workspace doesn't have realtime enabled — UI still works,
+ * just less granular.
+ */
+function LivePlatformCardsRow({
+  contentId,
+  generatedFromServer,
+}: {
+  contentId: string
+  generatedFromServer: string[]
+}) {
+  const { pending } = useFormStatus()
+  const instanceId = useId()
+  const [streamed, setStreamed] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (!pending) return
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`outputs-gen-${contentId}-${instanceId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'outputs',
+          filter: `content_id=eq.${contentId}`,
+        },
+        (payload) => {
+          const platform = (payload.new as { platform?: string }).platform
+          if (!platform) return
+          setStreamed((prev) => {
+            if (prev.has(platform)) return prev
+            const next = new Set(prev)
+            next.add(platform)
+            return next
+          })
+        },
+      )
+      .subscribe()
+    return () => {
+      void supabase.removeChannel(channel)
+    }
+  }, [pending, contentId, instanceId])
+
+  // Reset streamed set whenever a fresh generation starts. We detect
+  // "fresh start" via the pending boolean flipping back to true when
+  // the user resubmits — clear so we don't keep stale ✓s from the
+  // previous run.
+  useEffect(() => {
+    if (pending) setStreamed(new Set())
+  }, [pending])
+
+  const merged = useMemo(() => {
+    const set = new Set<string>(streamed)
+    for (const p of generatedFromServer) set.add(p)
+    return [...set]
+  }, [streamed, generatedFromServer])
+
+  return <PlatformCardsRow isPending={pending} generatedPlatforms={merged} />
 }
 
 /**
@@ -280,8 +359,13 @@ export function GenerateOutputsForm({
         </p>
       </div>
 
-      {/* Platform preview cards */}
-      <PlatformCardsRow isPending={false} generatedPlatforms={generatedPlatforms} />
+      {/* Platform preview cards — live-streaming via Realtime: each
+          platform flips to ✓ the moment its row hits the outputs table,
+          not after Promise.allSettled returns. */}
+      <LivePlatformCardsRow
+        contentId={contentId}
+        generatedFromServer={generatedPlatforms}
+      />
 
       {/* Per-platform format picker */}
       <FormatOverridesPanel

@@ -2,6 +2,10 @@ import 'server-only'
 
 import type { PromptOutput } from '@/lib/ai/generate/types'
 import type { AiProvider } from '@/lib/ai/providers/types'
+import {
+  recordOutputVersion,
+  type VersionSource,
+} from '@/lib/outputs/record-version'
 import { createClient } from '@/lib/supabase/server'
 import type { Json, OutputPlatform } from '@/lib/supabase/types'
 import { log } from '@/lib/log'
@@ -15,6 +19,11 @@ export interface InsertOutputInput {
   provider: AiProvider
   model: string
   userId: string
+  /** Slice 17 — version source. Defaults to 'ai' (fresh generation).
+   *  Pass 'reject_regen' when this insert is the result of a reviewer
+   *  reject-with-comment loop, so the version history shows WHY the
+   *  draft changed, not just THAT it changed. */
+  versionSource?: VersionSource
 }
 
 export type InsertOutputResult =
@@ -84,6 +93,17 @@ export async function insertOutputWithDraftState(
       outputId: output.id,
     })
   }
+
+  // Slice 16 — record v1 in output_versions. Fire-and-forget: never
+  // blocks the generation flow even if the version write fails.
+  void recordOutputVersion({
+    outputId: output.id,
+    workspaceId: input.workspaceId,
+    body: input.body,
+    source: input.versionSource ?? 'ai',
+    metadata,
+    createdBy: input.userId,
+  })
 
   return { ok: true, outputId: output.id }
 }
