@@ -5,6 +5,7 @@ import { Check } from 'lucide-react'
 
 import { PipelineCard } from '@/components/pipeline/pipeline-card'
 import { PipelineBulkBar } from '@/components/pipeline/pipeline-bulk-bar'
+import { PipelineReviewDrawer } from '@/components/pipeline/pipeline-review-drawer'
 import type { OutputState } from '@/lib/supabase/types'
 
 export type PipelineStateKey = 'draft' | 'review' | 'approved' | 'exported'
@@ -17,7 +18,15 @@ export interface PipelineOutputItem {
   contentId: string
   contentTitle: string | null
   bodyPreview: string | null
+  /** Full output body — used by the side-panel review drawer. The card
+   *  grid only renders bodyPreview (truncated); the drawer needs the
+   *  complete text without re-fetching. */
+  body: string | null
   state: PipelineStateKey
+  /** Slice 16 — highest version number recorded in output_versions.
+   *  1 = original AI gen (no history yet), 2+ = at least one edit or
+   *  regen. Drives the "v2" mono-badge on the card. */
+  version: number
   createdAt: string
   formattedDate: string
 }
@@ -209,6 +218,7 @@ export function PipelineBoard({ workspaceId, columns, grouped }: PipelineBoardPr
                       currentState={output.state as OutputState}
                       createdAt={output.createdAt}
                       formattedDate={output.formattedDate}
+                      version={output.version}
                       selected={selected.has(output.id)}
                       onToggleSelect={() => toggle(output.id)}
                     />
@@ -224,6 +234,11 @@ export function PipelineBoard({ workspaceId, columns, grouped }: PipelineBoardPr
         workspaceId={workspaceId}
         selected={selected}
         onClear={() => setSelected(new Set())}
+      />
+
+      <PipelineReviewDrawer
+        workspaceId={workspaceId}
+        outputs={Object.values(grouped).flat()}
       />
     </>
   )

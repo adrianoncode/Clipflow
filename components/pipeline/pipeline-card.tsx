@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useFormState, useFormStatus } from 'react-dom'
 import { Check, ChevronLeft, ChevronRight, Clapperboard, ExternalLink, Loader2 } from 'lucide-react'
 
@@ -24,6 +25,9 @@ interface PipelineCardProps {
   currentState: OutputState
   createdAt: string
   formattedDate: string
+  /** Slice 16 — highest version number from output_versions. Cards
+   *  render a small "v2" mono-badge when > 1 to surface re-gen history. */
+  version?: number
   /** When provided, the card shows a selection checkbox. */
   selected?: boolean
   onToggleSelect?: () => void
@@ -136,14 +140,23 @@ export function PipelineCard({
   bodyPreview,
   currentState,
   formattedDate,
+  version,
   selected = false,
   onToggleSelect,
 }: PipelineCardProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const next = nextState(currentState)
   const prev = prevState(currentState)
   const nextLabel = NEXT_STATE_LABELS[currentState]
   const prevLabel = PREV_STATE_LABELS[currentState]
   const selectable = typeof onToggleSelect === 'function'
+
+  function openReview() {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('review', outputId)
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }
 
   return (
     <div
@@ -170,9 +183,11 @@ export function PipelineCard({
           </button>
         )}
 
-        <Link
-          href={`/workspace/${workspaceId}/content/${contentId}/outputs`}
-          className="group/link min-w-0 flex-1 space-y-1"
+        <button
+          type="button"
+          onClick={openReview}
+          className="group/link min-w-0 flex-1 space-y-1 text-left"
+          aria-label={`Review draft: ${contentTitle ?? 'Untitled'}`}
         >
           <p className="truncate text-sm font-semibold leading-tight text-foreground group-hover/link:text-primary">
             {contentTitle ?? 'Untitled'}
@@ -182,16 +197,26 @@ export function PipelineCard({
               {bodyPreview}
             </p>
           )}
-        </Link>
+        </button>
       </div>
 
       {/* Meta row */}
       <div className="flex items-center justify-between gap-2">
-        <span
-          className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${platformBadgeClass}`}
-        >
-          {platformLabel}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${platformBadgeClass}`}
+          >
+            {platformLabel}
+          </span>
+          {version && version > 1 ? (
+            <span
+              className="inline-flex items-center rounded-full border border-primary/30 bg-primary/[0.08] px-1.5 py-0.5 font-mono text-[9.5px] font-bold tabular-nums tracking-tight text-primary"
+              title={`Version ${version} — this draft has been regenerated or edited`}
+            >
+              v{version}
+            </span>
+          ) : null}
+        </div>
         <span className="text-[10px] text-muted-foreground/60">{formattedDate}</span>
       </div>
 
