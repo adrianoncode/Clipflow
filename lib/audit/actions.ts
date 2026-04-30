@@ -38,6 +38,11 @@ export const AUDIT_ACTIONS = {
   ai_key_removed: 'ai_key.removed',
   brand_kit_updated: 'brand_kit.updated',
   brand_voice_updated: 'brand_voice.updated',
+  // Fired when a workspace consumes the platform-owned service key
+  // (Shotstack/Replicate/ElevenLabs) instead of a BYOK-connected one.
+  // Surfaces unmetered usage so we can flip platform_keys_enabled off
+  // and contact the workspace owner about connecting their own key.
+  service_key_platform_fallback: 'service_key.platform_fallback',
 
   // ── Review link ──────────────────────────────────────────────────
   review_link_created: 'review.link_created',

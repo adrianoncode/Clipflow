@@ -36,16 +36,25 @@ export async function GET(req: NextRequest) {
   const pendingRaw = cookies().get('composio_pending')?.value
   let workspaceId = ''
   let integrationId = ''
+  let cookieUserId = ''
+  let cookieNonce = ''
 
   if (pendingRaw) {
     try {
       const pending = JSON.parse(pendingRaw)
       workspaceId = pending.workspaceId ?? ''
       integrationId = pending.integrationId ?? ''
-    } catch { /* ignore */ }
+      cookieUserId = pending.userId ?? ''
+      cookieNonce = pending.nonce ?? ''
+    } catch {
+      /* ignore */
+    }
   }
 
-  if (!workspaceId || !integrationId) {
+  if (!workspaceId || !integrationId || !cookieUserId || !cookieNonce) {
+    // Either the cookie expired, was never set, or is from a pre-nonce
+    // build. Don't proceed — refuse rather than write a connection
+    // without user binding.
     return NextResponse.redirect(
       new URL(`${SETTINGS_PATH}?error=session_expired`, req.url),
     )
@@ -58,6 +67,21 @@ export async function GET(req: NextRequest) {
     }
     const res = NextResponse.redirect(
       new URL(`${SETTINGS_PATH}?error=not_a_member`, req.url),
+    )
+    res.cookies.set('composio_pending', '', { maxAge: 0, path: '/' })
+    return res
+  }
+
+  // Bind-check: the session that completes the callback MUST be the
+  // same user that started the flow. Without this, an attacker who
+  // initiates OAuth on their own account (getting their connection_id)
+  // could trick a logged-in victim into visiting our callback URL —
+  // the victim's pending cookie would still match, and the attacker's
+  // connection would land in the victim's workspace. Comparing the
+  // cookie's userId to the verified session's userId blocks that.
+  if (check.userId !== cookieUserId) {
+    const res = NextResponse.redirect(
+      new URL(`${SETTINGS_PATH}?error=session_mismatch`, req.url),
     )
     res.cookies.set('composio_pending', '', { maxAge: 0, path: '/' })
     return res

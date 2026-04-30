@@ -807,6 +807,24 @@ export type Database = {
           },
         ]
       }
+      processed_stripe_events: {
+        Row: {
+          event_id: string
+          processed_at: string
+          type: string
+        }
+        Insert: {
+          event_id: string
+          processed_at?: string
+          type: string
+        }
+        Update: {
+          event_id?: string
+          processed_at?: string
+          type?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -893,8 +911,11 @@ export type Database = {
           confirmed_at: string | null
           created_at: string
           id: string
+          paid_invoice_id: string | null
           referee_user_id: string
           referrer_user_id: string
+          reversal_reason: string | null
+          reversed_at: string | null
           source: string | null
           status: Database["public"]["Enums"]["referral_status"]
         }
@@ -902,8 +923,11 @@ export type Database = {
           confirmed_at?: string | null
           created_at?: string
           id?: string
+          paid_invoice_id?: string | null
           referee_user_id: string
           referrer_user_id: string
+          reversal_reason?: string | null
+          reversed_at?: string | null
           source?: string | null
           status?: Database["public"]["Enums"]["referral_status"]
         }
@@ -911,8 +935,11 @@ export type Database = {
           confirmed_at?: string | null
           created_at?: string
           id?: string
+          paid_invoice_id?: string | null
           referee_user_id?: string
           referrer_user_id?: string
+          reversal_reason?: string | null
+          reversed_at?: string | null
           source?: string | null
           status?: Database["public"]["Enums"]["referral_status"]
         }
@@ -1312,38 +1339,50 @@ export type Database = {
       }
       social_accounts: {
         Row: {
-          access_token: string
+          access_token_auth_tag: string | null
+          access_token_ciphertext: string | null
+          access_token_iv: string | null
           created_at: string
           expires_at: string | null
           id: string
           platform: string
           platform_user_id: string
           platform_username: string | null
-          refresh_token: string | null
+          refresh_token_auth_tag: string | null
+          refresh_token_ciphertext: string | null
+          refresh_token_iv: string | null
           user_id: string
           workspace_id: string
         }
         Insert: {
-          access_token: string
+          access_token_auth_tag?: string | null
+          access_token_ciphertext?: string | null
+          access_token_iv?: string | null
           created_at?: string
           expires_at?: string | null
           id?: string
           platform: string
           platform_user_id: string
           platform_username?: string | null
-          refresh_token?: string | null
+          refresh_token_auth_tag?: string | null
+          refresh_token_ciphertext?: string | null
+          refresh_token_iv?: string | null
           user_id: string
           workspace_id: string
         }
         Update: {
-          access_token?: string
+          access_token_auth_tag?: string | null
+          access_token_ciphertext?: string | null
+          access_token_iv?: string | null
           created_at?: string
           expires_at?: string | null
           id?: string
           platform?: string
           platform_user_id?: string
           platform_username?: string | null
-          refresh_token?: string | null
+          refresh_token_auth_tag?: string | null
+          refresh_token_ciphertext?: string | null
+          refresh_token_iv?: string | null
           user_id?: string
           workspace_id?: string
         }
@@ -1622,6 +1661,7 @@ export type Database = {
           id: string
           name: string
           owner_id: string
+          platform_keys_enabled: boolean
           slug: string
           type: Database["public"]["Enums"]["workspace_type"]
           updated_at: string
@@ -1633,6 +1673,7 @@ export type Database = {
           id?: string
           name: string
           owner_id: string
+          platform_keys_enabled?: boolean
           slug: string
           type: Database["public"]["Enums"]["workspace_type"]
           updated_at?: string
@@ -1644,6 +1685,7 @@ export type Database = {
           id?: string
           name?: string
           owner_id?: string
+          platform_keys_enabled?: boolean
           slug?: string
           type?: Database["public"]["Enums"]["workspace_type"]
           updated_at?: string

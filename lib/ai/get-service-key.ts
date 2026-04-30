@@ -2,19 +2,27 @@ import 'server-only'
 
 import { getDecryptedAiKey } from '@/lib/ai/get-decrypted-ai-key'
 import type { MediaProvider } from '@/lib/ai/providers/types'
+import { AUDIT_ACTIONS } from '@/lib/audit/actions'
+import { writeAuditLog } from '@/lib/audit/write'
+import { log } from '@/lib/log'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
- * BYOK resolver for non-LLM services. Each function:
- *   1. Looks for an encrypted key for the workspace in ai_keys
- *   2. Falls back to `process.env.<SERVICE>_API_KEY` if the user hasn't
- *      connected one yet (legacy behavior — lets existing features work
- *      during the BYOK rollout)
- *   3. Returns null if neither is available, so callers can render a
- *      "connect your key" prompt instead of crashing
+ * BYOK resolver for non-LLM services (Shotstack / Replicate / ElevenLabs).
  *
- * The env fallback is kept around so the site doesn't go dark for the
- * current user base. New signups shouldn't rely on it — our onboarding
- * steers them toward connecting their own key from day one.
+ * Resolution order:
+ *   1. Workspace BYOK key (encrypted in `ai_keys` table)
+ *   2. Platform-owned env key — ONLY if `workspaces.platform_keys_enabled`
+ *      is true. Off by default: every new workspace must connect their
+ *      own key. The flag exists so we can incrementally cut over the
+ *      legacy user base without bricking anyone mid-flow.
+ *   3. `missing` — caller renders "connect your key".
+ *
+ * Every platform-fallback consumption is audit-logged so:
+ *   - Unmetered usage is visible (someone's burning our credits)
+ *   - Support can email the workspace owner with a "connect your own
+ *     key" prompt
+ *   - Bills stay attributable
  */
 export async function getServiceKey(
   workspaceId: string,
@@ -23,11 +31,22 @@ export async function getServiceKey(
   key: string | null
   source: 'byok' | 'platform' | 'missing'
 }> {
-  // 1. Check for a user-connected key first
+  // 1. BYOK first — always preferred
   const byok = await getDecryptedAiKey(workspaceId, provider)
   if (byok.ok) return { key: byok.plaintext, source: 'byok' }
 
-  // 2. Fallback to the platform-owned env var
+  // 2. Platform fallback — gated by per-workspace flag
+  const admin = createAdminClient()
+  const { data: workspace } = await admin
+    .from('workspaces')
+    .select('platform_keys_enabled')
+    .eq('id', workspaceId)
+    .maybeSingle()
+
+  if (!workspace?.platform_keys_enabled) {
+    return { key: null, source: 'missing' }
+  }
+
   const envVar =
     provider === 'shotstack'
       ? process.env.SHOTSTACK_API_KEY
@@ -37,8 +56,24 @@ export async function getServiceKey(
           ? process.env.ELEVENLABS_API_KEY
           : undefined
 
-  if (envVar) return { key: envVar, source: 'platform' }
-  return { key: null, source: 'missing' }
+  if (!envVar) {
+    return { key: null, source: 'missing' }
+  }
+
+  // Audit-log the platform-fallback consumption. Best-effort so a
+  // logging hiccup never blocks a publish/render. The action string is
+  // canonical (see lib/audit/actions.ts) and `metadata.provider` lets
+  // operators answer "which platform key is being burned today?".
+  void writeAuditLog({
+    workspaceId,
+    action: AUDIT_ACTIONS.service_key_platform_fallback,
+    targetType: 'service_key',
+    targetId: provider,
+    metadata: { provider },
+    actor: { id: null, email: 'system@platform-fallback' },
+  }).catch((err) => log.warn('audit: platform-fallback log failed', { err }))
+
+  return { key: envVar, source: 'platform' }
 }
 
 /** Convenience — just the key string or null. */

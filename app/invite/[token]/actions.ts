@@ -25,7 +25,7 @@ export async function acceptInviteAction(
   // Look up invite
   const { data: invite } = await admin
     .from('workspace_invites')
-    .select('id, workspace_id, role, is_accepted, expires_at')
+    .select('id, workspace_id, role, is_accepted, expires_at, invited_by')
     .eq('token', token)
     .maybeSingle()
 
@@ -33,6 +33,48 @@ export async function acceptInviteAction(
   if (invite.is_accepted) return { ok: false, error: 'This invite has already been accepted.' }
   if (new Date(invite.expires_at) < new Date()) {
     return { ok: false, error: 'This invite has expired.' }
+  }
+
+  // Re-validate the inviter's authority at acceptance time. A pending
+  // owner-invite created when the inviter was an owner would otherwise
+  // mint a new owner even after the inviter was demoted/removed —
+  // privilege escalation via stale invite.
+  //
+  // Rule: the inviter must still be a member of the workspace, and
+  // must hold a role >= the role they're handing out. A demoted-to-
+  // viewer cannot promote anyone; an editor cannot mint owners.
+  if (invite.role === 'owner') {
+    // Owner invites require the inviter to STILL be an owner. We never
+    // let a non-owner mint an owner, no matter what the invite says.
+    const { data: inviterRow } = await admin
+      .from('workspace_members')
+      .select('role')
+      .eq('workspace_id', invite.workspace_id)
+      .eq('user_id', invite.invited_by)
+      .maybeSingle()
+    if (inviterRow?.role !== 'owner') {
+      return {
+        ok: false,
+        error:
+          'This invite is no longer valid — the person who sent it is no longer authorized to add owners.',
+      }
+    }
+  } else {
+    // Non-owner invites require the inviter to still hold owner OR
+    // editor (whichever is needed to create that role today).
+    const { data: inviterRow } = await admin
+      .from('workspace_members')
+      .select('role')
+      .eq('workspace_id', invite.workspace_id)
+      .eq('user_id', invite.invited_by)
+      .maybeSingle()
+    if (!inviterRow || !['owner', 'editor'].includes(inviterRow.role)) {
+      return {
+        ok: false,
+        error:
+          'This invite is no longer valid — the person who sent it is no longer authorized.',
+      }
+    }
   }
 
   // Check if already a member

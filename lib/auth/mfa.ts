@@ -132,8 +132,14 @@ export async function isMfaSatisfied(): Promise<{
   const supabase = createClient()
   const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
   if (error || !data) {
-    // If we can't check, assume satisfied — login already gated auth.
-    return { satisfied: true, requiresMfa: false, verifiedFactorId: null }
+    // FAIL CLOSED. If Supabase Auth has a transient outage, an MFA-
+    // enrolled user must NOT skip the challenge — the previous "assume
+    // satisfied" branch let an upstream hiccup bypass MFA, defeating
+    // the entire point of step-up auth. We claim "MFA required, no
+    // verified factor available" so the caller redirects to /mfa
+    // (which surfaces a clean error message rather than a silent pass).
+    log.error('isMfaSatisfied: AAL check failed, failing closed', error)
+    return { satisfied: false, requiresMfa: true, verifiedFactorId: null }
   }
 
   const requiresMfa = data.nextLevel === 'aal2'
