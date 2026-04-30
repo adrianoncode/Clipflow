@@ -25,7 +25,6 @@ import {
   Radio,
   ScrollText,
   Search,
-  Send,
   Settings as SettingsIcon,
   Sparkles,
   Users2,
