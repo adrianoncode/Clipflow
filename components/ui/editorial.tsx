@@ -381,7 +381,10 @@ export const BentoCard = React.forwardRef<
     lift?: boolean
   }
 >(({ className, style, tone = 'cream', lift = true, ...props }, ref) => {
-  const tones: Record<string, { rest: React.CSSProperties; hover: string }> = {
+  // Typed as a Record over the exact tone union — TypeScript then knows
+  // the lookup is total and `tones[tone]` is never `undefined`.
+  type Tone = 'cream' | 'dark' | 'white' | 'accent'
+  const tones: Record<Tone, { rest: React.CSSProperties; hover: string }> = {
     cream: {
       rest: {
         background: '#F9F4DC',
