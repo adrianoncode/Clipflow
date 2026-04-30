@@ -19,7 +19,7 @@
 
 import * as React from 'react'
 import { cn } from '@/lib/utils'
-import { KpiCountUp } from '@/components/ui/editorial-motion'
+import { KpiCountUp, StripPillAnimated } from '@/components/ui/editorial-motion'
 
 // ── Format helpers ──────────────────────────────────────────────────────────
 function formatNum(n: number | null | undefined): string {
@@ -148,13 +148,26 @@ export function StripPill({
   variant,
   showSign = false,
   suffix = '%',
+  animated = false,
 }: {
   label: string
   value: number
   variant: 'dark' | 'accent' | 'bar' | 'outline'
   showSign?: boolean
   suffix?: string
+  animated?: boolean
 }) {
+  if (animated) {
+    return (
+      <StripPillAnimated
+        label={label}
+        value={value}
+        variant={variant}
+        showSign={showSign}
+        suffix={suffix}
+      />
+    )
+  }
   const sign = showSign ? (value > 0 ? '+' : value < 0 ? '−' : '') : ''
   const display = `${sign}${Math.abs(value)}${suffix}`
 
