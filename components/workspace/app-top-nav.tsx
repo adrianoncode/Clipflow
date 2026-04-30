@@ -8,14 +8,14 @@ import { WorkspaceSwitcher } from '@/components/workspace/workspace-switcher'
 import type { WorkspaceSummary } from '@/lib/auth/get-workspaces'
 
 /**
- * Crextio-style horizontal pill nav for the Insights surface.
+ * Crextio-style horizontal pill nav for the entire authenticated app.
  *
  * Logo (left, pill-bordered) · centered pill group · right actions
  * (Setting + Bell + Avatar). Active item is a solid charcoal pill with
  * white text. Inactive items are transparent with dark text + soft
  * hover bg.
  *
- * Not the (app) sidebar — this only renders inside (insights)/layout.
+ * Replaces the old left-sidebar AppShell. Used by every (app) route.
  */
 
 const NAV_ITEMS: Array<{ label: string; href: (workspaceId: string) => string }> = [
@@ -27,7 +27,7 @@ const NAV_ITEMS: Array<{ label: string; href: (workspaceId: string) => string }>
   { label: 'AI keys', href: () => '/settings/ai-keys' },
 ]
 
-export function InsightsTopNav({
+export function AppTopNav({
   workspaces,
   currentWorkspaceId,
   userEmail,
