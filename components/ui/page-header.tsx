@@ -43,28 +43,36 @@ export function PageHeader({
       <div className="min-w-0">
         {label ? (
           <p
-            className="mb-2.5 inline-flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85"
+            className="mb-2 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em]"
             style={{
-              fontFamily:
-                'var(--font-inter-tight), var(--font-inter), sans-serif',
+              color: '#7A7468',
+              fontFamily: 'var(--font-jetbrains-mono), monospace',
             }}
           >
-            <span aria-hidden className="inline-block h-px w-6 bg-primary/40" />
+            <span
+              aria-hidden
+              className="inline-block h-px w-6"
+              style={{ background: 'rgba(15,15,15,0.18)' }}
+            />
             {label}
           </p>
         ) : null}
         <h1
-          className="text-[34px] leading-[1.05] sm:text-[44px]"
+          className="text-[clamp(34px,5vw,56px)] leading-[1.02]"
           style={{
-            fontFamily: 'var(--font-instrument-serif), serif',
-            letterSpacing: '-.015em',
-            color: '#2A1A3D',
+            fontFamily: 'var(--font-instrument-serif), Georgia, serif',
+            letterSpacing: '-0.02em',
+            color: '#0F0F0F',
+            fontWeight: 400,
           }}
         >
           {title}
         </h1>
         {description ? (
-          <p className="mt-2 max-w-[640px] text-[14px] leading-relaxed text-muted-foreground">
+          <p
+            className="mt-3 max-w-[640px] text-[14px] leading-relaxed"
+            style={{ color: '#3A3A3A' }}
+          >
             {description}
           </p>
         ) : null}

@@ -199,7 +199,13 @@ export default async function PipelinePage({ params, searchParams }: PipelinePag
             {approvedCount > 0 && (
               <Link
                 href={`/workspace/${workspaceId}/schedule?view=calendar`}
-                className="group inline-flex items-center gap-2 rounded-xl border border-emerald-200/60 bg-emerald-50/50 px-3.5 py-2 text-[13px] font-semibold text-emerald-700 transition-all hover:-translate-y-px hover:bg-emerald-100 hover:shadow-md"
+                className="group inline-flex h-10 items-center gap-2 rounded-full px-4 text-[13px] font-semibold transition-transform hover:scale-[1.02]"
+                style={{
+                  background: '#F4D93D',
+                  color: '#0F0F0F',
+                  boxShadow:
+                    'inset 0 1px 0 rgba(255,255,255,0.45), 0 4px 12px -4px rgba(220,185,31,0.45)',
+                }}
               >
                 <CalendarClock className="h-3.5 w-3.5" />
                 Schedule {approvedCount}
@@ -208,7 +214,13 @@ export default async function PipelinePage({ params, searchParams }: PipelinePag
             )}
             <Link
               href={`/workspace/${workspaceId}/content/new`}
-              className="cf-btn-3d cf-btn-3d-primary inline-flex h-10 items-center gap-2 rounded-xl px-4 text-[13px]"
+              className="inline-flex h-10 items-center gap-2 rounded-full px-5 text-[13px] font-semibold transition-transform hover:scale-[1.02]"
+              style={{
+                background: '#0F0F0F',
+                color: '#FFFFFF',
+                boxShadow:
+                  'inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 12px -4px rgba(15,15,15,0.45)',
+              }}
             >
               <Plus className="h-3.5 w-3.5" />
               Import
