@@ -36,25 +36,25 @@ export function SettingsHero({
   const initials = (monogram ?? '').slice(0, 2).toUpperCase()
   return (
     <section
-      className="relative overflow-hidden rounded-3xl border border-border/60 bg-card px-5 py-6 sm:px-7 sm:py-7"
+      className="relative overflow-hidden rounded-[28px] px-5 py-6 sm:px-7 sm:py-7 [box-shadow:inset_0_1px_0_rgba(255,255,255,0.7)]"
       style={{
-        boxShadow:
-          '0 1px 0 rgba(255,255,255,0.7) inset, 0 1px 2px rgba(42,26,61,0.05), 0 18px 38px -22px rgba(42,26,61,0.22)',
+        background: '#F9F4DC',
+        border: '1px solid rgba(15,15,15,0.06)',
       }}
     >
-      {/* Soft brand glow tucked behind the monogram so the hero has
+      {/* Soft yellow glow tucked behind the monogram so the hero has
           real depth without becoming a billboard. */}
       <span
         aria-hidden
         className="pointer-events-none absolute -left-12 -top-16 h-44 w-44 rounded-full"
         style={{
-          background:
-            'radial-gradient(circle, rgba(42,26,61,0.18) 0%, rgba(42,26,61,0) 60%)',
+          background: 'radial-gradient(circle, rgba(244,217,61,0.30) 0%, rgba(244,217,61,0) 60%)',
         }}
       />
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+        className="pointer-events-none absolute inset-x-8 top-0 h-px"
+        style={{ background: 'linear-gradient(to right, transparent, rgba(15,15,15,0.18), transparent)' }}
       />
 
       <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
@@ -63,29 +63,46 @@ export function SettingsHero({
           <div className="min-w-0">
             {eyebrow ? (
               <p
-                className="mb-1 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-primary/75"
-                style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.22em]"
+                style={{
+                  color: '#7A7468',
+                  fontFamily: 'var(--font-jetbrains-mono), monospace',
+                }}
               >
-                <span className="inline-block h-px w-4 bg-primary/40" />
+                <span
+                  className="inline-block h-px w-4"
+                  style={{ background: 'rgba(15,15,15,0.18)' }}
+                />
                 {eyebrow}
               </p>
             ) : null}
             <h1
-              className="text-[24px] font-bold leading-[1.05] tracking-tight text-foreground sm:text-[28px]"
+              className="text-[clamp(28px,3.5vw,38px)] leading-[1.02]"
               style={{
-                fontFamily:
-                  'var(--font-inter-tight), var(--font-inter), sans-serif',
+                fontFamily: 'var(--font-instrument-serif), Georgia, serif',
+                letterSpacing: '-0.018em',
+                color: '#0F0F0F',
+                fontWeight: 400,
               }}
             >
               {title}
             </h1>
             {body ? (
-              <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-muted-foreground">
+              <p
+                className="mt-2 max-w-xl text-[13px] leading-relaxed"
+                style={{ color: '#3A3A3A' }}
+              >
                 {body}
               </p>
             ) : null}
             {meta ? (
-              <p className="mt-2 inline-flex items-center gap-1.5 font-mono text-[11.5px] tracking-tight text-muted-foreground/85">
+              <p
+                className="mt-2 inline-flex items-center gap-1.5 text-[11.5px] tabular-nums"
+                style={{
+                  color: '#7A7468',
+                  fontFamily: 'var(--font-jetbrains-mono), monospace',
+                }}
+              >
                 {meta}
               </p>
             ) : null}
@@ -100,25 +117,16 @@ export function SettingsHero({
 function Monogram({ initials }: { initials: string }) {
   return (
     <span
-      className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-[18px] font-bold tracking-tight text-white sm:h-16 sm:w-16 sm:text-[20px]"
+      className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-[18px] font-bold tracking-tight sm:h-16 sm:w-16 sm:text-[20px]"
       style={{
-        background:
-          'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
+        background: 'linear-gradient(170deg, #F9E97A 0%, #F4D93D 55%, #DCB91F 100%)',
+        color: '#0F0F0F',
         fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
         boxShadow:
-          '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(42,26,61,0.55)',
+          'inset 0 1px 0 rgba(255,255,255,0.55), 0 10px 24px -12px rgba(15,15,15,0.30)',
+        border: '1px solid rgba(15,15,15,0.10)',
       }}
     >
-      {/* Inner highlight arc — the kind of detail that tells the eye
-          this is a designed object, not a flat colored square. */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-1 rounded-[14px]"
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 45%)',
-        }}
-      />
       <span className="relative">{initials}</span>
     </span>
   )
