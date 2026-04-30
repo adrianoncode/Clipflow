@@ -50,7 +50,7 @@ export function ScheduleEmptyPreview() {
       style={{
         background: 'linear-gradient(180deg, #FFFDF8 0%, #F3EDE3 100%)',
         boxShadow:
-          '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(42,26,61,.04), 0 14px 32px -18px rgba(42,26,61,.18)',
+          '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(15,15,15,.04), 0 14px 32px -18px rgba(15,15,15,.18)',
       }}
     >
       <span
@@ -58,7 +58,7 @@ export function ScheduleEmptyPreview() {
         className="pointer-events-none absolute inset-x-6 top-0 h-px"
         style={{
           background:
-            'linear-gradient(to right, transparent, rgba(42,26,61,.32), transparent)',
+            'linear-gradient(to right, transparent, rgba(15,15,15,.32), transparent)',
         }}
       />
       <p
@@ -93,7 +93,7 @@ export function ScheduleEmptyPreview() {
               </span>
               <span
                 className="lv2-tabular text-[14px] font-bold"
-                style={{ color: '#2A1A3D' }}
+                style={{ color: '#0F0F0F' }}
               >
                 {d.date}
               </span>
@@ -104,8 +104,8 @@ export function ScheduleEmptyPreview() {
                   className="flex h-[88px] items-center justify-center rounded-lg"
                   style={{
                     background:
-                      'repeating-linear-gradient(135deg, transparent 0 6px, rgba(42,26,61,.04) 6px 7px)',
-                    border: '1px dashed rgba(42,26,61,.15)',
+                      'repeating-linear-gradient(135deg, transparent 0 6px, rgba(15,15,15,.04) 6px 7px)',
+                    border: '1px dashed rgba(15,15,15,.15)',
                   }}
                 >
                   <span

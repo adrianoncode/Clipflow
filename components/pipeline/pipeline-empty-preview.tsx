@@ -53,7 +53,7 @@ export function PipelineEmptyPreview() {
         background:
           'linear-gradient(180deg, #FFFDF8 0%, #F3EDE3 100%)',
         boxShadow:
-          '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(42,26,61,.04), 0 14px 32px -18px rgba(42,26,61,.18)',
+          '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(15,15,15,.04), 0 14px 32px -18px rgba(15,15,15,.18)',
       }}
     >
       {/* Top-edge hairline highlight, same trick as the dashboard hero. */}
@@ -62,7 +62,7 @@ export function PipelineEmptyPreview() {
         className="pointer-events-none absolute inset-x-6 top-0 h-px"
         style={{
           background:
-            'linear-gradient(to right, transparent, rgba(42,26,61,.32), transparent)',
+            'linear-gradient(to right, transparent, rgba(15,15,15,.32), transparent)',
         }}
       />
       {COLUMNS.map((col, colIdx) => {
@@ -79,8 +79,8 @@ export function PipelineEmptyPreview() {
                     boxShadow: 'inset 0 0 0 1px rgba(214,255,62,.30)',
                   }
                 : {
-                    background: 'rgba(42,26,61,.03)',
-                    boxShadow: 'inset 0 0 0 1px rgba(42,26,61,.06)',
+                    background: 'rgba(15,15,15,.03)',
+                    boxShadow: 'inset 0 0 0 1px rgba(15,15,15,.06)',
                   }
             }
           >
@@ -128,8 +128,8 @@ export function PipelineEmptyPreview() {
                         background:
                           isApproved
                             ? '#D6FF3E'
-                            : 'rgba(42,26,61,.08)',
-                        color: isApproved ? '#1a2000' : '#2A1A3D',
+                            : 'rgba(15,15,15,.08)',
+                        color: isApproved ? '#1a2000' : '#0F0F0F',
                       }}
                     >
                       {c.tag}
@@ -158,7 +158,7 @@ export function PipelineEmptyPreview() {
             box-shadow:
               0 1px 0 rgba(255, 255, 255, 0.7) inset,
               0 0 0 1px rgba(214, 255, 62, 0.35),
-              0 8px 18px -8px rgba(42, 26, 61, 0.2);
+              0 8px 18px -8px rgba(15, 15, 15, 0.2);
           }
         }
         .cf-pipeline-preview-card-active {

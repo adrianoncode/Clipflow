@@ -72,7 +72,7 @@ export function ExploreDetail({ entry, kind }: ExploreDetailProps) {
             style={{
               background: 'var(--lv2-primary)',
               color: 'var(--lv2-accent)',
-              boxShadow: '0 10px 28px -12px rgba(42,26,61,.4)',
+              boxShadow: '0 10px 28px -12px rgba(15,15,15,.4)',
             }}
           >
             {entry.ctaText}

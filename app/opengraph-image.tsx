@@ -30,7 +30,7 @@ export default async function Image() {
             width: 500,
             height: 300,
             borderRadius: '50%',
-            background: 'radial-gradient(ellipse, rgba(42,26,61,0.3) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse, rgba(15,15,15,0.3) 0%, transparent 70%)',
           }}
         />
 

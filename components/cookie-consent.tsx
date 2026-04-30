@@ -34,7 +34,7 @@ export function CookieConsent() {
         style={{
           background: '#FFFDF8',
           border: '1px solid #E5DDCE',
-          boxShadow: '0 1px 0 rgba(24,21,17,.04), 0 30px 60px -20px rgba(42,26,61,.28)',
+          boxShadow: '0 1px 0 rgba(24,21,17,.04), 0 30px 60px -20px rgba(15,15,15,.28)',
         }}
       >
         <p className="text-sm" style={{ color: '#7c7468' }}>
@@ -42,7 +42,7 @@ export function CookieConsent() {
           <Link
             href="/privacy"
             className="underline-offset-4 hover:underline"
-            style={{ color: '#2A1A3D', fontWeight: 600 }}
+            style={{ color: '#0F0F0F', fontWeight: 600 }}
           >
             Privacy Policy
           </Link>
@@ -52,9 +52,9 @@ export function CookieConsent() {
             onClick={accept}
             className="inline-flex h-9 items-center rounded-lg px-5 text-sm font-bold transition-transform hover:-translate-y-0.5"
             style={{
-              background: '#2A1A3D',
+              background: '#0F0F0F',
               color: '#D6FF3E',
-              boxShadow: 'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(42,26,61,.35)',
+              boxShadow: 'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(15,15,15,.35)',
             }}
           >
             Accept

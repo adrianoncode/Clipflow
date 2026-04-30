@@ -451,7 +451,7 @@ export function ClipPreviewEditor({
               step={0.5}
               value={audioGainDb}
               onChange={(e) => setAudioGainDb(Number(e.target.value))}
-              className="block w-full accent-[var(--lv2-primary,#2A1A3D)]"
+              className="block w-full accent-[var(--lv2-primary,#0F0F0F)]"
               aria-label="Audio gain in decibels"
             />
             <div className="flex justify-between font-mono text-[9.5px] text-muted-foreground/60">
@@ -488,7 +488,7 @@ export function ClipPreviewEditor({
                   v.pause()
                 }
               }}
-              className="block w-full accent-[var(--lv2-primary,#2A1A3D)]"
+              className="block w-full accent-[var(--lv2-primary,#0F0F0F)]"
               aria-label="Thumbnail capture time"
             />
             <p className="text-[10.5px] text-muted-foreground/70">
@@ -668,7 +668,7 @@ export function ClipPreviewEditor({
                             opacity: Number(e.target.value),
                           })
                         }
-                        className="flex-1 accent-[var(--lv2-primary,#2A1A3D)]"
+                        className="flex-1 accent-[var(--lv2-primary,#0F0F0F)]"
                       />
                       <span className="w-8 font-mono text-[10px] tabular-nums">
                         {Math.round(overlay.opacity * 100)}%
@@ -851,7 +851,7 @@ function CaptionStylePicker({
           onClick={() => onChange(s.id)}
           className={`rounded-full px-2.5 py-1 text-[10.5px] font-semibold transition-all ${
             value === s.id
-              ? 'bg-[#2A1A3D] text-[#D6FF3E] ring-2 ring-[#D6FF3E]/20'
+              ? 'bg-[#0F0F0F] text-[#D6FF3E] ring-2 ring-[#D6FF3E]/20'
               : 'bg-muted/40 text-muted-foreground hover:bg-muted'
           }`}
         >

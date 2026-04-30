@@ -72,7 +72,7 @@ export function AutoSubtitlesVisual() {
       <div className="flex items-center gap-2">
         <span
           className="flex h-7 w-7 items-center justify-center rounded-lg"
-          style={{ background: 'var(--lv2-primary, #2A1A3D)' }}
+          style={{ background: 'var(--lv2-primary, #0F0F0F)' }}
         >
           <Captions className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
         </span>
@@ -141,7 +141,7 @@ export function AutoReframeVisual() {
       <div className="flex items-center gap-2">
         <span
           className="flex h-7 w-7 items-center justify-center rounded-lg"
-          style={{ background: 'var(--lv2-primary, #2A1A3D)' }}
+          style={{ background: 'var(--lv2-primary, #0F0F0F)' }}
         >
           <Crop className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
         </span>
@@ -156,7 +156,7 @@ export function AutoReframeVisual() {
         className="relative aspect-video overflow-hidden rounded-xl"
         style={{
           background:
-            'linear-gradient(135deg, rgba(42,26,61,.88), rgba(42,26,61,.55)), radial-gradient(circle at 30% 50%, rgba(214,255,62,.15), transparent 60%)',
+            'linear-gradient(135deg, rgba(15,15,15,.88), rgba(15,15,15,.55)), radial-gradient(circle at 30% 50%, rgba(214,255,62,.15), transparent 60%)',
         }}
       >
         {/* Faux face marker */}
@@ -208,7 +208,7 @@ export function AutoReframeVisual() {
 // ---------------------------------------------------------------------------
 export function BRollVisual() {
   const TILES = [
-    { hue: '#2A1A3D', topic: 'laptop' },
+    { hue: '#0F0F0F', topic: 'laptop' },
     { hue: '#5B3A8E', topic: 'coffee shop' },
     { hue: '#1A4D3A', topic: 'walking' },
     { hue: '#8E3A5B', topic: 'whiteboard' },
@@ -220,7 +220,7 @@ export function BRollVisual() {
       <div className="flex items-center gap-2">
         <span
           className="flex h-7 w-7 items-center justify-center rounded-lg"
-          style={{ background: 'var(--lv2-primary, #2A1A3D)' }}
+          style={{ background: 'var(--lv2-primary, #0F0F0F)' }}
         >
           <Film className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
         </span>
@@ -264,7 +264,7 @@ export function AIAvatarVisual() {
       <div className="flex items-center gap-2">
         <span
           className="flex h-7 w-7 items-center justify-center rounded-lg"
-          style={{ background: 'var(--lv2-primary, #2A1A3D)' }}
+          style={{ background: 'var(--lv2-primary, #0F0F0F)' }}
         >
           <UserRound className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
         </span>
@@ -293,10 +293,10 @@ export function AIAvatarVisual() {
         {/* Presenter thumbs */}
         <div className="grid grid-cols-4 gap-2">
           {[
-            'linear-gradient(135deg,#2A1A3D,#5B3A8E)',
-            'linear-gradient(135deg,#8E3A5B,#2A1A3D)',
+            'linear-gradient(135deg,#0F0F0F,#5B3A8E)',
+            'linear-gradient(135deg,#8E3A5B,#0F0F0F)',
             'linear-gradient(135deg,#1A4D3A,#5B3A8E)',
-            'linear-gradient(135deg,#3A5B8E,#2A1A3D)',
+            'linear-gradient(135deg,#3A5B8E,#0F0F0F)',
           ].map((g, i) => (
             <div
               key={i}
@@ -337,7 +337,7 @@ export function AutoDubVisual() {
       <div className="flex items-center gap-2">
         <span
           className="flex h-7 w-7 items-center justify-center rounded-lg"
-          style={{ background: 'var(--lv2-primary, #2A1A3D)' }}
+          style={{ background: 'var(--lv2-primary, #0F0F0F)' }}
         >
           <Languages className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
         </span>
@@ -362,7 +362,7 @@ export function AutoDubVisual() {
               key={l.code}
               className="inline-flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10.5px] font-bold"
               style={{
-                background: l.active ? 'var(--lv2-primary, #2A1A3D)' : 'var(--lv2-card, #FFFDF8)',
+                background: l.active ? 'var(--lv2-primary, #0F0F0F)' : 'var(--lv2-card, #FFFDF8)',
                 color: l.active ? 'var(--lv2-accent, #D6FF3E)' : 'var(--lv2-muted, #5f5850)',
                 border: '1px solid var(--lv2-border, rgba(0,0,0,.08))',
               }}
@@ -382,7 +382,7 @@ export function AutoDubVisual() {
                 height: `${20 + Math.sin(i * 0.6) * 20 + Math.cos(i * 0.3) * 15 + 25}%`,
                 background:
                   i < 20
-                    ? 'var(--lv2-primary, #2A1A3D)'
+                    ? 'var(--lv2-primary, #0F0F0F)'
                     : 'var(--lv2-muted, #5f5850)',
                 opacity: i < 20 ? 1 : 0.3,
               }}

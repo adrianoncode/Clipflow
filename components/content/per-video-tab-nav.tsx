@@ -47,7 +47,7 @@ export function PerVideoTabNav({
       className="inline-flex items-center gap-1 rounded-2xl border border-border/60 bg-card p-1"
       style={{
         boxShadow:
-          '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 6px 14px -8px rgba(42,26,61,0.14)',
+          '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(15,15,15,0.04), 0 6px 14px -8px rgba(15,15,15,0.14)',
       }}
     >
       {tabs.map((t) => {
@@ -60,7 +60,7 @@ export function PerVideoTabNav({
             aria-current={isActive ? 'page' : undefined}
             className={`group relative inline-flex h-9 items-center gap-1.5 rounded-xl px-3 text-[12.5px] font-bold tracking-tight transition-all ${
               isActive
-                ? 'bg-[#2A1A3D] text-[#D6FF3E] shadow-sm shadow-[#2A1A3D]/30'
+                ? 'bg-[#0F0F0F] text-[#D6FF3E] shadow-sm shadow-[#0F0F0F]/30'
                 : 'text-muted-foreground hover:bg-primary/[0.05] hover:text-foreground'
             }`}
             style={{

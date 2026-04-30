@@ -380,7 +380,7 @@ function TransitionSubmit({
       disabled={pending}
       className={
         variant === 'primary'
-          ? 'inline-flex h-9 items-center gap-1.5 rounded-xl bg-[#2A1A3D] px-3.5 text-[12.5px] font-bold tracking-tight text-[#D6FF3E] transition-all hover:bg-[#1A0F2A] disabled:cursor-not-allowed disabled:opacity-60'
+          ? 'inline-flex h-9 items-center gap-1.5 rounded-xl bg-[#0F0F0F] px-3.5 text-[12.5px] font-bold tracking-tight text-[#D6FF3E] transition-all hover:bg-[#1A0F2A] disabled:cursor-not-allowed disabled:opacity-60'
           : 'inline-flex h-9 items-center gap-1.5 rounded-xl border border-border/60 bg-background px-3 text-[12.5px] font-semibold text-muted-foreground transition-all hover:border-border hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60'
       }
       style={{

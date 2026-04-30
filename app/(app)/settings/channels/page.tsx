@@ -199,7 +199,7 @@ export default async function ChannelsPage({
                 ? 'rgba(15,107,77,.12)'
                 : connectedCount > 0
                   ? 'rgba(214,255,62,.18)'
-                  : 'rgba(42,26,61,.06)',
+                  : 'rgba(15,15,15,.06)',
               color: allConnected
                 ? '#0F6B4D'
                 : connectedCount > 0
@@ -210,7 +210,7 @@ export default async function ChannelsPage({
                   ? 'rgba(15,107,77,.25)'
                   : connectedCount > 0
                     ? 'rgba(214,255,62,.40)'
-                    : 'rgba(42,26,61,.12)'
+                    : 'rgba(15,15,15,.12)'
               }`,
               fontFamily:
                 'var(--font-inter-tight), var(--font-inter), sans-serif',
@@ -524,7 +524,7 @@ function UploadPostBundleCard({
           <div className="flex items-center gap-2.5">
             <span
               className="flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-sm"
-              style={{ background: '#2A1A3D' }}
+              style={{ background: '#0F0F0F' }}
               aria-hidden
             >
               <UploadPostLogo size={18} />

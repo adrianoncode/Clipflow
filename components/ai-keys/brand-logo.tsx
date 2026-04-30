@@ -126,8 +126,8 @@ function ShotstackLogo({ size, className = '' }: { size: number; className?: str
       {...chipBase(
         size,
         className,
-        'linear-gradient(140deg, #6F2BFF 0%, #120920 100%)',
-        '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 22px -10px rgba(42,26,61,0.55)',
+        'linear-gradient(140deg, #6F2BFF 0%, #1A1A1A 100%)',
+        '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 22px -10px rgba(15,15,15,0.55)',
       )}
     >
       <svg width={inner} height={inner} viewBox="0 0 24 24" aria-hidden>
@@ -222,8 +222,8 @@ function FallbackLogo({ size, className = '' }: { size: number; className?: stri
       {...chipBase(
         size,
         className,
-        'linear-gradient(140deg, #2A1A3D 0%, #4A2A6E 100%)',
-        '0 1px 0 rgba(255,255,255,0.1) inset, 0 8px 22px -10px rgba(42,26,61,0.45)',
+        'linear-gradient(140deg, #0F0F0F 0%, #4A2A6E 100%)',
+        '0 1px 0 rgba(255,255,255,0.1) inset, 0 8px 22px -10px rgba(15,15,15,0.45)',
       )}
     >
       <svg width={size * 0.4} height={size * 0.4} viewBox="0 0 24 24" aria-hidden fill="none">

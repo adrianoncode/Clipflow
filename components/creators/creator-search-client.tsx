@@ -145,7 +145,7 @@ export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearch
           className="relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5 sm:p-6"
           style={{
             boxShadow:
-              '0 1px 0 rgba(255,255,255,0.6) inset, 0 1px 2px rgba(42,26,61,0.04), 0 12px 32px -18px rgba(42,26,61,0.18)',
+              '0 1px 0 rgba(255,255,255,0.6) inset, 0 1px 2px rgba(15,15,15,0.04), 0 12px 32px -18px rgba(15,15,15,0.18)',
           }}
         >
           <span
@@ -374,7 +374,7 @@ function DiscoverPanel({
         className="relative overflow-hidden rounded-2xl border border-border/60 bg-card"
         style={{
           boxShadow:
-            '0 1px 0 rgba(255,255,255,0.6) inset, 0 1px 2px rgba(42,26,61,0.04), 0 12px 32px -18px rgba(42,26,61,0.18)',
+            '0 1px 0 rgba(255,255,255,0.6) inset, 0 1px 2px rgba(15,15,15,0.04), 0 12px 32px -18px rgba(15,15,15,0.18)',
         }}
       >
         <span
@@ -478,7 +478,7 @@ function CreatorCard({
       className="group relative flex flex-col rounded-2xl border border-border/60 bg-card p-4 transition-all hover:-translate-y-px hover:border-border hover:shadow-md hover:shadow-primary/[0.05]"
       style={{
         boxShadow:
-          '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04)',
+          '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(15,15,15,0.04)',
       }}
     >
       {/* Brand corner badge — clearly tags the platform */}

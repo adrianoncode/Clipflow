@@ -34,7 +34,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
   // a logo we still white-label away the giant "Clipflow" header and
   // fall back to the workspace name so the reviewer sees the client's
   // name, not ours. Clipflow attribution moves to a tiny footer link.
-  const accent = brandKit?.accentColor ?? '#2A1A3D'
+  const accent = brandKit?.accentColor ?? '#0F0F0F'
   const showLogo = Boolean(brandKit?.logoUrl)
   // White-label fallback when no logo is uploaded — derive initials from
   // the workspace name so the public page shows a mark that belongs to
@@ -145,7 +145,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
               background:
                 'linear-gradient(180deg, rgba(214,255,62,.04) 0%, #FFFDF8 40%)',
               boxShadow:
-                '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(42,26,61,.04), 0 22px 44px -28px rgba(42,26,61,.22)',
+                '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(15,15,15,.04), 0 22px 44px -28px rgba(15,15,15,.22)',
             }}
           >
             {/* Hairline + lime corner glow — same vocabulary as the
@@ -155,7 +155,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
               className="pointer-events-none absolute inset-x-10 top-0 h-px"
               style={{
                 background:
-                  'linear-gradient(to right, transparent, rgba(42,26,61,.32), transparent)',
+                  'linear-gradient(to right, transparent, rgba(15,15,15,.32), transparent)',
               }}
             />
             <span
@@ -172,9 +172,9 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
                 className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white"
                 style={{
                   background:
-                    'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
+                    'linear-gradient(140deg, #0F0F0F 0%, #1A1A1A 60%, #0F0F0F 100%)',
                   boxShadow:
-                    '0 1px 0 rgba(255,255,255,.18) inset, 0 10px 24px -12px rgba(42,26,61,.55)',
+                    '0 1px 0 rgba(255,255,255,.18) inset, 0 10px 24px -12px rgba(15,15,15,.55)',
                 }}
                 aria-hidden
               >
@@ -300,7 +300,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
             href="https://clipflow.to"
             target="_blank"
             rel="noopener noreferrer"
-            className="transition-colors hover:text-[color:#2A1A3D]"
+            className="transition-colors hover:text-[color:#0F0F0F]"
           >
             Powered by Clipflow
           </a>

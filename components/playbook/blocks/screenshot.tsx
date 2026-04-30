@@ -22,7 +22,7 @@ export function Screenshot({
         style={{
           background: 'var(--lv2-bg-2)',
           border: '1px solid var(--lv2-border)',
-          boxShadow: '0 1px 0 rgba(24,21,17,.04), 0 20px 40px -24px rgba(42,26,61,.15)',
+          boxShadow: '0 1px 0 rgba(24,21,17,.04), 0 20px 40px -24px rgba(15,15,15,.15)',
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}

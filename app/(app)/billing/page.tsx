@@ -105,7 +105,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
           style={{
             fontFamily: 'var(--font-instrument-serif), serif',
             letterSpacing: '-.015em',
-            color: '#2A1A3D',
+            color: '#0F0F0F',
           }}
         >
           Simple. Obvious. No seat tax.
@@ -115,7 +115,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
           style={{ color: '#5f5850' }}
         >
           Start free. Upgrade when you hit the ceiling. Cancel in two clicks.{' '}
-          <span style={{ color: '#2A1A3D' }} className="font-semibold">
+          <span style={{ color: '#0F0F0F' }} className="font-semibold">
             BYOK
           </span>{' '}
           — pay your AI provider at cost, zero markup on tokens.

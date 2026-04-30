@@ -79,7 +79,7 @@ function UnsavedBar({ onDiscard }: { onDiscard: () => void }) {
         className="pointer-events-auto flex items-center gap-3 rounded-full border border-border/70 bg-card/95 px-3 py-2 shadow-2xl shadow-primary/10 backdrop-blur-sm"
         style={{
           boxShadow:
-            '0 18px 48px -12px rgba(42,26,61,0.32), 0 4px 12px -4px rgba(42,26,61,0.18)',
+            '0 18px 48px -12px rgba(15,15,15,0.32), 0 4px 12px -4px rgba(15,15,15,0.18)',
         }}
       >
         <span className="ml-1 inline-flex items-center gap-1.5 text-[12px] font-semibold text-foreground">

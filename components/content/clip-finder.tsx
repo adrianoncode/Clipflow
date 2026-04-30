@@ -49,16 +49,16 @@ function scoreBucket(score: number): {
   if (score >= 60) {
     return {
       label: 'STRONG',
-      bg: '#2A1A3D',
+      bg: '#0F0F0F',
       fg: '#D6FF3E',
-      ring: 'rgba(42,26,61,.35)',
+      ring: 'rgba(15,15,15,.35)',
     }
   }
   return {
     label: 'OK',
     bg: '#F3EDE3',
-    fg: '#2A1A3D',
-    ring: 'rgba(42,26,61,.18)',
+    fg: '#0F0F0F',
+    ring: 'rgba(15,15,15,.18)',
     border: '#CFC4AF',
   }
 }
@@ -128,9 +128,9 @@ function SubmitButton({ hasExistingClips }: { hasExistingClips: boolean }) {
       disabled={pending}
       className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition-transform hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
       style={{
-        background: '#2A1A3D',
+        background: '#0F0F0F',
         color: '#D6FF3E',
-        boxShadow: 'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(42,26,61,.35)',
+        boxShadow: 'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(15,15,15,.35)',
       }}
     >
       <Icon className="h-3.5 w-3.5" />
@@ -163,7 +163,7 @@ function ClipCard({ clip, rank }: { clip: BestClip; rank: number }) {
       {/* Rank indicator — clips come pre-sorted by virality */}
       <div
         className="absolute left-[-8px] top-4 flex h-5 w-5 items-center justify-center rounded-full font-mono text-[9px] font-bold"
-        style={{ background: '#2A1A3D', color: '#D6FF3E' }}
+        style={{ background: '#0F0F0F', color: '#D6FF3E' }}
         aria-hidden
       >
         {rank}
@@ -222,7 +222,7 @@ function ClipCard({ clip, rank }: { clip: BestClip; rank: number }) {
               className="h-full rounded-full"
               style={{
                 width: `${clip.position_pct}%`,
-                background: '#2A1A3D',
+                background: '#0F0F0F',
               }}
             />
           </div>

@@ -91,9 +91,9 @@ export default function HelpCenterPage() {
           className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-white"
           style={{
             background:
-              'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
+              'linear-gradient(140deg, #0F0F0F 0%, #1A1A1A 60%, #0F0F0F 100%)',
             boxShadow:
-              '0 1px 0 rgba(255,255,255,0.18) inset, 0 12px 28px -14px rgba(42,26,61,0.55)',
+              '0 1px 0 rgba(255,255,255,0.18) inset, 0 12px 28px -14px rgba(15,15,15,0.55)',
           }}
           aria-hidden
         >
@@ -111,7 +111,7 @@ export default function HelpCenterPage() {
           <p className="lv2L-eyebrow">Support · Docs</p>
           <h1
             className="lv2L-display text-[44px] leading-[1.02] sm:text-[52px]"
-            style={{ color: '#2A1A3D' }}
+            style={{ color: '#0F0F0F' }}
           >
             Help &amp; docs.
           </h1>
@@ -137,8 +137,8 @@ export default function HelpCenterPage() {
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
                   style={{
                     background:
-                      'linear-gradient(140deg, rgba(42,26,61,0.10) 0%, rgba(42,26,61,0.04) 100%)',
-                    color: '#2A1A3D',
+                      'linear-gradient(140deg, rgba(15,15,15,0.10) 0%, rgba(15,15,15,0.04) 100%)',
+                    color: '#0F0F0F',
                     boxShadow: '0 1px 0 rgba(255,255,255,0.55) inset',
                   }}
                   aria-hidden
@@ -177,12 +177,12 @@ export default function HelpCenterPage() {
                       <span
                         aria-hidden
                         className="pointer-events-none absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                        style={{ background: '#2A1A3D' }}
+                        style={{ background: '#0F0F0F' }}
                       />
                       <span className="flex-1">{item.title}</span>
                       <ArrowUpRight
                         className="h-3.5 w-3.5 shrink-0 opacity-40 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100"
-                        style={{ color: '#2A1A3D' }}
+                        style={{ color: '#0F0F0F' }}
                       />
                     </Link>
                   </li>
@@ -202,7 +202,7 @@ export default function HelpCenterPage() {
           background: '#FFFDF8',
           border: '1px solid #E5DDCE',
           boxShadow:
-            '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(24,21,17,0.04), 0 14px 32px -22px rgba(42,26,61,0.22)',
+            '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(24,21,17,0.04), 0 14px 32px -22px rgba(15,15,15,0.22)',
         }}
       >
         <span
@@ -210,7 +210,7 @@ export default function HelpCenterPage() {
           className="pointer-events-none absolute -left-10 -top-12 h-36 w-36 rounded-full"
           style={{
             background:
-              'radial-gradient(circle, rgba(42,26,61,0.16) 0%, rgba(42,26,61,0) 60%)',
+              'radial-gradient(circle, rgba(15,15,15,0.16) 0%, rgba(15,15,15,0) 60%)',
           }}
         />
         <span
@@ -218,7 +218,7 @@ export default function HelpCenterPage() {
           className="pointer-events-none absolute inset-x-8 top-0 h-px"
           style={{
             background:
-              'linear-gradient(to right, transparent, rgba(42,26,61,0.30), transparent)',
+              'linear-gradient(to right, transparent, rgba(15,15,15,0.30), transparent)',
           }}
         />
 
@@ -227,9 +227,9 @@ export default function HelpCenterPage() {
             className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white"
             style={{
               background:
-                'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
+                'linear-gradient(140deg, #0F0F0F 0%, #1A1A1A 60%, #0F0F0F 100%)',
               boxShadow:
-                '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 20px -10px rgba(42,26,61,0.55)',
+                '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 20px -10px rgba(15,15,15,0.55)',
             }}
             aria-hidden
           >
@@ -264,12 +264,12 @@ export default function HelpCenterPage() {
               href="mailto:support@clipflow.to"
               className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl px-3.5 text-[13px] font-bold tracking-tight transition-all hover:-translate-y-px hover:shadow-md"
               style={{
-                background: 'linear-gradient(180deg, #2A1A3D 0%, #120920 100%)',
+                background: 'linear-gradient(180deg, #0F0F0F 0%, #1A1A1A 100%)',
                 color: '#D6FF3E',
                 fontFamily:
                   'var(--font-inter-tight), var(--font-inter), sans-serif',
                 boxShadow:
-                  '0 1px 0 rgba(255,255,255,0.10) inset, inset 0 0 0 1px rgba(214,255,62,0.18), 0 6px 14px -8px rgba(42,26,61,0.45)',
+                  '0 1px 0 rgba(255,255,255,0.10) inset, inset 0 0 0 1px rgba(214,255,62,0.18), 0 6px 14px -8px rgba(15,15,15,0.45)',
               }}
             >
               <Mail className="h-3.5 w-3.5" />

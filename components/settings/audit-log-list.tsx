@@ -61,7 +61,7 @@ export function AuditLogList({ rows }: { rows: AuditRow[] }) {
             onClick={() => setFilter(bucket)}
             className={`rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize transition-colors ${
               filter === bucket
-                ? 'bg-[#2A1A3D] text-[#D6FF3E]'
+                ? 'bg-[#0F0F0F] text-[#D6FF3E]'
                 : 'bg-muted/60 text-muted-foreground hover:bg-muted'
             }`}
           >
@@ -183,7 +183,7 @@ function AuditLogEmptyPreview() {
       className="cf-audit-empty relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5"
       style={{
         boxShadow:
-          '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(42,26,61,.04), 0 14px 32px -18px rgba(42,26,61,.18)',
+          '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(15,15,15,.04), 0 14px 32px -18px rgba(15,15,15,.18)',
       }}
     >
       <span
@@ -191,7 +191,7 @@ function AuditLogEmptyPreview() {
         className="pointer-events-none absolute inset-x-10 top-0 h-px"
         style={{
           background:
-            'linear-gradient(to right, transparent, rgba(42,26,61,.32), transparent)',
+            'linear-gradient(to right, transparent, rgba(15,15,15,.32), transparent)',
         }}
       />
       <div className="mb-4 flex items-baseline justify-between">

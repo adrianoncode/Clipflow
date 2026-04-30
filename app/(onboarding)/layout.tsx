@@ -10,7 +10,7 @@ const ONBOARD_STYLES = `
 .lv2-onboard {
   --lv2o-bg: #FAF7F2; --lv2o-fg: #181511; --lv2o-fg-soft: #3a342c;
   --lv2o-muted: #7c7468; --lv2o-border: #E5DDCE; --lv2o-card: #FFFDF8;
-  --lv2o-primary: #2A1A3D; --lv2o-primary-ink: #120920;
+  --lv2o-primary: #0F0F0F; --lv2o-primary-ink: #1A1A1A;
   --lv2o-accent: #D6FF3E; --lv2o-accent-ink: #1a2000;
 
   --background: 42 38% 96%; --foreground: 35 14% 9%;
@@ -37,13 +37,13 @@ const ONBOARD_STYLES = `
 .lv2-onboard input:focus, .lv2-onboard textarea:focus {
   outline: none !important;
   border-color: var(--lv2o-primary) !important;
-  box-shadow: 0 0 0 3px rgba(42,26,61,.12) !important;
+  box-shadow: 0 0 0 3px rgba(15,15,15,.12) !important;
 }
 .lv2-onboard button[type="submit"] {
   background: var(--lv2o-primary) !important;
   color: var(--lv2o-accent) !important;
   border-radius: 10px !important; font-weight: 700 !important;
-  box-shadow: inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(42,26,61,.35) !important;
+  box-shadow: inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(15,15,15,.35) !important;
 }
 `
 

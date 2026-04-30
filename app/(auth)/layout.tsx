@@ -8,7 +8,7 @@ const AUTH_STYLES = `
   --lv2a-bg: #FAF7F2; --lv2a-bg-2: #F3EDE3; --lv2a-fg: #181511;
   --lv2a-fg-soft: #3a342c; --lv2a-muted: #7c7468;
   --lv2a-border: #E5DDCE; --lv2a-border-strong: #CFC4AF; --lv2a-card: #FFFDF8;
-  --lv2a-primary: #2A1A3D; --lv2a-primary-ink: #120920;
+  --lv2a-primary: #0F0F0F; --lv2a-primary-ink: #1A1A1A;
   --lv2a-accent: #D6FF3E; --lv2a-accent-ink: #1a2000;
 
   /* Remap the shadcn theme tokens for descendants so Card/Button/etc use
@@ -53,7 +53,7 @@ const AUTH_STYLES = `
 .lv2-auth input:focus {
   outline: none !important;
   border-color: var(--lv2a-primary) !important;
-  box-shadow: 0 0 0 3px rgba(42,26,61,.12) !important;
+  box-shadow: 0 0 0 3px rgba(15,15,15,.12) !important;
 }
 .lv2-auth label { color: var(--lv2a-fg) !important; font-weight: 600 !important; }
 .lv2-auth button[type="submit"],
@@ -62,7 +62,7 @@ const AUTH_STYLES = `
   color: var(--lv2a-accent) !important;
   border-radius: 10px !important;
   font-weight: 700 !important;
-  box-shadow: inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(42,26,61,.35) !important;
+  box-shadow: inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(15,15,15,.35) !important;
   transition: transform .15s, background .15s !important;
 }
 .lv2-auth button[type="submit"]:hover,

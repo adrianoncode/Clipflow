@@ -36,7 +36,7 @@ export default function BillingError({
             className="text-[28px] leading-[1.05]"
             style={{
               fontFamily: 'var(--font-instrument-serif), serif',
-              color: '#2A1A3D',
+              color: '#0F0F0F',
               letterSpacing: '-.015em',
             }}
           >
@@ -63,10 +63,10 @@ export default function BillingError({
           onClick={reset}
           className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
           style={{
-            background: '#2A1A3D',
+            background: '#0F0F0F',
             color: '#D6FF3E',
             boxShadow:
-              'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(42,26,61,.35)',
+              'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(15,15,15,.35)',
           }}
         >
           <RotateCcw className="h-3.5 w-3.5" />

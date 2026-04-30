@@ -74,7 +74,7 @@ export function ThumbnailStudio({
           className="flex h-8 w-8 items-center justify-center rounded-lg"
           style={{ background: '#EDE6F5' }}
         >
-          <ImageIcon className="h-4 w-4" style={{ color: '#2A1A3D' }} />
+          <ImageIcon className="h-4 w-4" style={{ color: '#0F0F0F' }} />
         </div>
         <div>
           <h3 className="text-sm font-bold">Thumbnail Studio</h3>
@@ -152,7 +152,7 @@ export function ThumbnailStudio({
                   onClick={() => setLayout(l.id)}
                   className={`flex-1 rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition-colors ${
                     layout === l.id
-                      ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
+                      ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]'
                       : 'border-border/60 text-muted-foreground hover:border-border'
                   }`}
                   title={`${l.ratio} · ${l.size}`}
@@ -174,7 +174,7 @@ export function ThumbnailStudio({
                   onClick={() => setVariant(v.id)}
                   className={`flex-1 rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition-colors ${
                     variant === v.id
-                      ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
+                      ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]'
                       : 'border-border/60 text-muted-foreground hover:border-border'
                   }`}
                 >

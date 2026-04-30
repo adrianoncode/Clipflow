@@ -34,7 +34,7 @@ function IntervalToggle({
           className={cn(
             'rounded-full px-4 py-1.5 font-semibold transition-all',
             value === opt
-              ? 'bg-[#2A1A3D] text-[#D6FF3E] shadow-sm shadow-[#2A1A3D]/30'
+              ? 'bg-[#0F0F0F] text-[#D6FF3E] shadow-sm shadow-[#0F0F0F]/30'
               : 'text-muted-foreground hover:text-foreground',
           )}
         >

@@ -22,7 +22,7 @@ interface KitPillProps {
   kit: BrandKit | null
 }
 
-const COLOR_PRESETS = ['#2A1A3D', '#0F172A', '#FF0000', '#0A66C2', '#16A34A', '#F97316', '#DB2777']
+const COLOR_PRESETS = ['#0F0F0F', '#0F172A', '#FF0000', '#0A66C2', '#16A34A', '#F97316', '#DB2777']
 
 function SubmitKitButton() {
   const { pending } = useFormStatus()
@@ -50,7 +50,7 @@ function SubmitKitButton() {
 export function KitPill({ workspaceId, kit }: KitPillProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [accent, setAccent] = useState(kit?.accentColor ?? '#2A1A3D')
+  const [accent, setAccent] = useState(kit?.accentColor ?? '#0F0F0F')
   const [logoUrl, setLogoUrl] = useState(kit?.logoUrl ?? '')
   const [logoUploading, setLogoUploading] = useState(false)
   const [logoErr, setLogoErr] = useState<string | null>(null)
@@ -121,12 +121,12 @@ export function KitPill({ workspaceId, kit }: KitPillProps) {
               )}
               <span
                 className="h-8 w-8 shrink-0 rounded-md ring-1 ring-border/60"
-                style={{ background: kit?.accentColor ?? '#2A1A3D' }}
+                style={{ background: kit?.accentColor ?? '#0F0F0F' }}
                 aria-label="Accent color"
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-bold text-[11px] uppercase tracking-[0.14em] text-primary/85">
-                  {kit?.fontFamily ?? 'Inter'} · {kit?.accentColor ?? '#2A1A3D'}
+                  {kit?.fontFamily ?? 'Inter'} · {kit?.accentColor ?? '#0F0F0F'}
                 </p>
                 {kit?.introText ? (
                   <p className="truncate text-[11.5px] text-muted-foreground">

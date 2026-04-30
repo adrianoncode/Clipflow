@@ -186,7 +186,7 @@ export function PlaybookSearch({ guides, categories, paths }: PlaybookSearchProp
               borderColor: 'var(--lv2-border)',
               background: 'var(--lv2-card)',
               boxShadow:
-                '0 24px 64px -12px rgba(42,26,61,.35), 0 6px 24px -8px rgba(42,26,61,.18)',
+                '0 24px 64px -12px rgba(15,15,15,.35), 0 6px 24px -8px rgba(15,15,15,.18)',
             }}
             onClick={(e) => e.stopPropagation()}
           >

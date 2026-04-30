@@ -107,7 +107,7 @@ export function Testimonials() {
               background: t.accent ? 'var(--lv2-primary)' : 'var(--lv2-card)',
               color: t.accent ? 'var(--lv2-accent)' : 'var(--lv2-fg)',
               boxShadow: t.accent
-                ? '0 30px 60px -20px rgba(42,26,61,.35)'
+                ? '0 30px 60px -20px rgba(15,15,15,.35)'
                 : '0 1px 0 rgba(24,21,17,.04)',
             }}
           >

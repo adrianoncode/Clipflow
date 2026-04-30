@@ -13,7 +13,7 @@ const STROKE: Record<Size, number> = { xs: 1.75, sm: 1.75, md: 2, lg: 1.75, xl: 
 const TONE_COLOR: Record<Tone, string> = {
   default: '#181511',
   muted: '#7c7468',
-  primary: '#2A1A3D',
+  primary: '#0F0F0F',
   accent: '#D6FF3E',
   success: '#0F6B4D',
   warn: '#A0530B',

@@ -212,7 +212,7 @@ export function BrollClient({
             type="button"
             onClick={() => setMediaType('video')}
             className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-              mediaType === 'video' ? 'bg-[#2A1A3D] text-[#D6FF3E]' : 'hover:bg-accent'
+              mediaType === 'video' ? 'bg-[#0F0F0F] text-[#D6FF3E]' : 'hover:bg-accent'
             }`}
           >
             Videos
@@ -221,7 +221,7 @@ export function BrollClient({
             type="button"
             onClick={() => setMediaType('photo')}
             className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-              mediaType === 'photo' ? 'bg-[#2A1A3D] text-[#D6FF3E]' : 'hover:bg-accent'
+              mediaType === 'photo' ? 'bg-[#0F0F0F] text-[#D6FF3E]' : 'hover:bg-accent'
             }`}
           >
             Photos

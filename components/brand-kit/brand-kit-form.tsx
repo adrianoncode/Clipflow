@@ -53,10 +53,10 @@ function SaveButton({ disabled }: { disabled: boolean }) {
       disabled={disabled || pending}
       className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold transition-transform hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
       style={{
-        background: '#2A1A3D',
+        background: '#0F0F0F',
         color: '#D6FF3E',
         boxShadow:
-          'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(42,26,61,.35)',
+          'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(15,15,15,.35)',
       }}
     >
       {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
@@ -69,7 +69,7 @@ export function BrandKitForm({ workspaceId, initial, canEdit }: BrandKitFormProp
   const merged: BrandKit = { ...DEFAULT_BRAND_KIT, ...(initial ?? {}) }
   const [logoUrl, setLogoUrl] = useState<string>(merged.logoUrl ?? '')
   const [accentColor, setAccentColor] = useState<string>(
-    merged.accentColor ?? DEFAULT_BRAND_KIT.accentColor ?? '#2A1A3D',
+    merged.accentColor ?? DEFAULT_BRAND_KIT.accentColor ?? '#0F0F0F',
   )
   const [fontFamily, setFontFamily] = useState<string>(
     merged.fontFamily ?? DEFAULT_BRAND_KIT.fontFamily ?? 'Inter',
@@ -152,7 +152,7 @@ export function BrandKitForm({ workspaceId, initial, canEdit }: BrandKitFormProp
                   className="absolute inset-0 flex items-center justify-center"
                   style={{ background: 'rgba(255,253,248,.85)' }}
                 >
-                  <Loader2 className="h-5 w-5 animate-spin" style={{ color: '#2A1A3D' }} />
+                  <Loader2 className="h-5 w-5 animate-spin" style={{ color: '#0F0F0F' }} />
                 </span>
               ) : null}
             </div>
@@ -211,7 +211,7 @@ export function BrandKitForm({ workspaceId, initial, canEdit }: BrandKitFormProp
                 value={accentColor}
                 onChange={(e) => setAccentColor(e.target.value)}
                 disabled={!canEdit}
-                placeholder="#2A1A3D"
+                placeholder="#0F0F0F"
                 className="lv2-mono flex-1 rounded-lg border px-3 py-2 text-[13px]"
                 style={{
                   borderColor: '#E5DDCE',
@@ -276,9 +276,9 @@ export function BrandKitForm({ workspaceId, initial, canEdit }: BrandKitFormProp
                   key={pos}
                   className="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-[12.5px] font-semibold transition-colors"
                   style={{
-                    borderColor: active ? '#2A1A3D' : '#E5DDCE',
+                    borderColor: active ? '#0F0F0F' : '#E5DDCE',
                     background: active ? '#EDE6F5' : '#FFFFFF',
-                    color: active ? '#2A1A3D' : '#3a342c',
+                    color: active ? '#0F0F0F' : '#3a342c',
                   }}
                 >
                   <input
@@ -403,7 +403,7 @@ function Label({ eyebrow, title, desc }: { eyebrow: string; title: string; desc:
     <div>
       <p
         className="font-bold text-[9.5px] font-semibold uppercase tracking-[0.2em]"
-        style={{ color: '#2A1A3D' }}
+        style={{ color: '#0F0F0F' }}
       >
         {eyebrow}
       </p>
@@ -430,14 +430,14 @@ function WatermarkDot({
     <span
       aria-hidden
       className="relative flex h-5 w-7 shrink-0 overflow-hidden rounded-sm border"
-      style={{ borderColor: active ? '#2A1A3D' : '#CFC4AF', background: '#F3EDE3' }}
+      style={{ borderColor: active ? '#0F0F0F' : '#CFC4AF', background: '#F3EDE3' }}
     >
       <span
         className="absolute h-2 w-2 rounded-sm"
         style={{
           top,
           left,
-          background: active ? '#2A1A3D' : '#7c7468',
+          background: active ? '#0F0F0F' : '#7c7468',
         }}
       />
     </span>

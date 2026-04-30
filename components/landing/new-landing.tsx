@@ -214,8 +214,8 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           --lv2-border: #E5DDCE;
           --lv2-border-strong: #CFC4AF;
           --lv2-card: #FFFDF8;
-          --lv2-primary: #2A1A3D;
-          --lv2-primary-ink: #120920;
+          --lv2-primary: #0F0F0F;
+          --lv2-primary-ink: #1A1A1A;
           --lv2-primary-soft: #EDE6F5;
           --lv2-accent: #D6FF3E;
           --lv2-accent-ink: #1a2000;
@@ -254,8 +254,8 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           box-shadow:
             inset 0 1px 0 rgba(255,255,255,.1),
             inset 0 0 0 1px rgba(214,255,62,.18),
-            0 1px 2px rgba(42,26,61,.18),
-            0 8px 22px -8px rgba(42,26,61,.45);
+            0 1px 2px rgba(15,15,15,.18),
+            0 8px 22px -8px rgba(15,15,15,.45);
           transition: transform .22s cubic-bezier(.2,.9,.3,1), background .2s ease, box-shadow .25s ease;
         }
         /* Specular highlight — a soft lime glow lives at the top edge
@@ -275,8 +275,8 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           box-shadow:
             inset 0 1px 0 rgba(255,255,255,.14),
             inset 0 0 0 1px rgba(214,255,62,.32),
-            0 2px 4px rgba(42,26,61,.2),
-            0 16px 30px -10px rgba(42,26,61,.5),
+            0 2px 4px rgba(15,15,15,.2),
+            0 16px 30px -10px rgba(15,15,15,.5),
             0 0 0 6px rgba(214,255,62,.07);
         }
         .lv2-btn-primary:hover::before { opacity: 1; }
@@ -327,8 +327,8 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         .lv2-tilt-card:hover .lv2-tilt-shine { opacity: 1; }
 
         @keyframes lv2-pulse-ring {
-          0%, 100% { box-shadow: 0 1px 0 rgba(24,21,17,.04), 0 30px 60px -20px rgba(42,26,61,.35), 0 0 0 0 rgba(214,255,62,.0); }
-          50%      { box-shadow: 0 1px 0 rgba(24,21,17,.04), 0 30px 60px -20px rgba(42,26,61,.45), 0 0 0 8px rgba(214,255,62,.18); }
+          0%, 100% { box-shadow: 0 1px 0 rgba(24,21,17,.04), 0 30px 60px -20px rgba(15,15,15,.35), 0 0 0 0 rgba(214,255,62,.0); }
+          50%      { box-shadow: 0 1px 0 rgba(24,21,17,.04), 0 30px 60px -20px rgba(15,15,15,.45), 0 0 0 8px rgba(214,255,62,.18); }
         }
         .lv2-pulse-ring { animation: lv2-pulse-ring 3.4s ease-in-out infinite; }
 
@@ -384,19 +384,19 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
 
         .lv2-grid-bg {
           background-image:
-            linear-gradient(to right, rgba(42,26,61,.05) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(42,26,61,.05) 1px, transparent 1px);
+            linear-gradient(to right, rgba(15,15,15,.05) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(15,15,15,.05) 1px, transparent 1px);
           background-size: 56px 56px;
         }
 
         .lv2-card {
           background: var(--lv2-card); border: 1px solid var(--lv2-border); border-radius: 16px;
         }
-        .lv2-ring-soft { box-shadow: 0 1px 0 rgba(24,21,17,.03), 0 20px 40px -24px rgba(42,26,61,.18); }
+        .lv2-ring-soft { box-shadow: 0 1px 0 rgba(24,21,17,.03), 0 20px 40px -24px rgba(15,15,15,.18); }
         .lv2-card-hover { transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s; }
         .lv2-card-hover:hover {
           transform: translateY(-6px);
-          box-shadow: 0 1px 0 rgba(24,21,17,.04), 0 30px 50px -20px rgba(42,26,61,.28);
+          box-shadow: 0 1px 0 rgba(24,21,17,.04), 0 30px 50px -20px rgba(15,15,15,.28);
         }
 
         /* .lv2-face paints soft plum gradient circles as avatar
@@ -407,7 +407,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
            gradient, so self-hosted avatars can still be swapped in
            per-instance. */
         .lv2-face {
-          background-image: linear-gradient(135deg, rgba(42,26,61,.25), rgba(214,255,62,.15));
+          background-image: linear-gradient(135deg, rgba(15,15,15,.25), rgba(214,255,62,.15));
           background-color: #d9cfc0;
           background-size: cover;
           background-position: center;
@@ -420,7 +420,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         }
         .lv2-thumb-tint-p::before {
           content: ""; position: absolute; inset: 0;
-          background: linear-gradient(135deg, rgba(42,26,61,.4), rgba(42,26,61,.05));
+          background: linear-gradient(135deg, rgba(15,15,15,.4), rgba(15,15,15,.05));
           z-index: 1; mix-blend-mode: multiply;
         }
 
@@ -532,7 +532,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
         .lv2-u-sweep:hover::after { transform: scaleX(1); transform-origin: left; }
 
         .lv2-tcard { transition: transform .3s, box-shadow .3s; }
-        .lv2-tcard:hover { transform: translateY(-3px) rotate(-.3deg); box-shadow: 0 20px 40px -20px rgba(42,26,61,.25); }
+        .lv2-tcard:hover { transform: translateY(-3px) rotate(-.3deg); box-shadow: 0 20px 40px -20px rgba(15,15,15,.25); }
 
         /* ─── Pricing-tile interaction system ─────────────────────────
            Six effects that fire when the cursor enters one of the
@@ -662,7 +662,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           padding: 4px 10px; border-radius: 6px;
           font-family: var(--font-jetbrains-mono), monospace;
           font-weight: 700; font-size: 10px; letter-spacing: .1em;
-          box-shadow: 0 6px 14px -4px rgba(42,26,61,.3);
+          box-shadow: 0 6px 14px -4px rgba(15,15,15,.3);
           border: 1px solid rgba(0,0,0,.1);
         }
 
@@ -703,13 +703,13 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           backdropFilter: navGlass ? 'saturate(200%) blur(22px)' : 'none',
           WebkitBackdropFilter: navGlass ? 'saturate(200%) blur(22px)' : 'none',
           borderBottom: navGlass
-            ? '1px solid rgba(42,26,61,0.07)'
+            ? '1px solid rgba(15,15,15,0.07)'
             : '1px solid transparent',
           // Apple glass = tinted backdrop + inset top highlight (the
           // specular edge) + soft drop shadow. The inset white line is
           // what sells it as "glass" rather than just "frosted".
           boxShadow: navGlass
-            ? 'inset 0 1px 0 rgba(255,255,255,.55), 0 6px 22px -10px rgba(42,26,61,0.1)'
+            ? 'inset 0 1px 0 rgba(255,255,255,.55), 0 6px 22px -10px rgba(15,15,15,0.1)'
             : 'none',
         }}
       >
@@ -1477,7 +1477,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                   className="absolute inset-0"
                   style={{
                     background:
-                      'linear-gradient(to top, rgba(42,26,61,.85) 0%, transparent 45%)',
+                      'linear-gradient(to top, rgba(15,15,15,.85) 0%, transparent 45%)',
                   }}
                 />
                 <div
@@ -1748,7 +1748,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                   ? {
                       borderColor: 'var(--lv2-primary)',
                       boxShadow:
-                        '0 1px 0 rgba(24,21,17,.03), 0 20px 40px -20px rgba(42,26,61,.35)',
+                        '0 1px 0 rgba(24,21,17,.03), 0 20px 40px -20px rgba(15,15,15,.35)',
                     }
                   : undefined
               }
@@ -2361,7 +2361,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             style={{
               borderColor: 'var(--lv2-primary)',
               boxShadow:
-                '0 1px 0 rgba(24,21,17,.04), 0 30px 60px -20px rgba(42,26,61,.35)',
+                '0 1px 0 rgba(24,21,17,.04), 0 30px 60px -20px rgba(15,15,15,.35)',
             }}
           >
           <div>
@@ -2650,7 +2650,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             box-shadow:
               0 1px 0 rgba(255, 255, 255, 0.6) inset,
               0 1px 2px rgba(24, 21, 17, 0.04),
-              0 12px 28px -16px rgba(42, 26, 61, 0.18);
+              0 12px 28px -16px rgba(15, 15, 15, 0.18);
           }
           .lv2-faq-row[open] {
             border-color: rgba(214, 255, 62, 0.45);
@@ -2662,7 +2662,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
             box-shadow:
               0 1px 0 rgba(255, 255, 255, 0.7) inset,
               0 0 0 4px rgba(214, 255, 62, 0.06),
-              0 14px 32px -18px rgba(42, 26, 61, 0.22);
+              0 14px 32px -18px rgba(15, 15, 15, 0.22);
           }
           /* Left lime tab — invisible at rest, halfway visible on
              hover, full when the row is open. */
@@ -2731,7 +2731,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           className="lv2-reveal relative overflow-hidden rounded-[32px] p-14 text-white lg:p-20"
           style={{
             background:
-              'linear-gradient(160deg, #2A1A3D 0%, #120920 65%, #1d0f30 100%)',
+              'linear-gradient(160deg, #0F0F0F 0%, #1A1A1A 65%, #1d0f30 100%)',
             boxShadow:
               'inset 0 1px 0 rgba(214,255,62,.12), inset 0 0 0 1px rgba(214,255,62,.10), 0 1px 2px rgba(18,9,32,.4), 0 32px 64px -24px rgba(18,9,32,.55)',
           }}

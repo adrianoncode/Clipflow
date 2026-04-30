@@ -11,7 +11,7 @@
 const CLIENTS = [
   {
     initials: 'AC',
-    color: '#2A1A3D',
+    color: '#0F0F0F',
     accentBg: 'rgba(214,255,62,.18)',
     name: 'Acme Coaching',
     status: 'active',
@@ -81,17 +81,17 @@ export function ClientsEmptyPreview() {
           style={{
             opacity: 1 - i * 0.12,
             boxShadow:
-              '0 1px 0 rgba(255,255,255,.6) inset, 0 1px 2px rgba(42,26,61,.04)',
+              '0 1px 0 rgba(255,255,255,.6) inset, 0 1px 2px rgba(15,15,15,.04)',
           }}
         >
           <div className="flex items-center gap-3">
             <span
               className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[12px] font-bold text-white"
               style={{
-                background: `linear-gradient(140deg, ${c.color} 0%, ${c.color} 60%, #120920 100%)`,
+                background: `linear-gradient(140deg, ${c.color} 0%, ${c.color} 60%, #1A1A1A 100%)`,
                 fontFamily: 'var(--font-inter-tight), sans-serif',
                 boxShadow:
-                  '0 1px 0 rgba(255,255,255,.18) inset, 0 6px 14px -6px rgba(42,26,61,.45)',
+                  '0 1px 0 rgba(255,255,255,.18) inset, 0 6px 14px -6px rgba(15,15,15,.45)',
               }}
             >
               <span
@@ -130,7 +130,7 @@ export function ClientsEmptyPreview() {
               <div
                 key={s.l}
                 className="rounded-md px-2 py-1.5 text-center"
-                style={{ background: 'rgba(42,26,61,.04)' }}
+                style={{ background: 'rgba(15,15,15,.04)' }}
               >
                 <p
                   className="lv2-tabular text-[14px] font-bold leading-none"
@@ -155,7 +155,7 @@ export function ClientsEmptyPreview() {
           100% {
             box-shadow:
               0 1px 0 rgba(255, 255, 255, 0.6) inset,
-              0 1px 2px rgba(42, 26, 61, 0.04);
+              0 1px 2px rgba(15, 15, 15, 0.04);
           }
           50% {
             box-shadow:

@@ -25,7 +25,7 @@ export function ViralMomentsVisual() {
       <div className="mb-4 flex items-center gap-2">
         <span
           className="flex h-7 w-7 items-center justify-center rounded-lg"
-          style={{ background: 'var(--lv2-primary, #2A1A3D)' }}
+          style={{ background: 'var(--lv2-primary, #0F0F0F)' }}
         >
           <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
         </span>
@@ -90,7 +90,7 @@ export function ViralMomentsVisual() {
               <span
                 className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[10.5px] font-bold"
                 style={{
-                  background: 'var(--lv2-primary, #2A1A3D)',
+                  background: 'var(--lv2-primary, #0F0F0F)',
                   color: 'var(--lv2-accent, #D6FF3E)',
                 }}
               >

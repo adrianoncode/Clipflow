@@ -136,7 +136,7 @@ export function TemplatesClient({ workspaceId, templates }: TemplatesClientProps
           className="relative space-y-4 overflow-hidden rounded-2xl border border-border/60 bg-card p-5 sm:p-6"
           style={{
             boxShadow:
-              '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 12px 28px -20px rgba(42,26,61,0.20)',
+              '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(15,15,15,0.04), 0 12px 28px -20px rgba(15,15,15,0.20)',
           }}
         >
           <span
@@ -237,7 +237,7 @@ export function TemplatesClient({ workspaceId, templates }: TemplatesClientProps
                 className="group relative flex items-start gap-3 overflow-hidden rounded-2xl border border-border/60 bg-card p-4 transition-all hover:-translate-y-px hover:border-border"
                 style={{
                   boxShadow:
-                    '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 10px 24px -20px rgba(42,26,61,0.20)',
+                    '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(15,15,15,0.04), 0 10px 24px -20px rgba(15,15,15,0.20)',
                 }}
               >
                 <span
@@ -249,7 +249,7 @@ export function TemplatesClient({ workspaceId, templates }: TemplatesClientProps
                   style={{
                     background: opt.tileBg,
                     boxShadow:
-                      '0 1px 0 rgba(255,255,255,0.18) inset, 0 6px 14px -6px rgba(42,26,61,0.30)',
+                      '0 1px 0 rgba(255,255,255,0.18) inset, 0 6px 14px -6px rgba(15,15,15,0.30)',
                   }}
                   aria-hidden
                 >
@@ -333,7 +333,7 @@ function EmptyState() {
       className="relative flex flex-col items-center gap-3 overflow-hidden rounded-2xl border border-border/60 bg-card px-6 py-10 text-center"
       style={{
         boxShadow:
-          '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 10px 24px -16px rgba(42,26,61,0.18)',
+          '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(15,15,15,0.04), 0 10px 24px -16px rgba(15,15,15,0.18)',
       }}
     >
       <span

@@ -13,7 +13,7 @@ const ENTRIES = [
     title: 'Launch Day',
     icon: Zap,
     color: '#D6FF3E',
-    bg: '#2A1A3D',
+    bg: '#0F0F0F',
     changes: [
       { type: 'new' as const, text: 'One video → 4 platform-native posts (TikTok, Reels, Shorts, LinkedIn)' },
       { type: 'new' as const, text: 'Video rendering via Shotstack — burn captions, assemble B-Roll, smart reframe to 9:16' },
@@ -30,7 +30,7 @@ const ENTRIES = [
     version: 'v0.9',
     title: 'Video & UI Overhaul',
     icon: Video,
-    color: '#2A1A3D',
+    color: '#0F0F0F',
     bg: '#EDE6F5',
     changes: [
       { type: 'new' as const, text: 'Shotstack video rendering integration' },
@@ -60,7 +60,7 @@ const ENTRIES = [
 
 const TYPE_BADGE: Record<'new' | 'improved' | 'fixed', { label: string; bg: string; fg: string }> = {
   new: { label: 'New', bg: '#E6F4EE', fg: '#0F6B4D' },
-  improved: { label: 'Improved', bg: '#EDE6F5', fg: '#2A1A3D' },
+  improved: { label: 'Improved', bg: '#EDE6F5', fg: '#0F0F0F' },
   fixed: { label: 'Fixed', bg: '#FBEDD9', fg: '#A0530B' },
 }
 
@@ -70,7 +70,7 @@ export default function ChangelogPage() {
       <p className="lv2L-eyebrow">What&apos;s new · Clipflow</p>
       <h1
         className="lv2L-display text-[56px] leading-[1.02]"
-        style={{ color: '#2A1A3D' }}
+        style={{ color: '#0F0F0F' }}
       >
         Changelog.
       </h1>
@@ -95,7 +95,7 @@ export default function ChangelogPage() {
                   <div className="flex items-center gap-2">
                     <h2
                       className="lv2L-display text-[26px] leading-[1]"
-                      style={{ color: '#2A1A3D' }}
+                      style={{ color: '#0F0F0F' }}
                     >
                       {entry.title}
                     </h2>

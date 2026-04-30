@@ -453,7 +453,7 @@ function PublishButton({
               onClick={() => togglePlatform(p)}
               className={`rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold uppercase transition-colors ${
                 platforms.includes(p)
-                  ? 'bg-[#2A1A3D] text-[#D6FF3E]'
+                  ? 'bg-[#0F0F0F] text-[#D6FF3E]'
                   : 'bg-muted text-muted-foreground hover:bg-muted/60'
               }`}
             >
@@ -565,7 +565,7 @@ function HighlightsEmptyPreview() {
         className="relative overflow-hidden rounded-3xl border border-border/60 bg-card"
         style={{
           boxShadow:
-            '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(42,26,61,.04), 0 22px 44px -28px rgba(42,26,61,.22)',
+            '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(15,15,15,.04), 0 22px 44px -28px rgba(15,15,15,.22)',
         }}
       >
         <span
@@ -573,7 +573,7 @@ function HighlightsEmptyPreview() {
           className="pointer-events-none absolute -left-16 -top-20 h-56 w-56 rounded-full"
           style={{
             background:
-              'radial-gradient(circle, rgba(42,26,61,.16) 0%, rgba(42,26,61,0) 60%)',
+              'radial-gradient(circle, rgba(15,15,15,.16) 0%, rgba(15,15,15,0) 60%)',
           }}
         />
         <span
@@ -589,7 +589,7 @@ function HighlightsEmptyPreview() {
           className="pointer-events-none absolute inset-x-10 top-0 h-px"
           style={{
             background:
-              'linear-gradient(to right, transparent, rgba(42,26,61,.32), transparent)',
+              'linear-gradient(to right, transparent, rgba(15,15,15,.32), transparent)',
           }}
         />
         <div className="relative grid gap-8 p-6 sm:p-9 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-10">
@@ -598,9 +598,9 @@ function HighlightsEmptyPreview() {
               className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white"
               style={{
                 background:
-                  'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
+                  'linear-gradient(140deg, #0F0F0F 0%, #1A1A1A 60%, #0F0F0F 100%)',
                 boxShadow:
-                  '0 1px 0 rgba(255,255,255,.18) inset, 0 10px 24px -12px rgba(42,26,61,.55)',
+                  '0 1px 0 rgba(255,255,255,.18) inset, 0 10px 24px -12px rgba(15,15,15,.55)',
               }}
               aria-hidden
             >
@@ -618,13 +618,13 @@ function HighlightsEmptyPreview() {
               style={{
                 fontFamily: 'var(--font-instrument-serif), serif',
                 letterSpacing: '-.015em',
-                color: '#2A1A3D',
+                color: '#0F0F0F',
               }}
             >
               The best 30 seconds of your video, found.
             </h2>
             <p className="mt-2.5 max-w-[460px] text-[14px] leading-relaxed text-muted-foreground">
-              Click <b style={{ color: '#2A1A3D' }}>Find viral moments</b> and Clipflow scans the
+              Click <b style={{ color: '#0F0F0F' }}>Find viral moments</b> and Clipflow scans the
               transcript for hooks, emotional peaks, and quotable one-liners. Three to eight
               clip-ready segments, scored top-down.
             </p>
@@ -644,11 +644,11 @@ function HighlightsEmptyPreview() {
                     className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10.5px] font-bold text-white"
                     style={{
                       background:
-                        'linear-gradient(140deg, #2A1A3D 0%, #120920 100%)',
+                        'linear-gradient(140deg, #0F0F0F 0%, #1A1A1A 100%)',
                       fontFamily:
                         'var(--font-inter-tight), var(--font-inter), sans-serif',
                       boxShadow:
-                        '0 1px 0 rgba(255,255,255,.18) inset, 0 4px 10px -4px rgba(42,26,61,.55)',
+                        '0 1px 0 rgba(255,255,255,.18) inset, 0 4px 10px -4px rgba(15,15,15,.55)',
                     }}
                   >
                     {i + 1}
@@ -699,7 +699,7 @@ function HighlightsEmptyPreview() {
                 style={{
                   opacity: 1 - i * 0.15,
                   boxShadow:
-                    '0 1px 0 rgba(255,255,255,.6) inset, 0 1px 2px rgba(42,26,61,.04)',
+                    '0 1px 0 rgba(255,255,255,.6) inset, 0 1px 2px rgba(15,15,15,.04)',
                 }}
               >
                 {/* Faux thumbnail strip with timecode rail */}
@@ -707,7 +707,7 @@ function HighlightsEmptyPreview() {
                   className="relative flex h-16 items-end overflow-hidden"
                   style={{
                     background:
-                      'linear-gradient(135deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
+                      'linear-gradient(135deg, #0F0F0F 0%, #1A1A1A 60%, #0F0F0F 100%)',
                   }}
                 >
                   {/* Audio waveform mock */}
@@ -781,7 +781,7 @@ function HighlightsEmptyPreview() {
           100% {
             box-shadow:
               0 1px 0 rgba(255, 255, 255, 0.6) inset,
-              0 1px 2px rgba(42, 26, 61, 0.04);
+              0 1px 2px rgba(15, 15, 15, 0.04);
           }
           50% {
             box-shadow:
@@ -843,7 +843,7 @@ function CheckboxButton({ selected }: { selected: boolean }) {
       disabled={pending}
       className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all ${
         selected
-          ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
+          ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]'
           : 'border-border/70 bg-background text-transparent hover:border-primary/40'
       } ${pending ? 'opacity-60' : ''}`}
     >
@@ -871,12 +871,12 @@ function MakeDraftsBar({
   const disabled = selectedCount === 0
 
   return (
-    <div className="sticky bottom-4 z-30 flex items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-card/95 px-4 py-3 shadow-[0_12px_32px_-16px_rgba(42,26,61,0.35)] backdrop-blur sm:px-5">
+    <div className="sticky bottom-4 z-30 flex items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-card/95 px-4 py-3 shadow-[0_12px_32px_-16px_rgba(15,15,15,0.35)] backdrop-blur sm:px-5">
       <div className="flex min-w-0 items-center gap-2.5">
         <span
           aria-hidden
           className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white ${
-            disabled ? 'bg-muted-foreground/40' : 'bg-[#2A1A3D]'
+            disabled ? 'bg-muted-foreground/40' : 'bg-[#0F0F0F]'
           }`}
         >
           <Wand2 className="h-3.5 w-3.5" />
@@ -903,7 +903,7 @@ function MakeDraftsBar({
         className={`group inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl px-3.5 text-[12.5px] font-bold tracking-tight transition-all ${
           disabled
             ? 'cursor-not-allowed bg-muted text-muted-foreground'
-            : 'bg-[#2A1A3D] text-[#D6FF3E] hover:-translate-y-px hover:bg-[#1A0F2A]'
+            : 'bg-[#0F0F0F] text-[#D6FF3E] hover:-translate-y-px hover:bg-[#1A0F2A]'
         }`}
         style={{
           fontFamily:

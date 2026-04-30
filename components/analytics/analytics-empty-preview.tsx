@@ -36,7 +36,7 @@ export function AnalyticsEmptyPreview() {
             className="relative rounded-xl border border-border/50 bg-card px-3 py-2.5"
             style={{
               boxShadow:
-                '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(42,26,61,.04)',
+                '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(15,15,15,.04)',
               opacity: 1 - i * 0.08,
             }}
           >
@@ -48,7 +48,7 @@ export function AnalyticsEmptyPreview() {
             </p>
             <p
               className="lv2-tabular mt-1 text-[24px] font-bold leading-none"
-              style={{ color: 'rgba(42,26,61,.45)' }}
+              style={{ color: 'rgba(15,15,15,.45)' }}
             >
               —
             </p>
@@ -67,7 +67,7 @@ export function AnalyticsEmptyPreview() {
         className="relative rounded-xl border border-border/50 bg-card px-3 py-3"
         style={{
           boxShadow:
-            '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(42,26,61,.04)',
+            '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(15,15,15,.04)',
         }}
       >
         <div className="mb-2 flex items-center justify-between">
@@ -113,7 +113,7 @@ export function AnalyticsEmptyPreview() {
                 <polyline
                   points={points}
                   fill="none"
-                  stroke="#2A1A3D"
+                  stroke="#0F0F0F"
                   strokeWidth="1.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -130,7 +130,7 @@ export function AnalyticsEmptyPreview() {
         className="relative space-y-1.5 rounded-xl border border-border/50 bg-card px-3 py-3"
         style={{
           boxShadow:
-            '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(42,26,61,.04)',
+            '0 1px 0 rgba(255,255,255,.7) inset, 0 1px 2px rgba(15,15,15,.04)',
         }}
       >
         <p
@@ -150,14 +150,14 @@ export function AnalyticsEmptyPreview() {
             </span>
             <div
               className="flex-1 overflow-hidden rounded-full"
-              style={{ background: 'rgba(42,26,61,.06)', height: 6 }}
+              style={{ background: 'rgba(15,15,15,.06)', height: 6 }}
             >
               <div
                 className="cf-analytics-bar h-full rounded-full"
                 style={{
                   width: `${p.width}%`,
                   background:
-                    'linear-gradient(90deg, rgba(42,26,61,.2), rgba(42,26,61,.45))',
+                    'linear-gradient(90deg, rgba(15,15,15,.2), rgba(15,15,15,.45))',
                   opacity: 1 - i * 0.15,
                 }}
               />

@@ -91,7 +91,7 @@ export function NewsletterPanel({ workspaceId, contentId, initialNewsletter }: N
                   onClick={() => setTone(opt.value)}
                   className={`px-2.5 py-1.5 transition-colors ${
                     tone === opt.value
-                      ? 'bg-[#2A1A3D] text-[#D6FF3E] font-medium'
+                      ? 'bg-[#0F0F0F] text-[#D6FF3E] font-medium'
                       : 'hover:bg-muted/60 text-muted-foreground'
                   }`}
                 >

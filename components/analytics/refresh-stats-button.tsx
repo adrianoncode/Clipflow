@@ -80,7 +80,7 @@ export function RefreshStatsButton({
         style={{
           borderColor: '#E5DDCE',
           background: '#FFFDF8',
-          color: '#2A1A3D',
+          color: '#0F0F0F',
         }}
       >
         {pending ? (

@@ -112,7 +112,7 @@ export function ReviewOutputCard({
             type="button"
             onClick={() => setShowForm(true)}
             className="text-xs font-semibold underline-offset-4 hover:underline"
-            style={{ color: '#2A1A3D' }}
+            style={{ color: '#0F0F0F' }}
           >
             + Leave feedback
           </button>

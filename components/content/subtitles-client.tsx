@@ -220,7 +220,7 @@ export function SubtitlesClient({
                     onClick={() => setSubtitleStyle(s)}
                     className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
                       subtitleStyle === s
-                        ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
+                        ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]'
                         : 'hover:bg-accent'
                     }`}
                   >
@@ -244,7 +244,7 @@ export function SubtitlesClient({
                     }
                     className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
                       subtitleStyle === s
-                        ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
+                        ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]'
                         : hasWordTimings
                           ? 'hover:bg-accent'
                           : 'cursor-not-allowed opacity-40'

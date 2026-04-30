@@ -43,38 +43,38 @@ const NICHE_VISUAL: Record<
   creator: {
     Icon: Clapperboard,
     bg: 'linear-gradient(140deg, #F2EEF7 0%, #DCCFEA 100%)',
-    fg: '#2A1A3D',
-    glow: 'rgba(42,26,61,0.28)',
+    fg: '#0F0F0F',
+    glow: 'rgba(15,15,15,0.28)',
   },
   podcaster: {
     Icon: Mic2,
     bg: 'linear-gradient(140deg, #EDE6F2 0%, #D3C2E2 100%)',
     fg: '#1A0F2A',
-    glow: 'rgba(42,26,61,0.32)',
+    glow: 'rgba(15,15,15,0.32)',
   },
   coach: {
     Icon: Target,
     bg: 'linear-gradient(140deg, #F2EEF7 0%, #DCCFEA 100%)',
-    fg: '#2A1A3D',
-    glow: 'rgba(42,26,61,0.26)',
+    fg: '#0F0F0F',
+    glow: 'rgba(15,15,15,0.26)',
   },
   saas: {
     Icon: Briefcase,
     bg: 'linear-gradient(140deg, #EDE6F2 0%, #D3C2E2 100%)',
-    fg: '#2A1A3D',
-    glow: 'rgba(42,26,61,0.30)',
+    fg: '#0F0F0F',
+    glow: 'rgba(15,15,15,0.30)',
   },
   ecommerce: {
     Icon: ShoppingBag,
     bg: 'linear-gradient(140deg, #F2EEF7 0%, #DCCFEA 100%)',
-    fg: '#2A1A3D',
-    glow: 'rgba(42,26,61,0.26)',
+    fg: '#0F0F0F',
+    glow: 'rgba(15,15,15,0.26)',
   },
   agency: {
     Icon: Building2,
     bg: 'linear-gradient(140deg, #E6DCEF 0%, #C9B5DC 100%)',
     fg: '#1A0F2A',
-    glow: 'rgba(42,26,61,0.32)',
+    glow: 'rgba(15,15,15,0.32)',
   },
 }
 
@@ -262,7 +262,7 @@ export function NichePicker({ workspaceId, initialNiche }: NichePickerProps) {
                     background: visual.bg,
                     color: visual.fg,
                     boxShadow:
-                      '0 1px 0 rgba(255,255,255,0.5) inset, 0 6px 14px -6px rgba(42,26,61,0.18)',
+                      '0 1px 0 rgba(255,255,255,0.5) inset, 0 6px 14px -6px rgba(15,15,15,0.18)',
                   }}
                   aria-hidden
                 >

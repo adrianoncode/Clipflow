@@ -80,68 +80,70 @@ export default async function NewContentPage({ params }: NewContentPageProps) {
 
       {/* ── Hero ── visual anchor + editorial title */}
       <header
-        className="relative overflow-hidden rounded-3xl border border-border/60 bg-card px-5 py-6 sm:px-7 sm:py-7"
+        className="relative overflow-hidden rounded-[28px] px-5 py-6 sm:px-7 sm:py-7 [box-shadow:inset_0_1px_0_rgba(255,255,255,0.7)]"
         style={{
-          boxShadow:
-            '0 1px 0 rgba(255,255,255,0.7) inset, 0 1px 2px rgba(42,26,61,0.05), 0 18px 38px -22px rgba(42,26,61,0.22)',
+          background: '#F9F4DC',
+          border: '1px solid rgba(15,15,15,0.06)',
         }}
       >
         <span
           aria-hidden
           className="pointer-events-none absolute -left-12 -top-16 h-44 w-44 rounded-full"
           style={{
-            background:
-              'radial-gradient(circle, rgba(42,26,61,0.18) 0%, rgba(42,26,61,0) 60%)',
+            background: 'radial-gradient(circle, rgba(244,217,61,0.30) 0%, rgba(244,217,61,0) 60%)',
           }}
         />
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+          className="pointer-events-none absolute inset-x-8 top-0 h-px"
+          style={{ background: 'linear-gradient(to right, transparent, rgba(15,15,15,0.18), transparent)' }}
         />
 
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
           <span
-            className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white sm:h-16 sm:w-16"
+            className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl sm:h-16 sm:w-16"
             style={{
-              background:
-                'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
+              background: 'linear-gradient(170deg, #F9E97A 0%, #F4D93D 55%, #DCB91F 100%)',
+              color: '#0F0F0F',
               boxShadow:
-                '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(42,26,61,0.55)',
+                'inset 0 1px 0 rgba(255,255,255,0.55), 0 10px 24px -12px rgba(15,15,15,0.30)',
+              border: '1px solid rgba(15,15,15,0.10)',
             }}
             aria-hidden
           >
-            <span
-              className="pointer-events-none absolute inset-1 rounded-[14px]"
-              style={{
-                background:
-                  'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 45%)',
-              }}
-            />
             <Inbox className="relative h-6 w-6 sm:h-7 sm:w-7" strokeWidth={1.7} />
           </span>
 
           <div className="min-w-0">
             <p
-              className="mb-1 inline-flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary/85"
+              className="mb-2 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em]"
               style={{
-                fontFamily:
-                  'var(--font-inter-tight), var(--font-inter), sans-serif',
+                color: '#7A7468',
+                fontFamily: 'var(--font-jetbrains-mono), monospace',
               }}
             >
-              <span aria-hidden className="inline-block h-px w-5 bg-primary/40" />
+              <span
+                aria-hidden
+                className="inline-block h-px w-5"
+                style={{ background: 'rgba(15,15,15,0.18)' }}
+              />
               {workspace.name} · Import
             </p>
             <h1
-              className="text-[28px] leading-[1.05] sm:text-[34px]"
+              className="text-[clamp(28px,3.5vw,38px)] leading-[1.02]"
               style={{
-                fontFamily: 'var(--font-instrument-serif), serif',
-                letterSpacing: '-.015em',
-                color: '#2A1A3D',
+                fontFamily: 'var(--font-instrument-serif), Georgia, serif',
+                letterSpacing: '-0.018em',
+                color: '#0F0F0F',
+                fontWeight: 400,
               }}
             >
               Drop a recording in.
             </h1>
-            <p className="mt-2 max-w-xl text-[13.5px] leading-relaxed text-muted-foreground">
+            <p
+              className="mt-2 max-w-xl text-[13.5px] leading-relaxed"
+              style={{ color: '#3A3A3A' }}
+            >
               Paste a link, upload a file, or record straight in the browser.
               Clipflow figures out the format and starts processing — no
               per-source forms.

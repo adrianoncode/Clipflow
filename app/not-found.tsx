@@ -53,7 +53,7 @@ export default function NotFound() {
           style={{
             fontFamily: 'var(--font-instrument-serif), serif',
             letterSpacing: '-.015em',
-            color: '#2A1A3D',
+            color: '#0F0F0F',
           }}
         >
           Lost the thread.
@@ -66,9 +66,9 @@ export default function NotFound() {
             href="/dashboard"
             className="inline-flex h-11 items-center gap-2 rounded-[10px] px-5 text-sm font-bold transition-transform hover:-translate-y-0.5"
             style={{
-              background: '#2A1A3D',
+              background: '#0F0F0F',
               color: '#D6FF3E',
-              boxShadow: 'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(42,26,61,.35)',
+              boxShadow: 'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(15,15,15,.35)',
             }}
           >
             <Home className="h-4 w-4" />

@@ -39,7 +39,7 @@ export function PageHeading({
         style={{
           fontFamily: 'var(--font-instrument-serif), serif',
           letterSpacing: '-.015em',
-          color: '#2A1A3D',
+          color: '#0F0F0F',
         }}
       >
         {title}

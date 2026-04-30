@@ -70,7 +70,7 @@ export function PlanClient({ workspaceId }: PlanClientProps) {
             style={{
               fontFamily: 'var(--font-instrument-serif), serif',
               letterSpacing: '-.015em',
-              color: '#2A1A3D',
+              color: '#0F0F0F',
             }}
           >
             Your week, planned.
@@ -187,7 +187,7 @@ function PlanSlotRow({
         <span
           className="mt-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]"
           style={{
-            background: 'rgba(42,26,61,.06)',
+            background: 'rgba(15,15,15,.06)',
             color: '#5f5850',
           }}
         >

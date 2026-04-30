@@ -25,7 +25,7 @@ export function PlaybookMobileToc({ sections }: { sections: GuideSection[] }) {
       style={{
         borderColor: 'var(--lv2-border)',
         background: 'var(--lv2-card)',
-        boxShadow: '0 12px 32px -8px rgba(42,26,61,.25)',
+        boxShadow: '0 12px 32px -8px rgba(15,15,15,.25)',
       }}
     >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">

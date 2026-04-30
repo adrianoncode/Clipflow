@@ -69,9 +69,9 @@ export function PremiumProgress({
         height,
         // Track — warm paper inset, slight darken at top inside so
         // the rail reads as etched, not flat.
-        background: 'rgba(42, 26, 61, 0.08)',
+        background: 'rgba(15, 15, 15, 0.08)',
         boxShadow:
-          'inset 0 1px 2px rgba(42, 26, 61, 0.18), inset 0 -1px 0 rgba(255, 255, 255, 0.55)',
+          'inset 0 1px 2px rgba(15, 15, 15, 0.18), inset 0 -1px 0 rgba(255, 255, 255, 0.55)',
       }}
     >
       {/* Fill — plum→chartreuse gradient, lit-from-above */}
@@ -81,7 +81,7 @@ export function PremiumProgress({
           style={{
             width: `${pct}%`,
             background:
-              'linear-gradient(90deg, #2A1A3D 0%, #4B0FB8 60%, #D6FF3E 140%)',
+              'linear-gradient(90deg, #0F0F0F 0%, #4B0FB8 60%, #D6FF3E 140%)',
             boxShadow:
               'inset 0 1px 0 rgba(255, 255, 255, 0.30), inset 0 -1px 0 rgba(18, 9, 32, 0.55), 0 0 6px -1px rgba(214, 255, 62, 0.35)',
             transition:

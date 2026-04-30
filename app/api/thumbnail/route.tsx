@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
   const title = (searchParams.get('title') ?? 'Your headline goes here').slice(0, 110)
   const sub = (searchParams.get('sub') ?? '').slice(0, 60)
   const accent = normalizeHex(searchParams.get('accent') ?? '#D6FF3E')
-  const bg = normalizeHex(searchParams.get('bg') ?? '#2A1A3D')
+  const bg = normalizeHex(searchParams.get('bg') ?? '#0F0F0F')
   const logoText = (searchParams.get('logoText') ?? 'Clipflow').slice(0, 30)
   const layout = searchParams.get('layout') ?? 'yt'
   const variant = searchParams.get('variant') ?? 'bold'
@@ -241,7 +241,7 @@ function normalizeHex(input: string): string {
       .join('')}`
   }
   if (/^[0-9a-fA-F]{6}$/.test(s)) return `#${s}`
-  return '#2A1A3D'
+  return '#0F0F0F'
 }
 
 /** Relative-luminance based contrast pick — returns black or white

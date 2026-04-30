@@ -203,7 +203,7 @@ function CompareBody({ id }: { id: CompetitorId }) {
             style={{
               background: 'var(--lv2-primary)',
               color: 'var(--lv2-accent)',
-              boxShadow: '0 10px 28px -12px rgba(42,26,61,.4)',
+              boxShadow: '0 10px 28px -12px rgba(15,15,15,.4)',
             }}
           >
             Start free on Clipflow
@@ -308,7 +308,7 @@ function CompareBody({ id }: { id: CompetitorId }) {
                   style={{
                     background: 'var(--lv2-primary)',
                     color: 'var(--lv2-accent)',
-                    boxShadow: '0 10px 28px -16px rgba(42,26,61,.32)',
+                    boxShadow: '0 10px 28px -16px rgba(15,15,15,.32)',
                   }}
                 >
                   <span
@@ -438,7 +438,7 @@ function InlineVars() {
         --lv2-fg: #181511; --lv2-fg-soft: #3a342c;
         --lv2-muted: #5f5850; --lv2-muted-2: #ECE5D8;
         --lv2-border: #E5DDCE; --lv2-card: #FFFDF8;
-        --lv2-primary: #2A1A3D; --lv2-primary-soft: #EDE6F5;
+        --lv2-primary: #0F0F0F; --lv2-primary-soft: #EDE6F5;
         --lv2-accent: #D6FF3E; --lv2-accent-ink: #1a2000;
         font-family: var(--font-inter), system-ui, sans-serif;
       }

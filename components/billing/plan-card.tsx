@@ -26,8 +26,8 @@ import { createCheckoutSessionAction } from '@/app/(app)/billing/actions'
 const TOKENS = {
   card: '#FFFDF8',
   border: '#E5DDCE',
-  primary: '#2A1A3D',
-  primaryInk: '#120920',
+  primary: '#0F0F0F',
+  primaryInk: '#1A1A1A',
   primarySoft: '#EDE6F5',
   accent: '#D6FF3E',
   accentInk: '#1a2000',
@@ -88,8 +88,8 @@ export function PlanCard({
         background: TOKENS.card,
         borderColor: isHighlighted ? TOKENS.primary : TOKENS.border,
         boxShadow: isHighlighted
-          ? '0 1px 0 rgba(24,21,17,0.04), 0 30px 60px -20px rgba(42,26,61,0.35)'
-          : '0 1px 0 rgba(24,21,17,0.03), 0 20px 40px -24px rgba(42,26,61,0.18)',
+          ? '0 1px 0 rgba(24,21,17,0.04), 0 30px 60px -20px rgba(15,15,15,0.35)'
+          : '0 1px 0 rgba(24,21,17,0.03), 0 20px 40px -24px rgba(15,15,15,0.18)',
       }}
     >
       {/* "Most popular" chip — landing-style: lime pill bleeding above
@@ -413,7 +413,7 @@ function UpgradeButton({
                 background: TOKENS.primary,
                 color: TOKENS.accent,
                 boxShadow:
-                  'inset 0 1px 0 rgba(255,255,255,0.10), inset 0 0 0 1px rgba(214,255,62,0.18), 0 1px 2px rgba(42,26,61,0.18), 0 8px 22px -8px rgba(42,26,61,0.45)',
+                  'inset 0 1px 0 rgba(255,255,255,0.10), inset 0 0 0 1px rgba(214,255,62,0.18), 0 1px 2px rgba(15,15,15,0.18), 0 8px 22px -8px rgba(15,15,15,0.45)',
                 fontFamily:
                   'var(--font-inter-tight), var(--font-inter), sans-serif',
               }

@@ -37,12 +37,12 @@ const PROVIDER_TONE: Record<
     tag: { bg: 'rgba(212,88,11,0.10)', fg: '#A0530B' },
   },
   google: {
-    glow: 'rgba(42,26,61,0.32)',
-    tag: { bg: 'rgba(42,26,61,0.10)', fg: '#120920' },
+    glow: 'rgba(15,15,15,0.32)',
+    tag: { bg: 'rgba(15,15,15,0.10)', fg: '#1A1A1A' },
   },
   shotstack: {
-    glow: 'rgba(42,26,61,0.36)',
-    tag: { bg: 'rgba(42,26,61,0.10)', fg: '#120920' },
+    glow: 'rgba(15,15,15,0.36)',
+    tag: { bg: 'rgba(15,15,15,0.10)', fg: '#1A1A1A' },
   },
   replicate: {
     glow: 'rgba(15,15,15,0.32)',
@@ -297,10 +297,10 @@ function ConnectButton({ onClick }: { onClick: () => void }) {
       className="cf-shimmer-btn group/cta relative inline-flex h-9 items-center justify-center gap-1.5 overflow-hidden rounded-lg px-3.5 text-[12.5px] font-bold tracking-tight transition-all duration-200 hover:-translate-y-px"
       style={{
         background:
-          'linear-gradient(180deg, #2A1A3D 0%, #120920 100%)',
+          'linear-gradient(180deg, #0F0F0F 0%, #1A1A1A 100%)',
         color: '#D6FF3E',
         boxShadow:
-          'inset 0 1px 0 rgba(255,255,255,0.10), inset 0 0 0 1px rgba(214,255,62,0.18), 0 1px 2px rgba(42,26,61,0.18), 0 6px 14px -6px rgba(42,26,61,0.40)',
+          'inset 0 1px 0 rgba(255,255,255,0.10), inset 0 0 0 1px rgba(214,255,62,0.18), 0 1px 2px rgba(15,15,15,0.18), 0 6px 14px -6px rgba(15,15,15,0.40)',
         fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
       }}
     >

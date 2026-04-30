@@ -10,7 +10,7 @@ import { motion, useMotionValue, useReducedMotion, useSpring } from 'framer-moti
  * Two layers of polish stacked:
  *
  *  STATIC — every button has these even when nothing is happening:
- *   1. Vertical brand-plum gradient (#2A1A3D → #120920) so the button
+ *   1. Vertical brand-plum gradient (#0F0F0F → #1A1A1A) so the button
  *      reads as "lit from above"
  *   2. Inner top highlight (1 px white) for the lit upper corner
  *   3. Inner bottom shadow for the soft concavity at the lower edge
@@ -127,7 +127,7 @@ export function PremiumButton(props: PremiumButtonProps) {
     variant === 'primary'
       ? {
           background:
-            'linear-gradient(180deg, #2A1A3D 0%, #120920 100%)',
+            'linear-gradient(180deg, #0F0F0F 0%, #1A1A1A 100%)',
           color: '#D6FF3E',
           fontFamily:
             'var(--font-inter-tight), var(--font-inter), sans-serif',
@@ -139,7 +139,7 @@ export function PremiumButton(props: PremiumButtonProps) {
       : {
           background:
             'linear-gradient(180deg, #FFFDF8 0%, #F1ECDF 100%)',
-          color: '#2A1A3D',
+          color: '#0F0F0F',
           fontFamily:
             'var(--font-inter-tight), var(--font-inter), sans-serif',
           ['--cf-pbtn-mx' as string]: '50%',
@@ -159,7 +159,7 @@ export function PremiumButton(props: PremiumButtonProps) {
     background:
       variant === 'primary'
         ? 'radial-gradient(80px circle at var(--cf-pbtn-mx) var(--cf-pbtn-my), rgba(214,255,62,0.30) 0%, transparent 70%)'
-        : 'radial-gradient(80px circle at var(--cf-pbtn-mx) var(--cf-pbtn-my), rgba(42,26,61,0.18) 0%, transparent 70%)',
+        : 'radial-gradient(80px circle at var(--cf-pbtn-mx) var(--cf-pbtn-my), rgba(15,15,15,0.18) 0%, transparent 70%)',
     opacity: 0,
     transition: 'opacity 0.25s ease',
   }
@@ -169,7 +169,7 @@ export function PremiumButton(props: PremiumButtonProps) {
     background:
       variant === 'primary'
         ? 'linear-gradient(115deg, transparent 35%, rgba(214,255,62,0.30) 50%, transparent 65%)'
-        : 'linear-gradient(115deg, transparent 35%, rgba(42,26,61,0.20) 50%, transparent 65%)',
+        : 'linear-gradient(115deg, transparent 35%, rgba(15,15,15,0.20) 50%, transparent 65%)',
   }
 
   const inner = (
@@ -249,7 +249,7 @@ export function PremiumButton(props: PremiumButtonProps) {
             0 1px 1px rgba(24, 21, 17, 0.08),
             0 8px 14px -2px rgba(24, 21, 17, 0.14),
             0 18px 32px -10px rgba(24, 21, 17, 0.14),
-            0 0 0 4px rgba(42, 26, 61, 0.05)`};
+            0 0 0 4px rgba(15, 15, 15, 0.05)`};
         }
         .cf-pbtn:hover .cf-pbtn-cursor-spec {
           opacity: 1;

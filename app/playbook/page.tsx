@@ -25,13 +25,13 @@ const DIFFICULTY_LABEL = {
 
 const TONE_GRADIENT: Record<'lime' | 'plum' | 'sand', string> = {
   lime: 'linear-gradient(135deg, #D6FF3E 0%, #F4FFAB 100%)',
-  plum: 'linear-gradient(135deg, #2A1A3D 0%, #4A2D6B 100%)',
+  plum: 'linear-gradient(135deg, #0F0F0F 0%, #4A2D6B 100%)',
   sand: 'linear-gradient(135deg, #E5DDCE 0%, #F3EDE3 100%)',
 }
 const TONE_INK: Record<'lime' | 'plum' | 'sand', string> = {
   lime: '#1a2000',
   plum: '#D6FF3E',
-  sand: '#2A1A3D',
+  sand: '#0F0F0F',
 }
 
 interface HubProps {
@@ -142,7 +142,7 @@ export default function PlaybookHubPage({ searchParams }: HubProps) {
                         background:
                           p.tone === 'plum'
                             ? 'rgba(214,255,62,.15)'
-                            : 'rgba(42,26,61,.08)',
+                            : 'rgba(15,15,15,.08)',
                       }}
                     >
                       {p.guideIds.length} guides · {totalMin} min
@@ -157,7 +157,7 @@ export default function PlaybookHubPage({ searchParams }: HubProps) {
                       color:
                         p.tone === 'plum'
                           ? 'rgba(255,255,255,.74)'
-                          : 'rgba(42,26,61,.7)',
+                          : 'rgba(15,15,15,.7)',
                     }}
                   >
                     {p.pitch}

@@ -60,7 +60,7 @@ export default function GlobalError({
               fontSize: '3rem',
               lineHeight: 1.02,
               letterSpacing: '-0.015em',
-              color: '#2A1A3D',
+              color: '#0F0F0F',
               fontWeight: 400,
               margin: 0,
               marginBottom: 12,
@@ -80,11 +80,11 @@ export default function GlobalError({
               fontWeight: 700,
               borderRadius: 10,
               border: 'none',
-              background: '#2A1A3D',
+              background: '#0F0F0F',
               color: '#D6FF3E',
               cursor: 'pointer',
               boxShadow:
-                'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(42,26,61,.35)',
+                'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(15,15,15,.35)',
             }}
           >
             Try again

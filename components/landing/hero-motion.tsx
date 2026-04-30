@@ -89,7 +89,7 @@ export function KineticHeadline() {
             willChange: 'transform, opacity, filter',
             // Italic accent words get a warmer muted plum to emphasize
             // the editorial-rhythm read without adding a second color.
-            ...(w.italic ? { color: 'rgba(42, 26, 61, 0.55)' } : null),
+            ...(w.italic ? { color: 'rgba(15, 15, 15, 0.55)' } : null),
           }}
           variants={{
             hidden: { opacity: 0, y: '0.6em', filter: 'blur(6px)' },
@@ -315,7 +315,7 @@ export function CustomCursor() {
           width: hovering ? 46 : 28,
           height: hovering ? 46 : 28,
           borderRadius: 999,
-          border: '1.5px solid rgba(42,26,61,0.55)',
+          border: '1.5px solid rgba(15,15,15,0.55)',
           background: hovering ? 'rgba(214,255,62,0.18)' : 'transparent',
           transition: 'width .25s cubic-bezier(.2,.8,.2,1), height .25s cubic-bezier(.2,.8,.2,1), background .25s',
         }}

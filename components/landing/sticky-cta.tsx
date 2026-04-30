@@ -54,7 +54,7 @@ export function StickyCta({ href }: StickyCtaProps) {
         background: 'var(--lv2-primary)',
         color: 'var(--lv2-accent)',
         boxShadow:
-          '0 12px 36px -14px rgba(42,26,61,.5), 0 0 0 4px rgba(214,255,62,.15)',
+          '0 12px 36px -14px rgba(15,15,15,.5), 0 0 0 4px rgba(214,255,62,.15)',
         transform: visible ? 'translateY(0) scale(1)' : 'translateY(24px) scale(.9)',
         opacity: visible ? 1 : 0,
         pointerEvents: visible ? 'auto' : 'none',

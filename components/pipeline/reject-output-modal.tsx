@@ -104,7 +104,7 @@ export function RejectOutputModal({
                     onClick={() => setReason((prev) => (prev === r ? '' : r))}
                     className={`inline-flex items-center rounded-full border px-3 py-1 text-[12px] font-semibold transition-all ${
                       isActive
-                        ? 'border-[#2A1A3D] bg-[#2A1A3D] text-[#D6FF3E]'
+                        ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]'
                         : 'border-border/60 bg-background text-muted-foreground hover:border-border hover:text-foreground'
                     }`}
                     style={{
@@ -170,7 +170,7 @@ function SubmitButton({ hasReason }: { hasReason: boolean }) {
     <button
       type="submit"
       disabled={disabled}
-      className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[#2A1A3D] px-3.5 text-[12.5px] font-bold tracking-tight text-[#D6FF3E] transition-all hover:-translate-y-px hover:bg-[#1A0F2A] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+      className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[#0F0F0F] px-3.5 text-[12.5px] font-bold tracking-tight text-[#D6FF3E] transition-all hover:-translate-y-px hover:bg-[#1A0F2A] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
       style={{
         fontFamily:
           'var(--font-inter-tight), var(--font-inter), sans-serif',

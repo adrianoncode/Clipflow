@@ -74,7 +74,7 @@ export function SettingsSection({
         className="relative overflow-hidden rounded-2xl border border-border/60 bg-card [&>*+*]:border-t [&>*+*]:border-border/60"
         style={{
           boxShadow:
-            '0 1px 0 rgba(255,255,255,0.6) inset, 0 1px 2px rgba(42,26,61,0.04), 0 12px 32px -18px rgba(42,26,61,0.18)',
+            '0 1px 0 rgba(255,255,255,0.6) inset, 0 1px 2px rgba(15,15,15,0.04), 0 12px 32px -18px rgba(15,15,15,0.18)',
         }}
       >
         {/* Hairline primary highlight on the top edge — adds the
