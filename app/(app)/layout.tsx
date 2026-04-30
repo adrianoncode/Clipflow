@@ -5,11 +5,13 @@ import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { SubscriptionStatusBanner } from '@/components/billing/subscription-status-banner'
 import { KeyboardShortcuts } from '@/components/keyboard-shortcuts'
 import { FeedbackWidget } from '@/components/feedback-widget'
-import { AppTopNav } from '@/components/workspace/app-top-nav'
+import { AppSidebar } from '@/components/workspace/app-sidebar'
+import { AppTopbar } from '@/components/workspace/app-topbar'
+import { MobileNavProvider } from '@/components/workspace/mobile-nav-context'
 import { getProfile } from '@/lib/auth/get-profile'
 import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
-import { getWorkspacePlan } from '@/lib/billing/get-subscription'
+import { getSubscription, getWorkspacePlan } from '@/lib/billing/get-subscription'
 
 const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
 
@@ -48,30 +50,50 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       : await getWorkspacePlan(currentWorkspace.id)
   )
 
+  // Show the trial card in the sidebar only while the subscription is in
+  // a `trialing` state. `current_period_end` is the trial end-date during
+  // that window. Outside of trial we leave the slot empty rather than
+  // showing a synthetic "0 days" footer.
+  const subscription = await getSubscription(currentWorkspace.id)
+  let trialDaysLeft: number | null = null
+  if (subscription.status === 'trialing' && subscription.current_period_end) {
+    const ms = new Date(subscription.current_period_end).getTime() - Date.now()
+    if (ms > 0) trialDaysLeft = Math.ceil(ms / (1000 * 60 * 60 * 24))
+  }
+
   return (
     <PostHogProvider userId={user.id} email={user.email ?? ''}>
-      <div className="min-h-screen" style={{ background: PAGE_BG }}>
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-[#0F0F0F] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg"
-        >
-          Skip to main content
-        </a>
+      <MobileNavProvider>
+        <div className="flex min-h-screen" style={{ background: PAGE_BG }}>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-[#0F0F0F] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg"
+          >
+            Skip to main content
+          </a>
 
-        <KeyboardShortcuts workspaceId={currentWorkspace.id} />
-        <FeedbackWidget />
+          <KeyboardShortcuts workspaceId={currentWorkspace.id} />
+          <FeedbackWidget />
 
-        <AppTopNav
-          workspaces={workspaces}
-          currentWorkspaceId={currentWorkspace.id}
-          userEmail={user.email ?? ''}
-        />
+          <AppSidebar
+            currentWorkspaceId={currentWorkspace.id}
+            trialDaysLeft={trialDaysLeft}
+          />
 
-        <main id="main-content" className="px-4 pb-8 sm:px-8">
-          <SubscriptionStatusBanner workspaceId={currentWorkspace.id} />
-          {children}
-        </main>
-      </div>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <AppTopbar
+              workspaces={workspaces}
+              currentWorkspaceId={currentWorkspace.id}
+              workspaceName={currentWorkspace.name}
+              userEmail={user.email ?? ''}
+            />
+            <main id="main-content" className="flex-1 px-4 pb-8 sm:px-8">
+              <SubscriptionStatusBanner workspaceId={currentWorkspace.id} />
+              {children}
+            </main>
+          </div>
+        </div>
+      </MobileNavProvider>
     </PostHogProvider>
   )
 }

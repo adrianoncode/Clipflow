@@ -15,6 +15,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 
+import { Hero, StripPill } from '@/components/ui/editorial'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getAnalytics } from '@/lib/dashboard/get-analytics'
 import { createClient } from '@/lib/supabase/server'
@@ -143,46 +144,23 @@ export default async function DashboardPage() {
   const weekPeakIndex = weekData.findIndex((d) => d.count === weekMax && d.count > 0)
 
   return (
-    <div
-      className="min-h-full p-4 sm:p-8"
-      style={{ background: PALETTE.pageBg }}
-    >
+    <div className="min-h-full p-4 sm:p-8">
       <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-5">
         {/* ── Hero: greeting (left) + KPI triade (right) ──────────────── */}
-        <section className="flex flex-wrap items-end justify-between gap-x-8 gap-y-6">
-          <div className="min-w-0">
-            <p
-              className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em]"
-              style={{
-                color: PALETTE.muted,
-                fontFamily: 'var(--font-jetbrains-mono), monospace',
-              }}
-            >
-              {currentWorkspace.name} · Insights
-            </p>
-            <h1
-              className="text-[clamp(44px,6.5vw,76px)] leading-[0.98]"
-              style={{
-                fontFamily: 'var(--font-instrument-serif), Georgia, serif',
-                color: PALETTE.ink,
-                fontWeight: 400,
-                letterSpacing: '-0.02em',
-              }}
-            >
-              Welcome back, {currentWorkspace.name}.
-            </h1>
-          </div>
-          <div className="flex shrink-0 items-end gap-7 sm:gap-10">
-            <KpiTriadeItem icon={FileVideo} value={analytics.totalContent} label="Videos" />
-            <KpiTriadeItem icon={Layers} value={analytics.totalOutputs} label="Posts" />
-            <KpiTriadeItem icon={CheckCircle2} value={analytics.totalApproved} label="Approved" />
-          </div>
-        </section>
+        <Hero
+          kicker={`${currentWorkspace.name} · Insights`}
+          title={<>Welcome back, {currentWorkspace.name}.</>}
+          kpis={[
+            { Icon: FileVideo, value: analytics.totalContent, label: 'Videos' },
+            { Icon: Layers, value: analytics.totalOutputs, label: 'Posts' },
+            { Icon: CheckCircle2, value: analytics.totalApproved, label: 'Approved' },
+          ]}
+        />
 
         {/* ── Stat strip: 4 percentage indicators ─────────────────────── */}
         <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StripPill label="Imports" value={importsDelta} variant="dark" showSign />
-          <StripPill label="Generated" value={generatedDelta} variant="yellow" showSign />
+          <StripPill label="Generated" value={generatedDelta} variant="accent" showSign />
           <StripPill label="Approval" value={approvalPct} variant="bar" />
           <StripPill label="Live" value={livePct} variant="outline" />
         </section>
@@ -231,130 +209,6 @@ export default async function DashboardPage() {
         </section>
       </div>
     </div>
-  )
-}
-
-// ── KPI triade item ─────────────────────────────────────────────────────────
-function KpiTriadeItem({
-  icon: Icon,
-  value,
-  label,
-}: {
-  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
-  value: number
-  label: string
-}) {
-  return (
-    <div className="flex flex-col items-start gap-0.5">
-      <div className="flex items-end gap-2">
-        <span
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
-          style={{ background: 'rgba(15, 15, 15, 0.06)' }}
-        >
-          <Icon className="h-3.5 w-3.5" style={{ color: PALETTE.charcoal }} />
-        </span>
-        <span
-          className="text-[clamp(40px,5vw,60px)] leading-[0.9] tabular-nums"
-          style={{
-            fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
-            color: PALETTE.ink,
-            fontWeight: 350,
-            letterSpacing: '-0.04em',
-          }}
-        >
-          {formatNum(value)}
-        </span>
-      </div>
-      <span
-        className="ml-9 text-[11px] font-medium"
-        style={{ color: PALETTE.inkSoft }}
-      >
-        {label}
-      </span>
-    </div>
-  )
-}
-
-// ── Strip pill ──────────────────────────────────────────────────────────────
-// Crextio's stat strip has FOUR distinct visual variants:
-//   dark     = solid charcoal pill, white text                  (Interviews)
-//   yellow   = solid yellow pill, dark text                     (Hired)
-//   bar      = outline pill with a hatched fill that grows to N% (Project time)
-//   outline  = outline pill, dark text, no fill                 (Output)
-function StripPill({
-  label,
-  value,
-  variant,
-  showSign = false,
-}: {
-  label: string
-  value: number
-  variant: 'dark' | 'yellow' | 'bar' | 'outline'
-  showSign?: boolean
-}) {
-  const sign = showSign ? (value > 0 ? '+' : value < 0 ? '−' : '') : ''
-  const display = `${sign}${Math.abs(value)}%`
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-[11px] font-medium" style={{ color: PALETTE.inkSoft }}>
-        {label}
-      </span>
-      {variant === 'dark' && (
-        <div
-          className="flex h-9 items-center justify-center rounded-full px-4"
-          style={{ background: PALETTE.charcoal, color: '#FFFFFF' }}
-        >
-          <PillNumber>{display}</PillNumber>
-        </div>
-      )}
-      {variant === 'yellow' && (
-        <div
-          className="flex h-9 items-center justify-center rounded-full px-4"
-          style={{ background: PALETTE.yellow, color: PALETTE.ink }}
-        >
-          <PillNumber>{display}</PillNumber>
-        </div>
-      )}
-      {variant === 'bar' && (
-        <div
-          className="relative flex h-9 items-center overflow-hidden rounded-full px-4"
-          style={{ border: `1px solid ${PALETTE.borderStrong}` }}
-        >
-          <div
-            aria-hidden
-            className="absolute inset-y-0 left-0"
-            style={{
-              width: `${Math.max(0, Math.min(100, value))}%`,
-              backgroundImage:
-                'repeating-linear-gradient(115deg, rgba(15,15,15,0.18) 0 6px, rgba(15,15,15,0.04) 6px 12px)',
-            }}
-          />
-          <div className="relative ml-auto" style={{ color: PALETTE.ink }}>
-            <PillNumber>{display}</PillNumber>
-          </div>
-        </div>
-      )}
-      {variant === 'outline' && (
-        <div
-          className="flex h-9 items-center justify-center rounded-full px-4"
-          style={{ border: `1px solid ${PALETTE.borderStrong}`, color: PALETTE.ink }}
-        >
-          <PillNumber>{display}</PillNumber>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function PillNumber({ children }: { children: React.ReactNode }) {
-  return (
-    <span
-      className="text-[14px] font-semibold tabular-nums"
-      style={{ fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif' }}
-    >
-      {children}
-    </span>
   )
 }
 
