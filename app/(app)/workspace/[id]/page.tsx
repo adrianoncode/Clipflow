@@ -4,7 +4,6 @@ import {
   AlertCircle,
   CheckCircle2,
   ChevronRight,
-  FileVideo,
   Loader2,
   Plus,
   Wand2,
@@ -14,7 +13,6 @@ import { ContentListWithSearch } from '@/components/content/content-list-with-se
 import { RecentImportsStrip } from '@/components/content/recent-imports-strip'
 import { SmartImportBox } from '@/components/content/smart-import-box'
 import { CreateStepper } from '@/components/create/create-stepper'
-import { SettingsHero } from '@/components/settings/settings-hero'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getContentItems, getLatestContentId } from '@/lib/content/get-content-items'
@@ -65,12 +63,56 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
       : `${items.length} recording${items.length === 1 ? '' : 's'} in this workspace · ${readyCount} ready, ${processingCount} processing.`
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-7 p-4 sm:p-8">
+    <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 pt-4 sm:pt-6">
       <CreateStepper
         workspaceId={params.id}
         activeStep={1}
         contentId={latestContentId ?? undefined}
       />
+
+      {/* ── Hero: greeting block matches /dashboard ──────────────────── */}
+      <section className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+        <div className="min-w-0">
+          <p
+            className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em]"
+            style={{
+              color: '#7A7468',
+              fontFamily: 'var(--font-jetbrains-mono), monospace',
+            }}
+          >
+            {workspace.name} · Library
+          </p>
+          <h1
+            className="text-[clamp(38px,5.5vw,64px)] leading-[0.98]"
+            style={{
+              fontFamily: 'var(--font-instrument-serif), Georgia, serif',
+              color: '#0F0F0F',
+              fontWeight: 400,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Your library.
+          </h1>
+          <p className="mt-3 max-w-xl text-[13px] leading-relaxed" style={{ color: '#3A3A3A' }}>
+            {heroBody}
+          </p>
+        </div>
+        {canCreate && (
+          <Link
+            href={`/workspace/${params.id}/content/new`}
+            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full px-5 text-[13px] font-semibold transition-transform hover:scale-[1.02]"
+            style={{
+              background: '#0F0F0F',
+              color: '#FFFFFF',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 12px -4px rgba(15,15,15,0.45)',
+            }}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Import recording
+          </Link>
+        )}
+      </section>
+
       <RecentImportsStrip workspaceId={params.id} items={items} />
       {canCreate ? (
         <SmartImportBox
@@ -79,43 +121,6 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
           mode="inline"
         />
       ) : null}
-      <SettingsHero
-        visual={
-          <span
-            className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-white sm:h-16 sm:w-16"
-            style={{
-              background:
-                'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
-              boxShadow:
-                '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(42,26,61,0.55)',
-            }}
-            aria-hidden
-          >
-            <span
-              className="pointer-events-none absolute inset-1 rounded-[14px]"
-              style={{
-                background:
-                  'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 45%)',
-              }}
-            />
-            <FileVideo className="relative h-6 w-6 sm:h-7 sm:w-7" strokeWidth={1.7} />
-          </span>
-        }
-        eyebrow={`${workspace.name} · Library`}
-        title="Your library."
-        body={heroBody}
-        action={
-          canCreate ? (
-            <Link
-              href={`/workspace/${params.id}/content/new`}
-              className="cf-btn-3d cf-btn-3d-primary inline-flex h-10 items-center gap-1.5 rounded-xl px-4 text-[13px]"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Import recording
-            </Link>
-          ) : null
-        }
-      />
 
       {/* ── Status stats strip ── compact pills, only when content exists */}
       {items.length > 0 && (
@@ -151,32 +156,52 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
           {firstReady && (
             <Link
               href={`/workspace/${params.id}/content/${firstReady.id}/highlights`}
-              className="group flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/[0.04] p-3.5 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md hover:shadow-primary/[0.06]"
+              className="group flex items-center gap-3 rounded-[20px] p-3.5 transition-all duration-200 hover:scale-[1.012] [box-shadow:inset_0_1px_0_rgba(255,255,255,0.7)] hover:[box-shadow:inset_0_1px_0_rgba(255,255,255,0.7),0_12px_32px_rgba(15,15,15,0.06)]"
+              style={{ background: '#F9F4DC', border: '1px solid rgba(15,15,15,0.06)' }}
             >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
+              <div
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                style={{ background: '#F4D93D', color: '#0F0F0F' }}
+              >
                 <Wand2 className="h-4 w-4" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-primary">Find viral moments</p>
-                <p className="truncate text-[10px] text-muted-foreground">
+                <p className="text-xs font-bold" style={{ color: '#0F0F0F' }}>
+                  Find viral moments
+                </p>
+                <p className="truncate text-[10px]" style={{ color: '#3A3A3A' }}>
                   {firstReady.title ?? 'Untitled'}
                 </p>
               </div>
-              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-primary/40 transition-transform group-hover:translate-x-0.5" />
+              <ChevronRight
+                className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5"
+                style={{ color: '#7A7468' }}
+              />
             </Link>
           )}
           <Link
             href={`/workspace/${params.id}/pipeline`}
-            className="group flex items-center gap-3 rounded-xl border border-border/50 bg-card p-3.5 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md"
+            className="group flex items-center gap-3 rounded-[20px] p-3.5 transition-all duration-200 hover:scale-[1.012] [box-shadow:inset_0_1px_0_rgba(255,255,255,0.7)] hover:[box-shadow:inset_0_1px_0_rgba(255,255,255,0.7),0_12px_32px_rgba(15,15,15,0.06)]"
+            style={{ background: '#F9F4DC', border: '1px solid rgba(15,15,15,0.06)' }}
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 transition-colors group-hover:bg-emerald-100">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+              style={{ background: '#0F0F0F', color: '#FFFFFF' }}
+            >
               <CheckCircle2 className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold">Review pipeline</p>
-              <p className="text-[10px] text-muted-foreground">Approve &amp; publish</p>
+              <p className="text-xs font-bold" style={{ color: '#0F0F0F' }}>
+                Review pipeline
+              </p>
+              <p className="text-[10px]" style={{ color: '#3A3A3A' }}>
+                Approve &amp; publish
+              </p>
             </div>
-            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/30 transition-transform group-hover:translate-x-0.5" />
+            <ChevronRight
+              className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5"
+              style={{ color: '#7A7468' }}
+            />
           </Link>
         </div>
       )}
@@ -194,18 +219,26 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
           {page > 1 && (
             <Link
               href={`/workspace/${params.id}?page=${page - 1}`}
-              className="rounded-xl border border-border/50 px-4 py-2 text-xs font-semibold text-muted-foreground transition-all hover:-translate-y-px hover:border-primary/20 hover:text-foreground hover:shadow-sm"
+              className="rounded-full px-4 py-2 text-xs font-semibold transition-colors hover:bg-[rgba(15,15,15,0.04)]"
+              style={{ border: '1px solid rgba(15,15,15,0.14)', color: '#0F0F0F' }}
             >
               ← Previous
             </Link>
           )}
-          <span className="text-xs tabular-nums text-muted-foreground/60">
+          <span
+            className="text-xs tabular-nums"
+            style={{
+              color: '#7A7468',
+              fontFamily: 'var(--font-jetbrains-mono), monospace',
+            }}
+          >
             Page {page}
           </span>
           {items.length === PAGE_SIZE && (
             <Link
               href={`/workspace/${params.id}?page=${page + 1}`}
-              className="rounded-xl border border-border/50 px-4 py-2 text-xs font-semibold text-muted-foreground transition-all hover:-translate-y-px hover:border-primary/20 hover:text-foreground hover:shadow-sm"
+              className="rounded-full px-4 py-2 text-xs font-semibold transition-colors hover:bg-[rgba(15,15,15,0.04)]"
+              style={{ border: '1px solid rgba(15,15,15,0.14)', color: '#0F0F0F' }}
             >
               Next →
             </Link>
@@ -227,50 +260,43 @@ function StatChip({
   label: string
   icon: React.ReactNode
 }) {
-  const palette = {
-    ready: {
-      iconBg: 'bg-emerald-500/[0.12] text-emerald-700',
-      labelColor: 'text-emerald-700/80',
-      ring: 'border-emerald-500/20',
-      glow: 'rgba(16,185,129,0.10)',
-    },
-    processing: {
-      iconBg: 'bg-amber-500/[0.12] text-amber-700',
-      labelColor: 'text-amber-700/80',
-      ring: 'border-amber-500/25',
-      glow: 'rgba(245,158,11,0.10)',
-    },
-    failed: {
-      iconBg: 'bg-red-500/[0.12] text-red-600',
-      labelColor: 'text-red-600/80',
-      ring: 'border-red-500/25',
-      glow: 'rgba(239,68,68,0.10)',
-    },
+  // Crextio palette: charcoal numbers on cream cards, yellow accent for
+  // the "ready" tone (your good state), neutral for processing, dark
+  // outline-only for failed (still readable, not screaming red).
+  const accent = {
+    ready: { iconBg: '#F4D93D', iconColor: '#0F0F0F' },
+    processing: { iconBg: 'rgba(15,15,15,0.08)', iconColor: '#0F0F0F' },
+    failed: { iconBg: '#0F0F0F', iconColor: '#F4D93D' },
   }[tone]
   return (
     <div
-      className={`relative flex items-center gap-3 overflow-hidden rounded-xl border ${palette.ring} bg-card px-4 py-3 transition-all`}
+      className="flex items-center gap-3 rounded-[20px] px-4 py-3 transition-all duration-200 hover:scale-[1.012] [box-shadow:inset_0_1px_0_rgba(255,255,255,0.7)] hover:[box-shadow:inset_0_1px_0_rgba(255,255,255,0.7),0_12px_32px_rgba(15,15,15,0.06)]"
       style={{
-        boxShadow: `0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 8px 18px -14px ${palette.glow}`,
+        background: '#F9F4DC',
+        border: '1px solid rgba(15,15,15,0.06)',
       }}
     >
       <span
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${palette.iconBg}`}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+        style={{ background: accent.iconBg, color: accent.iconColor }}
       >
         {icon}
       </span>
       <div>
         <p
-          className="font-mono text-[20px] font-bold tabular-nums leading-none text-foreground"
-          style={{ fontFamily: 'var(--font-inter-tight), sans-serif' }}
+          className="text-[22px] tabular-nums leading-none"
+          style={{
+            fontFamily: 'var(--font-inter-tight), sans-serif',
+            color: '#0F0F0F',
+            fontWeight: 400,
+            letterSpacing: '-0.025em',
+          }}
         >
           {value}
         </p>
         <p
-          className={`mt-1 text-[10.5px] font-bold uppercase tracking-[0.18em] ${palette.labelColor}`}
-          style={{
-            fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
-          }}
+          className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em]"
+          style={{ color: '#3A3A3A' }}
         >
           {label}
         </p>

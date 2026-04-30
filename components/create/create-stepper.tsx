@@ -145,17 +145,19 @@ function StepPill({
   isPast: boolean
   href: string | null
 }) {
+  // Crextio palette: charcoal active pill, yellow chip for past steps,
+  // outline-dashed for future steps. Replaces the old violet primary.
   const numberCircleClass = isActive
-    ? 'bg-[#2A1A3D] text-white shadow-[0_1px_0_rgba(255,255,255,0.18)_inset,0_4px_10px_-4px_rgba(42,26,61,0.55)]'
+    ? 'bg-[#0F0F0F] text-white [box-shadow:inset_0_1px_0_rgba(255,255,255,0.18),0_4px_10px_-4px_rgba(15,15,15,0.45)]'
     : isPast
-      ? 'border border-primary/40 bg-primary/[0.06] text-primary'
-      : 'border border-dashed border-border bg-background text-muted-foreground/55'
+      ? 'border border-[rgba(15,15,15,0.14)] bg-[#F4D93D] text-[#0F0F0F]'
+      : 'border border-dashed border-[rgba(15,15,15,0.18)] bg-transparent text-[rgba(15,15,15,0.4)]'
 
   const labelClass = isActive
-    ? 'font-bold text-foreground'
+    ? 'font-bold text-[#0F0F0F]'
     : isPast
-      ? 'font-medium text-foreground/80'
-      : 'text-muted-foreground/55'
+      ? 'font-medium text-[#0F0F0F]/80'
+      : 'text-[rgba(15,15,15,0.45)]'
 
   const inner = (
     <span
