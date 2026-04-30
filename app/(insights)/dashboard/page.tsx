@@ -708,7 +708,13 @@ function FunnelStackCard({
           </span>
         </div>
         <div className="flex flex-col gap-1">
-          <FunnelLadderRow label="Imported" widthPct={100} variant="yellow" />
+          {/* IMPORTED is the funnel baseline — bar = 100% when there ARE
+              imports, 0 when the workspace is empty. Same for the rest. */}
+          <FunnelLadderRow
+            label="Imported"
+            widthPct={stage1Pct > 0 ? 100 : 0}
+            variant="yellow"
+          />
           <FunnelArrow conversion={stage2Conv} />
           <FunnelLadderRow label="Approved" widthPct={stage2Pct} variant="dark" />
           <FunnelArrow conversion={stage3Conv} />
