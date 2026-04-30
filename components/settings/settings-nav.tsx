@@ -60,15 +60,16 @@ export function SettingsNav() {
   return (
     <nav
       aria-label="Settings sections"
-      className="relative overflow-hidden rounded-2xl border border-border/60 bg-card"
+      className="relative overflow-hidden rounded-[20px] [box-shadow:inset_0_1px_0_rgba(255,255,255,0.7)]"
       style={{
-        boxShadow:
-          '0 1px 0 rgba(255,255,255,0.6) inset, 0 1px 2px rgba(42,26,61,0.04), 0 12px 32px -18px rgba(42,26,61,0.18)',
+        background: '#F9F4DC',
+        border: '1px solid rgba(15,15,15,0.06)',
       }}
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-primary/35 to-transparent"
+        className="pointer-events-none absolute inset-x-5 top-0 h-px"
+        style={{ background: 'linear-gradient(to right, transparent, rgba(15,15,15,0.18), transparent)' }}
       />
       {/* Soft brand glow tucked behind the active item — gives the
           rail real depth without becoming a billboard. */}
@@ -77,7 +78,7 @@ export function SettingsNav() {
         className="pointer-events-none absolute -left-10 -top-10 h-32 w-32 rounded-full"
         style={{
           background:
-            'radial-gradient(circle, rgba(42,26,61,0.10) 0%, rgba(42,26,61,0) 65%)',
+            'radial-gradient(circle, rgba(244,217,61,0.20) 0%, rgba(244,217,61,0) 65%)',
         }}
       />
 
@@ -86,15 +87,24 @@ export function SettingsNav() {
           <div key={section.label} className="space-y-1.5">
             <header className="flex items-center gap-1.5 px-2 pt-1">
               <span
-                className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-primary/75"
-                style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                className="text-[9.5px] font-bold uppercase tracking-[0.22em]"
+                style={{
+                  color: '#3A3A3A',
+                  fontFamily: 'var(--font-jetbrains-mono), monospace',
+                }}
               >
                 {section.index}
               </span>
-              <span className="inline-block h-px w-3 bg-primary/35" />
               <span
-                className="text-[9.5px] font-bold uppercase tracking-[0.22em] text-muted-foreground/70"
-                style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                className="inline-block h-px w-3"
+                style={{ background: 'rgba(15,15,15,0.18)' }}
+              />
+              <span
+                className="text-[9.5px] font-bold uppercase tracking-[0.22em]"
+                style={{
+                  color: '#7A7468',
+                  fontFamily: 'var(--font-jetbrains-mono), monospace',
+                }}
               >
                 {section.label}
               </span>
@@ -137,42 +147,32 @@ function NavItem({
         <Link
           href={href}
           aria-current="page"
-          className="group relative flex items-center gap-2.5 overflow-hidden rounded-xl px-2.5 py-2 text-[13px] font-bold text-white"
+          className="group relative flex items-center gap-2.5 overflow-hidden rounded-xl px-2.5 py-2 text-[13px] font-bold"
           style={{
-            background:
-              'linear-gradient(140deg, #2A1A3D 0%, #2A1A3D 60%, #1A0F2A 100%)',
+            background: '#0F0F0F',
+            color: '#FFFFFF',
             boxShadow:
-              '0 1px 0 rgba(255,255,255,0.18) inset, 0 6px 18px -8px rgba(42,26,61,0.55)',
+              'inset 0 1px 0 rgba(255,255,255,0.12), 0 6px 18px -8px rgba(15,15,15,0.45)',
           }}
         >
-          {/* inner highlight arc — same designer detail as the hero monogram */}
           <span
-            aria-hidden
-            className="pointer-events-none absolute inset-x-2 top-0 h-px bg-white/30"
-          />
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-1 rounded-[10px]"
-            style={{
-              background:
-                'linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 50%)',
-            }}
-          />
-          <span className="relative flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/15">
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md"
+            style={{ background: 'rgba(255,255,255,0.10)' }}
+          >
             <Icon className="h-3.5 w-3.5" strokeWidth={2.4} />
           </span>
           <span
-            className="relative tracking-tight"
+            className="tracking-tight"
             style={{
               fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
             }}
           >
             {label}
           </span>
-          {/* tiny mono dot to mark the active row — quiet but premium */}
           <span
             aria-hidden
-            className="relative ml-auto inline-block h-1 w-1 rounded-full bg-white/70"
+            className="ml-auto inline-block h-1.5 w-1.5 rounded-full"
+            style={{ background: '#F4D93D' }}
           />
         </Link>
       </li>
@@ -183,13 +183,17 @@ function NavItem({
     <li>
       <Link
         href={href}
-        className="group relative flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium text-muted-foreground transition-all hover:bg-primary/[0.05] hover:text-foreground"
+        className="group relative flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium transition-colors hover:bg-[rgba(15,15,15,0.04)]"
+        style={{ color: '#3A3A3A' }}
       >
         <span
-          aria-hidden
-          className="pointer-events-none absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 rounded-full bg-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        />
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/50 bg-background text-muted-foreground/75 transition-colors group-hover:border-primary/25 group-hover:text-primary">
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-colors"
+          style={{
+            border: '1px solid rgba(15,15,15,0.10)',
+            background: 'transparent',
+            color: '#3A3A3A',
+          }}
+        >
           <Icon className="h-3.5 w-3.5" strokeWidth={1.9} />
         </span>
         <span
