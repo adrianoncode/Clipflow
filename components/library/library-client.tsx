@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { Grid3x3, List as ListIcon, Search } from 'lucide-react'
 
 import { Hero, StatusBadge } from '@/components/ui/editorial'
+import { CountUp, Reveal } from '@/components/ui/editorial-motion'
 import type { LibraryItem, LibraryStats } from '@/lib/library/get-library-items'
 
 const PLATFORM_LABEL: Record<string, string> = {
@@ -91,13 +92,18 @@ export function LibraryClient({
         }
       />
 
-      {/* ── Toolbar: search · type-filter pills · grid-list toggle ──── */}
+      {/* ── Toolbar: sticky + glassmorphism so it floats above the
+             items grid as a distinct layer rather than sitting flat
+             alongside it. ────────────────────────────────────────── */}
       <div
-        className="flex flex-wrap items-center gap-3.5 rounded-[24px] p-3.5"
+        className="sticky top-[57px] z-[5] flex flex-wrap items-center gap-3.5 rounded-[24px] p-3.5"
         style={{
-          background: '#F9F4DC',
-          border: '1px solid rgba(15,15,15,0.06)',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+          background: 'rgba(249, 244, 220, 0.78)',
+          backdropFilter: 'blur(14px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(14px) saturate(160%)',
+          border: '1px solid rgba(15,15,15,0.08)',
+          boxShadow:
+            'inset 0 1px 0 rgba(255,255,255,0.85), 0 12px 28px -16px rgba(15,15,15,0.18)',
         }}
       >
         <div
@@ -185,12 +191,14 @@ export function LibraryClient({
         </div>
       </div>
 
-      {/* ── Stats: 4 mini cream cards ──────────────────────────────── */}
+      {/* ── Stats: weighted Bento — one dark anchor + 3 cream — so the
+             row reads as a hierarchy, not four equal tiles. Numbers
+             count up on mount for a visual cue that data is live. ── */}
       <div className="flex flex-wrap gap-3.5">
-        <StatCard label="Total assets" value={stats.total} />
-        <StatCard label="Published" value={stats.published} />
-        <StatCard label="In flight" value={stats.inFlight} />
-        <StatCard label="Drafts" value={stats.drafts} />
+        <StatCard label="Total assets" value={stats.total} tone="dark" />
+        <StatCard label="Published" value={stats.published} tone="cream" />
+        <StatCard label="In flight" value={stats.inFlight} tone="cream" />
+        <StatCard label="Drafts" value={stats.drafts} tone="cream" />
       </div>
 
       {/* ── Items: grid or list ─────────────────────────────────────── */}
@@ -198,54 +206,79 @@ export function LibraryClient({
         <EmptyState hasItems={items.length > 0} />
       ) : view === 'grid' ? (
         <div
+          // The key forces a remount when filter/search/view changes,
+          // which re-runs the staggered Reveal animation on the new
+          // result set — feels like the grid "re-poured" rather than
+          // snapping to a new state.
+          key={`grid-${filter}-${q}`}
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
             gap: 14,
           }}
         >
-          {filtered.map((o) => (
-            <ItemCard key={o.id} workspaceId={workspaceId} item={o} />
+          {filtered.map((o, i) => (
+            <Reveal key={o.id} index={i}>
+              <ItemCard workspaceId={workspaceId} item={o} />
+            </Reveal>
           ))}
         </div>
       ) : (
-        <ItemList workspaceId={workspaceId} items={filtered} />
+        <Reveal key={`list-${filter}-${q}`}>
+          <ItemList workspaceId={workspaceId} items={filtered} />
+        </Reveal>
       )}
     </div>
   )
 }
 
-function StatCard({ label, value }: { label: string; value: number }) {
+function StatCard({
+  label,
+  value,
+  tone = 'cream',
+}: {
+  label: string
+  value: number
+  tone?: 'cream' | 'dark'
+}) {
+  const isDark = tone === 'dark'
   return (
     <div
-      className="min-w-[160px] flex-1 rounded-[24px] px-[18px] py-3.5"
+      className="min-w-[160px] flex-1 rounded-[24px] px-[18px] py-3.5 transition-all duration-200 hover:scale-[1.02]"
       style={{
-        background: '#F9F4DC',
-        border: '1px solid rgba(15,15,15,0.06)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+        background: isDark ? '#0F0F0F' : '#F9F4DC',
+        border: isDark
+          ? '1px solid rgba(255,255,255,0.04)'
+          : '1px solid rgba(15,15,15,0.06)',
+        boxShadow: isDark
+          ? 'inset 0 1px 0 rgba(255,255,255,0.06)'
+          : 'inset 0 1px 0 rgba(255,255,255,0.7)',
       }}
     >
       <div
         className="text-[10px] font-semibold uppercase"
         style={{
-          color: '#7A7468',
+          color: isDark ? 'rgba(255,255,255,0.55)' : '#7A7468',
           fontFamily: 'var(--font-jetbrains-mono), monospace',
           letterSpacing: '0.22em',
         }}
       >
         {label}
       </div>
-      <div
-        className="mt-1 tabular-nums"
+      <CountUp
+        value={value}
+        className="mt-1 block tabular-nums"
         style={{
-          fontFamily: 'var(--font-jetbrains-mono), monospace',
-          fontSize: 26,
-          fontWeight: 600,
-          color: '#0F0F0F',
+          fontFamily: isDark
+            ? 'var(--font-instrument-serif), Georgia, serif'
+            : 'var(--font-jetbrains-mono), monospace',
+          fontSize: isDark ? 40 : 28,
+          lineHeight: 1,
+          fontWeight: isDark ? 400 : 600,
+          letterSpacing: isDark ? '-0.025em' : '0',
+          color: isDark ? '#F4D93D' : '#0F0F0F',
         }}
-      >
-        {value}
-      </div>
+      />
     </div>
   )
 }
@@ -254,7 +287,7 @@ function ItemCard({ workspaceId, item }: { workspaceId: string; item: LibraryIte
   return (
     <Link
       href={`/workspace/${workspaceId}/content/${item.contentId}/outputs`}
-      className="overflow-hidden rounded-[24px] transition-all duration-200 hover:scale-[1.012]"
+      className="block overflow-hidden rounded-[24px] transition-all duration-200 hover:scale-[1.02] hover:[box-shadow:inset_0_1px_0_rgba(255,255,255,0.7),0_18px_42px_-12px_rgba(15,15,15,0.18)]"
       style={{
         background: '#F9F4DC',
         border: '1px solid rgba(15,15,15,0.06)',

@@ -358,6 +358,35 @@
   }
 }
 
+/* ─────────────────────────────────────────────────────────────────────
+ * Global prefers-reduced-motion gate.
+ *
+ * The Crextio editorial bento system leans on hover lifts, scale
+ * transitions, and entrance reveals. A user who's set
+ * prefers-reduced-motion shouldn't have to opt out of each one
+ * individually — kill them centrally so every BentoCard, ItemCard,
+ * StatCard and pill obeys the OS setting without us threading the
+ * preference through every component.
+ *
+ * The Reveal / CountUp primitives already short-circuit their JS
+ * timers when the media query matches; this CSS catches the
+ * Tailwind-only hover transforms.
+ * ──────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+  .hover\:scale-\[1\.02\]:hover,
+  .hover\:scale-\[1\.012\]:hover {
+    transform: none !important;
+  }
+}
+
 /* ── Landing anchor scroll offset ──────────────────────────────────────
    The landing header is sticky (~64px); without scroll-margin-top anchor
    links (#features, #pricing, etc.) land with their headline hidden

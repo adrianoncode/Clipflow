@@ -5,17 +5,17 @@ import {
   ArrowUpRight,
   CalendarDays,
   CheckCircle2,
-  ChevronDown,
   ChevronRight,
   FileVideo,
-  Folder,
-  KeyRound,
   Layers,
-  Radio,
   Sparkles,
+  Upload,
+  Wand2,
+  Send,
 } from 'lucide-react'
 
 import { Hero, StripPill } from '@/components/ui/editorial'
+import { Reveal } from '@/components/ui/editorial-motion'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getAnalytics } from '@/lib/dashboard/get-analytics'
 import { createClient } from '@/lib/supabase/server'
@@ -150,6 +150,7 @@ export default async function DashboardPage() {
         <Hero
           kicker={`${currentWorkspace.name} · Insights`}
           title={<>Welcome back, {currentWorkspace.name}.</>}
+          animated={hasAnyData}
           kpis={[
             { Icon: FileVideo, value: analytics.totalContent, label: 'Videos' },
             { Icon: Layers, value: analytics.totalOutputs, label: 'Posts' },
@@ -157,56 +158,85 @@ export default async function DashboardPage() {
           ]}
         />
 
-        {/* ── Stat strip: 4 percentage indicators ─────────────────────── */}
-        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StripPill label="Imports" value={importsDelta} variant="dark" showSign />
-          <StripPill label="Generated" value={generatedDelta} variant="accent" showSign />
-          <StripPill label="Approval" value={approvalPct} variant="bar" />
-          <StripPill label="Live" value={livePct} variant="outline" />
-        </section>
+        {!hasAnyData ? (
+          // Brand-new workspace — instead of dumping eleven `0`s into a
+          // dashboard that looks broken, give the user a clear single
+          // path forward. The bento returns once they have data to fill
+          // it with.
+          <Reveal>
+            <EmptyDashboardHero workspaceId={currentWorkspace.id} />
+          </Reveal>
+        ) : (
+          <>
+            {/* ── Pulse-strip: 3 percentage indicators in a single
+                 unified glassy container (was 4 floating pills). ── */}
+            <section
+              className="rounded-[20px] p-3.5"
+              style={{
+                background: 'rgba(255, 253, 248, 0.55)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(15,15,15,0.08)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+              }}
+            >
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <StripPill
+                  label="Velocity"
+                  value={Math.round((importsDelta + generatedDelta) / 2)}
+                  variant="dark"
+                  showSign
+                />
+                <StripPill label="Approval" value={approvalPct} variant="bar" />
+                <StripPill label="Live" value={livePct} variant="accent" />
+              </div>
+            </section>
 
-        {/* ── Bento grid: 4 cols × 2 rows on lg, 2 cols on sm, stack on mobile.
-             row-span-2 only kicks in at lg so the tall cards don't break
-             the 2-col layout at intermediate widths. ─────────────────── */}
-        <section className="grid auto-rows-[220px] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Col 1, both rows — Featured */}
-          <FeaturedCard
-            workspaceId={currentWorkspace.id}
-            featured={featured}
-            workspaceName={currentWorkspace.name}
-          />
-
-          {/* Col 2 row 1 — Posts this week */}
-          <PostsWeekCard
-            data={weekData}
-            max={weekMax}
-            peakIndex={weekPeakIndex}
-            total={weekTotal}
-          />
-
-          {/* Col 3 row 1 — Approval donut */}
-          <ApprovalDonutCard pct={approvalPct} approved={analytics.totalApproved} />
-
-          {/* Col 4, both rows — Funnel + dark stuck-drafts list */}
-          <FunnelStackCard
-            stage1Pct={stage1Pct}
-            stage2Pct={stage2Pct}
-            stage3Pct={stage3Pct}
-            overallPct={overallFunnel}
-            stuckDrafts={analytics.stuckDrafts}
-            workspaceId={currentWorkspace.id}
-          />
-
-          {/* Col 2 row 2 — Quick links accordion */}
-          <QuickLinksStack />
-
-          {/* Col 3 row 2 — Schedule preview */}
-          <ScheduleWeekCard
-            scheduled={totalScheduled}
-            published={totalPublished}
-            workspaceId={currentWorkspace.id}
-          />
-        </section>
+            {/* ── Bento grid: 4 cols × 2 rows on lg, 2 cols on sm,
+                 stack on mobile. Each tile staggers in by index for a
+                 polished entrance. ── */}
+            <section className="grid auto-rows-[220px] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Reveal index={0} className="row-span-2">
+                <FeaturedCard
+                  workspaceId={currentWorkspace.id}
+                  featured={featured}
+                  workspaceName={currentWorkspace.name}
+                />
+              </Reveal>
+              <Reveal index={1}>
+                <PostsWeekCard
+                  data={weekData}
+                  max={weekMax}
+                  peakIndex={weekPeakIndex}
+                  total={weekTotal}
+                />
+              </Reveal>
+              <Reveal index={2}>
+                <ApprovalDonutCard
+                  pct={approvalPct}
+                  approved={analytics.totalApproved}
+                />
+              </Reveal>
+              <Reveal index={3} className="row-span-2">
+                <FunnelStackCard
+                  stage1Pct={stage1Pct}
+                  stage2Pct={stage2Pct}
+                  stage3Pct={stage3Pct}
+                  overallPct={overallFunnel}
+                  stuckDrafts={analytics.stuckDrafts}
+                  workspaceId={currentWorkspace.id}
+                />
+              </Reveal>
+              <Reveal index={4}>
+                <ScheduleWeekCard
+                  scheduled={totalScheduled}
+                  published={totalPublished}
+                  workspaceId={currentWorkspace.id}
+                />
+              </Reveal>
+            </section>
+          </>
+        )}
       </div>
     </div>
   )
@@ -323,7 +353,7 @@ function FeaturedCard({
               ? `/workspace/${workspaceId}/content/${featured.id}/outputs`
               : `/workspace/${workspaceId}`
           }
-          className="mt-3 inline-flex w-fit items-center gap-1 rounded-full px-4 py-1.5 text-[12px] font-semibold transition-transform duration-200 group-hover:translate-x-0.5"
+          className="mt-3 inline-flex w-fit items-center gap-1 rounded-full px-4 py-1.5 text-[12px] font-semibold transition-transform duration-200 group-hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4D93D]"
           style={{
             background: 'rgba(15,15,15,0.08)',
             color: PALETTE.ink,
@@ -656,7 +686,7 @@ function FunnelStackCard({
                 <Link
                   href={`/workspace/${workspaceId}/content/${d.contentId}/outputs`}
                   aria-label={`Review ${d.title ?? 'draft'}`}
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform hover:translate-x-0.5"
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4D93D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F0F0F]"
                   style={{ background: PALETTE.yellow }}
                 >
                   <ChevronRight className="h-3 w-3" style={{ color: PALETTE.ink }} />
@@ -698,10 +728,35 @@ function FunnelLadderRow({
   // Below ~18% the bar is too narrow for the percent chip to sit inside.
   const pctOutside = w < 18
 
+  // First letter of the stage name doubles as a non-color stage
+  // indicator — so users with color-vision-deficiency don't rely on
+  // yellow-vs-charcoal-vs-grey to read the funnel order.
+  const stageLetter = label.charAt(0).toUpperCase()
   return (
     <div className="flex items-center gap-3">
       <span
-        className="w-16 shrink-0 text-[9.5px] font-semibold uppercase tracking-[0.16em]"
+        className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-bold tabular-nums"
+        style={{
+          background:
+            variant === 'yellow'
+              ? PALETTE.ink
+              : variant === 'dark'
+                ? PALETTE.yellow
+                : 'rgba(15,15,15,0.10)',
+          color:
+            variant === 'yellow'
+              ? PALETTE.yellow
+              : variant === 'dark'
+                ? PALETTE.ink
+                : PALETTE.inkSoft,
+          fontFamily: 'var(--font-jetbrains-mono), monospace',
+        }}
+        aria-hidden
+      >
+        {stageLetter}
+      </span>
+      <span
+        className="w-14 shrink-0 text-[10px] font-semibold uppercase tracking-[0.16em]"
         style={{ color: PALETTE.inkSoft }}
       >
         {label}
@@ -722,7 +777,7 @@ function FunnelLadderRow({
         >
           {!pctOutside && (
             <span
-              className="text-[10px] font-semibold tabular-nums"
+              className="text-[11px] font-semibold tabular-nums"
               style={{
                 color: pctColor,
                 fontFamily: 'var(--font-jetbrains-mono), monospace',
@@ -734,7 +789,7 @@ function FunnelLadderRow({
         </div>
         {pctOutside && (
           <span
-            className="absolute top-1/2 -translate-y-1/2 text-[10px] font-semibold tabular-nums"
+            className="absolute top-1/2 -translate-y-1/2 text-[11px] font-semibold tabular-nums"
             style={{
               left: `calc(${w}% + 8px)`,
               color: PALETTE.inkSoft,
@@ -760,7 +815,7 @@ function FunnelArrow({ conversion }: { conversion: number }) {
         style={{ background: 'rgba(15,15,15,0.18)' }}
       />
       <span
-        className="text-[9px] font-semibold uppercase tracking-[0.14em] tabular-nums"
+        className="text-[10px] font-semibold uppercase tracking-[0.14em] tabular-nums"
         style={{
           color: PALETTE.inkSoft,
           fontFamily: 'var(--font-jetbrains-mono), monospace',
@@ -772,76 +827,182 @@ function FunnelArrow({ conversion }: { conversion: number }) {
   )
 }
 
-// ── Quick-links accordion-style stack (col 2 row 2) ─────────────────────────
-function QuickLinksStack() {
-  type Item = {
-    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+// ── EmptyDashboardHero — full-width path-forward when the workspace
+//    has zero content. Replaces the old "everything reads 0%" bento
+//    grid with a single decisive CTA and the three-step recipe.  ────────────
+function EmptyDashboardHero({ workspaceId }: { workspaceId: string }) {
+  const steps: Array<{
+    n: string
     label: string
-    sub?: string
-    href: string
-    expanded?: boolean
-  }
-  const items: Item[] = [
-    { icon: KeyRound, label: 'AI keys', sub: 'OpenAI · Claude · Gemini', href: '/settings/ai-keys', expanded: true },
-    { icon: Radio, label: 'Channels', href: '/settings/channels' },
-    { icon: Sparkles, label: 'Brand voice', href: '/settings/brand-voice' },
-    { icon: Folder, label: 'Templates', href: '/settings/templates' },
+    sub: string
+    Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+  }> = [
+    {
+      n: '01',
+      label: 'Import',
+      sub: 'Drop a video, paste a YouTube link, or upload a script.',
+      Icon: Upload,
+    },
+    {
+      n: '02',
+      label: 'Generate',
+      sub: 'Hooks, captions, carousels — written in your voice.',
+      Icon: Wand2,
+    },
+    {
+      n: '03',
+      label: 'Schedule',
+      sub: 'Approve, queue across channels, auto-publish.',
+      Icon: Send,
+    },
   ]
   return (
     <div
-      className="flex flex-col rounded-[24px] [box-shadow:inset_0_1px_0_rgba(255,255,255,0.7)] transition-all duration-200 hover:[box-shadow:inset_0_1px_0_rgba(255,255,255,0.7),0_12px_32px_rgba(15,15,15,0.06)]"
-      style={{ background: PALETTE.cardCream, border: `1px solid ${PALETTE.border}` }}
+      className="relative overflow-hidden rounded-[28px] p-6 sm:p-9"
+      style={{
+        background: `linear-gradient(160deg, ${PALETTE.yellowSoft} 0%, ${PALETTE.yellow} 55%, ${PALETTE.yellowDeep} 100%)`,
+        border: `1px solid ${PALETTE.border}`,
+        boxShadow:
+          'inset 0 1px 0 rgba(255,255,255,0.55), 0 18px 46px -22px rgba(220,185,31,0.45)',
+      }}
     >
-      {items.map((item, i) => (
-        <Link
-          key={item.label}
-          href={item.href}
-          className="group flex items-center justify-between gap-3 px-5 py-3 transition-colors hover:bg-[rgba(15,15,15,0.03)] first:rounded-t-[24px] last:rounded-b-[24px]"
-          style={{
-            borderBottom: i < items.length - 1 ? `1px solid ${PALETTE.border}` : undefined,
-          }}
-        >
-          <div className="flex min-w-0 items-center gap-3">
-            {item.expanded ? (
-              <span
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
-                style={{ background: PALETTE.yellow }}
-              >
-                <item.icon className="h-3.5 w-3.5" style={{ color: PALETTE.ink }} />
-              </span>
-            ) : (
-              <item.icon
-                className="h-3.5 w-3.5 shrink-0"
-                style={{ color: PALETTE.inkSoft }}
-              />
-            )}
-            <div className="min-w-0">
-              <p className="text-[12px] font-semibold" style={{ color: PALETTE.ink }}>
-                {item.label}
-              </p>
-              {item.expanded && item.sub && (
-                <p
-                  className="text-[10px] tabular-nums"
+      {/* Print-frame ornament — same hairline trick as Featured. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-3 rounded-[20px] border"
+        style={{ borderColor: 'rgba(15,15,15,0.16)' }}
+      />
+      {/* Grain — paper texture so the gradient doesn't feel flat. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 mix-blend-multiply"
+        style={{
+          opacity: 0.04,
+          backgroundImage:
+            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")",
+          backgroundSize: '160px 160px',
+        }}
+      />
+
+      <div className="relative z-10 flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
+          <span
+            className="text-[10px] font-semibold uppercase"
+            style={{
+              color: 'rgba(15,15,15,0.6)',
+              fontFamily: 'var(--font-jetbrains-mono), monospace',
+              letterSpacing: '0.22em',
+            }}
+          >
+            — Get started
+          </span>
+          <h2
+            className="m-0"
+            style={{
+              fontFamily: 'var(--font-instrument-serif), Georgia, serif',
+              fontSize: 'clamp(34px, 4.6vw, 54px)',
+              lineHeight: 1,
+              letterSpacing: '-0.022em',
+              color: PALETTE.ink,
+              fontWeight: 400,
+            }}
+          >
+            Let&rsquo;s make your first
+            <br />
+            month of posts.
+          </h2>
+          <p
+            className="m-0 max-w-[52ch] text-[14px]"
+            style={{ color: PALETTE.inkSoft, lineHeight: 1.55 }}
+          >
+            One recording becomes hooks, captions, carousels and clips on every
+            channel — usually in under four minutes. BYOK for AI, so you pay your
+            providers at cost.
+          </p>
+        </div>
+
+        <ol className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {steps.map((s) => (
+            <li
+              key={s.n}
+              className="rounded-2xl p-4"
+              style={{
+                background: 'rgba(255,253,248,0.55)',
+                border: '1px solid rgba(15,15,15,0.10)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.85)',
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className="grid h-6 w-6 place-items-center rounded-md"
+                  style={{ background: PALETTE.ink, color: PALETTE.yellow }}
+                >
+                  <s.Icon className="h-3 w-3" />
+                </span>
+                <span
+                  className="text-[10px] font-semibold uppercase"
                   style={{
-                    color: PALETTE.inkSoft,
+                    color: 'rgba(15,15,15,0.6)',
                     fontFamily: 'var(--font-jetbrains-mono), monospace',
+                    letterSpacing: '0.22em',
                   }}
                 >
-                  {item.sub}
-                </p>
-              )}
-            </div>
-          </div>
-          <ChevronDown
-            className="h-3 w-3 shrink-0 transition-transform"
+                  {s.n}
+                </span>
+                <span
+                  className="text-[14px] font-semibold"
+                  style={{ color: PALETTE.ink }}
+                >
+                  {s.label}
+                </span>
+              </div>
+              <p
+                className="mt-2 text-[12px]"
+                style={{ color: PALETTE.inkSoft, lineHeight: 1.5 }}
+              >
+                {s.sub}
+              </p>
+            </li>
+          ))}
+        </ol>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href={`/workspace/${workspaceId}/content/new`}
+            className="inline-flex h-11 items-center gap-2 rounded-full px-5 text-[13px] font-bold transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
             style={{
-              color: PALETTE.inkSoft,
-              transform: item.expanded ? 'rotate(180deg)' : undefined,
+              background: PALETTE.ink,
+              color: PALETTE.yellow,
+              boxShadow:
+                'inset 0 1px 0 rgba(255,255,255,0.14), 0 8px 18px -6px rgba(15,15,15,0.45)',
             }}
-            aria-hidden
-          />
-        </Link>
-      ))}
+          >
+            <Upload className="h-4 w-4" />
+            Import your first recording
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            href={`/workspace/${workspaceId}`}
+            className="inline-flex h-11 items-center gap-2 rounded-full px-4 text-[13px] font-semibold transition-colors hover:bg-[rgba(15,15,15,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            style={{
+              border: `1px solid ${PALETTE.borderStrong}`,
+              color: PALETTE.ink,
+            }}
+          >
+            Open Workflow
+          </Link>
+          <span
+            className="ml-auto hidden text-[10px] font-semibold uppercase sm:inline"
+            style={{
+              color: 'rgba(15,15,15,0.55)',
+              fontFamily: 'var(--font-jetbrains-mono), monospace',
+              letterSpacing: '0.22em',
+            }}
+          >
+            ↳ Average setup · 4 min
+          </span>
+        </div>
+      </div>
     </div>
   )
 }
@@ -869,7 +1030,7 @@ function ScheduleWeekCard({
   return (
     <Link
       href={`/workspace/${workspaceId}/schedule`}
-      className={`flex flex-col justify-between gap-4 ${CARD_CREAM}`}
+      className={`flex flex-col justify-between gap-4 ${CARD_CREAM} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent`}
       style={{ background: PALETTE.cardCream, border: `1px solid ${PALETTE.border}` }}
     >
       <div className="flex items-center justify-between">
@@ -894,7 +1055,7 @@ function ScheduleWeekCard({
           return (
             <div key={i} className="flex flex-col items-center gap-1.5">
               <span
-                className="text-[9px] font-semibold uppercase"
+                className="text-[10px] font-semibold uppercase"
                 style={{ color: PALETTE.inkSoft }}
               >
                 {d.toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 3)}

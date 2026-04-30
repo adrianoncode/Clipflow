@@ -4,11 +4,13 @@
  * These are the building blocks every Work-area page composes from:
  *
  *   <Hero> ………… kicker + serif title + KPI trio + action
- *   <Kpi>  ………… single icon + tabular value + label
+ *   <Kpi>  ………… single icon + tabular value + label (with CountUp)
  *   <StripPill> … 4-variant percent indicator (dark · accent · bar · outline)
  *   <StatusBadge> ……… consistent status vocabulary across the pipeline
  *   <BentoCard> ……… 24px-radius cream card with inset highlight + lift hover
  *   <SectionHeader> … mono kicker + serif headline pair
+ *   <CountUp> ……… number ticks from 0 → target on mount (cubic-out)
+ *   <Reveal> ……… fade+slide-up on mount, optional stagger by index
  *
  * They lift the inline patterns from the original Dashboard implementation
  * (which got reused via copy-paste across Library, Workflow, Schedule) into
@@ -17,6 +19,7 @@
 
 import * as React from 'react'
 import { cn } from '@/lib/utils'
+import { KpiCountUp } from '@/components/ui/editorial-motion'
 
 // ── Format helpers ──────────────────────────────────────────────────────────
 function formatNum(n: number | null | undefined): string {
@@ -65,18 +68,24 @@ export function Kpi({ Icon, value, label }: KpiData) {
 }
 
 // ── Hero — kicker + title + optional KPI trio + optional action ─────────────
+//
+// `animated` swaps the static <Kpi> for the count-up variant. Keeps the
+// API symmetrical so server-component callers don't have to know about
+// the client/server split.
 export function Hero({
   kicker,
   title,
   kpis,
   action,
   size = 'lg',
+  animated = false,
 }: {
   kicker: React.ReactNode
   title: React.ReactNode
   kpis?: KpiData[]
   action?: React.ReactNode
   size?: 'lg' | 'md'
+  animated?: boolean
 }) {
   const titleClamp =
     size === 'md'
@@ -114,9 +123,13 @@ export function Hero({
       </div>
       {kpis && kpis.length > 0 && (
         <div className="flex flex-wrap items-end gap-7 sm:gap-10">
-          {kpis.map((k, i) => (
-            <Kpi key={`${k.label}-${i}`} {...k} />
-          ))}
+          {kpis.map((k, i) =>
+            animated ? (
+              <KpiCountUp key={`${k.label}-${i}`} {...k} />
+            ) : (
+              <Kpi key={`${k.label}-${i}`} {...k} />
+            ),
+          )}
         </div>
       )}
     </section>
@@ -168,6 +181,11 @@ export function StripPill({
       )}
       {variant === 'bar' && (
         <div
+          role="progressbar"
+          aria-label={`${label}: ${display}`}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.max(0, Math.min(100, value))}
           className="relative flex h-9 items-center overflow-hidden rounded-full px-4"
           style={{ border: '1px solid rgba(15,15,15,0.14)' }}
         >
@@ -350,7 +368,12 @@ export function StatusBadge({ status }: { status: StatusKey }) {
   )
 }
 
-// ── BentoCard — 24px radius cream card, inset highlight, optional lift ──────
+// ── BentoCard — 24px radius cream card, inset highlight, lift + drop-shadow ─
+//
+// Hover lifts the card with `scale(1.02)` AND adds a soft outer drop shadow
+// — so the depth shift reads as "elevation" rather than just zoom. The
+// inset highlight at the top sells the light-from-above illusion that
+// gives the cream surface its haptic feel.
 export const BentoCard = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
@@ -358,41 +381,58 @@ export const BentoCard = React.forwardRef<
     lift?: boolean
   }
 >(({ className, style, tone = 'cream', lift = true, ...props }, ref) => {
-  const tones: Record<string, React.CSSProperties> = {
+  const tones: Record<string, { rest: React.CSSProperties; hover: string }> = {
     cream: {
-      background: '#F9F4DC',
-      color: '#0F0F0F',
-      border: '1px solid rgba(15,15,15,0.06)',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+      rest: {
+        background: '#F9F4DC',
+        color: '#0F0F0F',
+        border: '1px solid rgba(15,15,15,0.06)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+      },
+      hover:
+        'inset_0_1px_0_rgba(255,255,255,0.7),0_18px_42px_-12px_rgba(15,15,15,0.18)',
     },
     dark: {
-      background: '#0F0F0F',
-      color: '#FFFFFF',
-      border: '1px solid rgba(255,255,255,0.04)',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+      rest: {
+        background: '#0F0F0F',
+        color: '#FFFFFF',
+        border: '1px solid rgba(255,255,255,0.04)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+      },
+      hover:
+        'inset_0_1px_0_rgba(255,255,255,0.06),0_18px_42px_-12px_rgba(0,0,0,0.50)',
     },
     white: {
-      background: '#FFFDF8',
-      color: '#0F0F0F',
-      border: '1px solid rgba(15,15,15,0.06)',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+      rest: {
+        background: '#FFFDF8',
+        color: '#0F0F0F',
+        border: '1px solid rgba(15,15,15,0.06)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+      },
+      hover:
+        'inset_0_1px_0_rgba(255,255,255,0.7),0_18px_42px_-12px_rgba(15,15,15,0.16)',
     },
     accent: {
-      background: 'linear-gradient(170deg, #F9E97A 0%, #F4D93D 55%, #DCB91F 100%)',
-      color: '#0F0F0F',
-      border: '1px solid rgba(15,15,15,0.06)',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.55)',
+      rest: {
+        background: 'linear-gradient(170deg, #F9E97A 0%, #F4D93D 55%, #DCB91F 100%)',
+        color: '#0F0F0F',
+        border: '1px solid rgba(15,15,15,0.06)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.55)',
+      },
+      hover:
+        'inset_0_1px_0_rgba(255,255,255,0.55),0_18px_42px_-12px_rgba(220,185,31,0.35)',
     },
   }
+  const t = tones[tone]
   return (
     <div
       ref={ref}
       className={cn(
         'rounded-[24px] p-5 transition-all duration-200',
-        lift && 'hover:scale-[1.012]',
+        lift && `hover:scale-[1.02] hover:[box-shadow:${t.hover}]`,
         className,
       )}
-      style={{ ...tones[tone], ...style }}
+      style={{ ...t.rest, ...style }}
       {...props}
     />
   )
