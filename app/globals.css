@@ -41,6 +41,22 @@
 
     --radius: 0.75rem;
 
+    /* Bento card surface — used by Dashboard, Library, every primary
+       Work-area card. Sits between paper (--background) and white card
+       (--card) in warmth. Distinct enough that a card on the page
+       gradient still reads as a card, soft enough that several next to
+       each other don't fight. */
+    --cream: 47 71% 92%;               /* #F9F4DC bento card */
+    --cream-foreground: 30 20% 8%;
+    --accent-soft: 51 89% 73%;         /* #F9E97A soft yellow */
+    --accent-deep: 49 75% 49%;         /* #DCB91F deep yellow */
+
+    /* Ink-soft + muted-soft used in serif/mono editorial labels.
+       Aliases of --foreground / --muted-foreground tuned for the
+       Crextio paper-tone aesthetic (slightly warmer than zinc). */
+    --ink: 0 0% 6%;                    /* #0F0F0F */
+    --ink-soft: 0 0% 16%;              /* #2A2A2A */
+
     /* Soft tints used by the niche-picker + dataviz palette. The legacy
        names (plum-soft, lime-soft) are kept so existing call-sites keep
        working — values are migrated to the new ink + yellow vocabulary. */
@@ -339,6 +355,35 @@
     }
     .conic-glow::before { animation: none !important; }
     .lv2-skeleton::after { animation: none !important; }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+ * Global prefers-reduced-motion gate.
+ *
+ * The Crextio editorial bento system leans on hover lifts, scale
+ * transitions, and entrance reveals. A user who's set
+ * prefers-reduced-motion shouldn't have to opt out of each one
+ * individually — kill them centrally so every BentoCard, ItemCard,
+ * StatCard and pill obeys the OS setting without us threading the
+ * preference through every component.
+ *
+ * The Reveal / CountUp primitives already short-circuit their JS
+ * timers when the media query matches; this CSS catches the
+ * Tailwind-only hover transforms.
+ * ──────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+  .hover\:scale-\[1\.02\]:hover,
+  .hover\:scale-\[1\.012\]:hover {
+    transform: none !important;
   }
 }
 

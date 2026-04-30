@@ -17,10 +17,8 @@ interface WorkspaceSummary {
 
 /**
  * Workspace layout — thin wrapper that guards the workspace exists and
- * is accessible. The actual navigation lives in the main app shell
- * sidebar (see `components/workspace/app-shell.tsx`). We intentionally
- * don't render a secondary nav here to avoid duplicating the sidebar
- * hierarchy the user already sees.
+ * is accessible. Nav lives in the parent (app) shell — `AppSidebar` +
+ * `AppTopbar` — so we intentionally don't render a secondary nav here.
  */
 export default async function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {
   const supabase = createClient()
