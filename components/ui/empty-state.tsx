@@ -57,27 +57,29 @@ export function EmptyState({
   if (variant === 'compact') {
     return (
       <div
-        className="relative flex flex-col items-center gap-4 overflow-hidden rounded-2xl border border-border/60 bg-card px-6 py-10 text-center"
+        className="relative flex flex-col items-center gap-4 overflow-hidden rounded-[24px] px-6 py-10 text-center [box-shadow:inset_0_1px_0_rgba(255,255,255,0.7)]"
         style={{
-          boxShadow:
-            '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 10px 24px -16px rgba(42,26,61,0.18)',
+          background: '#F9F4DC',
+          border: '1px solid rgba(15,15,15,0.06)',
         }}
       >
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent"
+          className="pointer-events-none absolute inset-x-6 top-0 h-px"
+          style={{ background: 'linear-gradient(to right, transparent, rgba(15,15,15,0.18), transparent)' }}
         />
         <VisualChip Icon={Icon} size="sm" />
         <div className="max-w-md space-y-1.5">
           <p
-            className="text-[15px] font-bold tracking-tight text-foreground"
+            className="text-[15px] font-bold tracking-tight"
             style={{
               fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
+              color: '#0F0F0F',
             }}
           >
             {title}
           </p>
-          <p className="text-[13px] leading-relaxed text-muted-foreground">
+          <p className="text-[13px] leading-relaxed" style={{ color: '#3A3A3A' }}>
             {description}
           </p>
         </div>
@@ -96,10 +98,10 @@ export function EmptyState({
 
   return (
     <div
-      className="relative overflow-hidden rounded-3xl border border-border/60 bg-card"
+      className="relative overflow-hidden rounded-[28px] [box-shadow:inset_0_1px_0_rgba(255,255,255,0.7)]"
       style={{
-        boxShadow:
-          '0 1px 0 rgba(255,255,255,0.7) inset, 0 1px 2px rgba(42,26,61,0.04), 0 22px 44px -28px rgba(42,26,61,0.24)',
+        background: '#F9F4DC',
+        border: '1px solid rgba(15,15,15,0.06)',
       }}
     >
       <span
@@ -107,12 +109,13 @@ export function EmptyState({
         className="pointer-events-none absolute -left-16 -top-20 h-56 w-56 rounded-full"
         style={{
           background:
-            'radial-gradient(circle, rgba(42,26,61,0.16) 0%, rgba(42,26,61,0) 60%)',
+            'radial-gradient(circle, rgba(244,217,61,0.32) 0%, rgba(244,217,61,0) 60%)',
         }}
       />
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-primary/35 to-transparent"
+        className="pointer-events-none absolute inset-x-10 top-0 h-px"
+        style={{ background: 'linear-gradient(to right, transparent, rgba(15,15,15,0.18), transparent)' }}
       />
 
       <div
@@ -124,16 +127,20 @@ export function EmptyState({
         <div className="flex min-w-0 flex-col">
           <VisualChip Icon={Icon} />
           <h2
-            className="mt-5 text-[26px] leading-[1.06] tracking-tight text-foreground sm:text-[30px]"
+            className="mt-5 text-[28px] leading-[1.04] sm:text-[34px]"
             style={{
-              fontFamily: 'var(--font-instrument-serif), serif',
-              letterSpacing: '-.015em',
-              color: '#2A1A3D',
+              fontFamily: 'var(--font-instrument-serif), Georgia, serif',
+              letterSpacing: '-0.018em',
+              color: '#0F0F0F',
+              fontWeight: 400,
             }}
           >
             {title}
           </h2>
-          <p className="mt-2.5 max-w-[460px] text-[14px] leading-relaxed text-muted-foreground">
+          <p
+            className="mt-2.5 max-w-[460px] text-[14px] leading-relaxed"
+            style={{ color: '#3A3A3A' }}
+          >
             {description}
           </p>
 
@@ -142,29 +149,31 @@ export function EmptyState({
               {steps.map((s, i) => (
                 <li key={i} className="flex gap-3">
                   <span
-                    className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10.5px] font-bold text-white"
+                    className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10.5px] font-bold"
                     style={{
-                      background:
-                        'linear-gradient(140deg, #2A1A3D 0%, #120920 100%)',
-                      fontFamily:
-                        'var(--font-inter-tight), var(--font-inter), sans-serif',
+                      background: '#0F0F0F',
+                      color: '#FFFFFF',
+                      fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
                       boxShadow:
-                        '0 1px 0 rgba(255,255,255,0.18) inset, 0 4px 10px -4px rgba(42,26,61,0.55)',
+                        'inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 10px -4px rgba(15,15,15,0.45)',
                     }}
                   >
                     {i + 1}
                   </span>
                   <div className="min-w-0">
                     <p
-                      className="text-[13.5px] font-bold tracking-tight text-foreground"
+                      className="text-[13.5px] font-bold tracking-tight"
                       style={{
-                        fontFamily:
-                          'var(--font-inter-tight), var(--font-inter), sans-serif',
+                        fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
+                        color: '#0F0F0F',
                       }}
                     >
                       {s.title}
                     </p>
-                    <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted-foreground">
+                    <p
+                      className="mt-0.5 text-[12.5px] leading-relaxed"
+                      style={{ color: '#3A3A3A' }}
+                    >
                       {s.body}
                     </p>
                   </div>
@@ -219,24 +228,18 @@ function VisualChip({
   const iconSize = size === 'sm' ? 18 : 22
   return (
     <span
-      className="relative flex shrink-0 items-center justify-center rounded-2xl text-white"
+      className="relative flex shrink-0 items-center justify-center rounded-2xl"
       style={{
         width: dim,
         height: dim,
-        background:
-          'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
+        background: 'linear-gradient(170deg, #F9E97A 0%, #F4D93D 55%, #DCB91F 100%)',
         boxShadow:
-          '0 1px 0 rgba(255,255,255,0.18) inset, 0 10px 24px -12px rgba(42,26,61,0.55)',
+          'inset 0 1px 0 rgba(255,255,255,0.55), 0 10px 24px -12px rgba(15,15,15,0.30)',
+        color: '#0F0F0F',
+        border: '1px solid rgba(15,15,15,0.10)',
       }}
       aria-hidden
     >
-      <span
-        className="pointer-events-none absolute inset-1 rounded-[14px]"
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 45%)',
-        }}
-      />
       <Icon
         className="relative"
         style={{ width: iconSize, height: iconSize }}
@@ -261,15 +264,22 @@ function ActionRow({
     <>
       <Link
         href={href}
-        className="cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px]"
+        className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-[13px] font-semibold transition-transform hover:scale-[1.02]"
+        style={{
+          background: '#0F0F0F',
+          color: '#FFFFFF',
+          boxShadow:
+            'inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 12px -4px rgba(15,15,15,0.45)',
+        }}
       >
         {label}
-        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+        <ArrowRight className="h-3.5 w-3.5" />
       </Link>
       {secondaryLabel && secondaryHref ? (
         <Link
           href={secondaryHref}
-          className="text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          className="text-[13px] font-semibold transition-colors hover:opacity-80"
+          style={{ color: '#3A3A3A' }}
         >
           {secondaryLabel}
         </Link>
