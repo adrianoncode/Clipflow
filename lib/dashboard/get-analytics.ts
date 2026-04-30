@@ -60,6 +60,9 @@ export interface AnalyticsData {
   // Timeline
   contentByMonth: Array<{ month: string; count: number }>
   outputsByMonth: Array<{ month: string; count: number }>
+  /** Outputs created per day, last 7 days (oldest first). For the
+   *  dashboard's "Posts this week" bento card. */
+  outputsByDayLast7Days: Array<{ day: string; count: number }>
 
   // Breakdowns
   platformBreakdown: Record<string, number>
@@ -210,6 +213,23 @@ export async function getAnalytics(workspaceId: string): Promise<AnalyticsData> 
     const d = new Date()
     d.setMonth(d.getMonth() - i)
     months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
+  }
+
+  // Daily bucket for the last 7 days (rolling window ending today).
+  // Uses the same outputs array that the monthly bucket already iterated,
+  // so no extra query.
+  const dayKey = (iso: string): string => iso.slice(0, 10)
+  const outputsByDayMap: Record<string, number> = {}
+  for (const o of outputs) {
+    const day = dayKey(o.created_at)
+    outputsByDayMap[day] = (outputsByDayMap[day] ?? 0) + 1
+  }
+  const last7Days: string[] = []
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    d.setDate(d.getDate() - i)
+    last7Days.push(d.toISOString().slice(0, 10))
   }
 
   // ── Platform + state breakdown ─────────────────────────────────
@@ -448,6 +468,7 @@ export async function getAnalytics(workspaceId: string): Promise<AnalyticsData> 
   return {
     contentByMonth: months.map((m) => ({ month: m, count: contentByMonthMap[m] ?? 0 })),
     outputsByMonth: months.map((m) => ({ month: m, count: outputsByMonthMap[m] ?? 0 })),
+    outputsByDayLast7Days: last7Days.map((d) => ({ day: d, count: outputsByDayMap[d] ?? 0 })),
     platformBreakdown,
     stateBreakdown,
     topContent,
