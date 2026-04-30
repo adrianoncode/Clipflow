@@ -54,7 +54,7 @@ const PLATFORM_OPTIONS: PlatformOption[] = [
     Logo: LinkedInLogo,
     tileBg: 'linear-gradient(140deg, #0A66C2 0%, #074C8E 100%)',
   },
-  { value: 'custom', label: 'Custom', Logo: null, tileBg: 'linear-gradient(140deg, #2A1A3D 0%, #4A2A6E 100%)' },
+  { value: 'custom', label: 'Custom', Logo: null, tileBg: 'linear-gradient(140deg, #0F0F0F 0%, #2A2A2A 100%)' },
 ]
 
 function platformOption(value: string): PlatformOption {
@@ -67,7 +67,12 @@ function SubmitBtn() {
     <button
       type="submit"
       disabled={pending}
-      className="cf-btn-3d cf-btn-3d-primary inline-flex h-10 items-center gap-1.5 rounded-xl px-4 text-[13px] disabled:opacity-50"
+      className="inline-flex h-10 items-center gap-1.5 rounded-full px-5 text-[13px] font-semibold transition-transform hover:scale-[1.02] disabled:opacity-50"
+      style={{
+        background: '#0F0F0F',
+        color: '#FFFFFF',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 12px -4px rgba(15,15,15,0.45)',
+      }}
     >
       {pending ? (
         <>
@@ -339,27 +344,20 @@ function EmptyState() {
         aria-hidden
         className="pointer-events-none absolute -left-10 -top-12 h-32 w-32 rounded-full"
         style={{
-          background:
-            'radial-gradient(circle, rgba(42,26,61,0.14) 0%, rgba(42,26,61,0) 60%)',
+          background: 'radial-gradient(circle, rgba(244,217,61,0.20) 0%, rgba(244,217,61,0) 60%)',
         }}
       />
       <span
-        className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white"
+        className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
         style={{
-          background:
-            'linear-gradient(140deg, #2A1A3D 0%, #120920 60%, #2A1A3D 100%)',
+          background: 'linear-gradient(170deg, #F9E97A 0%, #F4D93D 55%, #DCB91F 100%)',
+          color: '#0F0F0F',
           boxShadow:
-            '0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 18px -8px rgba(42,26,61,0.55)',
+            'inset 0 1px 0 rgba(255,255,255,0.55), 0 8px 18px -8px rgba(15,15,15,0.30)',
+          border: '1px solid rgba(15,15,15,0.10)',
         }}
         aria-hidden
       >
-        <span
-          className="pointer-events-none absolute inset-1 rounded-[10px]"
-          style={{
-            background:
-              'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 45%)',
-          }}
-        />
         <Wand2 className="relative h-5 w-5" strokeWidth={1.7} />
       </span>
       <div className="relative max-w-md space-y-1">

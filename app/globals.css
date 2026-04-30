@@ -555,68 +555,68 @@ section[id="social-proof"] {
   pointer-events: none;
 }
 
-/* Primary — brand plum gradient (#3A2552 → #1A0F30) with chartreuse
-   text. Lime inset border + lime specular bloom — same lit-from-lime
-   feel as the landing-page button. Top of the gradient is brighter
-   than the canonical lv2-primary so the button reads as "plum brand"
-   instead of "black slab" at small sizes. The lime inset ring is
-   bumped to .28 (was .18) so the brand cue actually registers. */
+/* Primary — Crextio charcoal pill with white text. Yellow inset ring
+   for a subtle brand glow, soft yellow specular bloom on hover. The
+   silhouette is the same chunky 3D pill as before; only the colors
+   match the new ink + yellow palette so legacy `cf-btn-3d-primary`
+   call-sites get migrated for free. */
 .cf-btn-3d-primary {
-  background: linear-gradient(180deg, #3A2552 0%, #1A0F30 100%);
-  color: #D6FF3E;
+  background: linear-gradient(180deg, #2A2A2A 0%, #0F0F0F 100%);
+  color: #FFFFFF;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.14),
-    inset 0 0 0 1px rgba(214,255,62,.28),
+    inset 0 0 0 1px rgba(244,217,61,.30),
     inset 0 -1px 0 rgba(0,0,0,.55),
     inset 0 -3px 6px -2px rgba(0,0,0,.40),
-    0 1px 2px rgba(42,26,61,.18),
-    0 4px 8px -2px rgba(42,26,61,.40),
-    0 14px 28px -10px rgba(42,26,61,.45);
+    0 1px 2px rgba(15,15,15,.18),
+    0 4px 8px -2px rgba(15,15,15,.40),
+    0 14px 28px -10px rgba(15,15,15,.45);
 }
 .cf-btn-3d-primary::before {
-  background: radial-gradient(120% 90% at 50% -30%, rgba(214,255,62,.18) 0%, transparent 60%);
+  background: radial-gradient(120% 90% at 50% -30%, rgba(244,217,61,.20) 0%, transparent 60%);
   opacity: .85;
   transition: opacity .25s ease;
 }
 .cf-btn-3d-primary:hover {
   transform: translateY(-1px);
-  background: linear-gradient(180deg, #4a3066 0%, #1A0F30 100%);
+  background: linear-gradient(180deg, #3A3A3A 0%, #0F0F0F 100%);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.18),
-    inset 0 0 0 1px rgba(214,255,62,.45),
+    inset 0 0 0 1px rgba(244,217,61,.50),
     inset 0 -1px 0 rgba(0,0,0,.55),
     inset 0 -3px 6px -2px rgba(0,0,0,.40),
-    0 2px 4px rgba(42,26,61,.20),
-    0 8px 14px -2px rgba(42,26,61,.45),
-    0 22px 38px -10px rgba(42,26,61,.50),
-    0 0 0 6px rgba(214,255,62,.10);
+    0 2px 4px rgba(15,15,15,.20),
+    0 8px 14px -2px rgba(15,15,15,.45),
+    0 22px 38px -10px rgba(15,15,15,.50),
+    0 0 0 6px rgba(244,217,61,.12);
 }
 .cf-btn-3d-primary:hover::before { opacity: 1; }
 .cf-btn-3d-primary:active {
   transform: translateY(1px);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.06),
-    inset 0 0 0 1px rgba(214,255,62,.18),
+    inset 0 0 0 1px rgba(244,217,61,.20),
     inset 0 -1px 0 rgba(0,0,0,.45),
     inset 0 2px 4px rgba(0,0,0,.40),
-    0 1px 1px rgba(42,26,61,.30),
-    0 2px 4px -1px rgba(42,26,61,.30);
+    0 1px 1px rgba(15,15,15,.30),
+    0 2px 4px -1px rgba(15,15,15,.30);
   transition: box-shadow .05s ease, transform .05s ease;
 }
 
-/* Accent — chartreuse on accent-ink (#1a2000) text. The "Upgrade /
-   Save" variant. Matches the landing-page accent color exactly. */
+/* Accent — Crextio yellow pill with charcoal text. The "Upgrade /
+   Save" variant. Used on landing CTAs and conversion-critical
+   spots. */
 .cf-btn-3d-accent {
-  background: linear-gradient(180deg, #E5FF6A 0%, #BFE82C 100%);
-  color: #1a2000;
+  background: linear-gradient(180deg, #F9E97A 0%, #DCB91F 100%);
+  color: #0F0F0F;
   font-weight: 800;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.55),
-    inset 0 -1px 0 rgba(74,90,0,.45),
-    inset 0 -3px 6px -2px rgba(74,90,0,.30),
-    0 1px 1px rgba(74,90,0,.30),
-    0 4px 8px -2px rgba(74,90,0,.35),
-    0 14px 28px -10px rgba(74,90,0,.35);
+    inset 0 -1px 0 rgba(120,90,0,.45),
+    inset 0 -3px 6px -2px rgba(120,90,0,.30),
+    0 1px 1px rgba(120,90,0,.30),
+    0 4px 8px -2px rgba(120,90,0,.35),
+    0 14px 28px -10px rgba(120,90,0,.35);
 }
 .cf-btn-3d-accent::before {
   background: radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,.55) 0%, transparent 55%);

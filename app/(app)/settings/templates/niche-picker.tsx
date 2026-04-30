@@ -197,15 +197,15 @@ export function NichePicker({ workspaceId, initialNiche }: NichePickerProps) {
                   ? {
                       border: '1.5px solid transparent',
                       backgroundImage:
-                        'linear-gradient(var(--card), var(--card)), linear-gradient(140deg, #2A1A3D 0%, #120920 70%, #2A1A3D 100%)',
+                        'linear-gradient(var(--card), var(--card)), linear-gradient(140deg, #F4D93D 0%, #DCB91F 70%, #F4D93D 100%)',
                       backgroundOrigin: 'border-box',
                       backgroundClip: 'padding-box, border-box',
                       boxShadow:
-                        '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 14px 32px -18px rgba(42,26,61,0.30)',
+                        'inset 0 1px 0 rgba(255,255,255,0.55), 0 14px 32px -18px rgba(220,185,31,0.40)',
                     }
                   : {
                       boxShadow:
-                        '0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(42,26,61,0.04), 0 12px 28px -22px rgba(42,26,61,0.18)',
+                        'inset 0 1px 0 rgba(255,255,255,0.55), 0 12px 28px -22px rgba(15,15,15,0.10)',
                     }
               }
             >
