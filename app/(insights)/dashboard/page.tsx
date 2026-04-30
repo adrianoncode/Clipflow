@@ -3,7 +3,6 @@ import { cookies } from 'next/headers'
 import {
   ArrowRight,
   ArrowUpRight,
-  BarChart3,
   CalendarDays,
   CheckCircle2,
   ChevronDown,
@@ -19,8 +18,6 @@ import {
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getAnalytics } from '@/lib/dashboard/get-analytics'
 import { createClient } from '@/lib/supabase/server'
-import { EmptyState } from '@/components/ui/empty-state'
-import { AnalyticsEmptyPreview } from '@/components/analytics/analytics-empty-preview'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Dashboard' }
@@ -113,57 +110,6 @@ export default async function DashboardPage() {
   const totalScheduled = analytics.publishingStats.scheduled
   const totalFailed = analytics.publishingStats.failed
   const hasAnyData = analytics.totalContent > 0 || analytics.totalOutputs > 0
-
-  // ─── Pristine empty state ──────────────────────────────────────────────
-  if (!hasAnyData) {
-    return (
-      <div
-        className="min-h-full p-4 sm:p-8"
-        style={{ background: PALETTE.pageBg }}
-      >
-        <div
-          className="mx-auto w-full max-w-6xl space-y-6 rounded-[28px] p-6 sm:p-10"
-          style={{
-            background: PALETTE.cardCream,
-            border: `1px solid ${PALETTE.border}`,
-          }}
-        >
-          <div>
-            <p
-              className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em]"
-              style={{
-                color: PALETTE.muted,
-                fontFamily: 'var(--font-jetbrains-mono), monospace',
-              }}
-            >
-              {currentWorkspace.name} · Insights
-            </p>
-            <h1
-              className="text-[clamp(38px,5.5vw,60px)] leading-[0.98]"
-              style={{
-                fontFamily: 'var(--font-instrument-serif), Georgia, serif',
-                color: PALETTE.ink,
-                fontWeight: 400,
-                letterSpacing: '-0.02em',
-              }}
-            >
-              Welcome in, {currentWorkspace.name}.
-            </h1>
-          </div>
-          <EmptyState
-            icon={BarChart3}
-            title="Where your numbers will live."
-            description="Velocity, approval rate, views, engagement — every metric below populates the moment you ship your first post. Until then, here's the shape of the dashboard."
-            actionLabel="Add your first video"
-            actionHref={`/workspace/${currentWorkspace.id}/content/new`}
-            secondaryLabel="See the playbook →"
-            secondaryHref="/playbook/your-first-24-hours-with-clipflow"
-            preview={<AnalyticsEmptyPreview />}
-          />
-        </div>
-      </div>
-    )
-  }
 
   // ─── Derived figures ───────────────────────────────────────────────────
   const importsDelta = analytics.velocityContent.deltaPct ?? 0
