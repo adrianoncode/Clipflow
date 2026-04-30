@@ -53,6 +53,7 @@ export default async function InsightsLayout({ children }: { children: React.Rea
         <InsightsTopNav
           workspaces={workspaces}
           currentWorkspaceId={currentWorkspace.id}
+          userEmail={user.email ?? ''}
         />
         <main id="main-content" className="px-4 pb-8 sm:px-8">
           {children}

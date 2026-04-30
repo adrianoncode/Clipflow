@@ -30,11 +30,14 @@ const NAV_ITEMS: Array<{ label: string; href: (workspaceId: string) => string }>
 export function InsightsTopNav({
   workspaces,
   currentWorkspaceId,
+  userEmail,
 }: {
   workspaces: WorkspaceSummary[]
   currentWorkspaceId: string
+  userEmail: string
 }) {
   const pathname = usePathname()
+  const initial = (userEmail.trim().charAt(0) || 'C').toUpperCase()
 
   return (
     <header className="px-4 pt-4 sm:px-8 sm:pt-6">
@@ -124,12 +127,16 @@ export function InsightsTopNav({
           <Link
             href="/settings/profile"
             aria-label="Account"
-            className="block h-9 w-9 rounded-full transition-transform hover:scale-105"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[13px] font-semibold transition-transform hover:scale-105"
             style={{
               background: 'linear-gradient(135deg, #F5C75E, #E8756B)',
               boxShadow: '0 0 0 1.5px rgba(15,15,15,0.06)',
+              color: '#0F0F0F',
+              fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
             }}
-          />
+          >
+            {initial}
+          </Link>
         </div>
       </div>
     </header>
