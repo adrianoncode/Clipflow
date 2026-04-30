@@ -585,26 +585,37 @@ function ApprovalDonutCard({
 
       <div className="relative mx-auto flex h-[110px] w-[110px] items-center justify-center">
         <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90" aria-hidden>
+          {/* Solid muted track — visible even at 0% so the ring shape
+              always reads as "approval rate ring" rather than empty space. */}
           <circle
             cx="50"
             cy="50"
             r={radius}
             fill="none"
-            stroke={PALETTE.trackBg}
+            stroke="rgba(15,15,15,0.10)"
             strokeWidth="7"
             strokeLinecap="round"
-            strokeDasharray="2 5"
           />
-          <circle
-            cx="50"
-            cy="50"
-            r={radius}
-            fill="none"
-            stroke={PALETTE.yellow}
-            strokeWidth="7"
-            strokeLinecap="round"
-            strokeDasharray={`${dash} ${circumference - dash}`}
-          />
+          {/* Yellow fill — the actual approval percentage. Linear gradient
+              gives the arc dimension instead of a flat highlight. */}
+          <defs>
+            <linearGradient id="donut-fill" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={PALETTE.yellowSoft} />
+              <stop offset="100%" stopColor={PALETTE.yellowDeep} />
+            </linearGradient>
+          </defs>
+          {pct > 0 && (
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="none"
+              stroke="url(#donut-fill)"
+              strokeWidth="7"
+              strokeLinecap="round"
+              strokeDasharray={`${dash} ${circumference - dash}`}
+            />
+          )}
         </svg>
         <div className="absolute flex flex-col items-center">
           <span
@@ -780,8 +791,13 @@ function FunnelStackCard({
   )
 }
 
-// FunnelLadderRow — one stage of the true funnel. Width = absolute %
-// of the parent track (decreasing as drafts drop off), label sits inside.
+// FunnelLadderRow — one stage of the true funnel.
+//
+// Layout: [fixed-width label LEFT] [bar fills remaining row · width = pct]
+// The label always lives outside the bar, so a 0%-bar still reads cleanly
+// instead of showing truncated "APPROVED 0%" inside a 28%-wide bar.
+// Percentage chip floats inside the bar when it fits, falls outside on
+// the right when the bar is too narrow.
 function FunnelLadderRow({
   label,
   widthPct,
@@ -797,38 +813,58 @@ function FunnelLadderRow({
       : variant === 'dark'
         ? PALETTE.charcoal
         : 'rgba(15, 15, 15, 0.22)'
-  const labelColor = variant === 'dark' ? '#FFFFFF' : PALETTE.ink
-  // Minimum visible width so a 0% bar still shows the label.
-  const w = Math.max(28, Math.min(100, widthPct))
+  const pctColor = variant === 'dark' ? '#FFFFFF' : PALETTE.ink
+  // Always show at least a sliver — readers expect to see "the bar exists".
+  const w = Math.max(4, Math.min(100, widthPct))
+  // Below ~18% the bar is too narrow for the percent chip to sit inside.
+  const pctOutside = w < 18
+
   return (
-    <div className="flex h-9 w-full items-center" style={{ background: 'transparent' }}>
-      <div
-        className="flex h-full items-center rounded-full px-3 transition-all duration-700"
-        style={{
-          width: `${w}%`,
-          background: fill,
-          boxShadow: variant === 'yellow'
-            ? 'inset 0 1px 0 rgba(255,255,255,0.45), 0 1px 2px rgba(15,15,15,0.05)'
-            : variant === 'dark'
-              ? 'inset 0 1px 0 rgba(255,255,255,0.06)'
-              : undefined,
-        }}
+    <div className="flex items-center gap-3">
+      <span
+        className="w-16 shrink-0 text-[9.5px] font-semibold uppercase tracking-[0.16em]"
+        style={{ color: PALETTE.inkSoft }}
       >
-        <span
-          className="text-[10px] font-semibold uppercase tracking-[0.14em]"
-          style={{ color: labelColor }}
-        >
-          {label}
-        </span>
-        <span
-          className="ml-auto text-[10px] font-semibold tabular-nums"
+        {label}
+      </span>
+      <div className="relative h-7 flex-1">
+        <div
+          className="absolute inset-y-0 left-0 flex items-center justify-end rounded-full px-2.5 transition-all duration-700"
           style={{
-            color: labelColor,
-            fontFamily: 'var(--font-jetbrains-mono), monospace',
+            width: `${w}%`,
+            background: fill,
+            boxShadow:
+              variant === 'yellow'
+                ? 'inset 0 1px 0 rgba(255,255,255,0.45), 0 1px 2px rgba(15,15,15,0.05)'
+                : variant === 'dark'
+                  ? 'inset 0 1px 0 rgba(255,255,255,0.06)'
+                  : undefined,
           }}
         >
-          {widthPct}%
-        </span>
+          {!pctOutside && (
+            <span
+              className="text-[10px] font-semibold tabular-nums"
+              style={{
+                color: pctColor,
+                fontFamily: 'var(--font-jetbrains-mono), monospace',
+              }}
+            >
+              {widthPct}%
+            </span>
+          )}
+        </div>
+        {pctOutside && (
+          <span
+            className="absolute top-1/2 -translate-y-1/2 text-[10px] font-semibold tabular-nums"
+            style={{
+              left: `calc(${w}% + 8px)`,
+              color: PALETTE.inkSoft,
+              fontFamily: 'var(--font-jetbrains-mono), monospace',
+            }}
+          >
+            {widthPct}%
+          </span>
+        )}
       </div>
     </div>
   )
