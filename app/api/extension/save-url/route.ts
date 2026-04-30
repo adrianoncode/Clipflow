@@ -1,31 +1,70 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { headers } from 'next/headers'
+import { z } from 'zod'
 
+import { checkRateLimit, extractClientIp, RATE_LIMITS } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 
+// Strict input schema. URL must be http(s) — no `javascript:`, `data:`, or
+// `file:` schemes (those would render to dashboards as XSS-vector links
+// later). Title is bounded to keep the row small.
+const SaveUrlSchema = z.object({
+  url: z
+    .string()
+    .url()
+    .max(2048)
+    .refine(
+      (u) => {
+        try {
+          const parsed = new URL(u)
+          return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+        } catch {
+          return false
+        }
+      },
+      { message: 'Only http(s) URLs are allowed' },
+    ),
+  title: z.string().max(500).optional(),
+  workspaceId: z.string().uuid(),
+})
+
 export async function POST(req: NextRequest) {
-  // Validate Authorization header
+  // 1. IP rate limit BEFORE we touch Supabase auth — without this, an
+  // attacker can flood arbitrary Bearer tokens at this endpoint and burn
+  // through Supabase Auth's quota even when none of them are valid.
+  const ip = extractClientIp(headers())
+  const ipLimit = await checkRateLimit(`save-url:ip:${ip}`, 30, 60_000)
+  if (!ipLimit.ok) {
+    return NextResponse.json(
+      { ok: false, error: 'Too many requests' },
+      { status: 429 },
+    )
+  }
+
   const auth = req.headers.get('authorization')
   if (!auth?.startsWith('Bearer ')) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
   }
 
-  let body: { url?: string; title?: string; workspaceId?: string }
+  let raw: unknown
   try {
-    body = await req.json()
+    raw = await req.json()
   } catch {
     return NextResponse.json({ ok: false, error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { url, title, workspaceId } = body
-
-  if (!url || !workspaceId) {
-    return NextResponse.json({ ok: false, error: 'Missing url or workspaceId' }, { status: 400 })
+  const parsed = SaveUrlSchema.safeParse(raw)
+  if (!parsed.success) {
+    return NextResponse.json(
+      { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid request' },
+      { status: 400 },
+    )
   }
+  const { url, title, workspaceId } = parsed.data
 
   const token = auth.replace('Bearer ', '')
   const supabase = createClient()
 
-  // Verify the token by getting user
   const {
     data: { user },
     error: authError,
@@ -35,7 +74,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Invalid token' }, { status: 401 })
   }
 
-  // Verify workspace membership
+  // 2. Per-user content-create rate limit AFTER token verification.
+  // Without this, a single compromised token could create unlimited
+  // content_items rows.
+  const userLimit = await checkRateLimit(
+    `save-url:user:${user.id}`,
+    RATE_LIMITS.contentCreate.limit,
+    RATE_LIMITS.contentCreate.windowMs,
+  )
+  if (!userLimit.ok) {
+    return NextResponse.json(
+      { ok: false, error: 'Too many requests for this user' },
+      { status: 429 },
+    )
+  }
+
+  // Membership check + role gate. Read-only roles (viewer/client) can't
+  // seed content into the workspace from the extension — only owner /
+  // editor / reviewer.
   const { data: member } = await supabase
     .from('workspace_members')
     .select('role')
@@ -46,8 +102,13 @@ export async function POST(req: NextRequest) {
   if (!member) {
     return NextResponse.json({ ok: false, error: 'Not a workspace member' }, { status: 403 })
   }
+  if (!['owner', 'editor', 'reviewer'].includes(member.role)) {
+    return NextResponse.json(
+      { ok: false, error: 'This role cannot save content' },
+      { status: 403 },
+    )
+  }
 
-  // Create content item
   const { data: item, error } = await supabase
     .from('content_items')
     .insert({

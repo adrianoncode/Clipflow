@@ -89,15 +89,30 @@ export async function POST(req: NextRequest) {
   const results: Array<{ id: string; platform: string; ok: boolean; error?: string }> = []
 
   for (const post of duePosts) {
-    // Mark as publishing (optimistic lock — prevents duplicate processing)
-    const { error: lockError } = await supabase
+    // Mark as publishing (optimistic lock — prevents duplicate processing).
+    // CRITICAL: read the affected row count. Without `.select('id')` the
+    // `lockError` is null when the predicate `eq('status','scheduled')`
+    // matches zero rows (e.g. another cron worker already grabbed it),
+    // and we'd happily double-publish. We require exactly one row to
+    // have flipped — anything else means we lost the race and must skip.
+    const { data: locked, error: lockError } = await supabase
       .from('scheduled_posts')
       .update({ status: 'publishing' })
       .eq('id', post.id)
       .eq('status', 'scheduled') // only if still scheduled
+      .select('id')
 
     if (lockError) {
       results.push({ id: post.id, platform: post.platform, ok: false, error: 'Lock failed' })
+      continue
+    }
+    if (!Array.isArray(locked) || locked.length === 0) {
+      // Another worker already grabbed it. Skip silently — they'll
+      // publish, and our second pass on this post would double-post.
+      log.warn('publish-cron: lost optimistic lock, skipping', {
+        postId: post.id,
+        platform: post.platform,
+      })
       continue
     }
 

@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { randomBytes } from 'node:crypto'
 
 import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import {
@@ -52,7 +53,18 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const pending = JSON.stringify({ workspaceId, integrationId })
+  // Bind the OAuth flow to (a) the current user id and (b) a one-shot
+  // nonce. The callback verifies both before persisting the connection.
+  // Without this, an attacker who could trick a logged-in victim into
+  // visiting our callback URL with attacker-supplied connection IDs
+  // could write the attacker's connection into the victim's workspace.
+  const nonce = randomBytes(16).toString('hex')
+  const pending = JSON.stringify({
+    workspaceId,
+    integrationId,
+    nonce,
+    userId: check.userId,
+  })
   const response = await initiateComposioConnection(workspaceId, integrationId)
 
   if ('error' in response) {
@@ -70,6 +82,7 @@ export async function GET(req: NextRequest) {
     maxAge: 600,
     path: '/',
     sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
   })
   return redirect
 }

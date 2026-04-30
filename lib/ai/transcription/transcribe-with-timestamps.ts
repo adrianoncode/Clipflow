@@ -68,8 +68,37 @@ export async function transcribeWithTimestamps(
     }
 
     if (!response.ok) {
-      const errText = await response.text().catch(() => String(response.status))
-      return { ok: false, error: `Whisper error ${response.status}: ${errText}` }
+      // Drain the body to free the connection but never reflect it back —
+      // OpenAI's 401 occasionally echoes the supplied Authorization header,
+      // so any error text we returned would be a plaintext-key leak vector.
+      // Match the status → user-facing-message mapping used by `whisper.ts`.
+      await response.text().catch(() => undefined)
+      switch (response.status) {
+        case 401:
+          return {
+            ok: false,
+            error:
+              'OpenAI rejected the key saved for this workspace. Update it in Settings → AI Keys.',
+          }
+        case 413:
+          return { ok: false, error: 'This file exceeds the 25MB Whisper limit.' }
+        case 415:
+          return {
+            ok: false,
+            error:
+              "Whisper doesn't support this file format. Try MP3, MP4, M4A, MOV, WAV, WEBM, or OGG.",
+          }
+        case 429:
+          return {
+            ok: false,
+            error: 'OpenAI rate-limited the transcription. Try again in a moment.',
+          }
+        default:
+          return {
+            ok: false,
+            error: `OpenAI returned an unexpected error (${response.status}).`,
+          }
+      }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

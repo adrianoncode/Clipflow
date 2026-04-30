@@ -4,19 +4,35 @@ import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe/client'
 import { upsertSubscription } from '@/app/(app)/billing/actions'
 import { PLANS, type BillingPlan } from '@/lib/billing/plans'
-import { confirmReferralAndRewardReferrer } from '@/lib/referrals/confirm-referral'
+import {
+  confirmReferralAndRewardReferrer,
+  reverseReferral,
+} from '@/lib/referrals/confirm-referral'
+import { markEventProcessed } from '@/lib/stripe/event-dedup'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendPaymentFailedEmail } from '@/lib/email/send-payment-failed'
 import { log } from '@/lib/log'
 
+// Pin the runtime so request-body bytes match what Stripe signed —
+// signature verification is byte-exact. Edge runtime can re-encode on
+// some platforms; Node is the safe choice. `force-dynamic` disables any
+// caching layer that could replay an old body.
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 const RELEVANT_EVENTS = new Set([
+  // Subscription lifecycle
   'checkout.session.completed',
+  'customer.subscription.created',
   'customer.subscription.updated',
   'customer.subscription.deleted',
-  // Dunning: Stripe notifies us when a charge fails. We fire a
-  // proactive email so the user can update their card before the
-  // subscription actually gets paused.
+  // Invoice lifecycle — invoice.paid is the moment of truth for referral
+  // crediting (money actually moved). payment_failed triggers dunning.
+  'invoice.paid',
   'invoice.payment_failed',
+  // Reversal triggers
+  'charge.refunded',
+  'charge.dispute.created',
 ])
 
 /**
@@ -37,13 +53,6 @@ function planFromPriceId(priceId: string): BillingPlan | null {
   return envMap[priceId] ?? null
 }
 
-/**
- * Fires when Stripe fails to charge a card. We look up the workspace
- * owner by customer ID, generate a billing-portal link for them, and
- * send a proactive email pointing at it. The subscription status row
- * in our DB will separately transition to `past_due` via the
- * subscription.updated event — we don't touch it here.
- */
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
   const customerId =
     typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
@@ -59,18 +68,17 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
     .eq('stripe_customer_id', customerId)
     .maybeSingle()
 
-  if (!subRow) return
+  if (!subRow) {
+    log.warn('stripe payment_failed: no subscription row for customer', { customerId })
+    return
+  }
   const workspace = subRow.workspaces as unknown as { name: string; owner_id: string } | null
   if (!workspace) return
 
-  // Owner email from auth
   const { data: ownerData } = await admin.auth.admin.getUserById(workspace.owner_id)
   const ownerEmail = ownerData?.user?.email
   if (!ownerEmail) return
 
-  // Create a portal session so the email link drops them directly onto
-  // their payment methods. Stripe expires these quickly which is fine —
-  // the email is meant to be clicked soon anyway.
   let portalUrl = 'https://clipflow.to/billing'
   try {
     const portal = await stripe.billingPortal.sessions.create({
@@ -79,7 +87,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
     })
     portalUrl = portal.url
   } catch {
-    // fall back to in-app billing page
+    /* fall back to in-app billing page */
   }
 
   const nextAttemptAt =
@@ -97,8 +105,21 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
 }
 
 async function handleSubscriptionEvent(sub: Stripe.Subscription) {
-  const workspaceId =
-    (sub.metadata?.workspace_id as string | undefined) ?? ''
+  let workspaceId = (sub.metadata?.workspace_id as string | undefined) ?? ''
+
+  if (!workspaceId) {
+    // Recovery path: customer.subscription.created can fire before
+    // checkout.session.completed copies the metadata over. Look up by
+    // customer id — we may have the workspace mapped already from a
+    // prior subscription on the same customer.
+    const admin = createAdminClient()
+    const { data: existing } = await admin
+      .from('subscriptions')
+      .select('workspace_id')
+      .eq('stripe_customer_id', sub.customer as string)
+      .maybeSingle()
+    workspaceId = existing?.workspace_id ?? ''
+  }
 
   if (!workspaceId) {
     log.warn('stripe webhook subscription missing workspace_id metadata', { subscriptionId: sub.id })
@@ -109,9 +130,6 @@ async function handleSubscriptionEvent(sub: Stripe.Subscription) {
   const plan = planFromPriceId(priceId)
 
   if (!plan) {
-    // Don't touch the DB on an unknown price ID. Safer to leave the
-    // existing row intact than downgrade a real paying customer
-    // because STRIPE_PRICE_* envs are missing on this deploy.
     log.error('stripe webhook unknown price ID — skipping subscription update', undefined, {
       priceId,
       subscriptionId: sub.id,
@@ -126,9 +144,92 @@ async function handleSubscriptionEvent(sub: Stripe.Subscription) {
     stripeSubscriptionId: sub.id,
     plan,
     status: sub.status,
-    currentPeriodEnd: new Date((sub as Stripe.Subscription & { current_period_end: number }).current_period_end * 1000),
+    currentPeriodEnd: new Date(
+      (sub as Stripe.Subscription & { current_period_end: number }).current_period_end * 1000,
+    ),
     cancelAtPeriodEnd: sub.cancel_at_period_end,
   })
+}
+
+/**
+ * `invoice.paid` is the canonical "money moved" signal. We use the FIRST
+ * paid invoice on a subscription (`billing_reason === 'subscription_create'`)
+ * as the gate for crediting the referrer — checkout completion alone is
+ * not sufficient (SCA can fail, customer can immediately cancel).
+ */
+async function handleInvoicePaid(invoice: Stripe.Invoice) {
+  if (invoice.billing_reason !== 'subscription_create') return
+
+  // The `subscription` field on Stripe.Invoice was deprecated/relocated in
+  // recent API versions; the runtime payload still includes it for
+  // subscription-billed invoices. Cast pragmatically.
+  type InvoiceWithSub = Stripe.Invoice & {
+    subscription?: string | { id: string } | null
+  }
+  const subRef = (invoice as InvoiceWithSub).subscription
+  const subscriptionId = typeof subRef === 'string' ? subRef : subRef?.id
+  if (!subscriptionId) return
+
+  // Look up the subscription to get metadata.referral_id. Don't trust
+  // invoice.metadata — referrals attach metadata to the subscription, not
+  // the invoice.
+  const sub = await stripe.subscriptions.retrieve(subscriptionId)
+  const referralId = sub.metadata?.referral_id as string | undefined
+  if (!referralId) return
+
+  await confirmReferralAndRewardReferrer({
+    referralId,
+    paidInvoiceId: invoice.id ?? '',
+  })
+}
+
+/**
+ * Refund / dispute / cancellation reversal path. We look up the referral
+ * by the invoice or subscription that originated it and trigger the
+ * compensating action — reverseReferral checks confirmed-status and
+ * window before doing anything, so it's safe to call on any refund.
+ */
+async function handleReversalTrigger(params: {
+  reason: 'refund' | 'dispute' | 'subscription_canceled'
+  invoiceId?: string | null
+  subscriptionId?: string | null
+}) {
+  const admin = createAdminClient()
+
+  // Match by paid_invoice_id first (most precise), then by subscription
+  // → workspace → referee.
+  if (params.invoiceId) {
+    const { data: byInvoice } = await admin
+      .from('referrals')
+      .select('id')
+      .eq('paid_invoice_id', params.invoiceId)
+      .maybeSingle()
+    if (byInvoice?.id) {
+      await reverseReferral({ referralId: byInvoice.id, reason: params.reason })
+      return
+    }
+  }
+
+  if (params.subscriptionId) {
+    // Subscription → workspace → referee_user_id → referral
+    const { data: subRow } = await admin
+      .from('subscriptions')
+      .select('workspace_id, workspaces(owner_id)')
+      .eq('stripe_subscription_id', params.subscriptionId)
+      .maybeSingle()
+    const workspace = subRow?.workspaces as unknown as { owner_id: string } | null
+    if (workspace?.owner_id) {
+      const { data: byReferee } = await admin
+        .from('referrals')
+        .select('id')
+        .eq('referee_user_id', workspace.owner_id)
+        .eq('status', 'confirmed')
+        .maybeSingle()
+      if (byReferee?.id) {
+        await reverseReferral({ referralId: byReferee.id, reason: params.reason })
+      }
+    }
+  }
 }
 
 export async function POST(req: Request) {
@@ -150,6 +251,15 @@ export async function POST(req: Request) {
     return new Response('Ignored', { status: 200 })
   }
 
+  // Event-ID dedup. Stripe retries deliveries for up to 3 days on
+  // transient failures; without this, every replay re-runs side effects
+  // (referral credit, coupon attach) and silently overwrites unrelated
+  // discounts. See lib/stripe/event-dedup.ts.
+  const alreadyProcessed = await markEventProcessed(event.id, event.type)
+  if (alreadyProcessed) {
+    return new Response('OK (already processed)', { status: 200 })
+  }
+
   try {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session
@@ -158,30 +268,77 @@ export async function POST(req: Request) {
         // Prefer metadata from subscription, fall back to session
         if (!sub.metadata.workspace_id && session.metadata?.workspace_id) {
           ;(sub.metadata as Record<string, string>).workspace_id = session.metadata.workspace_id
+          // Persist the metadata back to Stripe so subsequent
+          // subscription.updated events arrive with workspace_id intact —
+          // otherwise handleSubscriptionEvent will warn-and-skip.
+          try {
+            await stripe.subscriptions.update(sub.id, {
+              metadata: { ...sub.metadata, workspace_id: session.metadata.workspace_id },
+            })
+          } catch (err) {
+            log.error('stripe webhook: failed to persist workspace_id metadata', err, {
+              subscriptionId: sub.id,
+            })
+          }
+        }
+        // Persist the referral_id likewise — the invoice.paid handler
+        // reads it from the subscription, so it must survive replays.
+        if (!sub.metadata.referral_id && session.metadata?.referral_id) {
+          ;(sub.metadata as Record<string, string>).referral_id = session.metadata.referral_id
+          try {
+            await stripe.subscriptions.update(sub.id, {
+              metadata: { ...sub.metadata, referral_id: session.metadata.referral_id },
+            })
+          } catch (err) {
+            log.error('stripe webhook: failed to persist referral_id metadata', err, {
+              subscriptionId: sub.id,
+            })
+          }
         }
         await handleSubscriptionEvent(sub)
-
-        // Referral: if this checkout started as a referee conversion,
-        // mark the referral confirmed and push the coupon onto the
-        // referrer's existing subscription(s). Metadata was copied from
-        // the checkout session into the subscription when created.
-        const referralId =
-          (sub.metadata?.referral_id as string | undefined) ??
-          (session.metadata?.referral_id as string | undefined)
-        if (referralId) {
-          await confirmReferralAndRewardReferrer({ referralId })
-        }
+        // No referral credit here — that moves to invoice.paid.
       }
     } else if (
-      event.type === 'customer.subscription.updated' ||
-      event.type === 'customer.subscription.deleted'
+      event.type === 'customer.subscription.created' ||
+      event.type === 'customer.subscription.updated'
     ) {
       await handleSubscriptionEvent(event.data.object as Stripe.Subscription)
+    } else if (event.type === 'customer.subscription.deleted') {
+      const sub = event.data.object as Stripe.Subscription
+      await handleSubscriptionEvent(sub)
+      await handleReversalTrigger({
+        reason: 'subscription_canceled',
+        subscriptionId: sub.id,
+      })
+    } else if (event.type === 'invoice.paid') {
+      await handleInvoicePaid(event.data.object as Stripe.Invoice)
     } else if (event.type === 'invoice.payment_failed') {
       await handlePaymentFailed(event.data.object as Stripe.Invoice)
+    } else if (event.type === 'charge.refunded') {
+      const charge = event.data.object as Stripe.Charge
+      type ChargeWithInvoice = Stripe.Charge & {
+        invoice?: string | { id: string } | null
+      }
+      const invRef = (charge as ChargeWithInvoice).invoice
+      const invoiceId = typeof invRef === 'string' ? invRef : invRef?.id
+      await handleReversalTrigger({ reason: 'refund', invoiceId })
+    } else if (event.type === 'charge.dispute.created') {
+      const dispute = event.data.object as Stripe.Dispute
+      const charge =
+        typeof dispute.charge === 'string'
+          ? await stripe.charges.retrieve(dispute.charge)
+          : dispute.charge
+      type ChargeWithInvoice = Stripe.Charge & {
+        invoice?: string | { id: string } | null
+      }
+      const invRef = (charge as ChargeWithInvoice).invoice
+      const invoiceId = typeof invRef === 'string' ? invRef : invRef?.id
+      await handleReversalTrigger({ reason: 'dispute', invoiceId })
     }
   } catch (err) {
-    log.error('stripe webhook handler error', err)
+    log.error('stripe webhook handler error', err, { eventType: event.type, eventId: event.id })
+    // Return 5xx so Stripe retries — the dedup table will skip the work
+    // we already completed on the next attempt.
     return new Response('Handler error', { status: 500 })
   }
 

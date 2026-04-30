@@ -12,7 +12,7 @@ import { normalizeReferralCode } from '@/lib/referrals/normalize-code'
  * Route-group folders like `(app)` and `(auth)` don't appear in
  * `request.nextUrl.pathname` — we must match real URL prefixes.
  */
-const APP_ROUTES = ['/dashboard', '/workspace', '/settings', '/onboarding']
+const APP_ROUTES = ['/dashboard', '/workspace', '/settings', '/onboarding', '/admin']
 const AUTH_ROUTES = ['/login', '/signup', '/magic-link']
 /** Routes that are intentionally public — skip all auth checks. */
 const PUBLIC_ROUTES = ['/review', '/invite']

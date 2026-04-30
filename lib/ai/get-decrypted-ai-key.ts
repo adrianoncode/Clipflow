@@ -7,16 +7,24 @@ import { log } from '@/lib/log'
 
 export type DecryptedKeyResult =
   | { ok: true; plaintext: string; keyId: string }
-  | { ok: false; code: 'no_key' | 'decrypt_failed' | 'db_error'; message: string }
+  | { ok: false; code: 'no_key' | 'decrypt_failed' | 'db_error' | 'forbidden'; message: string }
 
 /**
  * Server-only helper that fetches the most recently-created encrypted
  * ai_keys row for `(workspace_id, provider)` and returns the plaintext key.
  *
- * Uses the normal server client so RLS enforces access — since M3's
- * migration relaxed the select policy to editor+, any editor or owner in
- * the workspace can decrypt. Insert/update/delete on ai_keys remain
- * owner-only.
+ * Authorization (defense in depth):
+ *   1. Uses the user-scoped server client → RLS enforces workspace
+ *      membership at the query level.
+ *   2. ADDITIONALLY, when a user JWT is present, this helper performs an
+ *      explicit `workspace_members` lookup against `auth.uid()` and
+ *      refuses to decrypt if the caller is not a member. This guards
+ *      against a future RLS relaxation or a refactor that accidentally
+ *      swaps in `createAdminClient()` from a user-input code path.
+ *   3. Cron / webhook callers (no user JWT) bypass the explicit check,
+ *      since they don't have a JWT to leak — they're inherently trusted
+ *      contexts gated by `verifyCronSecret` or `stripe.webhooks
+ *      .constructEvent`.
  *
  * Never logs the plaintext — only `keyId`, `provider`, and error codes.
  */
@@ -25,6 +33,32 @@ export async function getDecryptedAiKey(
   provider: AiProvider,
 ): Promise<DecryptedKeyResult> {
   const supabase = createClient()
+
+  // Belt-and-braces membership check when running in user context.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (user) {
+    const { data: member } = await supabase
+      .from('workspace_members')
+      .select('user_id')
+      .eq('workspace_id', workspaceId)
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!member) {
+      log.warn('getDecryptedAiKey: non-member attempted decrypt', {
+        userId: user.id,
+        workspaceId,
+        provider,
+      })
+      return {
+        ok: false,
+        code: 'forbidden',
+        message: 'You are not a member of this workspace.',
+      }
+    }
+  }
+
   const { data, error } = await supabase
     .from('ai_keys')
     .select('id, ciphertext, iv, auth_tag')
