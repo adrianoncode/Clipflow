@@ -220,7 +220,7 @@ export function SubtitlesClient({
                     onClick={() => setSubtitleStyle(s)}
                     className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
                       subtitleStyle === s
-                        ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]'
+                        ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#F4D93D]'
                         : 'hover:bg-accent'
                     }`}
                   >
@@ -244,7 +244,7 @@ export function SubtitlesClient({
                     }
                     className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
                       subtitleStyle === s
-                        ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]'
+                        ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#F4D93D]'
                         : hasWordTimings
                           ? 'hover:bg-accent'
                           : 'cursor-not-allowed opacity-40'
@@ -475,7 +475,7 @@ function AnimatedSubtitleOverlay({
     // Word colors rotate — fixed palette so the same word always
     // shows the same color across replays. Active word scales up
     // and gains a stronger shadow for emphasis.
-    const palette = ['#D6FF3E', '#FFFFFF', '#FF6B6B', '#7DDBFF', '#FFE66D']
+    const palette = ['#F4D93D', '#FFFFFF', '#FF6B6B', '#7DDBFF', '#FFE66D']
     return (
       <div
         className="pointer-events-none absolute bottom-[14%] left-0 right-0 flex justify-center px-4"
@@ -546,7 +546,7 @@ function AnimatedSubtitleOverlay({
             : isPast
               ? '#FFFFFF'
               : 'rgba(255,255,255,.55)'
-          const background = isActive ? '#D6FF3E' : 'transparent'
+          const background = isActive ? '#F4D93D' : 'transparent'
           return (
             <span
               key={start + i}

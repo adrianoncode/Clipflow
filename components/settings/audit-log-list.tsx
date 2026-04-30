@@ -61,7 +61,7 @@ export function AuditLogList({ rows }: { rows: AuditRow[] }) {
             onClick={() => setFilter(bucket)}
             className={`rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize transition-colors ${
               filter === bucket
-                ? 'bg-[#0F0F0F] text-[#D6FF3E]'
+                ? 'bg-[#0F0F0F] text-[#F4D93D]'
                 : 'bg-muted/60 text-muted-foreground hover:bg-muted'
             }`}
           >
@@ -202,7 +202,7 @@ function AuditLogEmptyPreview() {
           <span
             className="inline-block h-1.5 w-1.5 rounded-full"
             style={{
-              background: '#D6FF3E',
+              background: '#F4D93D',
               boxShadow: '0 0 8px rgba(214,255,62,.7)',
             }}
           />

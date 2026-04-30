@@ -200,7 +200,7 @@ function InlineVars() {
         --lv2-muted: #5f5850; --lv2-muted-2: #ECE5D8;
         --lv2-border: #E5DDCE; --lv2-card: #FFFDF8;
         --lv2-primary: #0F0F0F; --lv2-primary-soft: #EDE6F5;
-        --lv2-accent: #D6FF3E; --lv2-accent-ink: #1a2000;
+        --lv2-accent: #F4D93D; --lv2-accent-ink: #1a2000;
         --lv2-tip-bg: #F0F8E8; --lv2-tip-border: #BFD98F;
         --lv2-warn-bg: #FFF5E6; --lv2-warn-border: #F2C374;
         --lv2-pro-bg: #EDE6F5;  --lv2-pro-border: #B19FD6;

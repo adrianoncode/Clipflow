@@ -74,7 +74,7 @@ export function AutoSubtitlesVisual() {
           className="flex h-7 w-7 items-center justify-center rounded-lg"
           style={{ background: 'var(--lv2-primary, #0F0F0F)' }}
         >
-          <Captions className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
+          <Captions className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #F4D93D)' }} />
         </span>
         <p
           className="font-bold text-[10px] font-bold uppercase tracking-[0.18em]"
@@ -143,7 +143,7 @@ export function AutoReframeVisual() {
           className="flex h-7 w-7 items-center justify-center rounded-lg"
           style={{ background: 'var(--lv2-primary, #0F0F0F)' }}
         >
-          <Crop className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
+          <Crop className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #F4D93D)' }} />
         </span>
         <p
           className="font-bold text-[10px] font-bold uppercase tracking-[0.18em]"
@@ -175,7 +175,7 @@ export function AutoReframeVisual() {
           style={{
             left: '9%',
             width: '31.64%',
-            borderColor: 'var(--lv2-accent, #D6FF3E)',
+            borderColor: 'var(--lv2-accent, #F4D93D)',
             boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.25)',
           }}
         />
@@ -193,7 +193,7 @@ export function AutoReframeVisual() {
           className="absolute right-3 top-3 rounded-md px-2 py-1 font-bold text-[9px] font-bold uppercase tracking-[0.1em]"
           style={{
             background: 'rgba(0,0,0,.7)',
-            color: 'var(--lv2-accent, #D6FF3E)',
+            color: 'var(--lv2-accent, #F4D93D)',
           }}
         >
           9:16 \u00b7 drag to override
@@ -222,7 +222,7 @@ export function BRollVisual() {
           className="flex h-7 w-7 items-center justify-center rounded-lg"
           style={{ background: 'var(--lv2-primary, #0F0F0F)' }}
         >
-          <Film className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
+          <Film className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #F4D93D)' }} />
         </span>
         <p
           className="font-bold text-[10px] font-bold uppercase tracking-[0.18em]"
@@ -266,7 +266,7 @@ export function AIAvatarVisual() {
           className="flex h-7 w-7 items-center justify-center rounded-lg"
           style={{ background: 'var(--lv2-primary, #0F0F0F)' }}
         >
-          <UserRound className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
+          <UserRound className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #F4D93D)' }} />
         </span>
         <p
           className="font-bold text-[10px] font-bold uppercase tracking-[0.18em]"
@@ -305,7 +305,7 @@ export function AIAvatarVisual() {
             >
               {i === 0 ? (
                 <span
-                  className="absolute inset-x-0 bottom-0 bg-[var(--lv2-accent,#D6FF3E)] py-0.5 text-center font-bold text-[8px] font-bold uppercase"
+                  className="absolute inset-x-0 bottom-0 bg-[var(--lv2-accent,#F4D93D)] py-0.5 text-center font-bold text-[8px] font-bold uppercase"
                   style={{ color: 'var(--lv2-accent-ink, #1a2000)' }}
                 >
                   Selected
@@ -339,7 +339,7 @@ export function AutoDubVisual() {
           className="flex h-7 w-7 items-center justify-center rounded-lg"
           style={{ background: 'var(--lv2-primary, #0F0F0F)' }}
         >
-          <Languages className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
+          <Languages className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #F4D93D)' }} />
         </span>
         <p
           className="font-bold text-[10px] font-bold uppercase tracking-[0.18em]"
@@ -363,7 +363,7 @@ export function AutoDubVisual() {
               className="inline-flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10.5px] font-bold"
               style={{
                 background: l.active ? 'var(--lv2-primary, #0F0F0F)' : 'var(--lv2-card, #FFFDF8)',
-                color: l.active ? 'var(--lv2-accent, #D6FF3E)' : 'var(--lv2-muted, #5f5850)',
+                color: l.active ? 'var(--lv2-accent, #F4D93D)' : 'var(--lv2-muted, #5f5850)',
                 border: '1px solid var(--lv2-border, rgba(0,0,0,.08))',
               }}
             >

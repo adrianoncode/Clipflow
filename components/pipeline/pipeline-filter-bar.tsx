@@ -67,7 +67,7 @@ export function PipelineFilterBar({
             aria-pressed={isActive}
             className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition-all ${
               isActive
-                ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]'
+                ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#F4D93D]'
                 : 'border-border/60 bg-background text-muted-foreground hover:border-border hover:text-foreground'
             }`}
             style={{
@@ -78,7 +78,7 @@ export function PipelineFilterBar({
             {label}
             <span
               className={`tabular-nums ${
-                isActive ? 'text-[#D6FF3E]/70' : 'text-muted-foreground/60'
+                isActive ? 'text-[#F4D93D]/70' : 'text-muted-foreground/60'
               }`}
             >
               {count}

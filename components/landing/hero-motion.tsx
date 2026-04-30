@@ -298,7 +298,7 @@ export function CustomCursor() {
           width: 8,
           height: 8,
           borderRadius: 999,
-          background: '#D6FF3E',
+          background: '#F4D93D',
           mixBlendMode: 'difference',
           opacity: hovering ? 0 : 1,
           transition: 'opacity .2s',
@@ -354,8 +354,8 @@ export function StepProgressRail({
         scaleY: isH ? undefined : scale,
         transformOrigin: isH ? 'left' : 'top',
         background: isH
-          ? 'linear-gradient(90deg, rgba(214,255,62,0) 0%, #D6FF3E 12%, #D6FF3E 88%, rgba(214,255,62,0) 100%)'
-          : 'linear-gradient(180deg, rgba(214,255,62,0) 0%, #D6FF3E 12%, #D6FF3E 88%, rgba(214,255,62,0) 100%)',
+          ? 'linear-gradient(90deg, rgba(214,255,62,0) 0%, #F4D93D 12%, #F4D93D 88%, rgba(214,255,62,0) 100%)'
+          : 'linear-gradient(180deg, rgba(214,255,62,0) 0%, #F4D93D 12%, #F4D93D 88%, rgba(214,255,62,0) 100%)',
         boxShadow: '0 0 10px rgba(214,255,62,.6)',
       }}
     />
@@ -555,7 +555,7 @@ export function ScrollRail() {
       style={{
         scaleX,
         background:
-          'linear-gradient(90deg, rgba(214,255,62,0) 0%, rgba(214,255,62,0.9) 18%, #D6FF3E 50%, rgba(214,255,62,0.9) 82%, rgba(214,255,62,0) 100%)',
+          'linear-gradient(90deg, rgba(214,255,62,0) 0%, rgba(214,255,62,0.9) 18%, #F4D93D 50%, rgba(214,255,62,0.9) 82%, rgba(214,255,62,0) 100%)',
         boxShadow: '0 0 12px rgba(214,255,62,.6)',
       }}
     />

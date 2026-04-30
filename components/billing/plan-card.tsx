@@ -29,7 +29,7 @@ const TOKENS = {
   primary: '#0F0F0F',
   primaryInk: '#1A1A1A',
   primarySoft: '#EDE6F5',
-  accent: '#D6FF3E',
+  accent: '#F4D93D',
   accentInk: '#1a2000',
   fg: '#181511',
   muted: '#5f5850',

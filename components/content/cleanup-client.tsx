@@ -256,7 +256,7 @@ export function CleanupClient({
                 <span>{match}</span>
                 <span
                   className="rounded-full px-1.5 text-[9.5px] font-bold"
-                  style={{ background: '#1a2000', color: '#D6FF3E' }}
+                  style={{ background: '#1a2000', color: '#F4D93D' }}
                 >
                   {count}
                 </span>

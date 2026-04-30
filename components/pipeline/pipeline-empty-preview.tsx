@@ -127,7 +127,7 @@ export function PipelineEmptyPreview() {
                       style={{
                         background:
                           isApproved
-                            ? '#D6FF3E'
+                            ? '#F4D93D'
                             : 'rgba(15,15,15,.08)',
                         color: isApproved ? '#1a2000' : '#0F0F0F',
                       }}

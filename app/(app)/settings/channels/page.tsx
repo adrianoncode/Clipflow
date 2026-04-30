@@ -223,7 +223,7 @@ export default async function ChannelsPage({
                 background: allConnected
                   ? '#0F6B4D'
                   : connectedCount > 0
-                    ? '#D6FF3E'
+                    ? '#F4D93D'
                     : '#7c7468',
                 boxShadow:
                   connectedCount > 0

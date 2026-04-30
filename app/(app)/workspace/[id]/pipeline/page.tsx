@@ -292,7 +292,7 @@ export default async function PipelinePage({ params, searchParams }: PipelinePag
           </div>
           <Link
             href={`/workspace/${workspaceId}/schedule?view=calendar`}
-            className="group inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl bg-[#0F0F0F] px-3.5 text-[12.5px] font-bold text-[#D6FF3E] transition-all hover:-translate-y-px hover:bg-[#1A0F2A]"
+            className="group inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl bg-[#0F0F0F] px-3.5 text-[12.5px] font-bold text-[#F4D93D] transition-all hover:-translate-y-px hover:bg-[#1A0F2A]"
             style={{
               fontFamily:
                 'var(--font-inter-tight), var(--font-inter), sans-serif',

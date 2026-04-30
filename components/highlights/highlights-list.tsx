@@ -453,7 +453,7 @@ function PublishButton({
               onClick={() => togglePlatform(p)}
               className={`rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold uppercase transition-colors ${
                 platforms.includes(p)
-                  ? 'bg-[#0F0F0F] text-[#D6FF3E]'
+                  ? 'bg-[#0F0F0F] text-[#F4D93D]'
                   : 'bg-muted text-muted-foreground hover:bg-muted/60'
               }`}
             >
@@ -684,7 +684,7 @@ function HighlightsEmptyPreview() {
               <span
                 className="inline-block h-1.5 w-1.5 rounded-full"
                 style={{
-                  background: '#D6FF3E',
+                  background: '#F4D93D',
                   boxShadow: '0 0 8px rgba(214,255,62,.7)',
                 }}
               />
@@ -728,7 +728,7 @@ function HighlightsEmptyPreview() {
                           width="3"
                           height={h}
                           rx="1"
-                          fill="#D6FF3E"
+                          fill="#F4D93D"
                           opacity="0.55"
                         />
                       )
@@ -738,7 +738,7 @@ function HighlightsEmptyPreview() {
                     <span
                       className="lv2-tabular rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-bold backdrop-blur-sm"
                       style={{
-                        color: '#D6FF3E',
+                        color: '#F4D93D',
                         fontFamily:
                           'var(--font-jetbrains-mono), monospace',
                       }}
@@ -748,7 +748,7 @@ function HighlightsEmptyPreview() {
                     <span
                       className="rounded-full px-2 py-0.5 text-[10px] font-bold"
                       style={{
-                        background: '#D6FF3E',
+                        background: '#F4D93D',
                         color: '#1a2000',
                       }}
                     >
@@ -843,7 +843,7 @@ function CheckboxButton({ selected }: { selected: boolean }) {
       disabled={pending}
       className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all ${
         selected
-          ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]'
+          ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#F4D93D]'
           : 'border-border/70 bg-background text-transparent hover:border-primary/40'
       } ${pending ? 'opacity-60' : ''}`}
     >
@@ -903,7 +903,7 @@ function MakeDraftsBar({
         className={`group inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl px-3.5 text-[12.5px] font-bold tracking-tight transition-all ${
           disabled
             ? 'cursor-not-allowed bg-muted text-muted-foreground'
-            : 'bg-[#0F0F0F] text-[#D6FF3E] hover:-translate-y-px hover:bg-[#1A0F2A]'
+            : 'bg-[#0F0F0F] text-[#F4D93D] hover:-translate-y-px hover:bg-[#1A0F2A]'
         }`}
         style={{
           fontFamily:

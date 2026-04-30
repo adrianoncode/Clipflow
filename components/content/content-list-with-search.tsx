@@ -238,7 +238,7 @@ export function ContentListWithSearch({
                 onClick={() => setStatusFilter(tab.value)}
                 className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all duration-150 ${
                   isActive
-                    ? 'bg-[#0F0F0F] text-[#D6FF3E] shadow-sm shadow-[#0F0F0F]/30'
+                    ? 'bg-[#0F0F0F] text-[#F4D93D] shadow-sm shadow-[#0F0F0F]/30'
                     : 'border border-border/60 text-muted-foreground hover:border-border hover:text-foreground'
                 }`}
               >
@@ -275,7 +275,7 @@ export function ContentListWithSearch({
                 onClick={() => setKindFilter(tab.value)}
                 className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors ${
                   isActive
-                    ? 'bg-[#0F0F0F] text-[#D6FF3E]'
+                    ? 'bg-[#0F0F0F] text-[#F4D93D]'
                     : 'bg-muted/60 text-muted-foreground hover:bg-muted'
                 }`}
               >
@@ -310,7 +310,7 @@ export function ContentListWithSearch({
             <span
               className={`flex h-4 w-4 items-center justify-center rounded border transition-colors ${
                 allFilteredSelected
-                  ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]'
+                  ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#F4D93D]'
                   : 'border-border/60 bg-background hover:border-primary/40'
               }`}
               aria-hidden
@@ -545,7 +545,7 @@ function LibraryGhostPreview() {
       >
         <span
           className="inline-block h-1.5 w-1.5 rounded-full"
-          style={{ background: '#D6FF3E', boxShadow: '0 0 8px rgba(214,255,62,.7)' }}
+          style={{ background: '#F4D93D', boxShadow: '0 0 8px rgba(214,255,62,.7)' }}
         />
         What it looks like
       </p>

@@ -128,7 +128,7 @@ export function PremiumButton(props: PremiumButtonProps) {
       ? {
           background:
             'linear-gradient(180deg, #0F0F0F 0%, #1A1A1A 100%)',
-          color: '#D6FF3E',
+          color: '#F4D93D',
           fontFamily:
             'var(--font-inter-tight), var(--font-inter), sans-serif',
           // Initialise the cursor-tracked variables so the specular

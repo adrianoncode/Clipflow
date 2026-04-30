@@ -9,15 +9,15 @@ export function ThumbnailVisual() {
   const thumbs = [
     {
       label: 'YouTube · 1280×720',
-      src: '/api/thumbnail?title=The algorithm change nobody talks about&layout=yt&variant=bold&sub=YOUTUBE+%C2%B7+EP+47&accent=%23D6FF3E&bg=%232A1A3D&logoText=Clipflow',
+      src: '/api/thumbnail?title=The algorithm change nobody talks about&layout=yt&variant=bold&sub=YOUTUBE+%C2%B7+EP+47&accent=%23F4D93D&bg=%230F0F0F&logoText=Clipflow',
     },
     {
       label: 'LinkedIn · 1200×627',
-      src: '/api/thumbnail?title=How we built our first 10k follower playbook&layout=link&variant=soft&sub=BUILD+IN+PUBLIC&accent=%232A1A3D&bg=%23D6FF3E&logoText=Clipflow',
+      src: '/api/thumbnail?title=How we built our first 10k follower playbook&layout=link&variant=soft&sub=BUILD+IN+PUBLIC&accent=%230F0F0F&bg=%23F4D93D&logoText=Clipflow',
     },
     {
       label: 'Instagram · 1200×1200',
-      src: '/api/thumbnail?title=Stop posting. Start observing.&layout=square&variant=bold&sub=&accent=%23D6FF3E&bg=%23181511&logoText=Clipflow',
+      src: '/api/thumbnail?title=Stop posting. Start observing.&layout=square&variant=bold&sub=&accent=%23F4D93D&bg=%230F0F0F&logoText=Clipflow',
     },
   ]
 

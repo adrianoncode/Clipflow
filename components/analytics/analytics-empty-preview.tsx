@@ -93,8 +93,8 @@ export function AnalyticsEmptyPreview() {
         >
           <defs>
             <linearGradient id="cf-spark-fill" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#D6FF3E" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#D6FF3E" stopOpacity="0" />
+              <stop offset="0%" stopColor="#F4D93D" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#F4D93D" stopOpacity="0" />
             </linearGradient>
           </defs>
           {(() => {

@@ -439,7 +439,7 @@ function InlineVars() {
         --lv2-muted: #5f5850; --lv2-muted-2: #ECE5D8;
         --lv2-border: #E5DDCE; --lv2-card: #FFFDF8;
         --lv2-primary: #0F0F0F; --lv2-primary-soft: #EDE6F5;
-        --lv2-accent: #D6FF3E; --lv2-accent-ink: #1a2000;
+        --lv2-accent: #F4D93D; --lv2-accent-ink: #1a2000;
         font-family: var(--font-inter), system-ui, sans-serif;
       }
       .lv2-root .lv2-display { font-family: var(--font-instrument-serif), 'Times New Roman', serif; letter-spacing: -.015em; }

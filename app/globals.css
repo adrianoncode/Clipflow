@@ -40,6 +40,25 @@
     --ring: 0 0% 6%;                   /* charcoal focus ring */
 
     --radius: 0.75rem;
+
+    /* Soft tints used by the niche-picker + dataviz palette. The legacy
+       names (plum-soft, lime-soft) are kept so existing call-sites keep
+       working — values are migrated to the new ink + yellow vocabulary. */
+    --plum-soft: 0 0% 95%;             /* #F2F2F2 wash      */
+    --plum-soft-2: 0 0% 88%;           /* #E0E0E0 chip      */
+    --plum-ink: 0 0% 6%;               /* #0F0F0F text      */
+    --lime-soft: 51 89% 92%;           /* #FBF1B7 highlight */
+    --lime-soft-2: 51 89% 80%;         /* #F5DC4F active    */
+    --lime-ink: 51 89% 24%;            /* #6B5A0A text      */
+
+    /* Categorical chart palette — ordered for colorblind-safe contrast.
+       Series 1 anchors on the brand ink, the rest stay in their original
+       perceptual gaps so multi-series analytics still read clearly. */
+    --dataviz-1: 0 0% 6%;              /* #0F0F0F ink       */
+    --dataviz-2: 185 58% 35%;          /* #25808E teal      */
+    --dataviz-3: 32 70% 48%;           /* #CC8425 ochre     */
+    --dataviz-4: 350 55% 55%;          /* #BF4E63 rose      */
+    --dataviz-5: 51 89% 60%;           /* #F4D93D yellow    */
   }
 
   /* The app is light-mode only. We intentionally dropped the `.dark`
@@ -48,171 +67,6 @@
      mode later, every component using violet accents + zinc grays needs
      an audit. */
 
-  /* ───────────────────────────────────────────────────────────────
-     Plum + chartreuse palette override for the whole (app) group.
-     `.lv2-shell` wraps every authenticated screen (see AppShell), so
-     redefining these CSS variables automatically re-skins every
-     Tailwind utility that consumes them. The landing page keeps the
-     default violet-free tokens via its own scoped block. */
-  .lv2-shell {
-    --background: 38 38% 97%;          /* #FAF7F2 paper */
-    --foreground: 30 20% 8%;           /* #181511 ink */
-
-    --card: 48 71% 98%;                /* #FFFDF8 warm card */
-    --card-foreground: 30 20% 8%;
-
-    --popover: 48 71% 98%;
-    --popover-foreground: 30 20% 8%;
-
-    --primary: 265 39% 17%;            /* #2A1A3D plum */
-    --primary-foreground: 73 100% 62%; /* #D6FF3E chartreuse */
-
-    --secondary: 35 35% 92%;           /* #F3EDE3 */
-    --secondary-foreground: 30 20% 8%;
-
-    --muted: 37 28% 89%;               /* #ECE5D8 */
-    --muted-foreground: 32 9% 45%;     /* #7c7468 */
-
-    --accent: 37 28% 89%;              /* subtle hover tone */
-    --accent-foreground: 30 20% 8%;
-
-    --destructive: 4 73% 37%;          /* #9B2018 */
-    --destructive-foreground: 48 71% 98%;
-
-    --border: 37 32% 85%;              /* #E5DDCE */
-    --input: 37 32% 85%;
-    --ring: 265 39% 17%;
-
-    /* ── Extended palette tokens ─────────────────────────────────────
-       Filled the three gaps the palette audit surfaced:
-         - Plum-Soft: lighter tints of the primary plum for secondary
-           surfaces and hover washes that previously fell back to
-           raw violet-100.
-         - Lime-Soft: a calmer chartreuse for highlight bands and
-           "live" chips that would otherwise blast the page with the
-           pure #D6FF3E accent.
-         - Data-Viz 1–5: categorical chart palette, ordered for
-           colorblind-safe contrast (plum → teal → ochre → rose → lime).
-           Use these for analytics bars/lines instead of ad-hoc hex. */
-    --plum-soft: 265 39% 96%;          /* #F2EEF7 wash */
-    --plum-soft-2: 265 30% 88%;        /* #DCCFEA chip */
-    --plum-ink: 265 39% 28%;           /* #463163 readable text on paper */
-
-    --lime-soft: 73 100% 92%;          /* #F3FFD6 highlight band */
-    --lime-soft-2: 73 80% 80%;         /* #E3F59D active chip */
-    --lime-ink: 73 60% 22%;            /* #495C0F text on lime */
-
-    --dataviz-1: 265 39% 17%;          /* #2A1A3D plum      */
-    --dataviz-2: 185 58% 35%;          /* #25808E teal      */
-    --dataviz-3: 32 70% 48%;           /* #CC8425 ochre     */
-    --dataviz-4: 350 55% 55%;          /* #BF4E63 rose      */
-    --dataviz-5: 73 70% 48%;           /* #95CE21 lime-deep */
-  }
-
-  /* ───────────────────────────────────────────────────────────────
-     Rainbow neutralization inside the app shell.
-     Individual screens scatter `bg-violet-*`, `bg-blue-*`, `bg-pink-*`,
-     etc. as decorative accents — they all get remapped to the
-     plum/chartreuse family so nothing inside `.lv2-shell` clashes with
-     the shell chrome. Semantic success/warn/danger tones are retightened
-     to the design's editorial palette instead of the default Tailwind
-     saturation. */
-
-  /* Decorative violet/indigo/blue/pink/rose/sky → plum family */
-  .lv2-shell .bg-violet-50,
-  .lv2-shell .bg-indigo-50,
-  .lv2-shell .bg-blue-50,
-  .lv2-shell .bg-sky-50,
-  .lv2-shell .bg-pink-50,
-  .lv2-shell .bg-rose-50 { background-color: #EDE6F5 !important; }
-
-  .lv2-shell .bg-violet-100,
-  .lv2-shell .bg-indigo-100,
-  .lv2-shell .bg-blue-100,
-  .lv2-shell .bg-sky-100,
-  .lv2-shell .bg-pink-100,
-  .lv2-shell .bg-rose-100 { background-color: #DCCFEA !important; }
-
-  .lv2-shell .bg-violet-500,
-  .lv2-shell .bg-violet-600,
-  .lv2-shell .bg-violet-700,
-  .lv2-shell .bg-indigo-500,
-  .lv2-shell .bg-indigo-600,
-  .lv2-shell .bg-blue-500,
-  .lv2-shell .bg-blue-600,
-  .lv2-shell .bg-sky-500,
-  .lv2-shell .bg-sky-600 { background-color: #2A1A3D !important; }
-
-  .lv2-shell .text-violet-500,
-  .lv2-shell .text-violet-600,
-  .lv2-shell .text-violet-700,
-  .lv2-shell .text-indigo-500,
-  .lv2-shell .text-indigo-600,
-  .lv2-shell .text-blue-500,
-  .lv2-shell .text-blue-600,
-  .lv2-shell .text-blue-700,
-  .lv2-shell .text-sky-500,
-  .lv2-shell .text-sky-600,
-  .lv2-shell .text-pink-500,
-  .lv2-shell .text-pink-600 { color: #2A1A3D !important; }
-
-  .lv2-shell .border-violet-200,
-  .lv2-shell .border-indigo-200,
-  .lv2-shell .border-blue-200,
-  .lv2-shell .border-sky-200,
-  .lv2-shell .border-pink-200,
-  .lv2-shell .border-rose-200 { border-color: #DCCFEA !important; }
-
-  /* Semantic success (emerald) retightened */
-  .lv2-shell .bg-emerald-50 { background-color: #E6F4EE !important; }
-  .lv2-shell .bg-emerald-100 { background-color: #CFEADE !important; }
-  .lv2-shell .bg-emerald-500,
-  .lv2-shell .bg-emerald-600,
-  .lv2-shell .bg-emerald-700 { background-color: #0F6B4D !important; }
-  .lv2-shell .text-emerald-500,
-  .lv2-shell .text-emerald-600,
-  .lv2-shell .text-emerald-700,
-  .lv2-shell .text-emerald-800 { color: #0F6B4D !important; }
-  .lv2-shell .border-emerald-200 { border-color: #CFEADE !important; }
-
-  /* Semantic warn (amber) retightened */
-  .lv2-shell .bg-amber-50 { background-color: #FBEDD9 !important; }
-  .lv2-shell .bg-amber-100 { background-color: #F5DCB4 !important; }
-  .lv2-shell .bg-amber-500,
-  .lv2-shell .bg-amber-600,
-  .lv2-shell .bg-amber-700,
-  .lv2-shell .bg-orange-500,
-  .lv2-shell .bg-orange-600 { background-color: #A0530B !important; }
-  .lv2-shell .text-amber-500,
-  .lv2-shell .text-amber-600,
-  .lv2-shell .text-amber-700,
-  .lv2-shell .text-amber-800,
-  .lv2-shell .text-orange-500,
-  .lv2-shell .text-orange-600 { color: #A0530B !important; }
-  .lv2-shell .border-amber-200,
-  .lv2-shell .border-orange-200 { border-color: #F5DCB4 !important; }
-
-  /* Semantic danger (red/rose) retightened */
-  .lv2-shell .bg-red-50 { background-color: #F8E3E0 !important; }
-  .lv2-shell .bg-red-500,
-  .lv2-shell .bg-red-600 { background-color: #9B2018 !important; }
-  .lv2-shell .text-red-500,
-  .lv2-shell .text-red-600,
-  .lv2-shell .text-red-700 { color: #9B2018 !important; }
-
-  /* Gradients: strip the rainbow, use plum → accent for signature emphasis */
-  .lv2-shell [class*="from-violet-"],
-  .lv2-shell [class*="from-indigo-"],
-  .lv2-shell [class*="from-blue-"],
-  .lv2-shell [class*="from-sky-"],
-  .lv2-shell [class*="from-pink-"],
-  .lv2-shell [class*="from-rose-"] { --tw-gradient-from: #2A1A3D !important; --tw-gradient-to: transparent !important; }
-  .lv2-shell [class*="to-violet-"],
-  .lv2-shell [class*="to-indigo-"],
-  .lv2-shell [class*="to-blue-"],
-  .lv2-shell [class*="to-sky-"],
-  .lv2-shell [class*="to-pink-"],
-  .lv2-shell [class*="to-rose-"] { --tw-gradient-to: #D6FF3E !important; }
 }
 
 @layer base {
@@ -504,7 +358,7 @@ section[id="social-proof"] {
 
 /* ── Sonner toast palette override (paper/plum/lime) ───────────────── */
 [data-sonner-toaster] [data-icon] svg {
-  color: #2A1A3D;
+  color: #0F0F0F;
 }
 [data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] svg {
   color: #0F6B4D;
@@ -522,8 +376,8 @@ section[id="social-proof"] {
 }
 [data-sonner-toaster] .lv2-toast-desc { color: #7c7468 !important; }
 [data-sonner-toaster] .lv2-toast-action {
-  background: #2A1A3D !important;
-  color: #D6FF3E !important;
+  background: #0F0F0F !important;
+  color: #F4D93D !important;
   border-radius: 8px !important;
   padding: 4px 10px !important;
   font-weight: 700 !important;
@@ -650,7 +504,7 @@ section[id="social-proof"] {
    Replaces the flat shadcn `outline` variant. */
 .cf-btn-3d-ghost {
   background: linear-gradient(180deg, #FFFDF8 0%, #F1ECDF 100%);
-  color: #2A1A3D;
+  color: #0F0F0F;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.95),
     inset 0 -1px 0 rgba(24,21,17,.10),

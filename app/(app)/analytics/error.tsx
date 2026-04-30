@@ -64,7 +64,7 @@ export default function AnalyticsError({
           className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold"
           style={{
             background: '#0F0F0F',
-            color: '#D6FF3E',
+            color: '#F4D93D',
             boxShadow:
               'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(15,15,15,.35)',
           }}

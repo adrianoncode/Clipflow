@@ -24,13 +24,13 @@ const DIFFICULTY_LABEL = {
 } as const
 
 const TONE_GRADIENT: Record<'lime' | 'plum' | 'sand', string> = {
-  lime: 'linear-gradient(135deg, #D6FF3E 0%, #F4FFAB 100%)',
+  lime: 'linear-gradient(135deg, #F4D93D 0%, #F4FFAB 100%)',
   plum: 'linear-gradient(135deg, #0F0F0F 0%, #4A2D6B 100%)',
   sand: 'linear-gradient(135deg, #E5DDCE 0%, #F3EDE3 100%)',
 }
 const TONE_INK: Record<'lime' | 'plum' | 'sand', string> = {
   lime: '#1a2000',
-  plum: '#D6FF3E',
+  plum: '#F4D93D',
   sand: '#0F0F0F',
 }
 

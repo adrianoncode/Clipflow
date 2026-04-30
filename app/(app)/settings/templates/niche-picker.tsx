@@ -229,7 +229,7 @@ export function NichePicker({ workspaceId, initialNiche }: NichePickerProps) {
                 <span
                   className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.14em]"
                   style={{
-                    background: 'var(--lime-soft, #D6FF3E)',
+                    background: 'var(--lime-soft, #F4D93D)',
                     color: '#1a2000',
                     boxShadow: '0 4px 10px -4px rgba(214,255,62,0.55)',
                     fontFamily:

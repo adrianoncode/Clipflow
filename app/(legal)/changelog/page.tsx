@@ -12,7 +12,7 @@ const ENTRIES = [
     version: 'v1.0',
     title: 'Launch Day',
     icon: Zap,
-    color: '#D6FF3E',
+    color: '#F4D93D',
     bg: '#0F0F0F',
     changes: [
       { type: 'new' as const, text: 'One video → 4 platform-native posts (TikTok, Reels, Shorts, LinkedIn)' },

@@ -67,7 +67,7 @@ export function ScheduleViewTabs({
             aria-current={isActive ? 'page' : undefined}
             className={`group relative inline-flex h-9 items-center gap-1.5 rounded-xl px-3 text-[12.5px] font-bold tracking-tight transition-all ${
               isActive
-                ? 'bg-[#0F0F0F] text-[#D6FF3E] shadow-sm shadow-[#0F0F0F]/30'
+                ? 'bg-[#0F0F0F] text-[#F4D93D] shadow-sm shadow-[#0F0F0F]/30'
                 : 'text-muted-foreground hover:bg-primary/[0.05] hover:text-foreground'
             }`}
             style={{
@@ -81,7 +81,7 @@ export function ScheduleViewTabs({
               <span
                 className={`ml-0.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold tabular-nums ${
                   isActive
-                    ? 'bg-[#D6FF3E]/15 text-[#D6FF3E]'
+                    ? 'bg-[#F4D93D]/15 text-[#F4D93D]'
                     : 'bg-muted-foreground/15 text-muted-foreground/85'
                 }`}
               >

@@ -54,7 +54,7 @@ function SaveButton({ disabled }: { disabled: boolean }) {
       className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold transition-transform hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
       style={{
         background: '#0F0F0F',
-        color: '#D6FF3E',
+        color: '#F4D93D',
         boxShadow:
           'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(15,15,15,.35)',
       }}

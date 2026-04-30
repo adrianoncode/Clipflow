@@ -14,7 +14,7 @@ const TONE_COLOR: Record<Tone, string> = {
   default: '#181511',
   muted: '#7c7468',
   primary: '#0F0F0F',
-  accent: '#D6FF3E',
+  accent: '#F4D93D',
   success: '#0F6B4D',
   warn: '#A0530B',
   danger: '#9B2018',

@@ -81,7 +81,7 @@ export function PremiumProgress({
           style={{
             width: `${pct}%`,
             background:
-              'linear-gradient(90deg, #0F0F0F 0%, #4B0FB8 60%, #D6FF3E 140%)',
+              'linear-gradient(90deg, #0F0F0F 0%, #4B0FB8 60%, #F4D93D 140%)',
             boxShadow:
               'inset 0 1px 0 rgba(255, 255, 255, 0.30), inset 0 -1px 0 rgba(18, 9, 32, 0.55), 0 0 6px -1px rgba(214, 255, 62, 0.35)',
             transition:
@@ -119,7 +119,7 @@ export function PremiumProgress({
           className="cf-pprog-comet absolute inset-y-0 left-0 w-1/3 rounded-full"
           style={{
             background:
-              'linear-gradient(90deg, transparent 0%, #4B0FB8 30%, #D6FF3E 100%)',
+              'linear-gradient(90deg, transparent 0%, #4B0FB8 30%, #F4D93D 100%)',
             boxShadow: '0 0 12px rgba(214, 255, 62, 0.55)',
           }}
         />

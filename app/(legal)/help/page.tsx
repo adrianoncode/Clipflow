@@ -265,7 +265,7 @@ export default function HelpCenterPage() {
               className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl px-3.5 text-[13px] font-bold tracking-tight transition-all hover:-translate-y-px hover:shadow-md"
               style={{
                 background: 'linear-gradient(180deg, #0F0F0F 0%, #1A1A1A 100%)',
-                color: '#D6FF3E',
+                color: '#F4D93D',
                 fontFamily:
                   'var(--font-inter-tight), var(--font-inter), sans-serif',
                 boxShadow:

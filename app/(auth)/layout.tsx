@@ -9,7 +9,7 @@ const AUTH_STYLES = `
   --lv2a-fg-soft: #3a342c; --lv2a-muted: #7c7468;
   --lv2a-border: #E5DDCE; --lv2a-border-strong: #CFC4AF; --lv2a-card: #FFFDF8;
   --lv2a-primary: #0F0F0F; --lv2a-primary-ink: #1A1A1A;
-  --lv2a-accent: #D6FF3E; --lv2a-accent-ink: #1a2000;
+  --lv2a-accent: #F4D93D; --lv2a-accent-ink: #1a2000;
 
   /* Remap the shadcn theme tokens for descendants so Card/Button/etc use
      our paper palette inside the auth shell. */

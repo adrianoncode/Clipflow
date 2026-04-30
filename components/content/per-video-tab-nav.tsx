@@ -60,7 +60,7 @@ export function PerVideoTabNav({
             aria-current={isActive ? 'page' : undefined}
             className={`group relative inline-flex h-9 items-center gap-1.5 rounded-xl px-3 text-[12.5px] font-bold tracking-tight transition-all ${
               isActive
-                ? 'bg-[#0F0F0F] text-[#D6FF3E] shadow-sm shadow-[#0F0F0F]/30'
+                ? 'bg-[#0F0F0F] text-[#F4D93D] shadow-sm shadow-[#0F0F0F]/30'
                 : 'text-muted-foreground hover:bg-primary/[0.05] hover:text-foreground'
             }`}
             style={{

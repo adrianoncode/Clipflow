@@ -55,8 +55,8 @@ export function OnboardingStepper({ activeStep }: OnboardingStepperProps) {
                 className={cn(
                   'flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-mono font-semibold transition-all duration-300',
                   isActive &&
-                    'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E] shadow-sm shadow-[#0F0F0F]/30 ring-4 ring-[#D6FF3E]/15',
-                  isDone && 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]',
+                    'border-[#0F0F0F] bg-[#0F0F0F] text-[#F4D93D] shadow-sm shadow-[#0F0F0F]/30 ring-4 ring-[#F4D93D]/15',
+                  isDone && 'border-[#0F0F0F] bg-[#0F0F0F] text-[#F4D93D]',
                   !isActive &&
                     !isDone &&
                     'border-border bg-background text-muted-foreground',

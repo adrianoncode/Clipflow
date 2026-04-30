@@ -60,7 +60,7 @@ export function PlanClient({ workspaceId }: PlanClientProps) {
           >
             <Sparkles
               className="h-3 w-3"
-              style={{ color: '#D6FF3E' }}
+              style={{ color: '#F4D93D' }}
               aria-hidden
             />
             Plan · next 7 days

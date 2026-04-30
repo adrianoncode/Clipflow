@@ -152,7 +152,7 @@ export function ThumbnailStudio({
                   onClick={() => setLayout(l.id)}
                   className={`flex-1 rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition-colors ${
                     layout === l.id
-                      ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]'
+                      ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#F4D93D]'
                       : 'border-border/60 text-muted-foreground hover:border-border'
                   }`}
                   title={`${l.ratio} · ${l.size}`}
@@ -174,7 +174,7 @@ export function ThumbnailStudio({
                   onClick={() => setVariant(v.id)}
                   className={`flex-1 rounded-lg border px-2 py-1.5 text-[11px] font-semibold transition-colors ${
                     variant === v.id
-                      ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]'
+                      ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#F4D93D]'
                       : 'border-border/60 text-muted-foreground hover:border-border'
                   }`}
                 >

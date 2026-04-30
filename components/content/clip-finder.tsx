@@ -41,7 +41,7 @@ function scoreBucket(score: number): {
   if (score >= 80) {
     return {
       label: 'FIRE',
-      bg: 'linear-gradient(135deg, #D6FF3E, #B8E02E)',
+      bg: 'linear-gradient(135deg, #F4D93D, #B8E02E)',
       fg: '#1a2000',
       ring: 'rgba(214,255,62,.55)',
     }
@@ -50,7 +50,7 @@ function scoreBucket(score: number): {
     return {
       label: 'STRONG',
       bg: '#0F0F0F',
-      fg: '#D6FF3E',
+      fg: '#F4D93D',
       ring: 'rgba(15,15,15,.35)',
     }
   }
@@ -129,7 +129,7 @@ function SubmitButton({ hasExistingClips }: { hasExistingClips: boolean }) {
       className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition-transform hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
       style={{
         background: '#0F0F0F',
-        color: '#D6FF3E',
+        color: '#F4D93D',
         boxShadow: 'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(15,15,15,.35)',
       }}
     >
@@ -163,7 +163,7 @@ function ClipCard({ clip, rank }: { clip: BestClip; rank: number }) {
       {/* Rank indicator — clips come pre-sorted by virality */}
       <div
         className="absolute left-[-8px] top-4 flex h-5 w-5 items-center justify-center rounded-full font-mono text-[9px] font-bold"
-        style={{ background: '#0F0F0F', color: '#D6FF3E' }}
+        style={{ background: '#0F0F0F', color: '#F4D93D' }}
         aria-hidden
       >
         {rank}

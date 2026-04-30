@@ -58,7 +58,7 @@ function SubmitButton({ count, disabled }: { count: number; disabled: boolean })
     <button
       type="submit"
       disabled={disabled || pending}
-      className="group inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#0F0F0F] px-3 py-2 text-[11.5px] font-bold tracking-tight text-[#D6FF3E] transition-all hover:-translate-y-px hover:bg-[#1A0F2A] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+      className="group inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#0F0F0F] px-3 py-2 text-[11.5px] font-bold tracking-tight text-[#F4D93D] transition-all hover:-translate-y-px hover:bg-[#1A0F2A] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
       style={{
         fontFamily:
           'var(--font-inter-tight), var(--font-inter), sans-serif',

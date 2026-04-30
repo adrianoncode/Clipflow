@@ -165,7 +165,7 @@ export function PipelineBoard({ workspaceId, columns, grouped }: PipelineBoardPr
                       aria-label={allColumnSelected ? `Deselect all ${col.label}` : `Select all ${col.label}`}
                       className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-all ${
                         allColumnSelected
-                          ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#D6FF3E]'
+                          ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#F4D93D]'
                           : someColumnSelected
                             ? 'border-primary/50 bg-primary/20'
                             : 'border-border/70 bg-background hover:border-primary/40'

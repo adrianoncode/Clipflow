@@ -11,7 +11,7 @@ const ONBOARD_STYLES = `
   --lv2o-bg: #FAF7F2; --lv2o-fg: #181511; --lv2o-fg-soft: #3a342c;
   --lv2o-muted: #7c7468; --lv2o-border: #E5DDCE; --lv2o-card: #FFFDF8;
   --lv2o-primary: #0F0F0F; --lv2o-primary-ink: #1A1A1A;
-  --lv2o-accent: #D6FF3E; --lv2o-accent-ink: #1a2000;
+  --lv2o-accent: #F4D93D; --lv2o-accent-ink: #1a2000;
 
   --background: 42 38% 96%; --foreground: 35 14% 9%;
   --card: 42 60% 99%; --card-foreground: 35 14% 9%;

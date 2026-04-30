@@ -36,7 +36,7 @@ export default function GlobalError({
           right: -100,
           width: 440,
           height: 440,
-          background: '#D6FF3E',
+          background: '#F4D93D',
           borderRadius: '50%',
           filter: 'blur(60px)',
           opacity: 0.45,
@@ -86,7 +86,7 @@ export default function GlobalError({
             className="inline-flex h-11 items-center gap-2 rounded-[10px] px-5 text-sm font-bold transition-transform hover:-translate-y-0.5"
             style={{
               background: '#0F0F0F',
-              color: '#D6FF3E',
+              color: '#F4D93D',
               boxShadow:
                 'inset 0 0 0 1px rgba(214,255,62,.15), 0 4px 14px -4px rgba(15,15,15,.35)',
             }}

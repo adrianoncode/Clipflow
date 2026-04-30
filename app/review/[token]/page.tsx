@@ -217,7 +217,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
                 <span
                   className="inline-block h-1.5 w-1.5 rounded-full"
                   style={{
-                    background: '#D6FF3E',
+                    background: '#F4D93D',
                     boxShadow: '0 0 8px rgba(214,255,62,.7)',
                     animation: 'cf-review-empty-pulse 2.4s ease-in-out infinite',
                   }}

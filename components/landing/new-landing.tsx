@@ -217,7 +217,7 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
           --lv2-primary: #0F0F0F;
           --lv2-primary-ink: #1A1A1A;
           --lv2-primary-soft: #EDE6F5;
-          --lv2-accent: #D6FF3E;
+          --lv2-accent: #F4D93D;
           --lv2-accent-ink: #1a2000;
           --lv2-success: #0F6B4D;
           --lv2-warn: #A0530B;
@@ -3340,7 +3340,7 @@ function FeatureGrid() {
           </p>
           <div className="mt-5 space-y-2">
             {[
-              { score: 92, label: 'FIRE', bg: 'linear-gradient(135deg,#D6FF3E,#B8E02E)', fg: '#1a2000' },
+              { score: 92, label: 'FIRE', bg: 'linear-gradient(135deg,#F4D93D,#B8E02E)', fg: '#1a2000' },
               { score: 74, label: 'STRONG', bg: 'var(--lv2-primary)', fg: 'var(--lv2-accent)' },
               { score: 51, label: 'OK', bg: 'var(--lv2-muted-2)', fg: 'var(--lv2-fg-soft)' },
             ].map((b) => (

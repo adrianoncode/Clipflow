@@ -12,7 +12,7 @@ const LEGAL_STYLES = `
   --lv2L-bg: #FAF7F2; --lv2L-fg: #181511; --lv2L-fg-soft: #3a342c;
   --lv2L-muted: #7c7468; --lv2L-border: #E5DDCE; --lv2L-card: #FFFDF8;
   --lv2L-primary: #0F0F0F; --lv2L-primary-ink: #1A1A1A;
-  --lv2L-accent: #D6FF3E; --lv2L-accent-ink: #1a2000;
+  --lv2L-accent: #F4D93D; --lv2L-accent-ink: #1a2000;
   background-color: var(--lv2L-bg);
   background-image: radial-gradient(circle at 2px 2px, rgba(120,90,40,.05) 1px, transparent 0);
   background-size: 24px 24px;

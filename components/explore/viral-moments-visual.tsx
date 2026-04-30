@@ -27,7 +27,7 @@ export function ViralMomentsVisual() {
           className="flex h-7 w-7 items-center justify-center rounded-lg"
           style={{ background: 'var(--lv2-primary, #0F0F0F)' }}
         >
-          <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #D6FF3E)' }} />
+          <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--lv2-accent, #F4D93D)' }} />
         </span>
         <p
           className="font-bold text-[10px] font-bold uppercase tracking-[0.18em]"
@@ -91,7 +91,7 @@ export function ViralMomentsVisual() {
                 className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[10.5px] font-bold"
                 style={{
                   background: 'var(--lv2-primary, #0F0F0F)',
-                  color: 'var(--lv2-accent, #D6FF3E)',
+                  color: 'var(--lv2-accent, #F4D93D)',
                 }}
               >
                 <Clapperboard className="h-3 w-3" aria-hidden />

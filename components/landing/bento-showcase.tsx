@@ -177,7 +177,7 @@ export function ClipFinderDemo() {
 export function BrandKitDemo() {
   const reduce = useReducedMotion()
   const palettes = [
-    { bg: '#0F0F0F', fg: '#D6FF3E', label: 'Clipflow' },
+    { bg: '#0F0F0F', fg: '#F4D93D', label: 'Clipflow' },
     { bg: '#0E1729', fg: '#3B82F6', label: 'Acme' },
     { bg: '#6E1A1A', fg: '#FDF8EC', label: 'Bordeaux' },
     { bg: '#1F3B2D', fg: '#D4A017', label: 'Forest' },

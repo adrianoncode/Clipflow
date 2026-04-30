@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const title = (searchParams.get('title') ?? 'Your headline goes here').slice(0, 110)
   const sub = (searchParams.get('sub') ?? '').slice(0, 60)
-  const accent = normalizeHex(searchParams.get('accent') ?? '#D6FF3E')
+  const accent = normalizeHex(searchParams.get('accent') ?? '#F4D93D')
   const bg = normalizeHex(searchParams.get('bg') ?? '#0F0F0F')
   const logoText = (searchParams.get('logoText') ?? 'Clipflow').slice(0, 30)
   const layout = searchParams.get('layout') ?? 'yt'

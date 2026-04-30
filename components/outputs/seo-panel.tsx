@@ -232,7 +232,7 @@ function EmojiChip({ emoji }: { emoji: string }) {
       }}
       title={copied ? 'Copied' : 'Click to copy'}
       className="flex h-8 w-8 items-center justify-center rounded-lg border text-[17px] transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted"
-      style={{ background: copied ? 'var(--lv2d-accent, #D6FF3E)' : undefined }}
+      style={{ background: copied ? 'var(--lv2d-accent, #F4D93D)' : undefined }}
     >
       {emoji}
       <Sparkles className="sr-only h-3 w-3" />

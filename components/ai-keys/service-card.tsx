@@ -298,7 +298,7 @@ function ConnectButton({ onClick }: { onClick: () => void }) {
       style={{
         background:
           'linear-gradient(180deg, #0F0F0F 0%, #1A1A1A 100%)',
-        color: '#D6FF3E',
+        color: '#F4D93D',
         boxShadow:
           'inset 0 1px 0 rgba(255,255,255,0.10), inset 0 0 0 1px rgba(214,255,62,0.18), 0 1px 2px rgba(15,15,15,0.18), 0 6px 14px -6px rgba(15,15,15,0.40)',
         fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',

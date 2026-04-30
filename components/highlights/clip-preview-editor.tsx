@@ -813,7 +813,7 @@ function CropGuide({
       />
       {/* The crop window */}
       <div
-        className="pointer-events-auto absolute inset-y-0 cursor-grab border-2 border-[#D6FF3E]/80 ring-1 ring-black/10 active:cursor-grabbing"
+        className="pointer-events-auto absolute inset-y-0 cursor-grab border-2 border-[#F4D93D]/80 ring-1 ring-black/10 active:cursor-grabbing"
         style={{
           left: `${leftPct}%`,
           width: `${windowWidth}%`,
@@ -821,7 +821,7 @@ function CropGuide({
         onMouseDown={() => setDragging(true)}
         onTouchStart={() => setDragging(true)}
       >
-        <span className="absolute -top-6 left-1/2 -translate-x-1/2 rounded-md bg-black/80 px-2 py-0.5 font-mono text-[10px] text-[#D6FF3E]">
+        <span className="absolute -top-6 left-1/2 -translate-x-1/2 rounded-md bg-black/80 px-2 py-0.5 font-mono text-[10px] text-[#F4D93D]">
           9:16 crop
         </span>
       </div>
@@ -851,7 +851,7 @@ function CaptionStylePicker({
           onClick={() => onChange(s.id)}
           className={`rounded-full px-2.5 py-1 text-[10.5px] font-semibold transition-all ${
             value === s.id
-              ? 'bg-[#0F0F0F] text-[#D6FF3E] ring-2 ring-[#D6FF3E]/20'
+              ? 'bg-[#0F0F0F] text-[#F4D93D] ring-2 ring-[#F4D93D]/20'
               : 'bg-muted/40 text-muted-foreground hover:bg-muted'
           }`}
         >

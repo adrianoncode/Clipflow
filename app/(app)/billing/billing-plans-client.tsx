@@ -34,7 +34,7 @@ function IntervalToggle({
           className={cn(
             'rounded-full px-4 py-1.5 font-semibold transition-all',
             value === opt
-              ? 'bg-[#0F0F0F] text-[#D6FF3E] shadow-sm shadow-[#0F0F0F]/30'
+              ? 'bg-[#0F0F0F] text-[#F4D93D] shadow-sm shadow-[#0F0F0F]/30'
               : 'text-muted-foreground hover:text-foreground',
           )}
         >
@@ -44,7 +44,7 @@ function IntervalToggle({
               className={cn(
                 'ml-1.5 rounded-full px-1.5 py-px text-[10px] font-bold',
                 value === 'annual'
-                  ? 'bg-[#D6FF3E] text-[#1a2000]'
+                  ? 'bg-[#F4D93D] text-[#1a2000]'
                   : 'bg-emerald-100 text-emerald-800',
               )}
             >
