@@ -10,12 +10,24 @@ import {
 } from '@/lib/platforms'
 
 describe('lib/platforms', () => {
-  it('exports all 4 output platforms', () => {
-    expect(OUTPUT_PLATFORMS).toEqual(['tiktok', 'instagram_reels', 'youtube_shorts', 'linkedin'])
+  it('exports all output platforms', () => {
+    expect(OUTPUT_PLATFORMS).toEqual([
+      'tiktok',
+      'instagram_reels',
+      'youtube_shorts',
+      'linkedin',
+      'pinterest',
+    ])
   })
 
-  it('exports all 4 publish platforms (plain names)', () => {
-    expect(PUBLISH_PLATFORMS).toEqual(['tiktok', 'instagram', 'youtube', 'linkedin'])
+  it('exports all publish platforms (plain names)', () => {
+    expect(PUBLISH_PLATFORMS).toEqual([
+      'tiktok',
+      'instagram',
+      'youtube',
+      'linkedin',
+      'pinterest',
+    ])
   })
 
   it('PLATFORM_LABELS has all 6 keys with short labels', () => {
