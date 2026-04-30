@@ -400,12 +400,31 @@ function FeaturedCard({
         }}
       />
 
-      {/* Decorative ornament — top-right sparkle */}
-      <Sparkles
-        aria-hidden
-        className="absolute right-7 top-7 h-7 w-7"
-        style={{ color: PALETTE.ink, opacity: 0.28 }}
-      />
+      {/* Decorative ornament — top-right sparkle (drops out when a stat
+          tag takes that corner). */}
+      {!hasFeatured && (
+        <Sparkles
+          aria-hidden
+          className="absolute right-7 top-7 h-7 w-7"
+          style={{ color: PALETTE.ink, opacity: 0.28 }}
+        />
+      )}
+
+      {/* Top-right stat tag — Crextio's "$1,200" pill, our equivalent is
+          the workflow's headline count when there's data to brag about. */}
+      {hasFeatured && (
+        <span
+          className="absolute right-5 top-5 inline-flex h-7 items-center rounded-full px-3 text-[11px] font-semibold tabular-nums"
+          style={{
+            background: 'rgba(15,15,15,0.10)',
+            color: PALETTE.ink,
+            border: `1px solid ${PALETTE.borderStrong}`,
+            fontFamily: 'var(--font-jetbrains-mono), monospace',
+          }}
+        >
+          {featured.total_outputs}× drafts
+        </span>
+      )}
 
       {/* Bottom-left content */}
       <div className="relative z-10 flex flex-col gap-1.5 pl-2">
