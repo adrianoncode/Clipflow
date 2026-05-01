@@ -16,6 +16,7 @@ import {
   type GeneratePlanState,
   type SchedulerActionState,
 } from '@/app/(app)/workspace/[id]/schedule/scheduler-actions'
+import { TimezoneLabel } from '@/components/workspace/timezone-label'
 import {
   PLATFORM_DOT_COLORS,
   PLATFORM_LABELS,
@@ -25,9 +26,10 @@ import type { PlanSlot } from '@/lib/planner/build-plan'
 
 interface PlanClientProps {
   workspaceId: string
+  workspaceTimezone: string
 }
 
-export function PlanClient({ workspaceId }: PlanClientProps) {
+export function PlanClient({ workspaceId, workspaceTimezone }: PlanClientProps) {
   const [state, action] = useFormState<GeneratePlanState, FormData>(
     generateContentPlanAction,
     {},
@@ -82,7 +84,10 @@ export function PlanClient({ workspaceId }: PlanClientProps) {
             else stays untouched on the Board.
           </p>
         </div>
-        <RegenerateButton workspaceId={workspaceId} action={action} />
+        <div className="flex flex-col items-end gap-2">
+          <RegenerateButton workspaceId={workspaceId} action={action} />
+          <TimezoneLabel workspaceTimezone={workspaceTimezone} />
+        </div>
       </header>
 
       {state.ok === false && state.error ? (

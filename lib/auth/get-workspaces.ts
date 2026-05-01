@@ -10,6 +10,9 @@ export interface WorkspaceSummary {
   slug: string
   type: WorkspaceType
   role: WorkspaceRole
+  /** IANA timezone (e.g. 'Europe/Berlin'). Defaults to 'UTC'. Used by
+   *  Schedule + Calendar + Plan views to label "all times in <tz>". */
+  timezone: string
 }
 
 interface WorkspaceMemberJoinRow {
@@ -19,6 +22,7 @@ interface WorkspaceMemberJoinRow {
     name: string
     slug: string
     type: WorkspaceType
+    timezone: string | null
   } | null
 }
 
@@ -31,7 +35,7 @@ export const getWorkspaces = cache(async (): Promise<WorkspaceSummary[]> => {
 
   const { data, error } = await supabase
     .from('workspace_members')
-    .select('role, workspace:workspaces(id, name, slug, type)')
+    .select('role, workspace:workspaces(id, name, slug, type, timezone)')
     .returns<WorkspaceMemberJoinRow[]>()
 
   if (error) {
@@ -49,6 +53,7 @@ export const getWorkspaces = cache(async (): Promise<WorkspaceSummary[]> => {
       slug: row.workspace.slug,
       type: row.workspace.type,
       role: row.role,
+      timezone: row.workspace.timezone ?? 'UTC',
     })
   }
   return result

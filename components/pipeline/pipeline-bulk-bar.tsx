@@ -25,6 +25,15 @@ interface PipelineBulkBarProps {
   workspaceId: string
   selected: Set<string>
   onClear: () => void
+  /** Optional optimistic-update hook from the board. Called for each
+   *  selected id with the target state right before the bulk action
+   *  fires — cards move to their new column instantly instead of after
+   *  the round-trip + router.refresh. Approve → 'approved', Export →
+   *  'exported'. Regenerate + Star don't move cards so we skip them. */
+  onOptimisticBulk?: (
+    ids: Set<string>,
+    newState: 'approved' | 'exported' | null,
+  ) => void
 }
 
 type Banner =
@@ -34,7 +43,7 @@ type Banner =
 
 type BulkAction = typeof bulkApproveAction
 
-export function PipelineBulkBar({ workspaceId, selected, onClear }: PipelineBulkBarProps) {
+export function PipelineBulkBar({ workspaceId, selected, onClear, onOptimisticBulk }: PipelineBulkBarProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [banner, setBanner] = useState<Banner>(null)
@@ -54,9 +63,24 @@ export function PipelineBulkBar({ workspaceId, selected, onClear }: PipelineBulk
   const count = selected.size
   if (count === 0) return null
 
-  function runAction(label: string, action: BulkAction, successVerb: string) {
+  function runAction(
+    label: string,
+    action: BulkAction,
+    successVerb: string,
+    /** Target column for optimistic moves. Pass null for bulk
+     *  actions that don't move cards (Regenerate, Star). */
+    optimisticTarget: 'approved' | 'exported' | null = null,
+  ) {
     setActiveAction(label)
     startTransition(async () => {
+      // Apply optimistic moves BEFORE the action so the cards leave
+      // their current columns instantly. The optimistic state is
+      // discarded by useOptimistic's contract once the transition
+      // completes — at that point router.refresh below has loaded
+      // the authoritative grouping.
+      if (optimisticTarget) {
+        onOptimisticBulk?.(selected, optimisticTarget)
+      }
       const fd = new FormData()
       fd.set('workspace_id', workspaceId)
       fd.set('output_ids', Array.from(selected).join(','))
@@ -119,7 +143,7 @@ export function PipelineBulkBar({ workspaceId, selected, onClear }: PipelineBulk
         {/* Approve */}
         <button
           type="button"
-          onClick={() => runAction('approve', bulkApproveAction, 'Approved')}
+          onClick={() => runAction('approve', bulkApproveAction, 'Approved', 'approved')}
           disabled={isPending}
           className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-emerald-700 transition-all hover:bg-emerald-50 disabled:opacity-50"
         >
@@ -165,7 +189,7 @@ export function PipelineBulkBar({ workspaceId, selected, onClear }: PipelineBulk
         {/* Mark as published */}
         <button
           type="button"
-          onClick={() => runAction('export', bulkExportAction, 'Marked exported:')}
+          onClick={() => runAction('export', bulkExportAction, 'Marked exported:', 'exported')}
           disabled={isPending}
           className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-blue-700 transition-all hover:bg-blue-50 disabled:opacity-50"
         >

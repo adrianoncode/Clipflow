@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useOptimistic, useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { Check } from 'lucide-react'
 
 import { PipelineCard } from '@/components/pipeline/pipeline-card'
@@ -60,8 +61,69 @@ interface PipelineBoardProps {
   grouped: Record<PipelineStateKey, PipelineOutputItem[]>
 }
 
+/**
+ * Apply a single optimistic state-flip to the grouped map.
+ *
+ * Finds the card by id (anywhere across the four columns), removes it
+ * from its current column, and inserts it at the head of the target
+ * column with `state` updated. Returning a fresh map preserves React's
+ * referential-equality contract.
+ *
+ * If the target state is `exported`, the card is dropped because the
+ * board hides that column on the page side; users see the card "leave"
+ * the board, which matches the eventual server-side behavior.
+ */
+function applyOptimisticTransition(
+  state: Record<PipelineStateKey, PipelineOutputItem[]>,
+  action: { id: string; newState: PipelineStateKey },
+): Record<PipelineStateKey, PipelineOutputItem[]> {
+  const next: Record<PipelineStateKey, PipelineOutputItem[]> = {
+    draft: [...state.draft],
+    review: [...state.review],
+    approved: [...state.approved],
+    exported: [...state.exported],
+  }
+
+  let card: PipelineOutputItem | null = null
+  for (const key of Object.keys(next) as PipelineStateKey[]) {
+    const idx = next[key].findIndex((item) => item.id === action.id)
+    if (idx >= 0) {
+      card = next[key][idx] ?? null
+      next[key].splice(idx, 1)
+      break
+    }
+  }
+  if (!card) return state
+
+  const updated: PipelineOutputItem = { ...card, state: action.newState }
+  next[action.newState] = [updated, ...next[action.newState]]
+  return next
+}
+
 export function PipelineBoard({ workspaceId, columns, grouped }: PipelineBoardProps) {
+  const router = useRouter()
   const [selected, setSelected] = useState<Set<string>>(new Set())
+
+  // useOptimistic + useTransition: each card-button transition fires
+  // an optimistic state update that moves the card to its new column
+  // INSTANTLY, then the server action runs, then router.refresh()
+  // pulls fresh data. If the action fails the optimistic state simply
+  // expires when refresh lands the new authoritative grouping.
+  const [optimisticGrouped, addOptimisticTransition] = useOptimistic(
+    grouped,
+    applyOptimisticTransition,
+  )
+  const [, startTransition] = useTransition()
+
+  function markOptimistic(id: string, newState: PipelineStateKey) {
+    startTransition(() => {
+      addOptimisticTransition({ id, newState })
+      // Schedule the server-data resync. The card's own action call
+      // happens in parallel — both are wrapped in the transition so
+      // React paints the optimistic move first.
+      router.refresh()
+    })
+  }
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -73,7 +135,7 @@ export function PipelineBoard({ workspaceId, columns, grouped }: PipelineBoardPr
   }
 
   function toggleColumn(state: PipelineStateKey) {
-    const items = grouped[state]
+    const items = optimisticGrouped[state]
     if (items.length === 0) return
     const columnIds = items.map((i) => i.id)
     const allSelected = columnIds.every((id) => selected.has(id))
@@ -89,11 +151,11 @@ export function PipelineBoard({ workspaceId, columns, grouped }: PipelineBoardPr
   }
 
   function selectAll() {
-    const allIds = Object.values(grouped).flatMap((items) => items.map((i) => i.id))
+    const allIds = Object.values(optimisticGrouped).flatMap((items) => items.map((i) => i.id))
     setSelected(new Set(allIds))
   }
 
-  const totalItems = Object.values(grouped).reduce((sum, items) => sum + items.length, 0)
+  const totalItems = Object.values(optimisticGrouped).reduce((sum, items) => sum + items.length, 0)
 
   return (
     <>
@@ -109,7 +171,7 @@ export function PipelineBoard({ workspaceId, columns, grouped }: PipelineBoardPr
             Select all ({totalItems})
           </button>
           {(['draft', 'review', 'approved'] as const).map((state) => {
-            const count = grouped[state].length
+            const count = optimisticGrouped[state].length
             if (count === 0) return null
             const labels: Record<string, string> = {
               draft: 'All drafts',
@@ -221,6 +283,9 @@ export function PipelineBoard({ workspaceId, columns, grouped }: PipelineBoardPr
                       version={output.version}
                       selected={selected.has(output.id)}
                       onToggleSelect={() => toggle(output.id)}
+                      onOptimisticTransition={(id, newState) =>
+                        markOptimistic(id, newState as PipelineStateKey)
+                      }
                     />
                   ))}
                 </div>
@@ -234,11 +299,23 @@ export function PipelineBoard({ workspaceId, columns, grouped }: PipelineBoardPr
         workspaceId={workspaceId}
         selected={selected}
         onClear={() => setSelected(new Set())}
+        onOptimisticBulk={(ids, newState) => {
+          if (!newState) return
+          // Apply each id one-by-one — useOptimistic's reducer is
+          // single-action shape, so we dispatch N times. React batches
+          // these inside the parent transition.
+          startTransition(() => {
+            for (const id of ids) {
+              addOptimisticTransition({ id, newState })
+            }
+            router.refresh()
+          })
+        }}
       />
 
       <PipelineReviewDrawer
         workspaceId={workspaceId}
-        outputs={Object.values(grouped).flat()}
+        outputs={Object.values(optimisticGrouped).flat()}
       />
     </>
   )

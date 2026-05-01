@@ -5,6 +5,7 @@ import { useState, useTransition, useCallback } from 'react'
 import { Eye, Heart, MessageCircle, Share2 } from 'lucide-react'
 
 import { AutoDistributeButton } from '@/components/scheduler/auto-distribute-button'
+import { TimezoneLabel } from '@/components/workspace/timezone-label'
 import {
   PLATFORM_LABELS,
   PLATFORM_SOLID_COLORS as PLATFORM_COLORS,
@@ -37,6 +38,9 @@ interface UnscheduledOutput {
 
 interface CalendarClientProps {
   workspaceId: string
+  /** IANA TZ for this workspace. Surfaced as a label so multi-team
+   *  users know whose clock the schedule runs on. */
+  workspaceTimezone: string
   scheduledPosts: ScheduledPost[]
   unscheduledOutputs: UnscheduledOutput[]
   quickScheduleAction: (fd: FormData) => Promise<unknown>
@@ -69,6 +73,7 @@ function formatStatNum(n: number | undefined): string {
 
 export function CalendarClient({
   workspaceId,
+  workspaceTimezone,
   scheduledPosts,
   unscheduledOutputs,
   quickScheduleAction,
@@ -79,6 +84,10 @@ export function CalendarClient({
   const [month, setMonth] = useState(today.getMonth())
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
   const [dragOverDay, setDragOverDay] = useState<number | null>(null)
+  // Days the user expanded by clicking +N — those cells render the
+  // full pill list instead of the 3-cap. Stored as a Set so multiple
+  // days can be expanded simultaneously without resetting on next click.
+  const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set())
   const [isPending, startTransition] = useTransition()
 
   const daysInMonth = getDaysInMonth(year, month)
@@ -208,7 +217,7 @@ export function CalendarClient({
     <div className="flex min-h-full flex-col gap-6 p-4 sm:p-8">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={goToPrevMonth}
             className="flex h-8 w-8 items-center justify-center rounded-md border text-sm hover:bg-accent"
@@ -234,6 +243,7 @@ export function CalendarClient({
           >
             Today
           </button>
+          <TimezoneLabel workspaceTimezone={workspaceTimezone} />
         </div>
         <Link
           href={`/workspace/${workspaceId}/schedule`}
@@ -418,36 +428,67 @@ export function CalendarClient({
                         >
                           {dayNumber}
                         </span>
-                        {dayPosts.length > 0 && (
-                          <div className="mt-1 flex flex-wrap gap-0.5">
-                            {dayPosts.slice(0, 3).map((post) => (
-                              <span
-                                key={post.id}
-                                draggable={post.status === 'scheduled'}
-                                onDragStart={
-                                  post.status === 'scheduled'
-                                    ? (e) => {
-                                        e.stopPropagation()
-                                        handleDragStart(e, 'post', post.id, post.platform)
+                        {dayPosts.length > 0 && (() => {
+                          const isExpanded = expandedDays.has(dayNumber)
+                          const visiblePosts = isExpanded
+                            ? dayPosts
+                            : dayPosts.slice(0, 3)
+                          return (
+                            <div className="mt-1 flex flex-wrap gap-0.5">
+                              {visiblePosts.map((post) => (
+                                <span
+                                  key={post.id}
+                                  draggable={post.status === 'scheduled'}
+                                  onDragStart={
+                                    post.status === 'scheduled'
+                                      ? (e) => {
+                                          e.stopPropagation()
+                                          handleDragStart(e, 'post', post.id, post.platform)
+                                        }
+                                      : undefined
+                                  }
+                                  className={[
+                                    'inline-block rounded px-1 py-0.5 text-[10px] font-medium leading-none',
+                                    PLATFORM_BG[post.platform] ?? 'bg-gray-100 text-gray-700',
+                                    post.status === 'scheduled' ? 'cursor-grab active:cursor-grabbing' : '',
+                                  ].join(' ')}
+                                >
+                                  {PLATFORM_LABELS[post.platform] ?? post.platform}
+                                </span>
+                              ))}
+                              {dayPosts.length > 3 && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    // Stop propagation so the day-cell
+                                    // click handler doesn't also fire
+                                    // (which would open the day detail
+                                    // panel and lose the expand state).
+                                    e.stopPropagation()
+                                    setExpandedDays((prev) => {
+                                      const nextSet = new Set(prev)
+                                      if (nextSet.has(dayNumber)) {
+                                        nextSet.delete(dayNumber)
+                                      } else {
+                                        nextSet.add(dayNumber)
                                       }
-                                    : undefined
-                                }
-                                className={[
-                                  'inline-block rounded px-1 py-0.5 text-[10px] font-medium leading-none',
-                                  PLATFORM_BG[post.platform] ?? 'bg-gray-100 text-gray-700',
-                                  post.status === 'scheduled' ? 'cursor-grab active:cursor-grabbing' : '',
-                                ].join(' ')}
-                              >
-                                {PLATFORM_LABELS[post.platform] ?? post.platform}
-                              </span>
-                            ))}
-                            {dayPosts.length > 3 && (
-                              <span className="inline-block rounded bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-muted-foreground">
-                                +{dayPosts.length - 3}
-                              </span>
-                            )}
-                          </div>
-                        )}
+                                      return nextSet
+                                    })
+                                  }}
+                                  aria-expanded={isExpanded}
+                                  aria-label={
+                                    isExpanded
+                                      ? 'Collapse day pills'
+                                      : `Show all ${dayPosts.length} posts for this day`
+                                  }
+                                  className="inline-block rounded bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-muted-foreground transition-colors hover:bg-primary/15 hover:text-primary"
+                                >
+                                  {isExpanded ? '−' : `+${dayPosts.length - 3}`}
+                                </button>
+                              )}
+                            </div>
+                          )
+                        })()}
                       </>
                     )}
                   </div>

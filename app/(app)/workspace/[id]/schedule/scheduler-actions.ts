@@ -489,9 +489,20 @@ export async function autoDistributeApprovedAction(
   weekStarting.setDate(now.getDate() + offsetToMonday)
   weekStarting.setHours(0, 0, 0, 0)
 
+  // Pull the workspace's IANA timezone so the planner picks slots in
+  // local time instead of always-UTC. Falls back to 'UTC' if the
+  // column is missing (e.g. pre-migration row).
+  const supabaseForTz = await createClient()
+  const { data: wsTz } = await supabaseForTz
+    .from('workspaces')
+    .select('timezone')
+    .eq('id', workspaceId)
+    .maybeSingle()
+  const workspaceTz = wsTz?.timezone ?? 'UTC'
+
   const candidates = pickCandidateSlots(
     weekStarting,
-    { niche: null, tone: null, timezone: 'UTC' },
+    { niche: null, tone: null, timezone: workspaceTz },
     draftPreviews,
   )
   const slots = attachDraftsToSlots(candidates, draftPreviews).filter(
@@ -571,7 +582,7 @@ export async function generateContentPlanAction(
   // Pull workspace branding for niche/tone/cadence/timezone.
   const { data: ws } = await supabase
     .from('workspaces')
-    .select('branding, name')
+    .select('branding, name, timezone')
     .eq('id', workspaceId)
     .maybeSingle()
   const branding = (ws?.branding ?? {}) as Record<string, unknown>
@@ -679,7 +690,7 @@ export async function generateContentPlanAction(
         typeof branding.niche === 'string' ? (branding.niche as string) : null,
       tone:
         typeof branding.tone === 'string' ? (branding.tone as string) : null,
-      timezone: 'UTC',
+      timezone: ws?.timezone ?? 'UTC',
     },
   })
 

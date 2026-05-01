@@ -2,14 +2,13 @@
 
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useFormState, useFormStatus } from 'react-dom'
+import { useTransition } from 'react'
 import { Check, ChevronLeft, ChevronRight, Clapperboard, ExternalLink, Loader2 } from 'lucide-react'
 
 import { ScheduleOutputDialog } from '@/components/pipeline/schedule-output-dialog'
 
 import {
   transitionOutputStateAction,
-  type TransitionOutputStateState,
 } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/actions'
 import type { OutputState } from '@/lib/supabase/types'
 
@@ -31,6 +30,11 @@ interface PipelineCardProps {
   /** When provided, the card shows a selection checkbox. */
   selected?: boolean
   onToggleSelect?: () => void
+  /** Optional optimistic-update hook from the parent board. Called
+   *  with the new state right before the server action fires so the
+   *  card moves columns immediately instead of after the round-trip.
+   *  When omitted, the card still works (just without optimism). */
+  onOptimisticTransition?: (outputId: string, newState: OutputState) => void
 }
 
 const STATE_ORDER: OutputState[] = ['draft', 'review', 'approved', 'exported']
@@ -66,46 +70,54 @@ function prevState(state: OutputState): OutputState | null {
   return idx > 0 ? STATE_ORDER[idx - 1] ?? null : null
 }
 
-const initialState: TransitionOutputStateState = {}
-
+/**
+ * Imperative state-transition button. Compared to the prior form-action
+ * version, this:
+ *   1. Calls the parent's `onOptimisticTransition` BEFORE the server
+ *      action so the card moves columns the moment the user clicks,
+ *      not 300-1500ms later when the network resolves.
+ *   2. Wraps the action call in `startTransition` so React can apply
+ *      the optimistic state without blocking the UI.
+ *   3. Falls back to a no-op when `onOptimisticTransition` isn't
+ *      provided — the card still works, just without optimism.
+ */
 function TransitionButton({
   direction,
   label,
   outputId,
   workspaceId,
   targetState,
+  onOptimisticTransition,
 }: {
   direction: 'next' | 'prev'
   label: string
   outputId: string
   workspaceId: string
   targetState: OutputState
+  onOptimisticTransition?: (outputId: string, newState: OutputState) => void
 }) {
-  const [, formAction] = useFormState(transitionOutputStateAction, initialState)
-
-  return (
-    <form action={formAction} className={direction === 'next' ? 'flex-1' : ''}>
-      <input type="hidden" name="output_id" value={outputId} />
-      <input type="hidden" name="workspace_id" value={workspaceId} />
-      <input type="hidden" name="new_state" value={targetState} />
-      <SubmitButton direction={direction} label={label} />
-    </form>
-  )
-}
-
-function SubmitButton({
-  direction,
-  label,
-}: {
-  direction: 'next' | 'prev'
-  label: string
-}) {
-  const { pending } = useFormStatus()
+  const [pending, startTransition] = useTransition()
   const isNext = direction === 'next'
+
+  function handleClick() {
+    startTransition(async () => {
+      onOptimisticTransition?.(outputId, targetState)
+      const fd = new FormData()
+      fd.set('output_id', outputId)
+      fd.set('workspace_id', workspaceId)
+      fd.set('new_state', targetState)
+      // The action's return value (state) doesn't matter here — the
+      // parent will re-fetch via router.refresh() on its next tick.
+      // Errors surface as Sentry breadcrumbs + the row reverts when
+      // the optimistic state expires (no router.refresh = stale).
+      await transitionOutputStateAction({}, fd)
+    })
+  }
 
   return (
     <button
-      type="submit"
+      type="button"
+      onClick={handleClick}
       disabled={pending}
       className={
         isNext
@@ -143,6 +155,7 @@ export function PipelineCard({
   version,
   selected = false,
   onToggleSelect,
+  onOptimisticTransition,
 }: PipelineCardProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -229,6 +242,7 @@ export function PipelineCard({
             outputId={outputId}
             workspaceId={workspaceId}
             targetState={prev}
+            onOptimisticTransition={onOptimisticTransition}
           />
         )}
         {next && nextLabel ? (
@@ -238,6 +252,7 @@ export function PipelineCard({
             outputId={outputId}
             workspaceId={workspaceId}
             targetState={next}
+            onOptimisticTransition={onOptimisticTransition}
           />
         ) : (
           <Link

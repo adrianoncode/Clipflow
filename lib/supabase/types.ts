@@ -1729,6 +1729,7 @@ export type Database = {
           owner_id: string
           platform_keys_enabled: boolean
           slug: string
+          timezone: string
           type: Database["public"]["Enums"]["workspace_type"]
           updated_at: string
         }
@@ -1741,6 +1742,7 @@ export type Database = {
           owner_id: string
           platform_keys_enabled?: boolean
           slug: string
+          timezone?: string
           type: Database["public"]["Enums"]["workspace_type"]
           updated_at?: string
         }
@@ -1753,6 +1755,7 @@ export type Database = {
           owner_id?: string
           platform_keys_enabled?: boolean
           slug?: string
+          timezone?: string
           type?: Database["public"]["Enums"]["workspace_type"]
           updated_at?: string
         }
