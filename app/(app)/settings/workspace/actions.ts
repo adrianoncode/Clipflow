@@ -8,6 +8,7 @@ import { getUser } from '@/lib/auth/get-user'
 import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { AUDIT_ACTIONS } from '@/lib/audit/actions'
 import { writeAuditLog } from '@/lib/audit/write'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
 // ── Update workspace ──────────────────────────────────────────────────────────
@@ -80,6 +81,7 @@ export async function deleteWorkspaceAction(
   formData: FormData,
 ): Promise<DeleteWorkspaceState> {
   const workspaceId = formData.get('workspace_id')?.toString() ?? ''
+  const slugConfirmation = formData.get('slug_confirmation')?.toString().trim() ?? ''
   if (!workspaceId) return { ok: false, error: 'Invalid input.' }
 
   const user = await getUser()
@@ -94,13 +96,37 @@ export async function deleteWorkspaceAction(
     return { ok: false, error: 'Only the workspace owner can delete it.' }
   }
 
-  // Note: we intentionally don't write a workspace.deleted audit row here
-  // — the audit_log.workspace_id FK is ON DELETE CASCADE, so any row we
-  // insert would be wiped by the delete below. The log output (Sentry +
-  // server logs) in writeAuditLog's error path already captures the
-  // signal we'd want for post-mortems; durable history of the delete
-  // lives in Supabase's deleted-row webhook / WAL if we ever need it.
+  // Slug-typed confirmation. Without this, a stray click / CSRF /
+  // accidental form submit can wipe an entire tenant in one shot.
+  // We require the user to type the workspace's slug verbatim — same
+  // pattern Stripe uses for irreversible cancellations.
   const supabase = await createClient()
+  const { data: workspace } = await supabase
+    .from('workspaces')
+    .select('slug, name')
+    .eq('id', workspaceId)
+    .maybeSingle()
+  if (!workspace) return { ok: false, error: 'Workspace not found.' }
+  if (slugConfirmation !== workspace.slug) {
+    return {
+      ok: false,
+      error: `Type "${workspace.slug}" to confirm deletion.`,
+    }
+  }
+
+  // Write a deletion_log row BEFORE the cascade wipe. audit_log rows
+  // are cascade-deleted with the workspace; deletion_log isn't —
+  // designed to survive the gone-entity it records.
+  const admin = createAdminClient()
+  await admin.from('deletion_log').insert({
+    actor_id: user.id,
+    actor_email: user.email ?? null,
+    kind: 'workspace',
+    target_id: workspaceId,
+    target_label: workspace.name,
+    metadata: { slug: workspace.slug },
+  })
+
   const { error } = await supabase
     .from('workspaces')
     .delete()

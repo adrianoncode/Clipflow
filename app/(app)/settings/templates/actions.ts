@@ -41,6 +41,15 @@ export async function saveTemplateAction(
   const user = await getUser()
   if (!user) redirect('/login')
 
+  // Membership + role gate. Owners and editors create / edit templates;
+  // reviewers and viewers read but don't write. RLS catches non-members
+  // at the row level — this surfaces the failure as a clean error.
+  const member = await requireWorkspaceMember(parsed.data.workspace_id)
+  if (!member.ok) return { ok: false, error: 'Not a workspace member.' }
+  if (!['owner', 'editor'].includes(member.role)) {
+    return { ok: false, error: 'Your role cannot create templates.' }
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = createClient() as any
 

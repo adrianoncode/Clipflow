@@ -246,9 +246,24 @@ export async function reschedulePostAction(
     return { ok: false, error: 'Insufficient permissions.' }
   }
 
+  // Read the current version so we can bump it. The bump is what lets
+  // the cron lock detect a reschedule that lands between its fetch and
+  // its lock-update — its CAS predicate `eq('version', snapshot)` will
+  // miss after this update and the cron will skip the row instead of
+  // firing it at the now-stale time.
+  const { data: current } = await supabase
+    .from('scheduled_posts')
+    .select('version')
+    .eq('id', postId)
+    .eq('workspace_id', workspaceId)
+    .maybeSingle()
+
   const { error } = await supabase
     .from('scheduled_posts')
-    .update({ scheduled_for: new Date(scheduledFor).toISOString() })
+    .update({
+      scheduled_for: new Date(scheduledFor).toISOString(),
+      version: (current?.version ?? 0) + 1,
+    })
     .eq('id', postId)
     .eq('workspace_id', workspaceId)
     .eq('status', 'scheduled')
@@ -290,6 +305,14 @@ export async function quickScheduleAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  // Membership + role gate. Reviewers can comment but shouldn't be
+  // able to drag posts onto the calendar — that's an editor/owner action.
+  const member = await requireWorkspaceMember(workspaceId)
+  if (!member.ok) return { ok: false, error: 'Not a workspace member.' }
+  if (!['owner', 'editor'].includes(member.role)) {
+    return { ok: false, error: 'Your role cannot schedule posts.' }
+  }
 
   const supabase = await createClient()
 

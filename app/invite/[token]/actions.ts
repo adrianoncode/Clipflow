@@ -25,7 +25,7 @@ export async function acceptInviteAction(
   // Look up invite
   const { data: invite } = await admin
     .from('workspace_invites')
-    .select('id, workspace_id, role, is_accepted, expires_at, invited_by')
+    .select('id, workspace_id, role, is_accepted, expires_at, invited_by, email')
     .eq('token', token)
     .maybeSingle()
 
@@ -33,6 +33,23 @@ export async function acceptInviteAction(
   if (invite.is_accepted) return { ok: false, error: 'This invite has already been accepted.' }
   if (new Date(invite.expires_at) < new Date()) {
     return { ok: false, error: 'This invite has expired.' }
+  }
+
+  // If the invite was emailed to a specific address, the redeemer MUST
+  // be that user. Without this, anyone who obtains the link (forwarded
+  // email, leaked Slack message, exposed in server logs) can join the
+  // workspace under whatever role the invite was created for. Compare
+  // case-insensitively because email casing isn't significant.
+  if (invite.email) {
+    const normalizedInvitee = invite.email.trim().toLowerCase()
+    const normalizedUser = (user.email ?? '').trim().toLowerCase()
+    if (!normalizedUser || normalizedUser !== normalizedInvitee) {
+      return {
+        ok: false,
+        error:
+          'This invite was sent to a different email address. Sign in with the invited account to accept it.',
+      }
+    }
   }
 
   // Re-validate the inviter's authority at acceptance time. A pending

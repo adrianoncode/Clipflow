@@ -436,6 +436,69 @@ export type Database = {
           },
         ]
       }
+      extension_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          last_used_at: string | null
+          name: string
+          revoked_at: string | null
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_used_at?: string | null
+          name: string
+          revoked_at?: string | null
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_used_at?: string | null
+          name?: string
+          revoked_at?: string | null
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      deletion_log: {
+        Row: {
+          actor_email: string | null
+          actor_id: string | null
+          id: string
+          kind: string
+          metadata: Json
+          occurred_at: string
+          target_id: string
+          target_label: string
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_id?: string | null
+          id?: string
+          kind: string
+          metadata?: Json
+          occurred_at?: string
+          target_id: string
+          target_label: string
+        }
+        Update: {
+          actor_email?: string | null
+          actor_id?: string | null
+          id?: string
+          kind?: string
+          metadata?: Json
+          occurred_at?: string
+          target_id?: string
+          target_label?: string
+        }
+        Relationships: []
+      }
       content_items: {
         Row: {
           created_at: string
@@ -1200,6 +1263,7 @@ export type Database = {
           social_account_id: string | null
           stats_fetched_at: string | null
           status: string
+          version: number
           workspace_id: string
         }
         Insert: {
@@ -1218,6 +1282,7 @@ export type Database = {
           social_account_id?: string | null
           stats_fetched_at?: string | null
           status?: string
+          version?: number
           workspace_id: string
         }
         Update: {
@@ -1236,6 +1301,7 @@ export type Database = {
           social_account_id?: string | null
           stats_fetched_at?: string | null
           status?: string
+          version?: number
           workspace_id?: string
         }
         Relationships: [

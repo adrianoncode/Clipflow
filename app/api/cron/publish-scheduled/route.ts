@@ -47,9 +47,11 @@ export async function POST(req: NextRequest) {
   // future next_retry_at, so the same cron picks them up automatically
   // once the backoff is up.
   const now = new Date().toISOString()
+  // Snapshot `version` so we can detect a reschedule between fetch
+  // and lock — see protect-against-reschedule-race below.
   const { data: duePosts } = await supabase
     .from('scheduled_posts')
-    .select('id, platform, output_id, workspace_id, retry_count')
+    .select('id, platform, output_id, workspace_id, retry_count, version')
     .eq('status', 'scheduled')
     .lte('scheduled_for', now)
     .or(`next_retry_at.is.null,next_retry_at.lte.${now}`)
@@ -89,17 +91,21 @@ export async function POST(req: NextRequest) {
   const results: Array<{ id: string; platform: string; ok: boolean; error?: string }> = []
 
   for (const post of duePosts) {
-    // Mark as publishing (optimistic lock — prevents duplicate processing).
-    // CRITICAL: read the affected row count. Without `.select('id')` the
-    // `lockError` is null when the predicate `eq('status','scheduled')`
-    // matches zero rows (e.g. another cron worker already grabbed it),
-    // and we'd happily double-publish. We require exactly one row to
-    // have flipped — anything else means we lost the race and must skip.
+    // Optimistic lock with TWO predicates:
+    //   1. status='scheduled' — another worker hasn't grabbed it
+    //   2. version=<snapshot> — no user reschedule happened since
+    //                            we fetched
+    // Without (2), a user moving the post 10:00 → 14:00 between our
+    // SELECT and UPDATE would still see status='scheduled', the lock
+    // would succeed, and the cron would publish at the wrong time.
+    // Reading `.select('id')` confirms the row count — Supabase
+    // doesn't surface "predicate matched zero rows" as an error.
     const { data: locked, error: lockError } = await supabase
       .from('scheduled_posts')
-      .update({ status: 'publishing' })
+      .update({ status: 'publishing', version: post.version + 1 })
       .eq('id', post.id)
-      .eq('status', 'scheduled') // only if still scheduled
+      .eq('status', 'scheduled')
+      .eq('version', post.version)
       .select('id')
 
     if (lockError) {
@@ -107,8 +113,9 @@ export async function POST(req: NextRequest) {
       continue
     }
     if (!Array.isArray(locked) || locked.length === 0) {
-      // Another worker already grabbed it. Skip silently — they'll
-      // publish, and our second pass on this post would double-post.
+      // Another worker grabbed it OR a user just rescheduled. Either
+      // way we don't own this row — skip silently. The cron will pick
+      // up the rescheduled row on the next tick when it's due again.
       log.warn('publish-cron: lost optimistic lock, skipping', {
         postId: post.id,
         platform: post.platform,

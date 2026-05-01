@@ -107,8 +107,23 @@ export function WorkspaceSettingsForm({ workspace, isOwner }: WorkspaceSettingsF
             <FormMessage variant="error">{deleteState.error}</FormMessage>
           ) : null}
 
-          <form ref={deleteFormRef} action={deleteAction}>
+          {/* The form lives in the DOM the entire time so the slug-typed
+              confirmation input can validate the user's typed value
+              before the modal even opens. ConfirmDialog still does the
+              "are you sure?" gate; the input is the second layer. */}
+          <form ref={deleteFormRef} action={deleteAction} className="space-y-2">
             <input type="hidden" name="workspace_id" value={workspace.id} />
+            <label htmlFor="ws-delete-slug" className="block text-xs font-medium">
+              Type <code className="rounded bg-muted px-1 py-0.5 font-mono">{workspace.slug}</code> to enable the delete button.
+            </label>
+            <input
+              id="ws-delete-slug"
+              name="slug_confirmation"
+              type="text"
+              autoComplete="off"
+              spellCheck={false}
+              className="w-full rounded-xl border border-border/60 bg-background px-3.5 py-2.5 font-mono text-sm placeholder:text-muted-foreground/50 transition-all focus:border-destructive/60 focus:outline-none focus:ring-2 focus:ring-destructive/30"
+            />
           </form>
           <ConfirmDialog
             tone="destructive"

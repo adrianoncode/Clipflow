@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { checkPlanAccess } from '@/lib/billing/plans'
 import { createClient } from '@/lib/supabase/server'
@@ -25,6 +26,15 @@ export async function scheduleOutputAction(
 
   const user = await getUser()
   if (!user) redirect('/login')
+
+  // Membership + role gate. RLS catches non-members, but we also bar
+  // reviewers/viewers from scheduling — only owner/editor are
+  // expected to manage the queue.
+  const member = await requireWorkspaceMember(workspaceId)
+  if (!member.ok) return { ok: false, error: 'Not a workspace member.' }
+  if (!['owner', 'editor'].includes(member.role)) {
+    return { ok: false, error: 'Your role cannot schedule posts.' }
+  }
 
   // Defense-in-depth: the inline schedule form on each output card is
   // reachable even when the user never visits /schedule. Check the plan

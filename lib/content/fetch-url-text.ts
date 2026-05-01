@@ -1,7 +1,13 @@
 import 'server-only'
 
 import { parse } from 'node-html-parser'
+import { readBoundedText } from '@/lib/security/bounded-fetch'
 import { isPublicUrl } from '@/lib/security/is-public-url'
+
+/** 10 MB. Any blog page or article fits comfortably in this; anything
+ *  larger is almost certainly a malicious / runaway response we don't
+ *  want in our process memory. */
+const MAX_BYTES = 10 * 1024 * 1024
 
 export type FetchUrlTextResult =
   | { ok: true; text: string; title: string }
@@ -68,7 +74,9 @@ export async function fetchUrlText(url: string): Promise<FetchUrlTextResult> {
     return { ok: false, error: 'URL does not point to an HTML page.' }
   }
 
-  const html = await res.text()
+  const bounded = await readBoundedText(res, MAX_BYTES)
+  if (!bounded.ok) return { ok: false, error: bounded.error }
+  const html = bounded.text
   const root = parse(html)
 
   // Page title
