@@ -201,7 +201,13 @@ export function ExportButton() {
 // ---------------------------------------------------------------------------
 export function DeleteAccountButton() {
   const [open, setOpen] = useState(false)
+  const [confirmation, setConfirmation] = useState('')
   const [state, action] = useFormState(deleteAccountAction, initial)
+  // Client-side guard so the button can't fire on a typo. The server
+  // also enforces this (profile/actions.ts), but the UX promise was
+  // broken — clicking Permanently Delete with the wrong text used to
+  // submit and surface an error toast instead of being preventable.
+  const isConfirmed = confirmation.trim() === 'DELETE'
 
   return (
     <>
@@ -214,7 +220,13 @@ export function DeleteAccountButton() {
         Delete account
       </button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          setOpen(v)
+          if (!v) setConfirmation('')
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-destructive">Delete your account?</DialogTitle>
@@ -234,6 +246,9 @@ export function DeleteAccountButton() {
                 name="confirmation"
                 placeholder="DELETE"
                 autoComplete="off"
+                value={confirmation}
+                onChange={(e) => setConfirmation(e.target.value)}
+                aria-invalid={confirmation.length > 0 && !isConfirmed}
                 className="h-9 font-mono text-[13px]"
               />
             </div>
@@ -258,6 +273,8 @@ export function DeleteAccountButton() {
                 type="submit"
                 size="sm"
                 variant="destructive"
+                disabled={!isConfirmed}
+                title={isConfirmed ? undefined : 'Type DELETE to enable.'}
                 className="h-9 text-[12px]"
               >
                 Permanently delete

@@ -33,17 +33,18 @@ export function PlanClient({ workspaceId }: PlanClientProps) {
     {},
   )
 
-  // Auto-trigger the first generation on mount so the user lands on
-  // a populated plan rather than an empty button. We submit a hidden
-  // form once via a state flag.
+  // Auto-trigger the cached fetch on mount so the user lands on a
+  // populated plan when one already exists, but never silently fires
+  // a fresh LLM call on first visit. `cache_only=true` makes the
+  // server short-circuit when no cache is available — the user has
+  // to click "Generate" explicitly to opt into the AI cost.
   const [autoSubmitted, setAutoSubmitted] = useState(false)
   useEffect(() => {
     if (autoSubmitted) return
     setAutoSubmitted(true)
     const fd = new FormData()
     fd.set('workspace_id', workspaceId)
-    // Don't pass force_refresh — first load uses the cached plan
-    // when available.
+    fd.set('cache_only', 'true')
     action(fd)
   }, [autoSubmitted, action, workspaceId])
 

@@ -5,6 +5,8 @@ import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { FormMessage } from '@/components/ui/form-message'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { verifyMfaAction, type MfaChallengeState } from '@/app/(auth)/mfa/actions'
 
 function SubmitBtn({ mode }: { mode: 'totp' | 'recovery' }) {
@@ -42,10 +44,8 @@ export function MfaChallengeForm({ next }: { next?: string }) {
 
       {mode === 'totp' ? (
         <div className="space-y-1.5">
-          <label htmlFor="code" className="text-sm font-medium">
-            Authentication code
-          </label>
-          <input
+          <Label htmlFor="code">Authentication code</Label>
+          <Input
             id="code"
             name="code"
             type="text"
@@ -55,33 +55,41 @@ export function MfaChallengeForm({ next }: { next?: string }) {
             pattern="\d{6}"
             maxLength={6}
             required
+            aria-required="true"
+            aria-invalid={Boolean(state.error) || undefined}
+            aria-describedby={state.error ? 'mfa-error' : undefined}
             placeholder="123456"
-            className="w-full rounded-lg border border-border/60 bg-background px-3 py-2 text-center font-mono text-lg tracking-[0.5em] focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="text-center font-mono text-lg tracking-[0.5em]"
           />
         </div>
       ) : (
         <div className="space-y-1.5">
-          <label htmlFor="code" className="text-sm font-medium">
-            Recovery code
-          </label>
-          <input
+          <Label htmlFor="code">Recovery code</Label>
+          <Input
             id="code"
             name="code"
             type="text"
             autoComplete="off"
             autoFocus
             required
+            aria-required="true"
+            aria-invalid={Boolean(state.error) || undefined}
+            aria-describedby="mfa-recovery-hint"
             placeholder="A7K9-MP2X-QWN4-R8Z3"
-            className="w-full rounded-lg border border-border/60 bg-background px-3 py-2 text-center font-mono text-sm tracking-wider focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="text-center font-mono text-sm tracking-wider"
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p id="mfa-recovery-hint" className="text-xs text-muted-foreground">
             Using a recovery code removes your current authenticator. You&apos;ll
             need to re-enroll from settings after logging in.
           </p>
         </div>
       )}
 
-      {state.error && <FormMessage variant="error">{state.error}</FormMessage>}
+      {state.error && (
+        <div id="mfa-error">
+          <FormMessage variant="error">{state.error}</FormMessage>
+        </div>
+      )}
 
       <SubmitBtn mode={mode} />
 

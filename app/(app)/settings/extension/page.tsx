@@ -1,9 +1,11 @@
 import { redirect } from 'next/navigation'
+import { Puzzle } from 'lucide-react'
 
 import { ExtensionTokensClient } from './extension-tokens-client'
 import { getUser } from '@/lib/auth/get-user'
 import { listExtensionTokens } from '@/lib/extension-tokens'
-import { PageHeading } from '@/components/workspace/page-heading'
+import { SettingsHero } from '@/components/settings/settings-hero'
+import { SettingsSection } from '@/components/settings/section'
 
 export const metadata = {
   title: 'Browser Extension',
@@ -18,15 +20,26 @@ export default async function ExtensionPage() {
   const tokens = await listExtensionTokens(user.id)
 
   return (
-    <div className="space-y-8">
-      <PageHeading
-        eyebrow="Settings · Extension"
+    <div className="space-y-9">
+      <SettingsHero
+        monogram="EX"
+        eyebrow="Account · Extension"
         title="Browser extension."
         body="Install the Clipflow Chrome extension to save any webpage to your workspace in one click."
+        meta={
+          <>
+            <Puzzle className="h-3 w-3 text-muted-foreground/60" />
+            chrome.google.com — soon
+          </>
+        }
       />
 
-      <div className="space-y-4">
-        <h2 className="text-base font-semibold">Installation</h2>
+      <SettingsSection
+        index="01"
+        title="Installation"
+        icon={<Puzzle className="h-3.5 w-3.5" />}
+        hint="five steps · once per browser"
+      >
         <ol className="space-y-3 text-sm text-muted-foreground">
           <li className="flex gap-3">
             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
@@ -75,15 +88,20 @@ export default async function ExtensionPage() {
             <strong className="text-foreground">Save</strong>.
           </li>
         </ol>
-      </div>
+      </SettingsSection>
 
-      <ExtensionTokensClient tokens={tokens} />
-
-      <p className="text-xs text-muted-foreground">
-        Extension tokens are revokable and scoped to your account. They never
-        appear in this page after creation — if you lose one, revoke it and
-        create a new one.
-      </p>
+      <SettingsSection
+        index="02"
+        title="Tokens"
+        icon={<Puzzle className="h-3.5 w-3.5" />}
+        hint="one per browser/machine · revokable"
+      >
+        <ExtensionTokensClient tokens={tokens} />
+        <p className="mt-4 text-xs text-muted-foreground">
+          Extension tokens are revokable and scoped to your account. The plaintext
+          appears once at creation — if you lose one, revoke it and create a new one.
+        </p>
+      </SettingsSection>
     </div>
   )
 }

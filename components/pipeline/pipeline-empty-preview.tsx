@@ -2,9 +2,12 @@
 
 /**
  * Mini kanban-board preview shown inside the Pipeline empty state.
- * Mocks the four columns (Draft / Review / Approved / Published) with
+ * Mocks the three real columns (Draft / Review / Approved) with
  * realistic-looking cards so the user immediately sees how their
- * drafts will flow once they import their first video.
+ * drafts will flow once they import their first video. Mirrors
+ * COLUMN_CONFIG in app/(app)/workspace/[id]/pipeline/page.tsx so
+ * an empty-board user doesn't see a "Published" column they'll
+ * never find on the real board.
  */
 
 const COLUMNS: Array<{
@@ -21,7 +24,7 @@ const COLUMNS: Array<{
     ],
   },
   {
-    label: 'Review',
+    label: 'Ready to review',
     dot: 'bg-amber-400',
     cards: [
       { title: 'Carousel script — onboarding', tag: 'IG' },
@@ -35,20 +38,13 @@ const COLUMNS: Array<{
       { title: 'Thread — pricing change', tag: 'X' },
     ],
   },
-  {
-    label: 'Published',
-    dot: 'bg-blue-500',
-    cards: [
-      { title: 'Reel — founder reflection', tag: 'IG' },
-    ],
-  },
 ]
 
 export function PipelineEmptyPreview() {
   return (
     <div
       aria-hidden
-      className="cf-pipeline-preview relative grid grid-cols-2 gap-2 rounded-2xl border border-border/60 p-2 sm:grid-cols-4"
+      className="cf-pipeline-preview relative grid grid-cols-1 gap-2 rounded-2xl border border-border/60 p-2 sm:grid-cols-3"
       style={{
         background:
           'linear-gradient(180deg, #FFFDF8 0%, #F3EDE3 100%)',

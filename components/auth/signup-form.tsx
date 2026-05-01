@@ -21,12 +21,22 @@ function SubmitButton() {
 
 export function SignupForm() {
   const [state, formAction] = useFormState(signupAction, initialState)
+  const hasError = Boolean(state.error)
 
   return (
     <form action={formAction} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="fullName">Full name</Label>
-        <Input id="fullName" name="fullName" autoComplete="name" required placeholder="Ada Lovelace" />
+        <Input
+          id="fullName"
+          name="fullName"
+          autoComplete="name"
+          required
+          aria-required="true"
+          aria-invalid={hasError || undefined}
+          aria-describedby={hasError ? 'signup-error' : undefined}
+          placeholder="Ada Lovelace"
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
@@ -36,6 +46,9 @@ export function SignupForm() {
           type="email"
           autoComplete="email"
           required
+          aria-required="true"
+          aria-invalid={hasError || undefined}
+          aria-describedby={hasError ? 'signup-error' : undefined}
           placeholder="you@example.com"
         />
       </div>
@@ -48,9 +61,19 @@ export function SignupForm() {
           autoComplete="new-password"
           required
           minLength={8}
+          aria-required="true"
+          aria-invalid={hasError || undefined}
+          aria-describedby={hasError ? 'signup-error' : 'signup-password-hint'}
         />
+        <p id="signup-password-hint" className="text-xs text-muted-foreground">
+          Minimum 8 characters.
+        </p>
       </div>
-      {state.error ? <FormMessage variant="error">{state.error}</FormMessage> : null}
+      {state.error ? (
+        <div id="signup-error">
+          <FormMessage variant="error">{state.error}</FormMessage>
+        </div>
+      ) : null}
       <SubmitButton />
     </form>
   )

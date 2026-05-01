@@ -21,6 +21,30 @@ function SubmitButton() {
 
 export function MagicLinkForm() {
   const [state, formAction] = useFormState(magicLinkAction, initialState)
+  const hasError = Boolean(state.error)
+
+  // After a successful send the form is replaced with a confirmation
+  // panel — keeping the form mounted alongside the success message
+  // invites the user to send the same magic-link N times.
+  if (state.success) {
+    return (
+      <div className="space-y-3" role="status" aria-live="polite">
+        <FormMessage variant="success">
+          Check your inbox — we&rsquo;ve sent you a sign-in link.
+        </FormMessage>
+        <p className="text-xs text-muted-foreground">
+          Didn&rsquo;t get it?{' '}
+          <a
+            href="/magic-link"
+            className="text-foreground underline-offset-2 hover:underline"
+          >
+            Try a different address
+          </a>
+          .
+        </p>
+      </div>
+    )
+  }
 
   return (
     <form action={formAction} className="space-y-4">
@@ -32,14 +56,16 @@ export function MagicLinkForm() {
           type="email"
           autoComplete="email"
           required
+          aria-required="true"
+          aria-invalid={hasError || undefined}
+          aria-describedby={hasError ? 'magic-link-error' : undefined}
           placeholder="you@example.com"
         />
       </div>
-      {state.error ? <FormMessage variant="error">{state.error}</FormMessage> : null}
-      {state.success ? (
-        <FormMessage variant="success">
-          Check your inbox — we&apos;ve sent you a sign-in link.
-        </FormMessage>
+      {state.error ? (
+        <div id="magic-link-error">
+          <FormMessage variant="error">{state.error}</FormMessage>
+        </div>
       ) : null}
       <SubmitButton />
     </form>

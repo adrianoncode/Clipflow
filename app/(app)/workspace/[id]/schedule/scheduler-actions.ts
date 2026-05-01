@@ -204,6 +204,80 @@ export async function cancelScheduledPostAction(
 }
 
 // ---------------------------------------------------------------------------
+// retryFailedPostAction — re-queue a post whose publish exhausted retries.
+// Flips status='failed' → 'scheduled', resets retry_count + next_retry_at,
+// and snaps `scheduled_for` to "now + 1 minute" so the cron picks it up
+// on the next tick. The user's last-known scheduled time is replaced
+// with "as soon as possible" because by definition we're past it.
+// ---------------------------------------------------------------------------
+
+const retryFailedSchema = z.object({
+  workspaceId: z.string().uuid(),
+  postId: z.string().uuid(),
+})
+
+export async function retryFailedPostAction(
+  _prev: SchedulerActionState,
+  formData: FormData,
+): Promise<SchedulerActionState> {
+  const parsed = retryFailedSchema.safeParse({
+    workspaceId: formData.get('workspace_id')?.toString() ?? '',
+    postId: formData.get('post_id')?.toString() ?? '',
+  })
+  if (!parsed.success) {
+    return { ok: false, error: 'Invalid input.' }
+  }
+  const { workspaceId, postId } = parsed.data
+
+  const user = await getUser()
+  if (!user) redirect('/login')
+
+  const member = await requireWorkspaceMember(workspaceId)
+  if (!member.ok) return { ok: false, error: 'Not a workspace member.' }
+  if (!['owner', 'editor'].includes(member.role)) {
+    return { ok: false, error: 'Your role cannot retry posts.' }
+  }
+
+  const supabase = await createClient()
+
+  // Read current version for the CAS-style update — see publish-cron
+  // route for the version-based lock pattern.
+  const { data: current } = await supabase
+    .from('scheduled_posts')
+    .select('version, status')
+    .eq('id', postId)
+    .eq('workspace_id', workspaceId)
+    .maybeSingle()
+
+  if (!current) return { ok: false, error: 'Post not found.' }
+  if (current.status !== 'failed') {
+    return { ok: false, error: 'Only failed posts can be retried.' }
+  }
+
+  // Schedule for ~1 minute from now so the cron picks it up on the
+  // next tick. Bump version so any in-flight cron lock misses.
+  const inOneMinute = new Date(Date.now() + 60_000).toISOString()
+  const { error } = await supabase
+    .from('scheduled_posts')
+    .update({
+      status: 'scheduled',
+      scheduled_for: inOneMinute,
+      retry_count: 0,
+      next_retry_at: null,
+      error_message: null,
+      version: (current.version ?? 0) + 1,
+    })
+    .eq('id', postId)
+    .eq('workspace_id', workspaceId)
+    .eq('status', 'failed')
+
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath(`/workspace/${workspaceId}/schedule`)
+  return { ok: true, message: 'Re-queued — publishing within a minute.' }
+}
+
+// ---------------------------------------------------------------------------
 // reschedulePostAction — drag-and-drop: move existing post to a new date/time
 // ---------------------------------------------------------------------------
 
@@ -466,6 +540,10 @@ const generatePlanSchema = z.object({
   workspaceId: z.string().uuid(),
   /** Pass 'true' as a form value to force a re-generation past the cache. */
   forceRefresh: z.string().optional(),
+  /** Pass 'true' to short-circuit when no cached plan exists — used by the
+   *  auto-load on Plan tab mount so we never silently burn AI credits on
+   *  the user's first visit. */
+  cacheOnly: z.string().optional(),
 })
 
 const PLAN_CACHE_TTL_MS = 24 * 60 * 60 * 1000
@@ -477,12 +555,13 @@ export async function generateContentPlanAction(
   const parsed = generatePlanSchema.safeParse({
     workspaceId: formData.get('workspace_id'),
     forceRefresh: formData.get('force_refresh'),
+    cacheOnly: formData.get('cache_only'),
   })
   if (!parsed.success) {
     return { ok: false, error: 'Invalid input.' }
   }
 
-  const { workspaceId, forceRefresh } = parsed.data
+  const { workspaceId, forceRefresh, cacheOnly } = parsed.data
 
   const member = await requireWorkspaceMember(workspaceId)
   if (!member.ok) return { ok: false, error: 'Not a member.' }
@@ -521,6 +600,14 @@ export async function generateContentPlanAction(
         cached: true,
       }
     }
+  }
+
+  // cache_only short-circuit: the Plan tab auto-loads cached plans on
+  // mount so users land on a populated screen, but we don't want to
+  // silently burn AI credits if the cache is empty/expired. Return
+  // an empty success and let the user click "Generate" explicitly.
+  if (cacheOnly === 'true') {
+    return { ok: true, slots: [], cached: false, aiUsed: false }
   }
 
   // Fetch approved outputs for the workspace — the plan pool. The

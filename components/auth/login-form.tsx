@@ -25,8 +25,15 @@ export function LoginForm() {
   const searchParams = useSearchParams()
   const next = searchParams.get('next') ?? ''
 
+  // Auth errors from Supabase are intentionally generic ("Incorrect email
+  // or password") so we can't pin invalid-state to a specific field.
+  // Mark BOTH inputs invalid when any error is present — screen-readers
+  // get the right signal, and the visual aria-invalid styling matches
+  // the per-field error red without needing per-field state.
+  const hasError = Boolean(state.error)
+
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="space-y-4" aria-describedby={hasError ? 'login-error' : undefined}>
       <input type="hidden" name="next" value={next} />
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
@@ -36,20 +43,38 @@ export function LoginForm() {
           type="email"
           autoComplete="email"
           required
+          aria-required="true"
+          aria-invalid={hasError || undefined}
+          aria-describedby={hasError ? 'login-error' : undefined}
           placeholder="you@example.com"
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Password</Label>
+          <a
+            href="/magic-link"
+            className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+          >
+            Forgot password?
+          </a>
+        </div>
         <Input
           id="password"
           name="password"
           type="password"
           autoComplete="current-password"
           required
+          aria-required="true"
+          aria-invalid={hasError || undefined}
+          aria-describedby={hasError ? 'login-error' : undefined}
         />
       </div>
-      {state.error ? <FormMessage variant="error">{state.error}</FormMessage> : null}
+      {state.error ? (
+        <div id="login-error">
+          <FormMessage variant="error">{state.error}</FormMessage>
+        </div>
+      ) : null}
       <SubmitButton />
     </form>
   )
