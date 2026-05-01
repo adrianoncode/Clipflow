@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 
 import {
@@ -10,17 +11,19 @@ import {
 } from '@/components/ui/editorial-motion'
 import { DASHBOARD_PALETTE as PALETTE } from '@/lib/dashboard/palette'
 
-// BarChartWeek — adaptive volume bars across the dashboard's selected
-// range (7 / 30 / 90 days). Originally hardcoded to 7 daily bars; now
-// renders whatever the analytics layer hands over so the same card
-// works for daily-7, daily-30, and weekly-90 views without per-range
-// component branching.
+// BarChartRange — adaptive volume bars across the dashboard's selected
+// range (7 / 30 / 90 days). Originally a fixed-7-day component
+// (BarChartWeek); renamed when adaptive bucketing landed in Phase 2 so
+// the name actually describes what it does.
+//
+// Renders whatever buckets the analytics layer hands over (7 daily,
+// 30 daily, 13 weekly) without per-range component branching.
 //
 // Mount: bars grow staggered (80ms between bars) from 0 → height. The
 // peak bar gets a softly-pulsing accent halo. Hover: bar glows yellow,
 // tooltip floats above with the bucket date + count. Reduced-motion
 // users see the static end-state with no glow.
-export function BarChartWeek({
+export function BarChartRange({
   data,
   max,
   peakIndex,
@@ -65,8 +68,16 @@ export function BarChartWeek({
   }
 
   return (
-    <div
-      className="group flex flex-col justify-between gap-4 rounded-[24px] p-5 transition-all duration-200 hover:scale-[1.012]"
+    // Card wraps in a Link to the Library — drilling into "what was
+    // generated this period" lands on the actual content, not just
+    // another summary view. Mirrors ScheduleWeekCard's pattern where
+    // the entire card is the click-target so users don't have to find
+    // a small "Open" affordance. Bars stay hover-only (tooltips for
+    // information, no nested links to avoid Cmd-click ambiguity).
+    <Link
+      href="/library"
+      aria-label={`${total} posts ${rangeLabel.toLowerCase()} — open Library`}
+      className="group flex flex-col justify-between gap-4 rounded-[24px] p-5 transition-all duration-200 hover:scale-[1.012] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
       style={{
         background: PALETTE.cardCream,
         border: `1px solid ${PALETTE.border}`,
@@ -224,6 +235,6 @@ export function BarChartWeek({
             )
           })()}
       </div>
-    </div>
+    </Link>
   )
 }

@@ -14,7 +14,7 @@ import {
 import { Hero, StripPill } from '@/components/ui/editorial'
 import { Reveal } from '@/components/ui/editorial-motion'
 import { AnimatedDonut } from '@/components/dashboard/animated-donut'
-import { BarChartWeek } from '@/components/dashboard/bar-chart-week'
+import { BarChartRange } from '@/components/dashboard/bar-chart-range'
 import { FeaturedCard } from '@/components/dashboard/featured-card'
 import { FunnelStackCard } from '@/components/dashboard/funnel-stack'
 import { RangeFilter } from '@/components/dashboard/range-filter'
@@ -107,14 +107,20 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     workspaceName: currentWorkspace.name,
   })
 
-  const weekData = analytics.outputsByBucket.map((b) => ({
+  // Bucket-shaped chart data. Naming was `weekData/weekMax/weekTotal/
+  // weekPeakIndex` from when this component only ever showed a 7-day
+  // window; the bucket vocabulary cleared up after Phase 2 made
+  // bucketing range-aware.
+  const bucketData = analytics.outputsByBucket.map((b) => ({
     label: b.label,
     count: b.count,
     isoDay: b.isoStart,
   }))
-  const weekMax = Math.max(...weekData.map((d) => d.count), 1)
-  const weekTotal = weekData.reduce((a, b) => a + b.count, 0)
-  const weekPeakIndex = weekData.findIndex((d) => d.count === weekMax && d.count > 0)
+  const bucketMax = Math.max(...bucketData.map((d) => d.count), 1)
+  const bucketTotal = bucketData.reduce((a, b) => a + b.count, 0)
+  const bucketPeakIndex = bucketData.findIndex(
+    (d) => d.count === bucketMax && d.count > 0,
+  )
 
   // One-line "what's changed" summary, computed server-side from
   // analytics. Only shown in the active stage — blank/imported states
@@ -317,11 +323,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 />
               </Reveal>
               <Reveal index={1}>
-                <BarChartWeek
-                  data={weekData}
-                  max={weekMax}
-                  peakIndex={weekPeakIndex}
-                  total={weekTotal}
+                <BarChartRange
+                  data={bucketData}
+                  max={bucketMax}
+                  peakIndex={bucketPeakIndex}
+                  total={bucketTotal}
                   rangeLabel={RANGE_LABELS[range]}
                 />
               </Reveal>
