@@ -192,18 +192,29 @@ function StuckDraftRow({
           {STATE_LABEL[draft.state] ?? draft.state} · {draft.daysSince}d cold
         </p>
       </div>
+      {/* The CTA is visually 24×24 (yellow chevron pill) but the
+          interactive hit-area is 44×44 via an invisible inset. WCAG
+          2.1 AA tap-target is 44px on touch — applying it here was
+          critical because the row is dense and a thumb miss-click on
+          the row's :hover-state used to scroll the panel instead of
+          activating the draft review link. */}
       <Link
         href={`/workspace/${workspaceId}/content/${draft.contentId}/outputs`}
         aria-label={`Review ${draft.title ?? 'draft'}`}
-        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4D93D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F0F0F]"
-        style={{
-          background: PALETTE.yellow,
-          transform: hovered ? 'translateX(4px) scale(1.06)' : 'translateX(0) scale(1)',
-          transition: 'transform 220ms cubic-bezier(0.2,0.9,0.25,1.18)',
-          boxShadow: hovered ? '0 6px 16px rgba(220,185,31,0.45)' : 'none',
-        }}
+        className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4D93D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F0F0F]"
       >
-        <ChevronRight className="h-3 w-3" style={{ color: PALETTE.ink }} />
+        <span
+          aria-hidden
+          className="grid h-6 w-6 place-items-center rounded-full"
+          style={{
+            background: PALETTE.yellow,
+            transform: hovered ? 'translateX(4px) scale(1.06)' : 'translateX(0) scale(1)',
+            transition: 'transform 220ms cubic-bezier(0.2,0.9,0.25,1.18)',
+            boxShadow: hovered ? '0 6px 16px rgba(220,185,31,0.45)' : 'none',
+          }}
+        >
+          <ChevronRight className="h-3 w-3" style={{ color: PALETTE.ink }} />
+        </span>
       </Link>
     </li>
   )

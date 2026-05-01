@@ -10,22 +10,31 @@ import {
 } from '@/components/ui/editorial-motion'
 import { DASHBOARD_PALETTE as PALETTE } from '@/lib/dashboard/palette'
 
-// BarChartWeek — 7-day post velocity bars.
+// BarChartWeek — adaptive volume bars across the dashboard's selected
+// range (7 / 30 / 90 days). Originally hardcoded to 7 daily bars; now
+// renders whatever the analytics layer hands over so the same card
+// works for daily-7, daily-30, and weekly-90 views without per-range
+// component branching.
 //
 // Mount: bars grow staggered (80ms between bars) from 0 → height. The
 // peak bar gets a softly-pulsing accent halo. Hover: bar glows yellow,
-// tooltip floats above with the day name + count. Reduced-motion users
-// see the static end-state with no glow.
+// tooltip floats above with the bucket date + count. Reduced-motion
+// users see the static end-state with no glow.
 export function BarChartWeek({
   data,
   max,
   peakIndex,
   total,
+  rangeLabel,
 }: {
   data: Array<{ label: string; count: number; isoDay: string }>
   max: number
   peakIndex: number
   total: number
+  /** Free-form label for the period the data covers — e.g. "Last 7
+   *  days". Renders below the count, replacing the previous hard-
+   *  coded "posts this week" copy. */
+  rangeLabel: string
 }) {
   // Delay covers the parent <Reveal>'s 320ms fade-up so the bar grow
   // doesn't animate "behind the fog" — bars start to wake once their
@@ -87,7 +96,7 @@ export function BarChartWeek({
             <span className="text-[11px] leading-tight" style={{ color: PALETTE.inkSoft }}>
               posts
               <br />
-              this week
+              {rangeLabel.toLowerCase()}
             </span>
           </div>
         </div>
@@ -100,7 +109,21 @@ export function BarChartWeek({
         </span>
       </div>
 
-      <div ref={containerRef} className="relative flex h-[88px] items-end gap-1.5">
+      <div
+        ref={containerRef}
+        className="relative flex h-[88px] items-end"
+        // Gap scales with bucket count: 6px @ ≤7, 3px @ 8-15, 1.5px @ 16+.
+        // Without this, 30-bar views eat 174px of horizontal real estate
+        // in gaps alone and the bars compress to slivers.
+        style={{
+          gap:
+            data.length <= 7
+              ? 6
+              : data.length <= 15
+                ? 3
+                : 1.5,
+        }}
+      >
         {data.map((d, i) => {
           const isPeak = i === peakIndex && d.count > 0
           const isHover = hoverIdx === i
@@ -121,7 +144,10 @@ export function BarChartWeek({
               key={d.isoDay}
               role="img"
               aria-label={cellLabel}
-              className="relative flex flex-1 cursor-pointer flex-col items-center gap-1.5"
+              // No `cursor-pointer` — cells aren't interactive (no
+              // onClick / no Link), only hover-tooltips. Pointer cursor
+              // would lie about clickability per Vercel WIG.
+              className="relative flex flex-1 flex-col items-center gap-1.5"
               onMouseEnter={(e) => handleActivate(i, e)}
               onMouseLeave={() => setHoverIdx(null)}
             >
@@ -159,15 +185,23 @@ export function BarChartWeek({
                   }}
                 />
               </div>
-              <span
-                className="text-[10px] font-semibold uppercase"
-                style={{
-                  color: isHover ? PALETTE.ink : PALETTE.inkSoft,
-                  transition: 'color 180ms ease-out',
-                }}
-              >
-                {d.label}
-              </span>
+              {/* Empty labels (sparse 30d markers) get a 1px-tall
+                  spacer so the bar bottoms align with their neighbours.
+                  Otherwise the bar with no label would visually bleed
+                  down into the next row. */}
+              {d.label ? (
+                <span
+                  className="text-[10px] font-semibold uppercase"
+                  style={{
+                    color: isHover ? PALETTE.ink : PALETTE.inkSoft,
+                    transition: 'color 180ms ease-out',
+                  }}
+                >
+                  {d.label}
+                </span>
+              ) : (
+                <span aria-hidden className="block h-[14px]" />
+              )}
             </div>
           )
         })}

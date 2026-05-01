@@ -3,7 +3,7 @@
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
-import { formatNum, type KpiData } from '@/components/ui/editorial'
+import { formatNum, KpiDelta, type KpiData } from '@/components/ui/editorial'
 
 /**
  * Client-only motion primitives that pair with editorial.tsx.
@@ -533,7 +533,7 @@ function PillNumberLocal({
   )
 }
 
-export function KpiCountUp({ Icon, value, label }: KpiData) {
+export function KpiCountUp({ Icon, value, label, delta }: KpiData) {
   return (
     <div className="flex flex-col items-start gap-0.5">
       <div className="flex items-end gap-2">
@@ -557,8 +557,9 @@ export function KpiCountUp({ Icon, value, label }: KpiData) {
           }}
         />
       </div>
-      <span className="ml-9 text-[11px] font-medium" style={{ color: '#2A2A2A' }}>
+      <span className="ml-9 inline-flex items-baseline text-[11px] font-medium" style={{ color: '#2A2A2A' }}>
         {label}
+        <KpiDelta delta={delta} />
       </span>
     </div>
   )

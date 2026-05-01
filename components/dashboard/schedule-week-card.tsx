@@ -22,10 +22,16 @@ export function ScheduleWeekCard({
   workspaceId: string
 }) {
   const today = new Date()
+  // Locale-aware week start. Some users get a Sunday-first week, most
+  // get Monday-first. JS Date.getDay() returns 0=Sun..6=Sat — we shift
+  // it so Monday=0..Sunday=6 to match the European default the app
+  // ships with.
   const dayIdx = (today.getDay() + 6) % 7
   const monday = new Date(today)
   monday.setDate(today.getDate() - dayIdx)
-  const days = Array.from({ length: 6 }, (_, i) => {
+  // Full week: Mon..Sun (7 cells). The previous version emitted only 6
+  // and silently dropped Sunday — broken on every Sunday view.
+  const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday)
     d.setDate(monday.getDate() + i)
     return d
@@ -86,13 +92,18 @@ export function ScheduleWeekCard({
         />
       </div>
 
-      <div ref={containerRef} className="relative grid grid-cols-6 gap-1 text-center">
+      <div ref={containerRef} className="relative grid grid-cols-7 gap-1 text-center">
         {days.map((d, i) => {
           const isToday = d.toDateString() === today.toDateString()
           return (
             <div
               key={i}
-              className="flex cursor-pointer flex-col items-center gap-1.5"
+              // No `cursor-pointer`: each day cell is a hover-tooltip
+              // host, not a click target. The whole card is wrapped in
+              // a Link, so the implicit cursor inherited from the Link
+              // (`pointer`) is correct everywhere — we just don't add
+              // a misleading second pointer at the cell level.
+              className="flex flex-col items-center gap-1.5"
               onMouseEnter={(e) => showTip(i, e)}
               onMouseLeave={() => setTip((s) => ({ ...s, visible: false }))}
             >

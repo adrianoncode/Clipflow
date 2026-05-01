@@ -38,9 +38,42 @@ export interface KpiData {
   Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
   value: number
   label: string
+  /** Optional signed % delta vs. previous period. Null/undefined hides
+   *  the trend chip entirely (use when no baseline exists yet). */
+  delta?: number | null
 }
 
-export function Kpi({ Icon, value, label }: KpiData) {
+// ── KpiDelta — small trend-chip rendered below the label
+//
+// Up = subtle paper-green, Down = warm destructive-red. Both are
+// pulled from the brand palette (matching the "SECURE · AES-256"
+// dot in the legal footer + the destructive token) so the
+// dashboard stays in-vocabulary with the rest of the app.
+//
+// Returns null when delta is null/undefined — every call-site can
+// safely pass `delta?: number | null` without conditional render.
+export function KpiDelta({ delta }: { delta: number | null | undefined }) {
+  if (delta === null || delta === undefined) return null
+  const sign = delta > 0 ? '↑' : delta < 0 ? '↓' : '·'
+  const absVal = Math.abs(delta)
+  const color =
+    delta > 0 ? '#0F6B4D' : delta < 0 ? '#9B2018' : '#7A7468'
+  return (
+    <span
+      className="ml-1 inline-flex items-center gap-0.5 text-[10.5px] font-semibold tabular-nums"
+      style={{
+        color,
+        fontFamily: 'var(--font-jetbrains-mono), monospace',
+      }}
+      aria-label={`${delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat'} ${absVal} percent week-over-week`}
+    >
+      <span aria-hidden>{sign}</span>
+      {absVal}%
+    </span>
+  )
+}
+
+export function Kpi({ Icon, value, label, delta }: KpiData) {
   return (
     <div className="flex flex-col items-start gap-0.5">
       <div className="flex items-end gap-2">
@@ -64,8 +97,9 @@ export function Kpi({ Icon, value, label }: KpiData) {
           {formatNum(value)}
         </span>
       </div>
-      <span className="ml-9 text-[11px] font-medium" style={{ color: '#2A2A2A' }}>
+      <span className="ml-9 inline-flex items-baseline text-[11px] font-medium" style={{ color: '#2A2A2A' }}>
         {label}
+        <KpiDelta delta={delta} />
       </span>
     </div>
   )

@@ -32,16 +32,21 @@ export function FeaturedCard({
   const reduced = usePrefersReducedMotion()
 
   return (
-    <TiltCard maxTilt={3.5} className="row-span-2 h-full">
+    <TiltCard maxTilt={4.5} className="row-span-2 h-full">
       <SpotlightCard
         tone="warm"
-        size={380}
+        // Spotlight expanded from 380→520 px and tilt from 3.5°→4.5°
+        // so the FeaturedCard reads as the visual anchor of the bento
+        // (per kpi-dashboard-design hierarchy: one card should pull
+        // the eye first). Drop-shadow strengthened to deepen the
+        // hover-lift effect.
+        size={520}
         className="group relative flex h-full min-h-[360px] flex-col justify-end overflow-hidden rounded-[24px] p-5 transition-all duration-300"
         style={{
           background: `linear-gradient(170deg, ${PALETTE.yellowSoft} 0%, ${PALETTE.yellow} 55%, ${PALETTE.yellowDeep} 100%)`,
           border: `1px solid ${PALETTE.border}`,
           boxShadow:
-            'inset 0 1px 0 rgba(255,255,255,0.55), 0 18px 46px -22px rgba(220,185,31,0.45)',
+            'inset 0 1px 0 rgba(255,255,255,0.55), 0 24px 56px -22px rgba(220,185,31,0.55)',
         }}
       >
         <span
@@ -93,22 +98,31 @@ export function FeaturedCard({
 
         <div className="relative z-10 flex flex-col gap-1.5 pl-2">
           <p
-            className="text-[10px] font-semibold uppercase tracking-[0.22em]"
+            // Eyebrow gets a leading dash + tighter opacity. Matches
+            // the editorial-eyebrow pattern used on legal pages so
+            // the FeaturedCard reads as a "section header" inside
+            // the bento, not just another tile.
+            className="text-[10.5px] font-semibold uppercase tracking-[0.24em]"
             style={{
               color: PALETTE.charcoal,
-              opacity: 0.6,
+              opacity: 0.7,
               fontFamily: 'var(--font-jetbrains-mono), monospace',
             }}
           >
-            {hasFeatured ? 'Top performer' : 'Workspace'}
+            — {hasFeatured ? 'Top performer' : 'Workspace'}
           </p>
           <h3
-            className="text-[26px] leading-[1.02]"
+            // Bumped from 26px → clamp(28px, 3vw, 34px). Larger
+            // serif headline pulls the eye first per the bento
+            // hierarchy plan; clamp lets it scale down on narrow
+            // sm columns so it never wraps awkwardly.
+            className="leading-[1.02]"
             style={{
               fontFamily: 'var(--font-instrument-serif), Georgia, serif',
               color: PALETTE.ink,
               fontWeight: 400,
-              letterSpacing: '-0.012em',
+              letterSpacing: '-0.014em',
+              fontSize: 'clamp(28px, 3vw, 34px)',
             }}
           >
             {hasFeatured ? (featured.title ?? 'Untitled') : workspaceName}
