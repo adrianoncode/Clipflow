@@ -4,17 +4,12 @@ import * as React from 'react'
 import Link from 'next/link'
 import { CheckCircle2, ChevronRight, FileVideo } from 'lucide-react'
 
-import { CountUp, useMountTween } from '@/components/ui/editorial-motion'
-
-const PALETTE = {
-  cardCream: '#F9F4DC',
-  yellow: '#F4D93D',
-  charcoal: '#0F0F0F',
-  ink: '#0F0F0F',
-  inkSoft: '#2A2A2A',
-  border: 'rgba(15, 15, 15, 0.06)',
-  borderStrong: 'rgba(15, 15, 15, 0.14)',
-}
+import {
+  CountUp,
+  useMountTween,
+  usePrefersReducedMotion,
+} from '@/components/ui/editorial-motion'
+import { DASHBOARD_PALETTE as PALETTE } from '@/lib/dashboard/palette'
 
 const STATE_LABEL: Record<string, string> = {
   draft: 'Draft',
@@ -155,12 +150,18 @@ function StuckDraftRow({
   index: number
 }) {
   const [hovered, setHovered] = React.useState(false)
+  const reduced = usePrefersReducedMotion()
   return (
     <li
       className="group/row relative flex items-center gap-2.5 rounded-lg p-1 transition-colors duration-150"
       style={{
         background: hovered ? 'rgba(255,255,255,0.05)' : 'transparent',
-        animation: `stuck-row-in 320ms cubic-bezier(0.2,0.9,0.25,1.18) ${index * 60}ms both`,
+        // Stagger-in animation gated by the hook. Keyframe lives in
+        // app/globals.css so we don't ship a per-instance scoped block
+        // and don't have to fight a brittle :global selector.
+        animation: reduced
+          ? undefined
+          : `stuck-row-in 320ms cubic-bezier(0.2,0.9,0.25,1.18) ${index * 60}ms both`,
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -204,23 +205,6 @@ function StuckDraftRow({
       >
         <ChevronRight className="h-3 w-3" style={{ color: PALETTE.ink }} />
       </Link>
-      <style jsx>{`
-        @keyframes stuck-row-in {
-          0% {
-            opacity: 0;
-            transform: translateY(6px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .group\\/row {
-            animation: none !important;
-          }
-        }
-      `}</style>
     </li>
   )
 }
@@ -237,8 +221,9 @@ function FunnelLadderRow({
   variant: 'yellow' | 'dark' | 'muted'
   index: number
 }) {
-  // Stagger: 220ms delay per row from top→bottom.
-  const t = useMountTween(900, 220 + index * 180)
+  // Stagger: 220ms baseline + 180ms per row top→bottom, plus 320ms to
+  // clear the parent <Reveal>'s fade so bars don't grow under fog.
+  const t = useMountTween(900, 540 + index * 180)
   const animatedW = widthPct * t
 
   const [hovered, setHovered] = React.useState(false)
@@ -343,8 +328,9 @@ function FunnelLadderRow({
 }
 
 function FunnelArrow({ conversion, index }: { conversion: number; index: number }) {
-  // Arrow chips fade in just after the bar above resolves.
-  const t = useMountTween(400, 320 + index * 180)
+  // Arrow chips fade in just after the bar above resolves; +320ms to
+  // sit on top of <Reveal>'s fade-up.
+  const t = useMountTween(400, 640 + index * 180)
   return (
     <div
       className="flex items-center gap-1.5 pl-3"

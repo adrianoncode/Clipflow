@@ -5,15 +5,7 @@ import Link from 'next/link'
 import { ArrowUpRight, CalendarDays, ChevronRight } from 'lucide-react'
 
 import { BreathingDot, ChartTooltip } from '@/components/ui/editorial-motion'
-
-const PALETTE = {
-  cardCream: '#F9F4DC',
-  yellow: '#F4D93D',
-  charcoal: '#0F0F0F',
-  ink: '#0F0F0F',
-  inkSoft: '#2A2A2A',
-  border: 'rgba(15, 15, 15, 0.06)',
-}
+import { DASHBOARD_PALETTE as PALETTE } from '@/lib/dashboard/palette'
 
 // ScheduleWeekCard — week strip with breathing today indicator + day tooltips.
 //
@@ -52,7 +44,7 @@ export function ScheduleWeekCard({
     const day = days[i]
     if (!day) return
     const rect = containerRef.current.getBoundingClientRect()
-    const cellRect = (e.currentTarget as HTMLDivElement).getBoundingClientRect()
+    const cellRect = e.currentTarget.getBoundingClientRect()
     setTip({
       visible: true,
       label: day.toLocaleDateString(undefined, {

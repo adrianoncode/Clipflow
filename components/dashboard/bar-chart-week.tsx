@@ -8,17 +8,7 @@ import {
   CountUp,
   useMountTween,
 } from '@/components/ui/editorial-motion'
-
-const PALETTE = {
-  cardCream: '#F9F4DC',
-  yellow: '#F4D93D',
-  yellowSoft: '#F9E97A',
-  yellowDeep: '#DCB91F',
-  charcoal: '#0F0F0F',
-  ink: '#0F0F0F',
-  inkSoft: '#2A2A2A',
-  border: 'rgba(15, 15, 15, 0.06)',
-}
+import { DASHBOARD_PALETTE as PALETTE } from '@/lib/dashboard/palette'
 
 // BarChartWeek — 7-day post velocity bars.
 //
@@ -37,15 +27,18 @@ export function BarChartWeek({
   peakIndex: number
   total: number
 }) {
-  const t = useMountTween(900, 60)
+  // Delay covers the parent <Reveal>'s 320ms fade-up so the bar grow
+  // doesn't animate "behind the fog" — bars start to wake once their
+  // card is fully opaque.
+  const t = useMountTween(900, 380)
   const [hoverIdx, setHoverIdx] = React.useState<number | null>(null)
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const [tipPos, setTipPos] = React.useState({ x: 0, y: 0 })
 
-  const handleEnter = (i: number, e: React.MouseEvent<HTMLDivElement>) => {
+  const handleActivate = (i: number, e: { currentTarget: HTMLDivElement }) => {
     if (!containerRef.current) return
     const rect = containerRef.current.getBoundingClientRect()
-    const barRect = (e.currentTarget as HTMLDivElement).getBoundingClientRect()
+    const barRect = e.currentTarget.getBoundingClientRect()
     setTipPos({
       x: barRect.left - rect.left + barRect.width / 2,
       y: barRect.top - rect.top,
@@ -115,11 +108,21 @@ export function BarChartWeek({
           // Stagger: each bar enters delay = i * 80ms, capped to total tween length.
           const stagger = Math.max(0, Math.min(1, t * data.length - i))
           const heightPct = baseHeight * Math.min(1, stagger)
+          // Each bar exposes its data textually via aria-label — sighted
+          // users see the height, screen-reader users hear "Tue, Apr 28:
+          // 12 posts". role="img" because the cell IS a data point, not
+          // a button (no action on activate). The hover tooltip remains
+          // a purely visual decoration; SR users get the same info from
+          // the label without needing to "hover".
+          const dayFormatted = formatDay(d.isoDay)
+          const cellLabel = `${dayFormatted}: ${d.count} ${d.count === 1 ? 'post' : 'posts'}`
           return (
             <div
               key={d.isoDay}
+              role="img"
+              aria-label={cellLabel}
               className="relative flex flex-1 cursor-pointer flex-col items-center gap-1.5"
-              onMouseEnter={(e) => handleEnter(i, e)}
+              onMouseEnter={(e) => handleActivate(i, e)}
               onMouseLeave={() => setHoverIdx(null)}
             >
               {isPeak && stagger >= 1 && (

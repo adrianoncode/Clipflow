@@ -4,18 +4,12 @@ import * as React from 'react'
 import Link from 'next/link'
 import { ArrowRight, Sparkles } from 'lucide-react'
 
-import { SpotlightCard, TiltCard } from '@/components/ui/editorial-motion'
-
-const PALETTE = {
-  yellow: '#F4D93D',
-  yellowSoft: '#F9E97A',
-  yellowDeep: '#DCB91F',
-  charcoal: '#0F0F0F',
-  ink: '#0F0F0F',
-  inkSoft: '#2A2A2A',
-  border: 'rgba(15, 15, 15, 0.06)',
-  borderStrong: 'rgba(15, 15, 15, 0.14)',
-}
+import {
+  SpotlightCard,
+  TiltCard,
+  usePrefersReducedMotion,
+} from '@/components/ui/editorial-motion'
+import { DASHBOARD_PALETTE as PALETTE } from '@/lib/dashboard/palette'
 
 // FeaturedCard — the tall hero tile in the bento.
 //
@@ -35,6 +29,7 @@ export function FeaturedCard({
   workspaceName: string
 }) {
   const hasFeatured = featured !== null
+  const reduced = usePrefersReducedMotion()
 
   return (
     <TiltCard maxTilt={3.5} className="row-span-2 h-full">
@@ -73,7 +68,11 @@ export function FeaturedCard({
             style={{
               color: PALETTE.ink,
               opacity: 0.28,
-              animation: 'sparkle-drift 6s ease-in-out infinite',
+              // Animation gated by the hook (not a brittle :global
+              // selector) so we never disable an unrelated element that
+              // happens to share these Tailwind classes. Keyframe lives
+              // in app/globals.css.
+              animation: reduced ? undefined : 'sparkle-drift 6s ease-in-out infinite',
             }}
           />
         )}
@@ -145,29 +144,6 @@ export function FeaturedCard({
             <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
         </div>
-
-        <style jsx>{`
-          @keyframes sparkle-drift {
-            0%,
-            100% {
-              transform: translate(0, 0) rotate(0deg);
-              opacity: 0.28;
-            }
-            33% {
-              transform: translate(-3px, -2px) rotate(-4deg);
-              opacity: 0.36;
-            }
-            66% {
-              transform: translate(2px, -1px) rotate(3deg);
-              opacity: 0.22;
-            }
-          }
-          @media (prefers-reduced-motion: reduce) {
-            :global(.absolute.right-7.top-7) {
-              animation: none !important;
-            }
-          }
-        `}</style>
       </SpotlightCard>
     </TiltCard>
   )
