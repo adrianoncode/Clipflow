@@ -58,16 +58,17 @@ export function buildNarrative(
 
   // 1. Stuck-drafts emergency takes precedence over everything —
   //    nothing else matters if work is rotting in the queue.
+  //    Text is neutral-fact; the rendering layer prepends a "Heads
+  //    up —" prefix in critical tone so users with red-green
+  //    colourblindness still see the severity.
   if (stuck >= 3) {
     return {
       tone: 'critical',
-      text: `${stuck} drafts have been stuck for over 7 days — review them before they stale out.`,
+      text: `${stuck} drafts have been stuck for 7+ days. Review before they stale out.`,
     }
   }
 
-  // 2. Outputs collapsing relative to last period. Threshold is −25%
-  //    AND a non-trivial volume — small absolute drops on tiny weeks
-  //    triggering an alarm would be noise.
+  // 2. Outputs collapsing relative to last period.
   if (
     outputsDelta !== null &&
     outputsDelta <= -25 &&
@@ -75,7 +76,7 @@ export function buildNarrative(
   ) {
     return {
       tone: 'caution',
-      text: `Output volume dropped ${Math.abs(outputsDelta)}% vs ${priorPhrase} — only ${outputsThisPeriod} ${periodPhrase}.`,
+      text: `Outputs dropped ${Math.abs(outputsDelta)}% vs ${priorPhrase} — ${outputsThisPeriod} generated ${periodPhrase}.`,
     }
   }
 
@@ -99,15 +100,24 @@ export function buildNarrative(
   if (approval >= 80 && movedPastDraft >= 10) {
     return {
       tone: 'positive',
-      text: `${approval}% approval rate across ${movedPastDraft} reviewed drafts — quality is on track.`,
+      text: `${approval}% approval across ${movedPastDraft} reviewed drafts — quality is on track.`,
     }
   }
 
   // 5. Quiet period: no imports AND no outputs in the selected range.
+  //    Easter-egg variant for 90d-quiet workspaces — the "quiet
+  //    quarter" framing lands harder than another generic prod-nudge,
+  //    and the dashboard's voice gets to peek through.
   if (importsThisPeriod === 0 && outputsThisPeriod === 0) {
+    if (range === '90d') {
+      return {
+        tone: 'neutral',
+        text: 'It’s been a quiet quarter. One recording is all it takes to wake the pipeline.',
+      }
+    }
     return {
       tone: 'neutral',
-      text: `No new activity ${periodPhrase} — drop a recording in to keep the pipeline moving.`,
+      text: `No new activity ${periodPhrase}. Drop a recording in to keep the pipeline moving.`,
     }
   }
 

@@ -236,8 +236,8 @@ export function ScheduleWeekCard({
         >
           <Inbox className="h-3.5 w-3.5 shrink-0" aria-hidden />
           <span className="text-[11.5px] font-medium">
-            Queue&rsquo;s empty.{' '}
-            <span style={{ color: PALETTE.ink }}>Schedule a draft</span> to see it here.
+            Nothing queued.{' '}
+            <span style={{ color: PALETTE.ink }}>Approve something</span> and it lands here.
           </span>
         </div>
       )}

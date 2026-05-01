@@ -19,6 +19,7 @@ import { FeaturedCard } from '@/components/dashboard/featured-card'
 import { FunnelStackCard } from '@/components/dashboard/funnel-stack'
 import { RangeFilter } from '@/components/dashboard/range-filter'
 import { ScheduleWeekCard } from '@/components/dashboard/schedule-week-card'
+import { TimeAwareGreeting } from '@/components/dashboard/time-aware-greeting'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getAnalytics } from '@/lib/dashboard/get-analytics'
 import { DASHBOARD_PALETTE as PALETTE } from '@/lib/dashboard/palette'
@@ -129,7 +130,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
              tween reads as fake motion. */}
         <Hero
           kicker={`${currentWorkspace.name} · Insights`}
-          title={<>Welcome back, {currentWorkspace.name}.</>}
+          title={<TimeAwareGreeting name={currentWorkspace.name} />}
           animated={stage === 'active'}
           kpis={[
             {
@@ -213,6 +214,20 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                     className="m-0 text-[13px] font-medium"
                     style={{ color: PALETTE.ink, lineHeight: 1.45 }}
                   >
+                    {/* Severity prefix in bold — colour alone isn't an
+                        accessible signal (~8% of men can't reliably
+                        distinguish red/green), so the bold-text marker
+                        carries the same information without leaning on
+                        the dot/border tone. */}
+                    {narrative.tone === 'critical' && (
+                      <strong style={{ fontWeight: 700 }}>Heads up — </strong>
+                    )}
+                    {narrative.tone === 'caution' && (
+                      <strong style={{ fontWeight: 700 }}>Slowdown — </strong>
+                    )}
+                    {narrative.tone === 'positive' && (
+                      <strong style={{ fontWeight: 700 }}>Looking good — </strong>
+                    )}
                     {narrative.text}
                   </p>
                 </div>

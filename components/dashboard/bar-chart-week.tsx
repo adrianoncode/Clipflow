@@ -155,7 +155,13 @@ export function BarChartWeek({
                 <span
                   className="absolute -top-5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold tabular-nums transition-transform duration-200"
                   style={{
-                    background: PALETTE.yellow,
+                    // Peak number badge desaturated from full yellow
+                    // to yellowSoft — supporting-tier per the yellow-
+                    // hierarchy plan. Action surfaces (FeaturedCard
+                    // gradient, stuck-draft chevron, "Live" pulse pill)
+                    // hold full saturation; data-viz highlights step
+                    // down a tier so they read as "noted" not "alarm".
+                    background: PALETTE.yellowSoft,
                     color: PALETTE.ink,
                     transform: isHover ? 'scale(1.1)' : 'scale(1)',
                   }}
@@ -169,19 +175,17 @@ export function BarChartWeek({
                   style={{
                     height: `${heightPct}%`,
                     background: isHover
-                      ? PALETTE.yellow
+                      ? PALETTE.yellowSoft
                       : isPeak
-                        ? PALETTE.yellow
+                        ? PALETTE.yellowSoft
                         : PALETTE.charcoal,
                     minHeight: 4,
                     transition:
                       'background 180ms ease-out, box-shadow 220ms ease-out, transform 200ms ease-out',
                     transform: isHover ? 'translateY(-2px)' : 'translateY(0)',
                     boxShadow: isHover
-                      ? `0 6px 14px rgba(220,185,31,0.35)`
-                      : isPeak
-                        ? `0 0 0 0 rgba(220,185,31,0)`
-                        : 'none',
+                      ? `0 6px 14px rgba(244,217,61,0.22)`
+                      : 'none',
                   }}
                 />
               </div>
