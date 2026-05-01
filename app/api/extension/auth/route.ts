@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { createClient } from '@/lib/supabase/server'
+import { verifyExtensionToken } from '@/lib/extension-tokens'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function GET(req: NextRequest) {
-  // Rate limit by IP — the extension polls this on every popup open,
-  // so bursty-but-bounded is fine. Without a cap, a malicious caller
-  // could spam attacker-controlled bearer tokens and burn our
-  // Supabase auth.getUser quota while generating no useful data.
+  // IP rate limit before any DB work — without this an attacker can
+  // flood random bearer values at us and burn DB QPS.
   const ip =
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
     req.headers.get('x-real-ip') ??
@@ -25,28 +24,24 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
   }
 
-  const token = auth.replace('Bearer ', '')
-  const supabase = createClient()
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser(token)
-
-  if (error || !user) {
+  const plaintext = auth.replace('Bearer ', '').trim()
+  const verified = await verifyExtensionToken(plaintext)
+  if (!verified.ok) {
     return NextResponse.json({ ok: false, error: 'Invalid token' }, { status: 401 })
   }
 
+  // Tokens are user-scoped, not session-scoped — read the user's
+  // memberships via the admin client.
+  const admin = createAdminClient()
   type WorkspaceRef = { id: string; name: string; type: string } | null
   type MemberRow = { workspace_id: string; role: string; workspaces: WorkspaceRef }
 
-  const { data: memberships } = await supabase
+  const { data: memberships } = await admin
     .from('workspace_members')
     .select('workspace_id, role, workspaces(id, name, type)')
-    .eq('user_id', user.id)
+    .eq('user_id', verified.userId)
 
   const rows = (memberships ?? []) as unknown as MemberRow[]
-
   const workspaces = rows
     .filter((m) => m.workspaces !== null)
     .map((m) => ({

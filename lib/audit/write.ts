@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { createHash } from 'node:crypto'
 import { headers } from 'next/headers'
 
 import { getUser } from '@/lib/auth/get-user'
@@ -8,6 +9,27 @@ import { extractClientIp } from '@/lib/rate-limit'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 import type { AuditAction } from './actions'
+
+/**
+ * Hash the inbound IP before persistence. The audit-log UI tells users
+ * "IP is hashed before storage" — that contract was previously a lie
+ * (we stored raw IPs). We now match the claim by SHA-256-hashing with
+ * a per-deploy pepper sourced from `AUDIT_IP_PEPPER` (or fallback to
+ * `ENCRYPTION_KEY` so dev environments aren't broken).
+ *
+ * The pepper means a leaked DB dump can't be brute-forced against the
+ * 2^32 IPv4 space — an attacker would need our pepper too. We store
+ * only the first 16 hex chars of the hash so cardinality stays useful
+ * for "same person did 3 things from this address" without leaking
+ * the full hash either.
+ */
+function hashIp(ip: string): string {
+  const pepper =
+    process.env.AUDIT_IP_PEPPER ??
+    process.env.ENCRYPTION_KEY ??
+    'unset-pepper-fix-env'
+  return createHash('sha256').update(`${pepper}:${ip}`).digest('hex').slice(0, 16)
+}
 
 interface AuditWriteParams {
   workspaceId: string
@@ -47,7 +69,9 @@ export async function writeAuditLog(params: AuditWriteParams): Promise<void> {
     let userAgent: string | null = null
     try {
       const h = headers()
-      ip = extractClientIp(h) ?? null
+      const rawIp = extractClientIp(h)
+      // Hash the IP per the UI's promise. Empty / 'unknown' becomes null.
+      ip = rawIp && rawIp !== 'unknown' ? hashIp(rawIp) : null
       userAgent = h.get('user-agent') ?? null
     } catch {
       // `headers()` throws outside a request scope (e.g. crons). Silent

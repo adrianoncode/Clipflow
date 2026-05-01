@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
+import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import { createClient } from '@/lib/supabase/server'
 
 // ── Shared types ──────────────────────────────────────────────────────────────
@@ -29,8 +30,12 @@ function parseIds(input: string): string[] {
 // ── Bulk delete ───────────────────────────────────────────────────────────────
 
 /**
- * Bulk delete content items. Uses a single DELETE with `.in('id', ids)` so the
- * database enforces RLS + workspace_id scoping on every row atomically.
+ * Bulk SOFT-delete content items. Sets `deleted_at` so the row stays in
+ * the 30-day reaper window — matching what `deleteContentItem()` does
+ * for single-item delete. The previous `.delete()` here was a hard
+ * delete that bypassed both the soft-delete contract and the recovery
+ * window, so users who selected "all" then "delete" lost rows the
+ * docstring promised were recoverable.
  */
 export async function bulkDeleteContentAction(
   _prev: BulkContentState,
@@ -50,12 +55,25 @@ export async function bulkDeleteContentAction(
   const user = await getUser()
   if (!user) redirect('/login')
 
+  // Defense in depth on top of RLS — make membership + role mismatches
+  // surface as a clear 403-style error instead of silently no-op via
+  // RLS. Reviewers can delete their own contributions but not bulk-
+  // wipe a workspace they don't have edit rights to.
+  const member = await requireWorkspaceMember(parsed.data.workspace_id)
+  if (!member.ok) {
+    return { ok: false, error: 'You are not a member of this workspace.' }
+  }
+  if (!['owner', 'editor'].includes(member.role)) {
+    return { ok: false, error: 'Your role cannot bulk-delete content.' }
+  }
+
   const supabase = createClient()
   const { error, count } = await supabase
     .from('content_items')
-    .delete({ count: 'exact' })
+    .update({ deleted_at: new Date().toISOString() }, { count: 'exact' })
     .in('id', ids)
     .eq('workspace_id', parsed.data.workspace_id)
+    .is('deleted_at', null)
 
   if (error) return { ok: false, error: error.message }
 

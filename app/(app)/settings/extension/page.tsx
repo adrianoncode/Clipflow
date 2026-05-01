@@ -1,5 +1,8 @@
-import { CopyTokenButton } from '@/components/settings/copy-token-button'
-import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+
+import { ExtensionTokensClient } from './extension-tokens-client'
+import { getUser } from '@/lib/auth/get-user'
+import { listExtensionTokens } from '@/lib/extension-tokens'
 import { PageHeading } from '@/components/workspace/page-heading'
 
 export const metadata = {
@@ -7,12 +10,12 @@ export const metadata = {
 }
 
 export default async function ExtensionPage() {
-  const supabase = createClient()
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  const user = await getUser()
+  if (!user) redirect('/login?next=/settings/extension')
 
-  const token = session?.access_token ?? null
+  // Fetch only metadata (id, name, dates) — never the plaintext, which
+  // is one-way-hashed at write time and not recoverable.
+  const tokens = await listExtensionTokens(user.id)
 
   return (
     <div className="space-y-8">
@@ -22,7 +25,6 @@ export default async function ExtensionPage() {
         body="Install the Clipflow Chrome extension to save any webpage to your workspace in one click."
       />
 
-      {/* Installation Steps */}
       <div className="space-y-4">
         <h2 className="text-base font-semibold">Installation</h2>
         <ol className="space-y-3 text-sm text-muted-foreground">
@@ -69,38 +71,19 @@ export default async function ExtensionPage() {
             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
               5
             </span>
-            Click the Clipflow icon in your toolbar, paste the token below, and click{' '}
+            Create a token below, copy it once, paste it into the extension popup, click{' '}
             <strong className="text-foreground">Save</strong>.
           </li>
         </ol>
       </div>
 
-      {/* Token Section */}
-      <div className="space-y-3">
-        <h2 className="text-base font-semibold">Your extension token</h2>
-        <p className="text-sm text-muted-foreground">
-          Copy this token and paste it into the extension popup to authenticate.
-        </p>
+      <ExtensionTokensClient tokens={tokens} />
 
-        {token ? (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-3">
-              <code className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-xs text-muted-foreground">
-                {token}
-              </code>
-              <CopyTokenButton token={token} />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Keep this token private. It grants access to your Clipflow workspaces. Tokens expire
-              when your session ends — return here to get a fresh one if the extension stops working.
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
-            No active session. Please sign in to get your token.
-          </div>
-        )}
-      </div>
+      <p className="text-xs text-muted-foreground">
+        Extension tokens are revokable and scoped to your account. They never
+        appear in this page after creation — if you lose one, revoke it and
+        create a new one.
+      </p>
     </div>
   )
 }

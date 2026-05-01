@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { z } from 'zod'
 
+import { verifyExtensionToken } from '@/lib/extension-tokens'
 import { checkRateLimit, extractClientIp, RATE_LIMITS } from '@/lib/rate-limit'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // Strict input schema. URL must be http(s) — no `javascript:`, `data:`, or
 // `file:` schemes (those would render to dashboards as XSS-vector links
@@ -62,23 +63,18 @@ export async function POST(req: NextRequest) {
   }
   const { url, title, workspaceId } = parsed.data
 
-  const token = auth.replace('Bearer ', '')
-  const supabase = createClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser(token)
-
-  if (authError || !user) {
+  const plaintext = auth.replace('Bearer ', '').trim()
+  const verified = await verifyExtensionToken(plaintext)
+  if (!verified.ok) {
     return NextResponse.json({ ok: false, error: 'Invalid token' }, { status: 401 })
   }
+  const userId = verified.userId
 
   // 2. Per-user content-create rate limit AFTER token verification.
   // Without this, a single compromised token could create unlimited
   // content_items rows.
   const userLimit = await checkRateLimit(
-    `save-url:user:${user.id}`,
+    `save-url:user:${userId}`,
     RATE_LIMITS.contentCreate.limit,
     RATE_LIMITS.contentCreate.windowMs,
   )
@@ -89,6 +85,8 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  const supabase = createAdminClient()
+
   // Membership check + role gate. Read-only roles (viewer/client) can't
   // seed content into the workspace from the extension — only owner /
   // editor / reviewer.
@@ -96,7 +94,7 @@ export async function POST(req: NextRequest) {
     .from('workspace_members')
     .select('role')
     .eq('workspace_id', workspaceId)
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .single()
 
   if (!member) {
@@ -117,7 +115,7 @@ export async function POST(req: NextRequest) {
       status: 'processing',
       title: title || url,
       source_url: url,
-      created_by: user.id,
+      created_by: userId,
     })
     .select('id')
     .single()

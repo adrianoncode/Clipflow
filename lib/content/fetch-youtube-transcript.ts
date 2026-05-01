@@ -12,13 +12,25 @@ export type FetchYoutubeTranscriptResult =
  * - https://youtu.be/VIDEO_ID
  * - https://youtube.com/shorts/VIDEO_ID
  */
+// Whitelist of hostnames YouTube actually serves from. The previous
+// `.includes('youtube.com')` matched `youtube.com.attacker.tld` and
+// other lookalikes — not an SSRF (the transcript library still hits
+// the real YouTube), but it would persist `source_url` as a tampered
+// link and confuse audit/dedupe logic.
+const YOUTUBE_HOSTS = new Set([
+  'youtube.com',
+  'www.youtube.com',
+  'm.youtube.com',
+  'music.youtube.com',
+])
+
 function extractVideoId(url: string): string | null {
   try {
     const u = new URL(url)
     if (u.hostname === 'youtu.be') {
       return u.pathname.slice(1).split('?')[0] ?? null
     }
-    if (u.hostname.includes('youtube.com')) {
+    if (YOUTUBE_HOSTS.has(u.hostname)) {
       const v = u.searchParams.get('v')
       if (v) return v
       // Shorts: /shorts/VIDEO_ID

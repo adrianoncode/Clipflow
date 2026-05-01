@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 import { getUser } from '@/lib/auth/get-user'
+import { checkRateLimit } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 
 const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
@@ -43,19 +44,44 @@ export async function createWorkspaceAction(
   const user = await getUser()
   if (!user) redirect('/login')
 
+  // Per-user creation cap. Without this, an authenticated user could
+  // script the action and spawn unlimited workspaces (each = a row in
+  // workspaces, workspace_members, and audit chatter). 10/hour is
+  // generous for any legitimate user — agency power-users still well
+  // below — but blocks scripted spam.
+  const rl = await checkRateLimit(`workspace-create:${user.id}`, 10, 60 * 60_000)
+  if (!rl.ok) {
+    return {
+      error: 'You\'ve hit the workspace creation limit. Try again in an hour.',
+    }
+  }
+
   const supabase = createClient()
 
-  const { data: newWorkspaceId, error: rpcError } = await supabase.rpc(
-    'create_workspace_with_owner',
-    {
+  // Retry on slug collision. The 6-char suffix gives ~2 billion combos
+  // but the unique constraint is `(owner_id, slug)`, so a single user
+  // creating many workspaces hits collisions birthday-paradox-style
+  // around the low thousands. Without retry the user sees a raw
+  // Postgres unique-violation message.
+  let newWorkspaceId: string | null = null
+  let lastError: { message: string } | null = null
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const { data, error } = await supabase.rpc('create_workspace_with_owner', {
       _name: parsed.data.name,
       _slug: slugify(parsed.data.name),
       _type: parsed.data.type,
-    },
-  )
+    })
+    if (!error && data) {
+      newWorkspaceId = data
+      break
+    }
+    lastError = error
+    // Postgres unique_violation is 23505 — retry with a fresh slug.
+    if (error?.code !== '23505') break
+  }
 
-  if (rpcError || !newWorkspaceId) {
-    return { error: rpcError?.message ?? 'Could not create workspace. Please try again.' }
+  if (!newWorkspaceId) {
+    return { error: lastError?.message ?? 'Could not create workspace. Please try again.' }
   }
 
   // Switch the current workspace cookie to the new one

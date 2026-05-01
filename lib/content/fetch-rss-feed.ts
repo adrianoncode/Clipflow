@@ -1,5 +1,11 @@
 import 'server-only'
+import { readBoundedText } from '@/lib/security/bounded-fetch'
 import { isPublicUrl } from '@/lib/security/is-public-url'
+
+/** 5 MB cap on RSS feed bodies. The largest legitimate podcast feeds
+ *  (1000+ episodes with descriptions) sit well below 2 MB; anything
+ *  bigger is either misbehaving or hostile. */
+const MAX_BYTES = 5 * 1024 * 1024
 
 export interface RssEpisode {
   title: string
@@ -51,7 +57,9 @@ export async function fetchRssFeed(url: string): Promise<RssFetchResult> {
     return { ok: false, error: `RSS feed returned HTTP ${res.status}.` }
   }
 
-  const xml = await res.text()
+  const bounded = await readBoundedText(res, MAX_BYTES)
+  if (!bounded.ok) return { ok: false, error: bounded.error }
+  const xml = bounded.text
 
   // Extract channel title
   const channelTitle =
@@ -126,7 +134,9 @@ export async function fetchRssFeedAll(url: string): Promise<RssFetchAllResult> {
 
   if (!res.ok) return { ok: false, error: `RSS feed returned HTTP ${res.status}.` }
 
-  const xml = await res.text()
+  const bounded = await readBoundedText(res, MAX_BYTES)
+  if (!bounded.ok) return { ok: false, error: bounded.error }
+  const xml = bounded.text
 
   const channelTitle =
     xml
