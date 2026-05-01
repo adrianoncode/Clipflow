@@ -18,6 +18,31 @@ that require accounts, manual submissions, or live-traffic decisions.
 | PWA manifest | [app/manifest.ts](../app/manifest.ts) |
 | CSP / HSTS / image format headers | [next.config.mjs](../next.config.mjs) |
 | Real-User Monitoring of Core Web Vitals | [lib/analytics/web-vitals.ts](../lib/analytics/web-vitals.ts) |
+| GSC ownership verification file | [public/google4dcf37e80dedc154.html](../public/google4dcf37e80dedc154.html) |
+
+## Domain config (Vercel-side, NOT in repo)
+
+`clipflow.to` (apex) is the canonical primary. `www.clipflow.to` issues
+a 308 permanent redirect to apex at the Edge layer — set via Vercel's
+project domains API, not via `next.config.mjs` redirects (Edge-level
+beats server-level by ~50-200ms TTFB and consolidates link equity).
+
+This is intentional and matches the canonical URL strategy in
+`metadataBase`, `sitemap.ts`, `robots.ts`, and every JSON-LD URL. If
+you ever import the project into a new Vercel team, you must redo
+this — the config does not travel with the repo.
+
+To inspect or change:
+```sh
+# List domain redirects on the project
+curl "https://api.vercel.com/v9/projects/$PROJECT_ID/domains?teamId=$TEAM_ID" \
+  -H "Authorization: Bearer $VERCEL_TOKEN" | jq '.domains[] | {name, redirect, redirectStatusCode}'
+
+# Flip primary (example: make www the primary instead)
+curl -X PATCH "https://api.vercel.com/v9/projects/$PROJECT_ID/domains/clipflow.to?teamId=$TEAM_ID" \
+  -H "Authorization: Bearer $VERCEL_TOKEN" -H "Content-Type: application/json" \
+  -d '{"redirect": "www.clipflow.to", "redirectStatusCode": 308}'
+```
 
 ## Required env vars (production)
 
