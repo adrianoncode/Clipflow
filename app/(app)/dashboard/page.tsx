@@ -19,27 +19,12 @@ import { FunnelStackCard } from '@/components/dashboard/funnel-stack'
 import { ScheduleWeekCard } from '@/components/dashboard/schedule-week-card'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getAnalytics } from '@/lib/dashboard/get-analytics'
-import { createClient } from '@/lib/supabase/server'
+import { DASHBOARD_PALETTE as PALETTE } from '@/lib/dashboard/palette'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Dashboard' }
 
 const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
-
-// ── Crextio palette ───────────────────────────────────────────────────────
-// Cream + warm yellow + dark charcoal. The Dashboard's intentional
-// departure from the rest of Clipflow's violet identity — it's the one
-// place users come to *feel* the data, not edit it.
-const PALETTE = {
-  yellow: '#F4D93D',
-  yellowSoft: '#F9E97A',
-  yellowDeep: '#DCB91F',
-  charcoal: '#0F0F0F',
-  ink: '#0F0F0F',
-  inkSoft: '#2A2A2A',
-  border: 'rgba(15, 15, 15, 0.06)',
-  borderStrong: 'rgba(15, 15, 15, 0.14)',
-}
 
 export default async function DashboardPage() {
   const workspaces = await getWorkspaces()
@@ -56,19 +41,7 @@ export default async function DashboardPage() {
     )
   }
 
-  const supabaseForStats = createClient()
-  const [analytics, lastStatsRowResult] = await Promise.all([
-    getAnalytics(currentWorkspace.id),
-    supabaseForStats
-      .from('scheduled_posts')
-      .select('stats_fetched_at')
-      .eq('workspace_id', currentWorkspace.id)
-      .not('stats_fetched_at', 'is', null)
-      .order('stats_fetched_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ])
-  void lastStatsRowResult
+  const analytics = await getAnalytics(currentWorkspace.id)
 
   const totalPublished = analytics.publishingStats.published
   const totalScheduled = analytics.publishingStats.scheduled

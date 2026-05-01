@@ -4,17 +4,7 @@ import * as React from 'react'
 import { ArrowUpRight } from 'lucide-react'
 
 import { CountUp, useMountTween } from '@/components/ui/editorial-motion'
-
-const PALETTE = {
-  cardCream: '#F9F4DC',
-  yellow: '#F4D93D',
-  yellowSoft: '#F9E97A',
-  yellowDeep: '#DCB91F',
-  charcoal: '#0F0F0F',
-  ink: '#0F0F0F',
-  inkSoft: '#2A2A2A',
-  border: 'rgba(15, 15, 15, 0.06)',
-}
+import { DASHBOARD_PALETTE as PALETTE } from '@/lib/dashboard/palette'
 
 // AnimatedDonut — replaces the static SVG donut from the dashboard.
 //
@@ -33,8 +23,10 @@ export function AnimatedDonut({
   const circumference = 2 * Math.PI * radius
   const target = (Math.min(Math.max(pct, 0), 100) / 100) * circumference
 
-  // Sweep tween — climbs 0 → 1 once on mount, eases out.
-  const t = useMountTween(1100, 80)
+  // Sweep tween — climbs 0 → 1 once on mount, eases out. Delayed
+  // past the parent <Reveal>'s 320ms fade so the stroke sweep happens
+  // on a fully-visible card, not under the entrance fog.
+  const t = useMountTween(1100, 400)
   const dash = target * t
 
   const [hovered, setHovered] = React.useState(false)

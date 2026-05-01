@@ -3,7 +3,7 @@
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
-import type { KpiData } from '@/components/ui/editorial'
+import { formatNum, type KpiData } from '@/components/ui/editorial'
 
 /**
  * Client-only motion primitives that pair with editorial.tsx.
@@ -22,7 +22,7 @@ import type { KpiData } from '@/components/ui/editorial'
  */
 
 // Shared util: respect `prefers-reduced-motion` system setting.
-function usePrefersReducedMotion() {
+export function usePrefersReducedMotion() {
   const [reduced, setReduced] = React.useState(false)
   React.useEffect(() => {
     if (typeof window === 'undefined') return
@@ -154,11 +154,17 @@ export function Reveal({
     )
     // Two RAFs — first to commit the initial styles, second to flip to
     // entered. Without this the transition skips on some browsers.
+    // We track both ids in the closure so unmount cancels whichever is
+    // pending (the prior version's `return` from inside the inner RAF
+    // was discarded silently).
+    let r2 = 0
     const r1 = requestAnimationFrame(() => {
-      const r2 = requestAnimationFrame(() => setEntered(true))
-      return () => cancelAnimationFrame(r2)
+      r2 = requestAnimationFrame(() => setEntered(true))
     })
-    return () => cancelAnimationFrame(r1)
+    return () => {
+      cancelAnimationFrame(r1)
+      cancelAnimationFrame(r2)
+    }
   }, [])
 
   const delay = reduced ? 0 : index * delayBase
@@ -187,11 +193,7 @@ export function Reveal({
 // Mirrors the static `Kpi` primitive in editorial.tsx so it can drop in
 // 1:1 inside Hero's kpis array. The number itself ticks 0 → value via
 // CountUp; everything else (icon, label, type ramp) matches.
-function fmtKpi(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`
-  return String(n)
-}
+//
 
 // ── BreathingDot — pulsing dot for "live"/active indicators ─────────────────
 //
@@ -219,6 +221,9 @@ export function BreathingDot({
           className="absolute inset-0 rounded-full"
           style={{
             background: color,
+            // Keyframe defined in app/globals.css so all instances share
+            // a single stylesheet rather than each shipping its own
+            // styled-jsx scoped block.
             animation: 'breathing-halo 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite',
           }}
         />
@@ -227,19 +232,6 @@ export function BreathingDot({
         className="relative block rounded-full"
         style={{ width: size, height: size, background: color }}
       />
-      <style jsx>{`
-        @keyframes breathing-halo {
-          0% {
-            transform: scale(1);
-            opacity: 0.7;
-          }
-          80%,
-          100% {
-            transform: scale(2.4);
-            opacity: 0;
-          }
-        }
-      `}</style>
     </span>
   )
 }
@@ -350,6 +342,15 @@ export function TiltCard({
     cancelAnimationFrame(rafRef.current)
     ref.current.style.transform = `perspective(${perspective}px) rotateX(0deg) rotateY(0deg)`
   }
+
+  // Cancel any pending tilt frame on unmount — stops a stray frame
+  // from writing to a detached DOM node, and matches the cleanup
+  // discipline of the other motion primitives in this file.
+  React.useEffect(() => {
+    return () => {
+      cancelAnimationFrame(rafRef.current)
+    }
+  }, [])
 
   return (
     <div
@@ -507,17 +508,6 @@ export function StripPillAnimated({
           <PillNumberLocal>{display}</PillNumberLocal>
         </div>
       )}
-      <style jsx>{`
-        @keyframes strip-breath {
-          0%,
-          100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.94;
-          }
-        }
-      `}</style>
     </div>
   )
 }
@@ -555,7 +545,7 @@ export function KpiCountUp({ Icon, value, label }: KpiData) {
         </span>
         <CountUp
           value={value}
-          format={fmtKpi}
+          format={formatNum}
           className="tabular-nums"
           style={{
             fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',

@@ -22,7 +22,11 @@ import { cn } from '@/lib/utils'
 import { KpiCountUp, StripPillAnimated } from '@/components/ui/editorial-motion'
 
 // ── Format helpers ──────────────────────────────────────────────────────────
-function formatNum(n: number | null | undefined): string {
+// Exported so motion variants (KpiCountUp etc.) share the same K/M
+// thresholds as the static <Kpi>. The `null/undefined → '–'` branch
+// is a UI affordance the count-up versions don't need (they're given
+// numbers), but the body is identical for the numeric path.
+export function formatNum(n: number | null | undefined): string {
   if (n === null || n === undefined) return '–'
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`
