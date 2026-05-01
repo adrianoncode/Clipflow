@@ -2,11 +2,26 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { Grid3x3, List as ListIcon, Search } from 'lucide-react'
+import { ArrowDownAZ, ChevronDown, Grid3x3, List as ListIcon, Search } from 'lucide-react'
 
 import { Hero, StatusBadge } from '@/components/ui/editorial'
 import { CountUp, Reveal } from '@/components/ui/editorial-motion'
 import type { LibraryItem, LibraryStats } from '@/lib/library/get-library-items'
+
+type SortKey = 'newest' | 'oldest' | 'title' | 'platform'
+
+const SORT_LABEL: Record<SortKey, string> = {
+  newest: 'Newest first',
+  oldest: 'Oldest first',
+  title: 'Title (A→Z)',
+  platform: 'Platform',
+}
+
+/** How many items to show before the user has to click "Load more".
+ *  Picked so the initial paint stays under ~30 cards (plays nicely
+ *  with the staggered Reveal animation) but a power-user with 200+
+ *  outputs isn't forced to scroll-load forever. */
+const PAGE_SIZE = 30
 
 const PLATFORM_LABEL: Record<string, string> = {
   tiktok: 'TikTok',
@@ -43,14 +58,35 @@ export function LibraryClient({
   const [filter, setFilter] = useState<Filter>('all')
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [q, setQ] = useState('')
+  const [sort, setSort] = useState<SortKey>('newest')
+  const [shown, setShown] = useState(PAGE_SIZE)
 
   const filtered = useMemo(() => {
-    return items.filter((i) => {
+    const base = items.filter((i) => {
       if (filter !== 'all' && i.platform !== filter) return false
       if (q && !i.title.toLowerCase().includes(q.toLowerCase())) return false
       return true
     })
-  }, [items, filter, q])
+    // Sort defensively — server returns newest-first, but the user
+    // can flip to oldest / alphabetical / by-platform from the toolbar.
+    const sorted = [...base].sort((a, b) => {
+      switch (sort) {
+        case 'oldest':
+          return a.createdAt.localeCompare(b.createdAt)
+        case 'title':
+          return a.title.localeCompare(b.title)
+        case 'platform':
+          return a.platform.localeCompare(b.platform)
+        case 'newest':
+        default:
+          return b.createdAt.localeCompare(a.createdAt)
+      }
+    })
+    return sorted
+  }, [items, filter, q, sort])
+
+  const visible = useMemo(() => filtered.slice(0, shown), [filtered, shown])
+  const hasMore = filtered.length > visible.length
 
   const filters: Array<{ k: Filter; l: string; c: number }> = [
     { k: 'all', l: 'All', c: items.length },
@@ -78,14 +114,14 @@ export function LibraryClient({
         kicker={`${workspaceName} · Library`}
         title={
           <>
-            Everything you&rsquo;ve{' '}
+            This workspace&rsquo;s{' '}
             <em
               style={{
                 fontFamily: 'var(--font-instrument-serif), Georgia, serif',
                 fontStyle: 'italic',
               }}
             >
-              made
+              library
             </em>
             .
           </>
@@ -160,6 +196,39 @@ export function LibraryClient({
             )
           })}
         </div>
+        {/* Sort dropdown — native <select> for zero-cost a11y, styled
+            to match the chip rail. Without this the user can't bring
+            "oldest first" or alphabetical to the top without
+            re-scrolling all 500 results. */}
+        <label className="relative inline-flex items-center">
+          <span className="sr-only">Sort library</span>
+          <ArrowDownAZ
+            aria-hidden
+            className="pointer-events-none absolute left-3 h-3.5 w-3.5"
+            style={{ color: '#0F0F0F' }}
+          />
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortKey)}
+            className="h-8 cursor-pointer appearance-none rounded-full border bg-transparent pl-8 pr-7 text-[11px] font-semibold transition-colors hover:bg-foreground/[0.04]"
+            style={{
+              borderColor: 'rgba(15,15,15,0.14)',
+              color: '#0F0F0F',
+              fontFamily: 'inherit',
+            }}
+          >
+            {(Object.keys(SORT_LABEL) as SortKey[]).map((k) => (
+              <option key={k} value={k}>
+                {SORT_LABEL[k]}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            aria-hidden
+            className="pointer-events-none absolute right-2 h-3 w-3"
+            style={{ color: '#0F0F0F' }}
+          />
+        </label>
         <div
           className="flex gap-0.5 rounded-full p-0.5"
           style={{ border: '1px solid rgba(15,15,15,0.14)', background: '#FFFDF8' }}
@@ -209,24 +278,46 @@ export function LibraryClient({
           // The key forces a remount when filter/search/view changes,
           // which re-runs the staggered Reveal animation on the new
           // result set — feels like the grid "re-poured" rather than
-          // snapping to a new state.
-          key={`grid-${filter}-${q}`}
+          // snapping to a new state. `sort` is included so changing
+          // sort order also re-staggers; `shown` is NOT in the key —
+          // a "Load more" click must NOT re-animate already-visible
+          // cards, only reveal new ones below.
+          key={`grid-${filter}-${q}-${sort}`}
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
             gap: 14,
           }}
         >
-          {filtered.map((o, i) => (
+          {visible.map((o, i) => (
             <Reveal key={o.id} index={i}>
               <ItemCard workspaceId={workspaceId} item={o} />
             </Reveal>
           ))}
         </div>
       ) : (
-        <Reveal key={`list-${filter}-${q}`}>
-          <ItemList workspaceId={workspaceId} items={filtered} />
+        <Reveal key={`list-${filter}-${q}-${sort}`}>
+          <ItemList workspaceId={workspaceId} items={visible} />
         </Reveal>
+      )}
+
+      {hasMore && (
+        <div className="flex flex-col items-center gap-2 pt-2">
+          <button
+            type="button"
+            onClick={() => setShown((n) => n + PAGE_SIZE)}
+            className="inline-flex h-9 items-center gap-2 rounded-full border border-border/60 bg-card px-5 text-sm font-semibold text-foreground transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5"
+          >
+            Load {Math.min(PAGE_SIZE, filtered.length - visible.length)} more
+            <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+          </button>
+          <p
+            className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
+            style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+          >
+            Showing {visible.length} of {filtered.length}
+          </p>
+        </div>
       )}
     </div>
   )

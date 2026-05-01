@@ -17,6 +17,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { PageHeader } from '@/components/ui/page-header'
 import { CreateStepper } from '@/components/create/create-stepper'
 import { ScheduleViewTabs } from '@/components/scheduler/schedule-view-tabs'
+import { TimezoneLabel } from '@/components/workspace/timezone-label'
 import { ScheduleEmptyPreview } from '@/components/scheduler/schedule-empty-preview'
 import { PlanClient } from '@/components/scheduler/plan-client'
 import { getUser } from '@/lib/auth/get-user'
@@ -159,7 +160,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
             />
           </div>
         </div>
-        <PlanClient workspaceId={params.id} />
+        <PlanClient workspaceId={params.id} workspaceTimezone={workspace.timezone} />
       </div>
     )
   }
@@ -195,6 +196,7 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
 
         <CalendarClient
           workspaceId={params.id}
+          workspaceTimezone={workspace.timezone}
           scheduledPosts={posts}
           unscheduledOutputs={unscheduledOutputs}
           quickScheduleAction={handleQuickSchedule}
@@ -244,11 +246,14 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
         }
       />
 
-      <ScheduleViewTabs
-        workspaceId={params.id}
-        current="queue"
-        scheduledCount={posts.length}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <ScheduleViewTabs
+          workspaceId={params.id}
+          current="queue"
+          scheduledCount={posts.length}
+        />
+        <TimezoneLabel workspaceTimezone={workspace.timezone} />
+      </div>
 
       {/* ── Stats strip ── */}
       {posts.length > 0 && (
