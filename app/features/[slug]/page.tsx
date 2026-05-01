@@ -52,8 +52,29 @@ export default function FeatureDetailPage({ params }: PageProps) {
   if (!id) notFound()
   const entry = FEATURES[id]
 
+  // BreadcrumbList JSON-LD — surfaces the trail "Clipflow ▸ Features ▸ <name>"
+  // in SERP rich snippets so the path replaces the raw URL.
+  const breadcrumbs = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Clipflow', item: 'https://clipflow.to' },
+      { '@type': 'ListItem', position: 2, name: 'Features', item: 'https://clipflow.to/features' },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: entry.name,
+        item: `https://clipflow.to/features/${entry.slug}`,
+      },
+    ],
+  }
+
   return (
     <ExploreLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+      />
       <ExploreDetail entry={entry} kind="feature" />
     </ExploreLayout>
   )

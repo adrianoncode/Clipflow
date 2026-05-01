@@ -7,6 +7,7 @@ import {
   initPostHog,
   usePostHogPageView,
 } from '@/lib/analytics/posthog-client'
+import { registerWebVitals } from '@/lib/analytics/web-vitals'
 
 /**
  * Bootstraps PostHog exactly once per browser tab and wires up the
@@ -31,6 +32,9 @@ export function PostHogProvider({
   useEffect(() => {
     initPostHog()
     if (userId) identifyUser(userId, email || undefined)
+    // Core Web Vitals RUM — gated on PostHog init so the events have
+    // an identified user attached. Missing PostHog key → no-op.
+    registerWebVitals()
   }, [userId, email])
 
   // Hook has to run inside a client-boundary — pulling it here keeps

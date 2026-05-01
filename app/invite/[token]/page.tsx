@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -5,6 +6,13 @@ import { getUser } from '@/lib/auth/get-user'
 import { AcceptInviteForm } from '@/components/members/accept-invite-form'
 
 export const dynamic = 'force-dynamic'
+
+// Tokenised invite pages must never be indexed — the token IS the auth
+// material, leaking it to a SERP would let anyone join the workspace.
+export const metadata: Metadata = {
+  title: 'Accept invite',
+  robots: { index: false, follow: false, nocache: true },
+}
 
 interface InvitePageProps {
   params: { token: string }

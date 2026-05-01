@@ -15,6 +15,13 @@ export const metadata: Metadata = {
   description:
     'Operator-grade workflow guides for Clipflow: Brand Voice training, podcast publishing cadence, hook formulas, agency onboarding. Pick a learning path.',
   alternates: { canonical: 'https://clipflow.to/playbook' },
+  openGraph: {
+    title: 'Playbook — operator guides for Clipflow',
+    description:
+      'Operator-grade workflow guides for Clipflow: Brand Voice training, publishing cadence, hook formulas, agency onboarding.',
+    url: 'https://clipflow.to/playbook',
+    type: 'website',
+  },
 }
 
 const DIFFICULTY_LABEL = {
@@ -41,6 +48,15 @@ interface HubProps {
 export default function PlaybookHubPage({ searchParams }: HubProps) {
   const featured = GUIDES[0]!
   const pathQuery = (searchParams.path as keyof typeof PATHS | undefined) ?? null
+
+  const breadcrumbs = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Clipflow', item: 'https://clipflow.to' },
+      { '@type': 'ListItem', position: 2, name: 'Playbook', item: 'https://clipflow.to/playbook' },
+    ],
+  }
   const categoryFilter = searchParams.category ?? null
   const difficultyFilter = searchParams.difficulty ?? null
   const activePath = pathQuery && PATHS[pathQuery] ? PATHS[pathQuery] : null
@@ -58,6 +74,10 @@ export default function PlaybookHubPage({ searchParams }: HubProps) {
 
   return (
     <PlaybookShell activePathId={activePath?.id ?? null}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+      />
       <div className="space-y-16 pb-24">
         {/* ── Hero ── */}
         <header>

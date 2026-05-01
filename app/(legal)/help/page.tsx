@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
   ArrowUpRight,
@@ -11,10 +12,18 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Help & docs',
   description:
     'Guides, FAQs, and troubleshooting for Clipflow — the fastest way to turn one video into TikTok, Reels, Shorts, and LinkedIn posts.',
+  alternates: { canonical: 'https://clipflow.to/help' },
+  openGraph: {
+    title: 'Help & docs — Clipflow',
+    description:
+      'Guides, FAQs, and troubleshooting for Clipflow — covering import, captions, scheduling, and BYOK setup.',
+    url: 'https://clipflow.to/help',
+    type: 'website',
+  },
 }
 
 /**

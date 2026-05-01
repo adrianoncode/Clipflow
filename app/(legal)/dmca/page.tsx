@@ -4,7 +4,14 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'DMCA / Copyright Policy — Clipflow',
   description:
-    'How to submit a copyright infringement notice under the DMCA and what Clipflow does about it.',
+    'How to submit a copyright infringement notice under the DMCA and what Clipflow does about it. Designated agent details for takedown requests.',
+  alternates: { canonical: 'https://clipflow.to/dmca' },
+  openGraph: {
+    title: 'DMCA / Copyright Policy — Clipflow',
+    description: 'How to submit a copyright infringement notice under the DMCA.',
+    url: 'https://clipflow.to/dmca',
+    type: 'article',
+  },
 }
 
 export default function DmcaPage() {

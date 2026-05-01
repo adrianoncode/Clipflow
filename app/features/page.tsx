@@ -10,13 +10,33 @@ export const metadata: Metadata = {
   description:
     'Brand Voice, Clip Finder, Brand Kit, A/B Hook Testing, Scheduler, White-label Review, Thumbnail Studio, Creator Research. One tool for the whole repurposing pipeline.',
   alternates: { canonical: 'https://clipflow.to/features' },
+  openGraph: {
+    title: 'Features — Clipflow',
+    description:
+      'Brand Voice, Clip Finder, Brand Kit, A/B Hook Testing, Scheduler, White-label Review, Thumbnail Studio.',
+    url: 'https://clipflow.to/features',
+    type: 'website',
+  },
 }
 
 export default function FeaturesHubPage() {
   const features = ALL_FEATURE_IDS.map((id) => FEATURES[id])
 
+  const breadcrumbs = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Clipflow', item: 'https://clipflow.to' },
+      { '@type': 'ListItem', position: 2, name: 'Features', item: 'https://clipflow.to/features' },
+    ],
+  }
+
   return (
     <ExploreLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+      />
       <div className="space-y-10 pb-24">
         <header>
           <p className="lv2-mono-label mb-3">Features</p>

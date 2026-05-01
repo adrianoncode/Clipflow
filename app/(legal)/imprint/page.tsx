@@ -2,7 +2,15 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Imprint — Clipflow',
-  description: 'Legal operator information for Clipflow (Impressum).',
+  description:
+    'Legal operator information for Clipflow (Impressum) — company registration, contact details, and regulatory authority under §5 TMG.',
+  alternates: { canonical: 'https://clipflow.to/imprint' },
+  openGraph: {
+    title: 'Imprint — Clipflow',
+    description: 'Legal operator information for Clipflow (Impressum).',
+    url: 'https://clipflow.to/imprint',
+    type: 'article',
+  },
 }
 
 /**

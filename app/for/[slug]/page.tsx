@@ -49,8 +49,29 @@ export default function UseCaseDetailPage({ params }: PageProps) {
   if (!id) notFound()
   const entry = USE_CASES[id]
 
+  // BreadcrumbList JSON-LD — surfaces the trail "Clipflow ▸ Use cases ▸ <name>"
+  // in SERP rich snippets so the path replaces the raw URL.
+  const breadcrumbs = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Clipflow', item: 'https://clipflow.to' },
+      { '@type': 'ListItem', position: 2, name: 'Use cases', item: 'https://clipflow.to/for' },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: entry.name,
+        item: `https://clipflow.to/for/${entry.slug}`,
+      },
+    ],
+  }
+
   return (
     <ExploreLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+      />
       <ExploreDetail entry={entry} kind="use-case" />
     </ExploreLayout>
   )

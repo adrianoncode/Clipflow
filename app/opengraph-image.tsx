@@ -1,7 +1,14 @@
 import { ImageResponse } from 'next/og'
 
+// Default OG card served at /opengraph-image — used as fallback for
+// every page that doesn't override `metadata.openGraph.images`.
+//
+// Brand: Crextio charcoal (#0F0F0F) + warm yellow (#F4D93D) on paper
+// (#FAF7F2). The previous version still used the old violet/pink
+// gradient and looked like a different product than the in-app UI.
 export const runtime = 'edge'
-export const alt = 'Clipflow — AI Video Repurposing'
+export const alt =
+  'Clipflow — One recording. A month of posts. AI repurposing for TikTok, Reels, Shorts & LinkedIn.'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -10,113 +17,136 @@ export default async function Image() {
     (
       <div
         style={{
-          background: 'linear-gradient(135deg, #030304 0%, #0f0520 50%, #030304 100%)',
+          background: '#FAF7F2',
+          backgroundImage:
+            'radial-gradient(circle at 14% 0%, rgba(244,217,61,0.55) 0%, rgba(244,217,61,0) 55%), radial-gradient(circle at 92% 100%, rgba(15,15,15,0.10) 0%, rgba(15,15,15,0) 55%)',
           width: '100%',
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           justifyContent: 'center',
+          padding: '72px 80px',
           fontFamily: 'system-ui, sans-serif',
+          position: 'relative',
         }}
       >
-        {/* Glow */}
+        {/* Logo lockup — charcoal tile + yellow chip, mirrors in-app brand mark */}
         <div
           style={{
-            position: 'absolute',
-            top: '20%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 500,
-            height: 300,
-            borderRadius: '50%',
-            background: 'radial-gradient(ellipse, rgba(15,15,15,0.3) 0%, transparent 70%)',
-          }}
-        />
-
-        {/* Logo */}
-        <div
-          style={{
-            fontSize: 48,
-            fontWeight: 800,
-            background: 'linear-gradient(135deg, #a78bfa, #ec4899)',
-            backgroundClip: 'text',
-            color: 'transparent',
-            marginBottom: 16,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+            marginBottom: 36,
           }}
         >
-          Clipflow
-        </div>
-
-        {/* Headline */}
-        <div
-          style={{
-            fontSize: 56,
-            fontWeight: 800,
-            color: '#ffffff',
-            textAlign: 'center',
-            lineHeight: 1.1,
-            letterSpacing: '-0.03em',
-            maxWidth: 800,
-          }}
-        >
-          One video.{' '}
-          <span
+          <div
             style={{
-              background: 'linear-gradient(135deg, #a78bfa, #ec4899, #f97316)',
-              backgroundClip: 'text',
-              color: 'transparent',
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: '#0F0F0F',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            Every platform.
-          </span>
+            <div
+              style={{
+                width: 18,
+                height: 18,
+                borderRadius: 4,
+                background: '#F4D93D',
+              }}
+            />
+          </div>
+          <div
+            style={{
+              fontSize: 32,
+              fontWeight: 700,
+              color: '#0F0F0F',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Clipflow
+          </div>
+        </div>
+
+        {/* Headline — display serif voice */}
+        <div
+          style={{
+            fontSize: 84,
+            fontWeight: 400,
+            color: '#0F0F0F',
+            lineHeight: 1.0,
+            letterSpacing: '-0.02em',
+            maxWidth: 1000,
+            fontFamily: '"Times New Roman", serif',
+          }}
+        >
+          One recording.
+        </div>
+        <div
+          style={{
+            fontSize: 84,
+            fontWeight: 400,
+            color: '#0F0F0F',
+            lineHeight: 1.0,
+            letterSpacing: '-0.02em',
+            maxWidth: 1000,
+            fontStyle: 'italic',
+            fontFamily: '"Times New Roman", serif',
+          }}
+        >
+          A month of posts.
         </div>
 
         {/* Sub */}
         <div
           style={{
             fontSize: 22,
-            color: 'rgba(255,255,255,0.5)',
-            marginTop: 20,
-            textAlign: 'center',
-            maxWidth: 600,
+            color: '#3a342c',
+            marginTop: 28,
+            lineHeight: 1.45,
+            maxWidth: 760,
           }}
         >
-          AI video repurposing with real video rendering. 25+ AI tools. Zero markup.
+          AI captions, brand voice, scheduling — across TikTok, Reels, Shorts, and LinkedIn.
         </div>
 
-        {/* Platform pills */}
-        <div style={{ display: 'flex', gap: 12, marginTop: 32 }}>
-          {[
-            { name: 'TikTok', color: '#ec4899' },
-            { name: 'Reels', color: '#a855f7' },
-            { name: 'Shorts', color: '#ef4444' },
-            { name: 'LinkedIn', color: '#3b82f6' },
-          ].map((p) => (
+        {/* Platform pills — single ink+yellow vocabulary */}
+        <div style={{ display: 'flex', gap: 10, marginTop: 36 }}>
+          {['TikTok', 'Reels', 'Shorts', 'LinkedIn'].map((p, i) => (
             <div
-              key={p.name}
+              key={p}
               style={{
-                padding: '8px 20px',
+                padding: '10px 18px',
                 borderRadius: 999,
                 fontSize: 16,
-                fontWeight: 600,
-                color: p.color,
-                border: `2px solid ${p.color}33`,
-                background: `${p.color}15`,
+                fontWeight: 700,
+                color: i === 0 ? '#1a2000' : '#0F0F0F',
+                border:
+                  i === 0 ? '1px solid #DCB91F' : '1px solid rgba(15,15,15,0.16)',
+                background: i === 0 ? '#F4D93D' : '#FFFDF8',
               }}
             >
-              {p.name}
+              {p}
             </div>
           ))}
         </div>
 
-        {/* URL */}
+        {/* URL chip */}
         <div
           style={{
             position: 'absolute',
-            bottom: 32,
-            fontSize: 16,
-            color: 'rgba(255,255,255,0.25)',
+            bottom: 48,
+            right: 80,
+            fontSize: 14,
+            fontWeight: 600,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: '#7c7468',
+            fontFamily: 'monospace',
           }}
         >
           clipflow.to

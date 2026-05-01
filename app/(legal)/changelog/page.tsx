@@ -3,7 +3,15 @@ import { Zap, Video, Sparkles } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Changelog — Clipflow',
-  description: 'Latest updates, features, and improvements to Clipflow.',
+  description:
+    'Latest updates, features, and improvements to Clipflow — version history, new AI integrations, and shipped roadmap items.',
+  alternates: { canonical: 'https://clipflow.to/changelog' },
+  openGraph: {
+    title: 'Changelog — Clipflow',
+    description: 'Latest updates, features, and improvements to Clipflow.',
+    url: 'https://clipflow.to/changelog',
+    type: 'article',
+  },
 }
 
 const ENTRIES = [

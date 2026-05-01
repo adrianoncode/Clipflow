@@ -16,10 +16,20 @@ export async function generateMetadata({ params }: ReviewPageProps) {
   // White-label the browser tab too — agencies don't want "Clipflow" in
   // the title bar of a link they sent their client.
   const data = await getReviewPageData(params.token)
-  if (!data) return { title: 'Review' }
+  // Review links are private, tokenised, and white-labelled per
+  // workspace. Indexing them would (a) leak client deliverables to the
+  // SERP and (b) attribute white-labelled work back to Clipflow.
+  const robots = {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: { index: false, follow: false, noimageindex: true },
+  } as const
+  if (!data) return { title: 'Review', robots }
   const owner = data.workspaceName ?? 'Review'
   return {
     title: data.contentTitle ? `${data.contentTitle} · ${owner}` : `${owner} · Review`,
+    robots,
   }
 }
 

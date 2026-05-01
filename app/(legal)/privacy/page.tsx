@@ -2,7 +2,16 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy — Clipflow',
-  description: 'How Clipflow collects, uses, and protects your data.',
+  description:
+    'How Clipflow collects, uses, and protects your data. GDPR-compliant, AES-256-encrypted at rest, no tracking cookies.',
+  alternates: { canonical: 'https://clipflow.to/privacy' },
+  openGraph: {
+    title: 'Privacy Policy — Clipflow',
+    description:
+      'How Clipflow collects, uses, and protects your data. GDPR-compliant, AES-256-encrypted at rest, no tracking cookies.',
+    url: 'https://clipflow.to/privacy',
+    type: 'article',
+  },
 }
 
 export default function PrivacyPage() {
