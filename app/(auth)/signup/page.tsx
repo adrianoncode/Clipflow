@@ -18,15 +18,17 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
   const hasValidRef = refCode ? Boolean(await lookupReferrerUserId(refCode)) : false
 
   return (
-    <Card className="border-border/50 shadow-xl">
-      <CardHeader className="space-y-4 text-center pb-2">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
-          <UserPlus className="h-6 w-6 text-primary" />
+    <Card className="border-border/60 shadow-xl shadow-primary/5">
+      <CardHeader className="space-y-3 pb-3 text-center">
+        <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/15">
+          <UserPlus className="h-5 w-5 text-primary" />
         </div>
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight">Create your account</h1>
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
+            Create your account
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Start repurposing content in under 2 minutes. Free forever.
+            Start repurposing content in under 2 minutes.
           </p>
         </div>
       </CardHeader>

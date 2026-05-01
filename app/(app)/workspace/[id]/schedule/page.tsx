@@ -29,6 +29,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { checkPlanAccess } from '@/lib/billing/plans'
 import { CancelPostButton } from '@/components/scheduler/cancel-post-button'
+import { RetryFailedButton } from '@/components/scheduler/retry-failed-button'
 import { CalendarClient } from '@/components/workspace/calendar-client'
 import {
   quickScheduleAction,
@@ -222,6 +223,9 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
   const upcomingCount = posts.filter((p) => p.status === 'scheduled').length
   const publishedCount = posts.filter((p) => p.status === 'published').length
   const failedCount = posts.filter((p) => p.status === 'failed').length
+  // Each failed-row block below has `aria-live="polite"` so screen-
+  // reader users hear the error when a status flip lands during a
+  // session — without this the failure announcement was visible-only.
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
@@ -401,10 +405,22 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
                           </p>
                         )}
                         {post.error_message && (
-                          <p className="mt-1.5 flex items-center gap-1 rounded-lg bg-red-50 px-2 py-1 text-[11px] text-red-600">
-                            <AlertTriangle className="h-3 w-3 shrink-0" />
-                            {post.error_message}
-                          </p>
+                          <div
+                            role={post.status === 'failed' ? 'alert' : undefined}
+                            aria-live={post.status === 'failed' ? 'polite' : undefined}
+                            className="mt-1.5 flex flex-wrap items-center gap-2 rounded-lg bg-red-50 px-2 py-1.5 text-[11px] text-red-600"
+                          >
+                            <span className="flex items-center gap-1">
+                              <AlertTriangle className="h-3 w-3 shrink-0" />
+                              {post.error_message}
+                            </span>
+                            {post.status === 'failed' && (
+                              <RetryFailedButton
+                                postId={post.id}
+                                workspaceId={params.id}
+                              />
+                            )}
+                          </div>
                         )}
                         {isScheduled && (
                           <p className="mt-1 text-[10px] text-muted-foreground/50">

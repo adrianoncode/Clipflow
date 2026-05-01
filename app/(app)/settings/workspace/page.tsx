@@ -8,6 +8,7 @@ import {
   SettingsRow,
   SettingsSection,
 } from '@/components/settings/section'
+import { SettingsHero } from '@/components/settings/settings-hero'
 import {
   WorkspaceDeleteButton,
   WorkspaceNameRow,
@@ -36,8 +37,32 @@ export default async function WorkspaceSettingsPage({
 
   const isOwner = workspace.role === 'owner'
 
+  const monogram = workspace.name
+    .split(/\s+/)
+    .map((s) => s.charAt(0).toUpperCase())
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+
   return (
-    <div className="space-y-7">
+    <div className="space-y-9">
+      <SettingsHero
+        monogram={monogram || 'WS'}
+        eyebrow={`Account · ${workspace.type === 'client' ? 'Client workspace' : workspace.type === 'team' ? 'Team workspace' : 'Personal workspace'}`}
+        title={workspace.name}
+        body={
+          isOwner
+            ? 'Identity, members, and the danger zone — owner-only controls live here.'
+            : 'Read-only view. Owners can change identity and run destructive actions.'
+        }
+        meta={
+          <>
+            <Building2 className="h-3 w-3 text-muted-foreground/60" />
+            {workspace.slug}
+          </>
+        }
+      />
+
       {/* ── 01 · Identity ──────────────────────────────────────── */}
       <SettingsSection
         index="01"

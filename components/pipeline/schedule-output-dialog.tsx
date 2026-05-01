@@ -38,7 +38,47 @@ export function ScheduleOutputDialog({
   platformLabel,
   contentTitle,
 }: ScheduleOutputDialogProps) {
+  // The success-after-submit state from useFormState below sticks until
+  // remount. Tracking `attempt` lets us force a "fresh" view: when the
+  // user clicks "Reschedule", we bump the counter and re-key the inner
+  // <Inner> component which has its own useFormState — that one ALWAYS
+  // resets to {} on mount.
   const [open, setOpen] = useState(false)
+  const [attempt, setAttempt] = useState(0)
+  return (
+    <ScheduleDialogInner
+      key={attempt}
+      outputId={outputId}
+      workspaceId={workspaceId}
+      platform={platform}
+      platformLabel={platformLabel}
+      contentTitle={contentTitle}
+      open={open}
+      setOpen={setOpen}
+      onReschedule={() => {
+        setAttempt((a) => a + 1)
+        setOpen(true)
+      }}
+    />
+  )
+}
+
+interface InnerProps extends ScheduleOutputDialogProps {
+  open: boolean
+  setOpen: (v: boolean) => void
+  onReschedule: () => void
+}
+
+function ScheduleDialogInner({
+  outputId,
+  workspaceId,
+  platform,
+  platformLabel,
+  contentTitle,
+  open,
+  setOpen,
+  onReschedule,
+}: InnerProps) {
   const [state, formAction] = useFormState<SchedulerActionState, FormData>(
     schedulePostAction,
     {},
@@ -74,12 +114,24 @@ export function ScheduleOutputDialog({
       .finally(() => setBoardsLoading(false))
   }, [open, isPinterest, workspaceId, boards.length, boardsLoading])
 
-  // Success state — show confirmation inline
+  // Success state — keeps the chip but offers an explicit reset path.
+  // The parent bumps the `key` on this Inner component when Reschedule
+  // is clicked, which remounts useFormState fresh — without that, the
+  // success memory persists forever and the card becomes a dead end.
   if (state.ok === true) {
     return (
-      <div className="flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-[10px] font-semibold text-emerald-700">
-        <CheckCircle2 className="h-3 w-3" />
-        Scheduled
+      <div className="flex flex-1 items-center justify-between gap-2 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-[10px] font-semibold text-emerald-700">
+        <span className="flex items-center gap-1.5">
+          <CheckCircle2 className="h-3 w-3" />
+          Scheduled
+        </span>
+        <button
+          type="button"
+          onClick={onReschedule}
+          className="text-[10px] text-emerald-700/70 underline-offset-2 hover:underline"
+        >
+          Reschedule
+        </button>
       </div>
     )
   }

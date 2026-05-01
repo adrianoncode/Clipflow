@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 
 import { Button } from '@/components/ui/button'
@@ -35,6 +35,13 @@ export function WorkspaceSettingsForm({ workspace, isOwner }: WorkspaceSettingsF
   const [updateState, updateAction] = useFormState(updateWorkspaceAction, initialUpdate)
   const [deleteState, deleteAction] = useFormState(deleteWorkspaceAction, initialDelete)
   const deleteFormRef = useRef<HTMLFormElement>(null)
+  // Client-side guard: the delete button stays disabled until the user
+  // types the workspace slug verbatim. The server enforces the same
+  // check (settings/workspace/actions.ts), but the UX contract was
+  // broken — users could click Delete without typing. Now the path
+  // matches the promise.
+  const [slugTyped, setSlugTyped] = useState('')
+  const slugMatches = slugTyped.trim() === workspace.slug
 
   return (
     <div className="space-y-8">
@@ -122,7 +129,10 @@ export function WorkspaceSettingsForm({ workspace, isOwner }: WorkspaceSettingsF
               type="text"
               autoComplete="off"
               spellCheck={false}
-              className="w-full rounded-xl border border-border/60 bg-background px-3.5 py-2.5 font-mono text-sm placeholder:text-muted-foreground/50 transition-all focus:border-destructive/60 focus:outline-none focus:ring-2 focus:ring-destructive/30"
+              value={slugTyped}
+              onChange={(e) => setSlugTyped(e.target.value)}
+              aria-invalid={slugTyped.length > 0 && !slugMatches}
+              className="w-full rounded-xl border border-border/60 bg-background px-3.5 py-2.5 font-mono text-sm placeholder:text-muted-foreground/50 transition-all focus:border-destructive/60 focus:outline-none focus:ring-2 focus:ring-destructive/30 aria-[invalid=true]:border-destructive/60"
             />
           </form>
           <ConfirmDialog
@@ -136,7 +146,10 @@ export function WorkspaceSettingsForm({ workspace, isOwner }: WorkspaceSettingsF
                 type="button"
                 variant="destructive"
                 onClick={open}
-                disabled={deleteState.ok === false && !deleteState.error}
+                disabled={!slugMatches}
+                title={
+                  slugMatches ? undefined : 'Type the workspace slug to enable.'
+                }
               >
                 Delete workspace
               </Button>
