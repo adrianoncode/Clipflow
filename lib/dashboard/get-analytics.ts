@@ -61,6 +61,14 @@ export interface PublishingStats {
   failed: number
 }
 
+export interface UpcomingPost {
+  id: string
+  platform: string
+  scheduledFor: string
+  contentTitle: string | null
+  outputId: string | null
+}
+
 export interface OutputBucket {
   /** ISO date marking the START of the bucket (oldest first). For
    *  daily buckets this is the day itself; for weekly buckets this
@@ -120,6 +128,10 @@ export interface AnalyticsData {
   publishingStats: PublishingStats
   /** Whether workspace has an Upload-Post key connected. */
   hasPublishKey: boolean
+  /** Up to 2 next-up scheduled posts (status='scheduled'), sorted by
+   *  scheduled_for ascending. Powers the dashboard's Schedule preview
+   *  card so the user sees the actual queue, not just a counter. */
+  upcomingPosts: UpcomingPost[]
 }
 
 const SUPPORTED_PLATFORMS = ['tiktok', 'instagram_reels', 'youtube_shorts', 'linkedin'] as const
@@ -479,6 +491,31 @@ export async function getAnalytics(
     : { data: [] as Array<{ id: string; content_id: string }> }
   const contentIdForOutput = new Map((outputsForPosts ?? []).map(o => [o.id, o.content_id]))
 
+  // Top-2 upcoming scheduled posts (status='scheduled', future-dated).
+  // Sorted ascending so the soonest post is first — the dashboard's
+  // Schedule preview card renders these inline instead of forcing a
+  // /schedule round-trip just to see "what's next".
+  const nowIso = now.toISOString()
+  const upcomingPosts: UpcomingPost[] = scheduledPosts
+    .filter(
+      (p) =>
+        p.status === 'scheduled' && p.scheduled_for && p.scheduled_for >= nowIso,
+    )
+    .sort((a, b) =>
+      a.scheduled_for < b.scheduled_for ? -1 : a.scheduled_for > b.scheduled_for ? 1 : 0,
+    )
+    .slice(0, 2)
+    .map((p) => {
+      const contentId = p.output_id ? contentIdForOutput.get(p.output_id) ?? null : null
+      return {
+        id: p.id,
+        platform: p.platform,
+        scheduledFor: p.scheduled_for,
+        contentTitle: contentId ? contentTitleById.get(contentId) ?? null : null,
+        outputId: p.output_id ?? null,
+      }
+    })
+
   // Engagement aggregation
   let totalViews = 0
   let totalLikes = 0
@@ -592,5 +629,6 @@ export async function getAnalytics(
     engagementByPlatform,
     publishingStats,
     hasPublishKey,
+    upcomingPosts,
   }
 }

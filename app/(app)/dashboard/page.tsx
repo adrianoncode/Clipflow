@@ -24,6 +24,9 @@ import { getAnalytics } from '@/lib/dashboard/get-analytics'
 import { DASHBOARD_PALETTE as PALETTE } from '@/lib/dashboard/palette'
 import { parseRange, RANGE_LABELS } from '@/lib/dashboard/range'
 import { buildNarrative } from '@/lib/dashboard/narrative'
+import { computeNextAction } from '@/lib/dashboard/next-action'
+import { getDashboardQuota } from '@/lib/dashboard/quota'
+import { QuotaIndicator } from '@/components/dashboard/quota-indicator'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Dashboard' }
@@ -51,7 +54,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     )
   }
 
-  const analytics = await getAnalytics(currentWorkspace.id, range)
+  const [analytics, quota] = await Promise.all([
+    getAnalytics(currentWorkspace.id, range),
+    getDashboardQuota(currentWorkspace.id),
+  ])
 
   const totalPublished = analytics.publishingStats.published
   const totalScheduled = analytics.publishingStats.scheduled
@@ -91,7 +97,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const stage3Pct = Math.min(100, Math.round((funnelLive / funnelDenom) * 100))
   const overallFunnel = Math.round((stage1Pct + stage2Pct + stage3Pct) / 3)
 
-  const featured = analytics.topContent[0] ?? null
+  // FeaturedCard's "what should the user do next?" recommendation —
+  // computed server-side so the card body is dumb and just renders
+  // whatever action it gets handed. Decision tree lives in
+  // lib/dashboard/next-action.ts.
+  const nextAction = computeNextAction({
+    analytics,
+    workspaceName: currentWorkspace.name,
+  })
 
   const weekData = analytics.outputsByBucket.map((b) => ({
     label: b.label,
@@ -206,6 +219,24 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               </Reveal>
             )}
 
+            {/* ── Quota indicator — slim row showing the metric
+                 closest to its monthly cap. Self-hides on unlimited
+                 plans. Drives Stripe-style "you're on Plan X, here's
+                 where you stand" awareness without dedicated billing
+                 UI. ── */}
+            {quota && (
+              <Reveal>
+                <QuotaIndicator
+                  planName={quota.planName}
+                  metricLabel={quota.metricLabel}
+                  used={quota.used}
+                  limit={quota.limit}
+                  isPaid={quota.isPaid}
+                  upgradeHref="/billing"
+                />
+              </Reveal>
+            )}
+
             {/* ── Range filter: segmented pill, URL-sync. Sits on top
                  of the pulse strip so the user controls the comparison
                  window before reading the deltas underneath. ── */}
@@ -267,8 +298,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               <Reveal index={0} className="row-span-2">
                 <FeaturedCard
                   workspaceId={currentWorkspace.id}
-                  featured={featured}
-                  workspaceName={currentWorkspace.name}
+                  action={nextAction}
                 />
               </Reveal>
               <Reveal index={1}>
@@ -298,6 +328,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                   scheduled={totalScheduled}
                   published={totalPublished}
                   workspaceId={currentWorkspace.id}
+                  upcoming={analytics.upcomingPosts}
                 />
               </Reveal>
             </section>
