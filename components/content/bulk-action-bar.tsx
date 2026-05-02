@@ -93,9 +93,10 @@ export function BulkActionBar({
         <button
           type="button"
           onClick={onClear}
-          className="flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary/15"
+          aria-label={`Clear selection (${count} item${count === 1 ? '' : 's'})`}
+          className="flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
-          <X className="h-3 w-3" />
+          <X className="h-3 w-3" aria-hidden />
           {count} selected
         </button>
 
@@ -113,12 +114,12 @@ export function BulkActionBar({
               type="button"
               onClick={open}
               disabled={isPending}
-              className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-destructive transition-all hover:bg-destructive/10 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-destructive transition-all hover:bg-destructive/10 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-2"
             >
               {isPending ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" aria-hidden />
               ) : (
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="h-3.5 w-3.5" aria-hidden />
               )}
               Delete
             </button>
@@ -128,6 +129,8 @@ export function BulkActionBar({
         {/* Status banner — slides in next to the bar */}
         {banner && (
           <div
+            role={banner.kind === 'success' ? 'status' : 'alert'}
+            aria-live={banner.kind === 'success' ? 'polite' : 'assertive'}
             className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold ${
               banner.kind === 'success'
                 ? 'bg-emerald-50 text-emerald-700'
@@ -135,9 +138,9 @@ export function BulkActionBar({
             }`}
           >
             {banner.kind === 'success' ? (
-              <CheckCircle2 className="h-3.5 w-3.5" />
+              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
             ) : (
-              <AlertCircle className="h-3.5 w-3.5" />
+              <AlertCircle className="h-3.5 w-3.5" aria-hidden />
             )}
             {banner.text}
           </div>

@@ -49,19 +49,22 @@ interface SectionToggleProps {
   onClick: () => void
 }
 
-function SectionToggle({ icon, label, sectionKey: _sectionKey, active, onClick }: SectionToggleProps) {
+function SectionToggle({ icon, label, sectionKey, active, onClick }: SectionToggleProps) {
   return (
     <button
       type="button"
       title={label}
+      aria-label={label}
+      aria-expanded={active}
+      aria-controls={`section-${sectionKey}`}
       onClick={onClick}
-      className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-150 ${
+      className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
         active
           ? 'bg-primary/10 text-primary'
-          : 'text-muted-foreground/50 hover:bg-primary/[0.06] hover:text-primary'
+          : 'text-muted-foreground/50 hover:bg-primary/[0.06] hover:text-primary focus-visible:bg-primary/[0.06] focus-visible:text-primary'
       }`}
     >
-      {icon}
+      <span aria-hidden>{icon}</span>
     </button>
   )
 }
@@ -135,7 +138,12 @@ export function OutputCard({ output, contentId, workspaceId, hasPublishKey = fal
             {/* Accordion content */}
             <div className={`overflow-hidden transition-all duration-200 ${openSection ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
               {openSection === 'hooks' && (
-                <div className="rounded-xl border border-border/50 bg-muted/20 p-3">
+                <div
+                  id="section-hooks"
+                  role="region"
+                  aria-label="A/B hook variants"
+                  className="rounded-xl border border-border/50 bg-muted/20 p-3"
+                >
                   <HookAbTest
                     outputId={output.id}
                     workspaceId={resolvedWorkspaceId}
@@ -146,7 +154,12 @@ export function OutputCard({ output, contentId, workspaceId, hasPublishKey = fal
                 </div>
               )}
               {openSection === 'track' && (
-                <div className="rounded-xl border border-border/50 bg-muted/20 p-3">
+                <div
+                  id="section-track"
+                  role="region"
+                  aria-label="Performance tracker"
+                  className="rounded-xl border border-border/50 bg-muted/20 p-3"
+                >
                   <PerformanceTracker
                     outputId={output.id}
                     workspaceId={resolvedWorkspaceId}
@@ -161,7 +174,12 @@ export function OutputCard({ output, contentId, workspaceId, hasPublishKey = fal
                 </div>
               )}
               {openSection === 'schedule' && (
-                <div className="rounded-xl border border-border/50 bg-muted/20 p-3">
+                <div
+                  id="section-schedule"
+                  role="region"
+                  aria-label="Schedule post"
+                  className="rounded-xl border border-border/50 bg-muted/20 p-3"
+                >
                   <SchedulePostButton
                     outputId={output.id}
                     workspaceId={resolvedWorkspaceId}

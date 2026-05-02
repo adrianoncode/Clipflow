@@ -21,14 +21,16 @@ export function TabNav({
   onChange: (t: ContentDetailTab) => void
 }) {
   return (
-    <nav className="flex items-center gap-1">
+    <nav className="flex items-center gap-1" aria-label="Content sections">
       {TABS.map((t) => {
         const isActive = t.key === active
         return (
           <button
             key={t.key}
+            type="button"
             onClick={() => onChange(t.key)}
-            className={`relative flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-sm font-medium transition-all duration-150 ${
+            aria-pressed={isActive}
+            className={`relative flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
               isActive
                 ? 'bg-primary/10 text-primary font-semibold'
                 : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'

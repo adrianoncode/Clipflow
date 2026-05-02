@@ -191,7 +191,9 @@ export function SubtitlesClient({
             </p>
           )}
           {error && (
-            <p className="text-sm text-destructive">{error}</p>
+            <p role="alert" className="text-sm text-destructive">
+              {error}
+            </p>
           )}
         </CardContent>
       </Card>
@@ -217,8 +219,10 @@ export function SubtitlesClient({
                 {(['classic', 'bold-yellow', 'minimal'] as const).map((s) => (
                   <button
                     key={s}
+                    type="button"
                     onClick={() => setSubtitleStyle(s)}
-                    className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
+                    aria-pressed={subtitleStyle === s}
+                    className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                       subtitleStyle === s
                         ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#F4D93D]'
                         : 'hover:bg-accent'
@@ -235,14 +239,16 @@ export function SubtitlesClient({
                 {(['karaoke', 'tiktok-bold', 'beasty'] as const).map((s) => (
                   <button
                     key={s}
+                    type="button"
                     onClick={() => setSubtitleStyle(s)}
                     disabled={!hasWordTimings}
+                    aria-pressed={subtitleStyle === s}
                     title={
                       hasWordTimings
                         ? `${STYLE_LABEL[s]} — word-by-word`
                         : 'Word-level timings not generated yet for this video.'
                     }
-                    className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
+                    className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                       subtitleStyle === s
                         ? 'border-[#0F0F0F] bg-[#0F0F0F] text-[#F4D93D]'
                         : hasWordTimings

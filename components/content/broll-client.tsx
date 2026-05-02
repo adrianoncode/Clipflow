@@ -181,13 +181,14 @@ export function BrollClient({
 
       {/* Keyword pills */}
       {initialKeywords.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" aria-label="Suggested searches">
           {initialKeywords.map((kw) => (
             <button
               key={kw}
               type="button"
               onClick={() => handleKeywordClick(kw)}
-              className="rounded-full border px-3 py-1 text-xs font-medium hover:bg-accent transition-colors"
+              aria-label={`Search for ${kw}`}
+              className="rounded-full border px-3 py-1 text-xs font-medium hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               {kw}
             </button>
@@ -197,9 +198,13 @@ export function BrollClient({
 
       {/* Search form */}
       <form ref={formRef} action={formAction} className="flex flex-wrap items-center gap-2">
+        <label htmlFor="broll-search" className="sr-only">
+          Search stock footage
+        </label>
         <input
+          id="broll-search"
           ref={queryInputRef}
-          type="text"
+          type="search"
           name="query"
           value={query}
           onChange={(e) => setQuery(e.target.value)}

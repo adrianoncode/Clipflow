@@ -91,11 +91,15 @@ export function AutoGenerateTrigger({
   if (!shouldAutoGenerate && status === 'idle') return null
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border/50">
+    <div
+      role="status"
+      aria-live="polite"
+      className="overflow-hidden rounded-xl border border-border/50"
+    >
       {status === 'generating' && (
         <div className="flex items-center gap-3 bg-gradient-to-r from-violet-50 to-background p-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none" aria-hidden />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-violet-900">

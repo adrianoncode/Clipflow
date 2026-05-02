@@ -36,7 +36,10 @@ export function OverviewTab({
           href={`/workspace/${workspaceId}/content/${item.id}/outputs`}
           className="group flex items-center gap-4 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/[0.06] via-background to-background p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10"
         >
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm shadow-primary/10">
+          <div
+            aria-hidden
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm shadow-primary/10"
+          >
             <Wand2 className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
@@ -49,7 +52,10 @@ export function OverviewTab({
           </div>
           <span className="cf-btn-3d cf-btn-3d-primary inline-flex shrink-0 items-center gap-1.5 rounded-xl px-4 py-2 text-xs">
             Generate
-            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            <ArrowRight
+              className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+              aria-hidden
+            />
           </span>
         </Link>
       )}
@@ -60,7 +66,10 @@ export function OverviewTab({
           href={`/workspace/${workspaceId}/pipeline`}
           className="group flex items-center gap-4 rounded-2xl border border-emerald-200/60 bg-gradient-to-r from-emerald-50/50 to-background p-5 transition-all hover:-translate-y-0.5 hover:shadow-md"
         >
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+          <div
+            aria-hidden
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600"
+          >
             <Layers className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
@@ -71,9 +80,9 @@ export function OverviewTab({
               Review them, approve the best ones, and schedule them.
             </p>
           </div>
-          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-emerald-700 transition-transform group-hover:translate-x-0.5">
+          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-emerald-700 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none">
             Review drafts
-            <ArrowRight className="h-3.5 w-3.5" />
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </span>
         </Link>
       )}

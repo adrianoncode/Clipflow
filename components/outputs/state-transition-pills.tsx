@@ -54,7 +54,11 @@ function PillButton({
   }
   if (isReachable) {
     return (
-      <button type="submit" disabled={pending} className="focus:outline-none">
+      <button
+        type="submit"
+        disabled={pending}
+        className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      >
         <Badge
           variant="outline"
           className="cursor-pointer transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50"

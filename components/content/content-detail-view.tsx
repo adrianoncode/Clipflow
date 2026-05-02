@@ -224,8 +224,16 @@ function ProcessingPhasePill({
   const label =
     phaseLabel(phase) ?? (status === 'uploading' ? 'Uploading…' : 'Transcribing…')
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-50/70 px-3 py-1.5 text-[12px] font-semibold text-amber-800">
-      <Loader2 className="h-3 w-3 animate-spin" strokeWidth={2.4} />
+    <div
+      role="status"
+      aria-live="polite"
+      className="inline-flex items-center gap-2 rounded-full border border-amber-200/60 bg-amber-50/70 px-3 py-1.5 text-[12px] font-semibold text-amber-800"
+    >
+      <Loader2
+        className="h-3 w-3 animate-spin motion-reduce:animate-none"
+        strokeWidth={2.4}
+        aria-hidden
+      />
       <span>{label}</span>
       {progress != null ? (
         <span className="font-mono tabular-nums text-amber-700/80">

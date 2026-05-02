@@ -211,7 +211,10 @@ export function CleanupClient({
       </form>
 
       {analyzeState.ok === false ? (
-        <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-[12px] text-destructive">
+        <p
+          role="alert"
+          className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-[12px] text-destructive"
+        >
           {analyzeState.error}
         </p>
       ) : null}
@@ -394,9 +397,9 @@ function RenderButton({ disabled }: { disabled: boolean }) {
       className="cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[12.5px] disabled:opacity-50"
     >
       {pending ? (
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        <Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" aria-hidden />
       ) : (
-        <Eraser className="h-3.5 w-3.5" />
+        <Eraser className="h-3.5 w-3.5" aria-hidden />
       )}
       Render cleaned MP4
     </button>
