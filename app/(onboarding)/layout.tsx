@@ -70,6 +70,12 @@ export default async function OnboardingGroupLayout({
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: ONBOARD_STYLES }} />
+      <a
+        href="#onboarding-main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-[#0F0F0F] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-[#F4D93D] focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
       <div className="lv2-onboard relative flex min-h-screen flex-col overflow-hidden">
         <div
           aria-hidden
@@ -115,7 +121,10 @@ export default async function OnboardingGroupLayout({
           </span>
         </header>
 
-        <main className="relative flex flex-1 items-start justify-center px-6 pb-20 pt-4 sm:pt-8">
+        <main
+          id="onboarding-main"
+          className="relative flex flex-1 items-start justify-center px-6 pb-20 pt-4 sm:pt-8"
+        >
           <div className="w-full max-w-lg">{children}</div>
         </main>
       </div>

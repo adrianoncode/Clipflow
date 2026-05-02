@@ -22,6 +22,7 @@ const FULL_BLEED_PREFIXES = [
   '/settings/templates',
 ]
 
+
 export function SettingsShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [navOpen, setNavOpen] = useState(false)

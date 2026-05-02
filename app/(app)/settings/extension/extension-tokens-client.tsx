@@ -54,7 +54,9 @@ export function ExtensionTokensClient({
           <MintButton />
         </div>
         {mintState.ok === false && (
-          <p className="text-xs text-destructive">{mintState.error}</p>
+          <p role="alert" className="text-xs text-destructive">
+            {mintState.error}
+          </p>
         )}
         <p className="text-xs text-muted-foreground">
           Each browser × machine should have its own token so you can

@@ -905,7 +905,21 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                 className="lv2-display text-[68px] leading-[0.95] sm:text-[92px]"
                 style={{ color: 'var(--lv2-primary)' }}
               >
-                <KineticHeadline />
+                {/*
+                  KineticHeadline rotates the final word every few
+                  seconds (posts → clips → hooks → reels …). Without
+                  guarding, every rotation re-announces the entire h1
+                  to screen readers — a stream of "One recording, a
+                  month of clips" / "...of reels" / etc. that drowns
+                  the rest of the page. We give AT users a single
+                  canonical phrase here, and hide the animated visual
+                  from accessibility so the rotation is purely
+                  decorative.
+                */}
+                <span className="sr-only">One recording. A month of posts.</span>
+                <span aria-hidden="true">
+                  <KineticHeadline />
+                </span>
               </h1>
 
               {/* Caption typewriter — a live preview of what Clipflow

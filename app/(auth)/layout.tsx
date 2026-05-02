@@ -92,6 +92,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: AUTH_STYLES }} />
+      <a
+        href="#auth-main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-[#0F0F0F] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-[#F4D93D] focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
       <div className="lv2-auth relative flex min-h-screen flex-col overflow-hidden">
         <div
           aria-hidden
@@ -149,7 +155,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </Link>
         </header>
 
-        <main className="relative flex flex-1 items-center justify-center px-6 pb-16">
+        <main
+          id="auth-main"
+          className="relative flex flex-1 items-center justify-center px-6 pb-16"
+        >
           <div className="w-full max-w-md">{children}</div>
         </main>
 

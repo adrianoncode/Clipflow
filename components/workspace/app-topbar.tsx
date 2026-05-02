@@ -113,10 +113,24 @@ export function AppTopbar({
         </span>
         {pageTitle && (
           <>
-            <span className="hidden text-[12px] lg:inline" style={{ color: '#7A7468' }}>
+            {/* Belt-and-braces page heading for screen readers. Many
+                authenticated routes (Schedule, Pipeline, Research, etc.)
+                don't render a visible <h1> in their body — promoting
+                the breadcrumb to a real heading guarantees AT users
+                land on a labelled page on every navigation. Pages with
+                their own visible h1 (Dashboard Hero, Library Hero,
+                workspace home) end up with two h1s — valid in HTML5
+                and a fair tradeoff for the routes that need it. */}
+            <h1 className="sr-only">{pageTitle}</h1>
+            <span
+              aria-hidden="true"
+              className="hidden text-[12px] lg:inline"
+              style={{ color: '#7A7468' }}
+            >
               /
             </span>
             <span
+              aria-hidden="true"
               className="truncate text-[13px] font-semibold"
               style={{ color: '#0F0F0F' }}
             >
