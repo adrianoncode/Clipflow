@@ -56,6 +56,10 @@ const PROVIDER_TONE: Record<
     glow: 'rgba(16,185,129,0.32)',
     tag: { bg: 'rgba(16,185,129,0.10)', fg: '#047857' },
   },
+  zapcap: {
+    glow: 'rgba(244,217,61,0.36)',
+    tag: { bg: 'rgba(244,217,61,0.16)', fg: '#7A6500' },
+  },
 }
 
 /**
@@ -71,6 +75,7 @@ const PROVIDER_SUBTITLE: Partial<Record<AiProvider, string>> = {
   replicate: 'AI avatars · smart reframe',
   elevenlabs: 'Voice clone · auto-dub · TTS',
   'upload-post': 'TikTok · IG · YouTube · LinkedIn',
+  zapcap: 'Animated captions · MrBeast · Hormozi',
 }
 
 /**

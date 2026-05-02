@@ -37,6 +37,7 @@ export type AiProvider =
   | 'replicate'
   | 'elevenlabs'
   | 'upload-post'
+  | 'zapcap'
 export type BillingPlan = 'free' | 'solo' | 'team' | 'agency'
 export type ReferralStatus = 'pending' | 'confirmed' | 'blocked'
 export type ScraperFeature =
@@ -332,6 +333,63 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "brand_voices_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      caption_renders: {
+        Row: {
+          created_at: string
+          error: string | null
+          highlight_id: string
+          id: string
+          output_url: string | null
+          status: "queued" | "processing" | "ready" | "failed"
+          template_id: string
+          updated_at: string
+          workspace_id: string
+          zapcap_task_id: string
+          zapcap_video_id: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          highlight_id: string
+          id?: string
+          output_url?: string | null
+          status?: "queued" | "processing" | "ready" | "failed"
+          template_id: string
+          updated_at?: string
+          workspace_id: string
+          zapcap_task_id: string
+          zapcap_video_id: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          highlight_id?: string
+          id?: string
+          output_url?: string | null
+          status?: "queued" | "processing" | "ready" | "failed"
+          template_id?: string
+          updated_at?: string
+          workspace_id?: string
+          zapcap_task_id?: string
+          zapcap_video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caption_renders_highlight_id_fkey"
+            columns: ["highlight_id"]
+            isOneToOne: false
+            referencedRelation: "content_highlights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "caption_renders_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"

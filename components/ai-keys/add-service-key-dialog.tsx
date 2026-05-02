@@ -164,6 +164,28 @@ export function AddServiceKeyDialog({
             </p>
           </div>
 
+          {spec.secondaryField ? (
+            <div className="space-y-2">
+              <Label htmlFor={spec.secondaryField.name}>
+                {spec.secondaryField.label}
+              </Label>
+              <Input
+                id={spec.secondaryField.name}
+                name={spec.secondaryField.name}
+                type="password"
+                required
+                placeholder={spec.secondaryField.placeholder}
+                autoComplete="off"
+                spellCheck={false}
+              />
+              {spec.secondaryField.hint ? (
+                <p className="text-xs text-muted-foreground">
+                  {spec.secondaryField.hint}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
           {errorMessage ? (
             <FormMessage variant="error">{errorMessage}</FormMessage>
           ) : null}

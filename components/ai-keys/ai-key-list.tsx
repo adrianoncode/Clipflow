@@ -11,6 +11,7 @@ const PROVIDER_LABEL: Record<AiProvider, string> = {
   replicate: 'Replicate',
   elevenlabs: 'ElevenLabs',
   'upload-post': 'Upload-Post',
+  zapcap: 'ZapCap',
 }
 
 function formatDate(iso: string): string {

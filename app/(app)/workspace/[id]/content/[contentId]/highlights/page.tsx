@@ -6,6 +6,10 @@ import { FindMomentsButton } from '@/components/highlights/find-moments-button'
 import { HighlightsList } from '@/components/highlights/highlights-list'
 import { PageHeading } from '@/components/workspace/page-heading'
 import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
+import {
+  groupCaptionRendersByHighlight,
+  listCaptionRendersForContent,
+} from '@/lib/captions/list-caption-renders'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getLongLivedSourceUrl } from '@/lib/content/get-signed-url'
 import { listHighlights } from '@/lib/highlights/list-highlights'
@@ -34,11 +38,14 @@ export default async function HighlightsPage({ params }: HighlightsPageProps) {
   const item = await getContentItem(params.contentId, params.id)
   if (!item) notFound()
 
-  const [highlights, sourceVideoUrl, wordTimings] = await Promise.all([
-    listHighlights(params.contentId, params.id),
-    item.source_url ? getLongLivedSourceUrl(item.source_url) : Promise.resolve(null),
-    loadWordTimings(params.contentId),
-  ])
+  const [highlights, sourceVideoUrl, wordTimings, captionRenders] =
+    await Promise.all([
+      listHighlights(params.contentId, params.id),
+      item.source_url ? getLongLivedSourceUrl(item.source_url) : Promise.resolve(null),
+      loadWordTimings(params.contentId),
+      listCaptionRendersForContent(params.contentId, params.id),
+    ])
+  const captionRendersByHighlight = groupCaptionRendersByHighlight(captionRenders)
 
   const canEdit = member.role === 'owner' || member.role === 'editor'
   const hasTranscript = Boolean(item.transcript && item.transcript.trim().length >= 200)
@@ -98,6 +105,7 @@ export default async function HighlightsPage({ params }: HighlightsPageProps) {
         canEdit={canEdit}
         sourceVideoUrl={sourceVideoUrl}
         wordTimings={wordTimings}
+        captionRendersByHighlight={captionRendersByHighlight}
       />
     </div>
   )

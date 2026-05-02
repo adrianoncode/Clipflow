@@ -29,7 +29,9 @@ import {
   type RenderHighlightState,
   type ToggleSelectionState,
 } from '@/app/(app)/workspace/[id]/content/[contentId]/highlights/actions'
+import { CaptionRenderPanel } from '@/components/highlights/caption-render-panel'
 import { ClipPreviewEditor } from '@/components/highlights/clip-preview-editor'
+import type { CaptionRenderRow } from '@/lib/captions/list-caption-renders'
 import type { WordTiming } from '@/lib/highlights/caption-chunks'
 import type { HighlightRow } from '@/lib/highlights/list-highlights'
 
@@ -45,6 +47,9 @@ interface HighlightsListProps {
    *  when the content was imported as text or subtitles haven't been
    *  generated yet. The editor falls back to single-line override. */
   wordTimings: WordTiming[] | null
+  /** Phase 3 — pre-grouped ZapCap caption renders per highlight. Each
+   *  highlight may have multiple variants (one per template). */
+  captionRendersByHighlight?: Map<string, CaptionRenderRow[]>
 }
 
 export function HighlightsList({
@@ -54,6 +59,7 @@ export function HighlightsList({
   canEdit,
   sourceVideoUrl,
   wordTimings,
+  captionRendersByHighlight,
 }: HighlightsListProps) {
   const router = useRouter()
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -103,6 +109,7 @@ export function HighlightsList({
             canEdit={canEdit}
             canPreview={Boolean(sourceVideoUrl)}
             onPreview={() => setEditingId(h.id)}
+            captionRenders={captionRendersByHighlight?.get(h.id) ?? []}
           />
         ))}
       </div>
@@ -145,6 +152,7 @@ function HighlightCard({
   canEdit,
   canPreview,
   onPreview,
+  captionRenders,
 }: {
   workspaceId: string
   contentId: string
@@ -152,6 +160,7 @@ function HighlightCard({
   canEdit: boolean
   canPreview: boolean
   onPreview: () => void
+  captionRenders: CaptionRenderRow[]
 }) {
   const duration = Math.max(h.end_seconds - h.start_seconds, 0)
   const baseScore = h.virality_score ?? 0
@@ -229,6 +238,16 @@ function HighlightCard({
 
       {/* Video / rendering state */}
       <MediaSlot h={h} />
+
+      {/* Animated caption variants — only meaningful once the base
+          Shotstack render is ready, since ZapCap pulls from video_url. */}
+      {h.status === 'ready' && h.video_url && canEdit ? (
+        <CaptionRenderPanel
+          workspaceId={workspaceId}
+          highlightId={h.id}
+          renders={captionRenders}
+        />
+      ) : null}
 
       {/* Actions */}
       {canEdit ? (

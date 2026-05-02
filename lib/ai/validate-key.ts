@@ -36,5 +36,31 @@ export async function validateAiKey(
         }
       }
       return { ok: true }
+    case 'zapcap':
+      // ZapCap stores `{apiKey, webhookSecret}` as JSON in the
+      // ciphertext column. We can't probe-verify both halves without
+      // burning ZapCap credits, so we just check the JSON shape and
+      // that both halves are non-empty strings.
+      try {
+        const parsed = JSON.parse(key) as unknown
+        if (
+          parsed &&
+          typeof parsed === 'object' &&
+          typeof (parsed as { apiKey?: unknown }).apiKey === 'string' &&
+          typeof (parsed as { webhookSecret?: unknown }).webhookSecret === 'string' &&
+          (parsed as { apiKey: string }).apiKey.length >= 10 &&
+          (parsed as { webhookSecret: string }).webhookSecret.length >= 8
+        ) {
+          return { ok: true }
+        }
+      } catch {
+        // fall through
+      }
+      return {
+        ok: false,
+        code: 'invalid_key',
+        message:
+          'Both the ZapCap API key and the webhook secret are required.',
+      }
   }
 }

@@ -12,7 +12,16 @@ import type { AiKeyFormState } from '@/components/ai-keys/ai-key-form'
 import { log } from '@/lib/log'
 
 const saveSchema = z.object({
-  provider: z.enum(['openai', 'anthropic', 'google']),
+  provider: z.enum([
+    'openai',
+    'anthropic',
+    'google',
+    'shotstack',
+    'replicate',
+    'elevenlabs',
+    'upload-post',
+    'zapcap',
+  ]),
   label: z
     .string()
     .trim()
@@ -20,6 +29,13 @@ const saveSchema = z.object({
     .optional()
     .transform((v) => (v && v.length > 0 ? v : null)),
   api_key: z.string().trim().min(10, 'Please paste a full API key.'),
+  /**
+   * ZapCap-only — webhook secret from the dashboard. We need both
+   * values at runtime (api key on requests, webhook secret on
+   * inbound HMAC verification), so we pack them as JSON into the
+   * single encrypted column.
+   */
+  webhook_secret: z.string().trim().min(8).optional(),
   workspace_id: z.string().uuid(),
 })
 
@@ -36,6 +52,7 @@ export async function saveAiKeySettingsAction(
     provider: formData.get('provider'),
     label: formData.get('label') ?? undefined,
     api_key: formData.get('api_key'),
+    webhook_secret: formData.get('webhook_secret') ?? undefined,
     workspace_id: formData.get('workspace_id'),
   })
   if (!parsed.success) {
@@ -50,11 +67,28 @@ export async function saveAiKeySettingsAction(
     return { ok: false, error: 'You must be signed in.' }
   }
 
+  // ZapCap stores TWO secrets (apiKey + webhookSecret) in one
+  // encrypted column as JSON. Every other provider stores the API
+  // key as plaintext directly.
+  let plaintextKey = parsed.data.api_key
+  if (parsed.data.provider === 'zapcap') {
+    if (!parsed.data.webhook_secret) {
+      return {
+        ok: false,
+        error: 'ZapCap also needs your webhook secret from the dashboard.',
+      }
+    }
+    plaintextKey = JSON.stringify({
+      apiKey: parsed.data.api_key,
+      webhookSecret: parsed.data.webhook_secret,
+    })
+  }
+
   const result = await insertAiKey({
     workspaceId: parsed.data.workspace_id,
     provider: parsed.data.provider,
     label: parsed.data.label,
-    plaintextKey: parsed.data.api_key,
+    plaintextKey,
     userId: user.id,
   })
 

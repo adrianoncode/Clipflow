@@ -31,6 +31,18 @@ export interface ServiceSpec {
    * platform pills in the settings card. Only set for category=publish.
    */
   publishPlatforms?: string[]
+  /**
+   * Some providers (ZapCap) need TWO secrets — the API key plus a
+   * separate webhook-signing secret. When set, the connect dialog
+   * renders a second input and the save action packs both halves
+   * into a single encrypted JSON blob.
+   */
+  secondaryField?: {
+    name: string
+    label: string
+    placeholder: string
+    hint?: string
+  }
 }
 
 /**
@@ -112,6 +124,28 @@ export const SERVICE_DIRECTORY: ServiceSpec[] = [
     freeTierNote: '10 000 chars/mo on the free tier',
     monogram: 'E',
     keyFormatHint: 'sk_…',
+  },
+
+  {
+    provider: 'zapcap',
+    name: 'ZapCap',
+    category: 'media',
+    description:
+      'Animated word-by-word captions in MrBeast / Hormozi / Iman style — burned over your finished clip.',
+    setupNote:
+      'After signing up, copy BOTH your API key and the webhook secret from the dashboard (they live on the same page, https://platform.zapcap.ai/dashboard/api-key). Clipflow uses the API key to render captions and the webhook secret to verify ZapCap is who it claims to be when it tells us the render finished.',
+    signupUrl: 'https://zapcap.ai/api',
+    keyDashboardUrl: 'https://platform.zapcap.ai/dashboard/api-key',
+    costHint: 'From $19/mo + per-minute rendering — pay ZapCap directly',
+    freeTierNote: 'Pro plan required for API access',
+    monogram: 'Z',
+    keyFormatHint: 'zc_live_…',
+    secondaryField: {
+      name: 'webhook_secret',
+      label: 'Webhook secret',
+      placeholder: 'whsec_…',
+      hint: 'Used to verify inbound webhook callbacks with HMAC-SHA-256.',
+    },
   },
 
   // ── Publishing ─────────────────────────────────────────────────

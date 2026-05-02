@@ -13,12 +13,13 @@ export type AiProvider =
   | 'replicate'
   | 'elevenlabs'
   | 'upload-post'
+  | 'zapcap'
 
 /** Subset that actually runs LLM inference. */
 export type LlmProvider = 'openai' | 'anthropic' | 'google'
 
 /** Subset that powers media rendering + audio. */
-export type MediaProvider = 'shotstack' | 'replicate' | 'elevenlabs'
+export type MediaProvider = 'shotstack' | 'replicate' | 'elevenlabs' | 'zapcap'
 
 /** Subset that handles social media publishing. */
 export type PublishProvider = 'upload-post'
