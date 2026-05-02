@@ -1,10 +1,7 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 
-import { NewLanding } from '@/components/landing/new-landing'
-import { SmoothScroll } from '@/components/landing/smooth-scroll'
-import { normalizeReferralCode } from '@/lib/referrals/normalize-code'
-import { lookupReferrerUserId } from '@/lib/referrals/lookup-referrer'
-import { REFERRAL_DISCOUNT_PERCENT } from '@/lib/referrals/constants'
+import { LandingClient } from '@/components/landing/landing-client'
 
 // Homepage inherits the site-wide title / description / OG / Twitter
 // metadata from `app/layout.tsx` so the SERP snippet, link-preview card,
@@ -12,10 +9,6 @@ import { REFERRAL_DISCOUNT_PERCENT } from '@/lib/referrals/constants'
 // here to the bare apex.
 export const metadata: Metadata = {
   alternates: { canonical: 'https://clipflow.to' },
-}
-
-interface HomePageProps {
-  searchParams: { ref?: string; source?: string }
 }
 
 // Public-facing JSON-LD. Four separate schemas so each can be consumed
@@ -113,13 +106,7 @@ const FAQ_LD = {
   ],
 }
 
-export default async function HomePage({ searchParams }: HomePageProps) {
-  const refCode = normalizeReferralCode(searchParams.ref)
-  const hasValidRef = refCode ? Boolean(await lookupReferrerUserId(refCode)) : false
-  const signupHref = hasValidRef
-    ? `/signup?ref=${refCode}${searchParams.source ? `&source=${encodeURIComponent(searchParams.source)}` : ''}`
-    : '/signup'
-
+export default function HomePage() {
   return (
     <>
       <script
@@ -134,12 +121,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_LD) }}
       />
-      <SmoothScroll />
-      <NewLanding
-        signupHref={signupHref}
-        hasValidRef={hasValidRef}
-        referralPercent={REFERRAL_DISCOUNT_PERCENT}
-      />
+      {/* Suspense lets the page stay statically prerendered while the
+          ref-aware bits inside still read `useSearchParams` on the client. */}
+      <Suspense fallback={null}>
+        <LandingClient />
+      </Suspense>
     </>
   )
 }

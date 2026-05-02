@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
@@ -1030,13 +1031,15 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                     42:18
                   </span>
                 </div>
-                <div
-                  className="lv2-thumb lv2-thumb-tint-p relative h-[145px] rounded-lg"
-                  style={{
-                    backgroundImage:
-                      "url('https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=600&q=80')",
-                  }}
-                >
+                <div className="lv2-thumb lv2-thumb-tint-p relative h-[145px] overflow-hidden rounded-lg">
+                  <Image
+                    src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=600&q=80"
+                    alt=""
+                    fill
+                    sizes="270px"
+                    priority
+                    className="object-cover"
+                  />
                   <span
                     className="lv2-chip absolute bottom-2 left-2 z-10"
                     style={{
@@ -1142,13 +1145,15 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                     ✓ APPROVED
                   </span>
                 </div>
-                <div
-                  className="lv2-thumb relative h-[160px] rounded-lg"
-                  style={{
-                    backgroundImage:
-                      "url('https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&q=80')",
-                  }}
-                >
+                <div className="lv2-thumb relative h-[160px] overflow-hidden rounded-lg">
+                  <Image
+                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&q=80"
+                    alt=""
+                    fill
+                    sizes="240px"
+                    priority
+                    className="object-cover"
+                  />
                   <span className="absolute inset-0 z-10 flex items-center justify-center">
                     <span className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white/95 shadow-lg transition-transform hover:scale-110">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--lv2-primary)">
@@ -1212,13 +1217,16 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                     SCHEDULED
                   </span>
                 </div>
-                <div
-                  className="lv2-thumb relative h-[110px] rounded-lg"
-                  style={{
-                    backgroundImage:
-                      "url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&q=80')",
-                  }}
-                />
+                <div className="lv2-thumb relative h-[110px] overflow-hidden rounded-lg">
+                  <Image
+                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&q=80"
+                    alt=""
+                    fill
+                    sizes="240px"
+                    priority
+                    className="object-cover"
+                  />
+                </div>
                 <div className="mt-2 flex items-center gap-2">
                   <span
                     className="lv2-face lv2-face-ring h-6 w-6 rounded-full"
@@ -1270,13 +1278,15 @@ export function NewLanding({ signupHref, hasValidRef, referralPercent }: NewLand
                     RENDER 38%
                   </span>
                 </div>
-                <div
-                  className="lv2-thumb relative h-[110px] overflow-hidden rounded-lg"
-                  style={{
-                    backgroundImage:
-                      "url('https://images.unsplash.com/photo-1552058544-f2b08422138a?w=600&q=80')",
-                  }}
-                >
+                <div className="lv2-thumb relative h-[110px] overflow-hidden rounded-lg">
+                  <Image
+                    src="https://images.unsplash.com/photo-1552058544-f2b08422138a?w=600&q=80"
+                    alt=""
+                    fill
+                    sizes="230px"
+                    priority
+                    className="object-cover"
+                  />
                   <span className="lv2-shimmer" />
                   <div className="absolute inset-x-0 bottom-0 z-10 h-1 bg-black/40">
                     <div

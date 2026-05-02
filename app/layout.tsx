@@ -29,10 +29,16 @@ const instrumentSerif = Instrument_Serif({
   display: 'swap',
 })
 
+// JetBrains Mono is only used for tiny `lv2-mono-label` chips (9–11px) that
+// are never the LCP element. Skipping preload removes one `<link rel="preload">`
+// from `<head>` so the critical request budget goes to Inter + Instrument
+// Serif (the body + LCP-candidate fonts). The mono file still loads in time
+// via `display: swap` once the first label renders.
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-jetbrains-mono',
   display: 'swap',
+  preload: false,
 })
 
 // Canonical site description kept to ≤155 chars so Google doesn't truncate
