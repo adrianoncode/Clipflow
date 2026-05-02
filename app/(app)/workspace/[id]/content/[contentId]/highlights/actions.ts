@@ -17,6 +17,8 @@ import { checkPlanAccess } from '@/lib/billing/plans'
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { matchTrending, transcriptSnippetFor } from '@/lib/trends/match-trending'
+import { parseNicheId } from '@/lib/niche/presets'
 import { log } from '@/lib/log'
 
 // NOTE: maxDuration lives on the page.tsx for this route — 'use server'
@@ -171,14 +173,64 @@ export async function findViralMomentsAction(
   const admin = createAdminClient()
   const { data: workspaceConfig } = await supabase
     .from('workspaces')
-    .select('highlight_top_n, highlight_min_score')
+    .select('highlight_top_n, highlight_min_score, active_niche')
     .eq('id', workspace_id)
     .maybeSingle()
   const topN = workspaceConfig?.highlight_top_n ?? 3
   const minScore = workspaceConfig?.highlight_min_score ?? 0
+  const nicheId = parseNicheId(workspaceConfig?.active_niche)
+
+  // Trend-Matching post-processing — Phase 2 of the Deep-Research pass.
+  // Pull the latest snapshot of trending keywords for the workspace's
+  // niche (one round-trip), then layer a small bonus on each clip
+  // whose hook/transcript matches. We persist the matched keywords +
+  // bonus alongside the clip so the UI can render badges without
+  // re-querying. Selection (top_n / min_score) is computed against
+  // the BONUSED score so trending clips can leapfrog non-trending
+  // clips of the same raw score.
+  let trendingKeywords: string[] = []
+  if (nicheId) {
+    const { data: latestTrendingFetch } = await supabase
+      .from('trending_keywords')
+      .select('fetched_at')
+      .eq('niche_id', nicheId)
+      .order('fetched_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    const latestFetchedAt = latestTrendingFetch?.fetched_at as string | undefined
+    if (latestFetchedAt) {
+      const { data: trendingRows } = await supabase
+        .from('trending_keywords')
+        .select('keyword')
+        .eq('niche_id', nicheId)
+        .eq('fetched_at', latestFetchedAt)
+      trendingKeywords = (trendingRows ?? [])
+        .map((r) => (r.keyword as string | null) ?? '')
+        .filter((k) => k.length > 0)
+    }
+  }
+
+  const sourceDuration = (item as { duration_seconds?: number | null }).duration_seconds ?? null
+  const trendMatches = detection.moments.map((m) => {
+    if (trendingKeywords.length === 0) return { matched: [] as string[], bonus: 0 }
+    const snippet = transcriptSnippetFor(
+      item.transcript ?? '',
+      m.start_seconds,
+      m.end_seconds,
+      sourceDuration,
+    )
+    return matchTrending({
+      hookText: m.hook_text,
+      transcriptSnippet: snippet,
+      trendingKeywords,
+    })
+  })
 
   const eligible = detection.moments
-    .map((m, idx) => ({ idx, score: m.virality_score ?? 0 }))
+    .map((m, idx) => ({
+      idx,
+      score: Math.min(100, (m.virality_score ?? 0) + trendMatches[idx]!.bonus),
+    }))
     .filter((x) => x.score >= minScore)
     .sort((a, b) => b.score - a.score || a.idx - b.idx)
   const topIndices = new Set(eligible.slice(0, topN).map((s) => s.idx))
@@ -190,6 +242,8 @@ export async function findViralMomentsAction(
     hook_text: m.hook_text,
     reason: m.reason,
     virality_score: m.virality_score,
+    trending_keywords: trendMatches[idx]!.matched,
+    trend_bonus: trendMatches[idx]!.bonus,
     status: 'draft' as const,
     selected_for_drafts: topIndices.has(idx),
     created_by: check.userId,

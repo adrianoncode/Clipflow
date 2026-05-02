@@ -154,13 +154,16 @@ function HighlightCard({
   onPreview: () => void
 }) {
   const duration = Math.max(h.end_seconds - h.start_seconds, 0)
-  const score = h.virality_score ?? 0
+  const baseScore = h.virality_score ?? 0
+  const trendBonus = h.trend_bonus ?? 0
+  const score = Math.min(100, baseScore + trendBonus)
   const scoreColor =
     score >= 80
       ? 'text-emerald-600 bg-emerald-50 border-emerald-200/60'
       : score >= 60
         ? 'text-amber-700 bg-amber-50 border-amber-200/60'
         : 'text-muted-foreground bg-muted border-border/60'
+  const trendingMatches = (h.trending_keywords ?? []).slice(0, 3)
 
   return (
     <article
@@ -178,10 +181,35 @@ function HighlightCard({
           ) : null}
           <div
             className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-mono text-[11px] font-bold tabular-nums ${scoreColor}`}
+            title={
+              trendBonus > 0
+                ? `Base ${baseScore} + ${trendBonus} trending match${trendBonus === 1 ? '' : 'es'}`
+                : undefined
+            }
           >
             <span>{score}</span>
             <span className="opacity-60">/100</span>
+            {trendBonus > 0 ? (
+              <span className="font-mono text-[10px] font-bold text-emerald-700">
+                +{trendBonus}
+              </span>
+            ) : null}
           </div>
+          {trendingMatches.length > 0 ? (
+            <div
+              className="hidden items-center gap-1 sm:inline-flex"
+              title={`Trending in your niche: ${(h.trending_keywords ?? []).join(', ')}`}
+            >
+              {trendingMatches.map((kw) => (
+                <span
+                  key={kw}
+                  className="inline-flex rounded-full border border-emerald-200/60 bg-emerald-50 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.06em] text-emerald-700"
+                >
+                  #{kw}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
         <div className="font-bold text-[10.5px] uppercase tracking-[0.1em] text-primary/85">
           {formatSeconds(h.start_seconds)} – {formatSeconds(h.end_seconds)} ·{' '}

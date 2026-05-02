@@ -31,6 +31,12 @@ export interface HighlightRow {
   /** Slice 10: set when the reviewer manually tunes timing/hook/caption.
    *  Re-Find passes preserve these rows. */
   is_user_edited: boolean
+  /** Phase 2 trend-matching — keywords from the workspace niche's
+   *  current YouTube-trending snapshot that appeared in this clip's
+   *  hook or transcript window. Empty array when no match or no niche. */
+  trending_keywords: string[]
+  /** 0..30 bonus added on top of virality_score for trending matches. */
+  trend_bonus: number
   created_at: string
 }
 
@@ -47,7 +53,7 @@ export async function listHighlights(
   const { data, error } = await supabase
     .from('content_highlights')
     .select(
-      'id, content_id, workspace_id, start_seconds, end_seconds, hook_text, reason, virality_score, status, render_id, video_url, render_error, caption_style, aspect_ratio, crop_x, thumbnail_url, metadata, selected_for_drafts, is_user_edited, created_at',
+      'id, content_id, workspace_id, start_seconds, end_seconds, hook_text, reason, virality_score, status, render_id, video_url, render_error, caption_style, aspect_ratio, crop_x, thumbnail_url, metadata, selected_for_drafts, is_user_edited, trending_keywords, trend_bonus, created_at',
     )
     .eq('content_id', contentId)
     .eq('workspace_id', workspaceId)

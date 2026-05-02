@@ -359,6 +359,8 @@ export type Database = {
           start_seconds: number
           status: Database["public"]["Enums"]["highlight_status"]
           thumbnail_url: string | null
+          trend_bonus: number
+          trending_keywords: string[]
           updated_at: string
           video_url: string | null
           virality_score: number | null
@@ -383,6 +385,8 @@ export type Database = {
           start_seconds: number
           status?: Database["public"]["Enums"]["highlight_status"]
           thumbnail_url?: string | null
+          trend_bonus?: number
+          trending_keywords?: string[]
           updated_at?: string
           video_url?: string | null
           virality_score?: number | null
@@ -407,6 +411,8 @@ export type Database = {
           start_seconds?: number
           status?: Database["public"]["Enums"]["highlight_status"]
           thumbnail_url?: string | null
+          trend_bonus?: number
+          trending_keywords?: string[]
           updated_at?: string
           video_url?: string | null
           virality_score?: number | null
@@ -1508,6 +1514,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      trending_keywords: {
+        Row: {
+          fetched_at: string
+          frequency: number
+          id: string
+          keyword: string
+          niche_id: string
+          score: number
+          source: string
+        }
+        Insert: {
+          fetched_at?: string
+          frequency: number
+          id?: string
+          keyword: string
+          niche_id: string
+          score: number
+          source?: string
+        }
+        Update: {
+          fetched_at?: string
+          frequency?: number
+          id?: string
+          keyword?: string
+          niche_id?: string
+          score?: number
+          source?: string
+        }
+        Relationships: []
       }
       user_feedback: {
         Row: {
