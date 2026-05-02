@@ -58,7 +58,12 @@ export function AnimatedDonut({
       </div>
 
       <div className="relative mx-auto flex h-[110px] w-[110px] items-center justify-center">
-        <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90" aria-hidden>
+        <svg
+          viewBox="0 0 100 100"
+          className="h-full w-full -rotate-90"
+          role="img"
+          aria-label={`Approval rate ${Math.round(pct)} percent (${approved} approved all-time)`}
+        >
           {/* Solid muted track — visible even at 0%. */}
           <circle
             cx="50"

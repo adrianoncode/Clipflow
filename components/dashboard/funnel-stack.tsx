@@ -56,13 +56,14 @@ export function FunnelStackCard({
         }}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[12px]" style={{ color: PALETTE.inkSoft }}>
+          <h3 className="text-[12px] font-normal" style={{ color: PALETTE.inkSoft }}>
             Funnel
-          </span>
+          </h3>
           <CountUp
             value={overallPct}
             duration={1100}
             format={(n) => `${n}%`}
+            aria-label={`Overall funnel rate ${overallPct}%`}
             className="text-[26px] leading-none tabular-nums"
             style={{
               fontFamily: 'var(--font-inter-tight), var(--font-inter), sans-serif',
@@ -96,10 +97,11 @@ export function FunnelStackCard({
         }}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[13px] font-semibold" style={{ color: '#FFFFFF' }}>
+          <h3 className="text-[13px] font-semibold" style={{ color: '#FFFFFF' }}>
             Stuck drafts
-          </span>
+          </h3>
           <span
+            aria-label={`${stuckDrafts.length} stuck draft${stuckDrafts.length === 1 ? '' : 's'}`}
             className="text-[11px] tabular-nums"
             style={{
               color: 'rgba(255,255,255,0.55)',

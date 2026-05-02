@@ -257,9 +257,9 @@ function CommitButton({ disabled }: { disabled: boolean }) {
       }
     >
       {pending ? (
-        <Loader2 className="h-3 w-3 animate-spin" />
+        <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" aria-hidden />
       ) : (
-        <CalendarDays className="h-3 w-3" />
+        <CalendarDays className="h-3 w-3" aria-hidden />
       )}
       Schedule
     </button>
@@ -284,7 +284,7 @@ function RegenerateButton({
       }}
       className="cf-btn-3d cf-btn-3d-ghost inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[12px]"
     >
-      <RefreshCcw className="h-3 w-3" />
+      <RefreshCcw className="h-3 w-3" aria-hidden />
       Re-generate
     </button>
   )
