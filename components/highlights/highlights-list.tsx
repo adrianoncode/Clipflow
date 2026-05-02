@@ -308,9 +308,16 @@ function MediaSlot({ h }: { h: HighlightRow }) {
 
   if (h.status === 'rendering') {
     return (
-      <div className="flex aspect-[9/16] max-h-60 items-center justify-center rounded-xl border border-border/50 bg-muted/20">
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex aspect-[9/16] max-h-60 items-center justify-center rounded-xl border border-border/50 bg-muted/20"
+      >
         <div className="flex flex-col items-center gap-2 text-xs text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <Loader2
+            className="h-5 w-5 animate-spin text-primary motion-reduce:animate-none"
+            aria-hidden
+          />
           <span>Rendering clip…</span>
           <span className="text-[10px] opacity-60">Usually 30–90s</span>
         </div>
@@ -320,8 +327,11 @@ function MediaSlot({ h }: { h: HighlightRow }) {
 
   if (h.status === 'failed') {
     return (
-      <div className="flex items-start gap-2 rounded-xl border border-red-200/60 bg-red-50/40 p-3 text-xs text-red-700">
-        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+      <div
+        role="alert"
+        className="flex items-start gap-2 rounded-xl border border-red-200/60 bg-red-50/40 p-3 text-xs text-red-700"
+      >
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
         <span>{h.render_error ?? 'Render failed. Retry?'}</span>
       </div>
     )
@@ -466,15 +476,20 @@ function PublishButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
+        aria-expanded={false}
+        aria-controls={`publish-panel-${highlight.id}`}
         className="cf-btn-3d cf-btn-3d-primary inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs"
       >
-        <Send className="h-3.5 w-3.5" /> Post
+        <Send className="h-3.5 w-3.5" aria-hidden /> Post
       </button>
     )
   }
 
   return (
-    <div className="w-full rounded-xl border border-border/60 bg-muted/20 p-3">
+    <div
+      id={`publish-panel-${highlight.id}`}
+      className="w-full rounded-xl border border-border/60 bg-muted/20 p-3"
+    >
       <form action={formAction} className="space-y-2.5">
         <input type="hidden" name="workspace_id" value={workspaceId} />
         <input type="hidden" name="highlight_id" value={highlight.id} />

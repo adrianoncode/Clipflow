@@ -63,7 +63,9 @@ export function SignupForm() {
           minLength={8}
           aria-required="true"
           aria-invalid={hasError || undefined}
-          aria-describedby={hasError ? 'signup-error' : 'signup-password-hint'}
+          aria-describedby={
+            hasError ? 'signup-error signup-password-hint' : 'signup-password-hint'
+          }
         />
         <p id="signup-password-hint" className="text-xs text-muted-foreground">
           Minimum 8 characters.

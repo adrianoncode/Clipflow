@@ -153,12 +153,14 @@ export function AddServiceKeyDialog({
               name="api_key"
               type="password"
               required
+              aria-required="true"
+              aria-describedby="api_key-hint"
               placeholder={spec.keyFormatHint}
               autoComplete="off"
               spellCheck={false}
               autoFocus
             />
-            <p className="text-xs text-muted-foreground">
+            <p id="api_key-hint" className="text-xs text-muted-foreground">
               We test the connection before saving. Your key is encrypted
               and never shared.
             </p>
@@ -174,12 +176,21 @@ export function AddServiceKeyDialog({
                 name={spec.secondaryField.name}
                 type="password"
                 required
+                aria-required="true"
+                aria-describedby={
+                  spec.secondaryField.hint
+                    ? `${spec.secondaryField.name}-hint`
+                    : undefined
+                }
                 placeholder={spec.secondaryField.placeholder}
                 autoComplete="off"
                 spellCheck={false}
               />
               {spec.secondaryField.hint ? (
-                <p className="text-xs text-muted-foreground">
+                <p
+                  id={`${spec.secondaryField.name}-hint`}
+                  className="text-xs text-muted-foreground"
+                >
                   {spec.secondaryField.hint}
                 </p>
               ) : null}

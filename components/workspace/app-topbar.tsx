@@ -84,14 +84,15 @@ export function AppTopbar({
         <button
           type="button"
           aria-label="Open navigation"
+          aria-controls="primary-navigation"
           onClick={() => setOpen(true)}
-          className="grid h-8 w-8 place-items-center rounded-full border md:hidden"
+          className="grid h-8 w-8 place-items-center rounded-full border transition-colors hover:bg-[rgba(15,15,15,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2 md:hidden"
           style={{
             borderColor: 'rgba(15,15,15,0.14)',
             background: 'rgba(255, 253, 248, 0.85)',
           }}
         >
-          <Menu className="h-3.5 w-3.5" style={{ color: '#0F0F0F' }} />
+          <Menu className="h-3.5 w-3.5" aria-hidden style={{ color: '#0F0F0F' }} />
         </button>
 
         <div className="hidden lg:block">
@@ -127,20 +128,38 @@ export function AppTopbar({
 
       {/* ── Right: search + bell + avatar ───────────────────────────── */}
       <div className="flex items-center gap-2.5">
+        {/*
+          Search shell: focus-within mirrors the input focus to the
+          parent so the whole pill picks up the focus ring instead of
+          a thin keyboard ring on the bare input. The trigger (⌘K)
+          isn't wired yet — we keep it visible as an affordance hint
+          but mark the input as a no-op `type=search` form-less field
+          until the global palette ships. Until then it's purely a
+          placeholder, hence aria-disabled to tell AT it does nothing.
+        */}
         <div
-          className="hidden h-8 items-center gap-2 rounded-full border px-3 sm:flex"
+          className="hidden h-8 items-center gap-2 rounded-full border px-3 transition-shadow focus-within:ring-2 focus-within:ring-[#0F0F0F] focus-within:ring-offset-2 sm:flex"
           style={{
             borderColor: 'rgba(15,15,15,0.14)',
             background: 'rgba(255, 253, 248, 0.85)',
           }}
         >
-          <Search className="h-3 w-3" style={{ color: '#7A7468' }} />
+          <Search className="h-3 w-3" aria-hidden style={{ color: '#7A7468' }} />
+          <label htmlFor="topbar-search" className="sr-only">
+            Search
+          </label>
           <input
+            id="topbar-search"
+            type="search"
+            name="q"
             placeholder="Search anything"
-            className="w-[200px] border-0 bg-transparent text-[12px] outline-none"
+            aria-disabled="true"
+            disabled
+            className="w-[200px] border-0 bg-transparent text-[12px] outline-none placeholder:text-[#7A7468] disabled:cursor-not-allowed"
             style={{ color: '#0F0F0F' }}
           />
           <kbd
+            aria-hidden="true"
             className="rounded border px-1.5 py-px text-[10px]"
             style={{
               borderColor: 'rgba(15,15,15,0.14)',
@@ -153,19 +172,27 @@ export function AppTopbar({
           </kbd>
         </div>
 
+        {/*
+          Notifications surface isn't wired yet — disable the trigger
+          rather than render a fake button. Visual treatment matches
+          the active state with a muted alpha so the chrome still
+          reads as "this lives here, just not yet."
+        */}
         <button
           type="button"
-          aria-label="Notifications"
-          className="grid h-8 w-8 place-items-center rounded-full border transition-colors hover:bg-[rgba(15,15,15,0.04)]"
+          aria-label="Notifications (coming soon)"
+          aria-disabled="true"
+          disabled
+          className="grid h-8 w-8 place-items-center rounded-full border transition-colors hover:bg-[rgba(15,15,15,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           style={{ borderColor: 'rgba(15,15,15,0.14)' }}
         >
-          <Bell className="h-3.5 w-3.5" style={{ color: '#0F0F0F' }} />
+          <Bell className="h-3.5 w-3.5" aria-hidden style={{ color: '#0F0F0F' }} />
         </button>
 
         <Link
           href="/settings/profile"
-          aria-label="Account"
-          className="grid h-8 w-8 place-items-center rounded-full text-[11px] font-bold transition-transform hover:scale-105"
+          aria-label="Account settings"
+          className="grid h-8 w-8 place-items-center rounded-full text-[11px] font-bold transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4D93D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFDF8] motion-reduce:transition-none motion-reduce:hover:scale-100"
           style={{
             background: '#0F0F0F',
             color: '#F4D93D',

@@ -130,8 +130,12 @@ export function CaptionRenderPanel({
 
       {/* In-flight indicator */}
       {!ready && inFlight ? (
-        <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-800">
-          <Loader2 className="h-3 w-3 animate-spin" />
+        <div
+          role="status"
+          aria-live="polite"
+          className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-800"
+        >
+          <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" aria-hidden />
           {inFlight.status === 'queued' ? 'Queued…' : 'Rendering…'}
         </div>
       ) : null}

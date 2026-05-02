@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect } from 'react'
 import {
   Compass,
   Folder,
@@ -71,6 +72,21 @@ export function AppSidebar({
   const pathname = usePathname()
   const { open, setOpen } = useMobileNav()
 
+  // ESC closes the mobile drawer (standard dialog/menu behaviour). Only
+  // bound while the drawer is open so we don't intercept keystrokes
+  // anywhere else in the app.
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        setOpen(false)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, setOpen])
+
   return (
     <>
       {/* ── Mobile backdrop — fades behind the slide-in drawer ──────── */}
@@ -86,6 +102,7 @@ export function AppSidebar({
       />
 
       <aside
+        id="primary-navigation"
         aria-label="Primary navigation"
         className={[
           'fixed left-0 top-0 z-40 flex h-screen shrink-0 flex-col gap-2.5 overflow-hidden border-r px-3.5 py-5',
@@ -109,7 +126,7 @@ export function AppSidebar({
           type="button"
           onClick={() => setOpen(false)}
           aria-label="Close navigation"
-          className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full md:hidden"
+          className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full transition-colors hover:bg-[rgba(15,15,15,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2 md:hidden"
           style={{
             background: 'rgba(15,15,15,0.06)',
             border: '1px solid rgba(15,15,15,0.14)',
@@ -121,8 +138,8 @@ export function AppSidebar({
       {/* ── Logo ────────────────────────────────────────────────────── */}
       <Link
         href="/dashboard"
-        aria-label="Clipflow"
-        className="flex items-center gap-2 px-2 py-1 transition-opacity hover:opacity-90"
+        aria-label="Clipflow — go to dashboard"
+        className="flex items-center gap-2 rounded-md px-2 py-1 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2"
       >
         <span
           aria-hidden
@@ -173,26 +190,22 @@ export function AppSidebar({
                   key={item.id}
                   href={href}
                   aria-current={active ? 'page' : undefined}
-                  className="group flex h-9 items-center gap-2.5 rounded-lg border px-3 text-[13px] font-medium transition-colors duration-150"
+                  className={[
+                    'group flex h-9 items-center gap-2.5 rounded-lg border border-transparent px-3 text-[13px]',
+                    'transition-colors duration-150',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2',
+                    active
+                      ? 'font-semibold text-white'
+                      : 'font-medium text-[#2A2A2A] hover:bg-[rgba(15,15,15,0.04)]',
+                  ].join(' ')}
                   style={{
-                    background: active ? '#0F0F0F' : 'transparent',
-                    color: active ? '#FFFFFF' : '#2A2A2A',
-                    fontWeight: active ? 600 : 500,
-                    borderColor: 'transparent',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!active)
-                      (e.currentTarget as HTMLAnchorElement).style.background =
-                        'rgba(15,15,15,0.04)'
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!active)
-                      (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'
+                    background: active ? '#0F0F0F' : undefined,
                   }}
                 >
-                  <item.Icon className="h-[15px] w-[15px] shrink-0" />
+                  <item.Icon className="h-[15px] w-[15px] shrink-0" aria-hidden />
                   <span className="truncate">{item.label}</span>
                   <span
+                    aria-hidden="true"
                     className="ml-auto text-[10px] tabular-nums"
                     style={{
                       fontFamily: 'var(--font-jetbrains-mono), monospace',
@@ -241,7 +254,7 @@ export function AppSidebar({
             </span>
             <Link
               href="/billing"
-              className="inline-flex h-7 items-center justify-center rounded-full px-3 text-[11px] font-bold transition-transform hover:scale-[1.02]"
+              className="inline-flex h-7 items-center justify-center rounded-full px-3 text-[11px] font-bold transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4D93D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F0F0F] motion-reduce:transition-none motion-reduce:hover:scale-100"
               style={{ background: '#F4D93D', color: '#0F0F0F' }}
             >
               Upgrade plan

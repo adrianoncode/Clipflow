@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useFormState, useFormStatus } from 'react-dom'
 import { useSearchParams } from 'next/navigation'
 
@@ -52,12 +53,12 @@ export function LoginForm() {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label htmlFor="password">Password</Label>
-          <a
+          <Link
             href="/magic-link"
             className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
           >
             Forgot password?
-          </a>
+          </Link>
         </div>
         <Input
           id="password"
