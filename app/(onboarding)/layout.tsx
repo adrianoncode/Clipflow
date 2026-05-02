@@ -29,7 +29,11 @@ const ONBOARD_STYLES = `
   --card: 42 60% 99%; --card-foreground: 35 14% 9%;
   --popover: 42 60% 99%; --popover-foreground: 35 14% 9%;
   --primary: 273 40% 17%; --primary-foreground: 73 100% 62%;
-  --muted: 42 24% 90%; --muted-foreground: 34 7% 45%;
+  --muted: 42 24% 90%;
+  /* Tightened from 34 7% 45% (≈4.33:1 against the cream bg) to 40%
+     so 14px body copy clears WCAG AA's 4.5:1 threshold — matches the
+     auth layout fix from a11y pass 5. */
+  --muted-foreground: 34 7% 40%;
   --accent: 73 100% 62%; --accent-foreground: 72 100% 6%;
   --border: 37 27% 85%; --input: 37 27% 85%; --ring: 273 40% 17%;
 

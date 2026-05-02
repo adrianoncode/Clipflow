@@ -130,7 +130,10 @@ export default function CompareIndexPage() {
                     style={{ color: 'var(--lv2-primary)' }}
                   >
                     Read comparison
-                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                    <ArrowRight
+                      aria-hidden
+                      className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+                    />
                   </span>
                 </Link>
               )
