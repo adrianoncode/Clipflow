@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
@@ -9,9 +9,8 @@ import { AppSidebar } from '@/components/workspace/app-sidebar'
 import { AppTopbar } from '@/components/workspace/app-topbar'
 import { MobileNavProvider } from '@/components/workspace/mobile-nav-context'
 import { getProfile } from '@/lib/auth/get-profile'
-import { getUser } from '@/lib/auth/get-user'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
-import { getSubscription, getWorkspacePlan } from '@/lib/billing/get-subscription'
+import { getSubscription } from '@/lib/billing/get-subscription'
 
 const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
 
@@ -21,18 +20,21 @@ const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
 const PAGE_BG = 'linear-gradient(125deg, #B5B8C2 0%, #D4D1BE 32%, #EDDB8B 100%)'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const user = await getUser()
-  if (!user) redirect('/login')
+  // The middleware already ran a verified `auth.getUser()` and forwarded
+  // the resulting identity via request headers. Reading them is a local
+  // operation — saves us a second JWT-verify round-trip to Supabase.
+  const headerList = headers()
+  const userId = headerList.get('x-clipflow-user-id')
+  const userEmail = headerList.get('x-clipflow-user-email')
+  if (!userId) redirect('/login')
+  const user = { id: userId, email: userEmail ?? '' }
 
   const cookieStore = cookies()
   const cookieWorkspaceId = cookieStore.get(CURRENT_WORKSPACE_COOKIE)?.value
 
-  const [profile, workspaces, speculativePlan] = await Promise.all([
+  const [profile, workspaces] = await Promise.all([
     getProfile(),
     getWorkspaces(),
-    cookieWorkspaceId
-      ? getWorkspacePlan(cookieWorkspaceId)
-      : Promise.resolve(null),
   ])
 
   if (!profile || profile.onboarded_at === null) redirect('/onboarding/role')
@@ -41,14 +43,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const personal = workspaces.find((w) => w.type === 'personal') ?? workspaces[0]!
   const currentWorkspace =
     workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal
-
-  // Resolve plan — reuse the speculative fetch when the cookie matched
-  // the workspace we ended up rendering, fall back otherwise.
-  void (
-    speculativePlan !== null && cookieWorkspaceId === currentWorkspace.id
-      ? speculativePlan
-      : await getWorkspacePlan(currentWorkspace.id)
-  )
 
   // Show the trial card in the sidebar only while the subscription is in
   // a `trialing` state. `current_period_end` is the trial end-date during
