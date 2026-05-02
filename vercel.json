@@ -26,7 +26,7 @@
     },
     {
       "path": "/api/cron/poll-zapcap",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 7 * * *"
     }
   ]
 }
