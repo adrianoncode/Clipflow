@@ -1724,6 +1724,8 @@ export type Database = {
           active_niche: string | null
           branding: Json
           created_at: string
+          highlight_min_score: number
+          highlight_top_n: number
           id: string
           name: string
           owner_id: string
@@ -1737,6 +1739,8 @@ export type Database = {
           active_niche?: string | null
           branding?: Json
           created_at?: string
+          highlight_min_score?: number
+          highlight_top_n?: number
           id?: string
           name: string
           owner_id: string
@@ -1750,6 +1754,8 @@ export type Database = {
           active_niche?: string | null
           branding?: Json
           created_at?: string
+          highlight_min_score?: number
+          highlight_top_n?: number
           id?: string
           name?: string
           owner_id?: string

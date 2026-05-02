@@ -39,8 +39,12 @@ const responseSchema = z.object({
 })
 
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
-const DEFAULT_MODEL = 'gpt-4o-mini'
-const MAX_TRANSCRIPT_CHARS = 32_000 // fits gpt-4o-mini 128k context with room
+// Bumped to gpt-4o for sharper hook detection on long transcripts (Deep
+// Research recommendation). Cost is ~10x gpt-4o-mini per scoring run —
+// acceptable because keys are BYOK and this fires once per content
+// import. Callers can downgrade by passing `model: 'gpt-4o-mini'`.
+const DEFAULT_MODEL = 'gpt-4o'
+const MAX_TRANSCRIPT_CHARS = 32_000 // fits gpt-4o 128k context with room
 
 const SYSTEM_PROMPT = `You are a short-form video producer who watches long podcasts, livestreams and YouTube videos and pulls out the 3–8 moments most likely to go viral on TikTok, Instagram Reels and YouTube Shorts.
 

@@ -157,16 +157,31 @@ export async function findViralMomentsAction(
   // slowed by per-row RLS evaluation. Workspace membership was
   // already enforced above.
   //
-  // Slice 10: seed `selected_for_drafts` for the top 3 by virality
-  // score so the user lands on a sensible default selection. They
-  // can de-/re-select via the per-card checkbox afterwards. Tie-
-  // breakers fall back to the AI's emit order (typically already
-  // sorted high-to-low by score).
+  // Auto-selection seeds `selected_for_drafts` so the reviewer lands
+  // on a sensible default. Two workspace knobs gate this:
+  //
+  //   highlight_top_n      — how many top-scoring clips to flag (1..10)
+  //   highlight_min_score  — floor; clips below this are detected and
+  //                          stored but never auto-selected
+  //
+  // When every clip falls below the floor, the result set is inserted
+  // with selected_for_drafts=false across the board — the UI can then
+  // surface "no high-virality clips found" and prompt re-run / threshold
+  // adjustment instead of pushing mediocre defaults at the user.
   const admin = createAdminClient()
-  const sortedScores = [...detection.moments]
+  const { data: workspaceConfig } = await supabase
+    .from('workspaces')
+    .select('highlight_top_n, highlight_min_score')
+    .eq('id', workspace_id)
+    .maybeSingle()
+  const topN = workspaceConfig?.highlight_top_n ?? 3
+  const minScore = workspaceConfig?.highlight_min_score ?? 0
+
+  const eligible = detection.moments
     .map((m, idx) => ({ idx, score: m.virality_score ?? 0 }))
+    .filter((x) => x.score >= minScore)
     .sort((a, b) => b.score - a.score || a.idx - b.idx)
-  const topIndices = new Set(sortedScores.slice(0, 3).map((s) => s.idx))
+  const topIndices = new Set(eligible.slice(0, topN).map((s) => s.idx))
   const rows = detection.moments.map((m, idx) => ({
     content_id,
     workspace_id,
