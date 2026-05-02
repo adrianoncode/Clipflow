@@ -71,9 +71,16 @@ export function AnimatedDonut({
             style={{ transition: 'stroke-width 200ms ease-out' }}
           />
           <defs>
+            {/* Stroke fill desaturated from full yellowSoft→yellowDeep
+                gradient to a single yellowSoft tone. Yellow-hierarchy
+                discipline: only the FeaturedCard anchor and the
+                stuck-draft action chevron carry full yellow saturation;
+                supporting visualisations like this donut step down to
+                a softer tier so the high-saturation hits actually
+                read as "this is special". */}
             <linearGradient id="donut-fill" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor={PALETTE.yellowSoft} />
-              <stop offset="100%" stopColor={PALETTE.yellowDeep} />
+              <stop offset="100%" stopColor={PALETTE.yellowSoft} />
             </linearGradient>
             <filter id="donut-glow" x="-30%" y="-30%" width="160%" height="160%">
               <feGaussianBlur stdDeviation="2.2" result="blur" />

@@ -10,13 +10,33 @@ export const metadata: Metadata = {
   description:
     'Clipflow adapts to your niche. Pick your use case to see how the repurposing workflow lines up with your role — podcasters, agencies, coaches, SaaS founders, solo creators.',
   alternates: { canonical: 'https://clipflow.to/for' },
+  openGraph: {
+    title: 'Built for podcasters, agencies, coaches, founders, creators',
+    description:
+      'Clipflow adapts to your niche — see how the repurposing workflow fits podcasters, agencies, coaches, SaaS founders, and solo creators.',
+    url: 'https://clipflow.to/for',
+    type: 'website',
+  },
 }
 
 export default function UseCasesHubPage() {
   const useCases = ALL_USE_CASE_IDS.map((id) => USE_CASES[id])
 
+  const breadcrumbs = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Clipflow', item: 'https://clipflow.to' },
+      { '@type': 'ListItem', position: 2, name: 'Use cases', item: 'https://clipflow.to/for' },
+    ],
+  }
+
   return (
     <ExploreLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+      />
       <div className="space-y-10 pb-24">
         <header>
           <p className="lv2-mono-label mb-3">Use cases</p>

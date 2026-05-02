@@ -1,5 +1,20 @@
+import type { Metadata } from 'next'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+
+// Workspace shell — every route under (app) is auth-gated user data.
+// Hard-noindex at the layout level so /dashboard, /workspace/*,
+// /settings/*, /content/*, /library, etc. all inherit the directive.
+// robots.txt also disallows the prefixes but the meta-tag is what
+// actually de-indexes a page that already crept into Google's index.
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: { index: false, follow: false, noimageindex: true },
+  },
+}
 
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { SubscriptionStatusBanner } from '@/components/billing/subscription-status-banner'

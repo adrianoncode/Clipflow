@@ -30,8 +30,29 @@ interface AlternativePageProps {
 export function AlternativePageBody({ competitor, painPoints }: AlternativePageProps) {
   const c = COMPETITORS[competitor]
 
+  // BreadcrumbList JSON-LD — there's no "alternatives hub", so the
+  // path is just Clipflow ▸ <Competitor> alternative. Even a 2-level
+  // crumb upgrades the SERP snippet from a raw URL to a labelled trail.
+  const breadcrumbs = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Clipflow', item: 'https://clipflow.to' },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: `${c.name} alternative`,
+        item: `https://clipflow.to/${c.slug}-alternative`,
+      },
+    ],
+  }
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+      />
       <SmoothScroll />
       <div
         className="lv2-root"

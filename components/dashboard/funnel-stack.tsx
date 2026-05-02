@@ -113,8 +113,13 @@ export function FunnelStackCard({
         {stuckDrafts.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 py-6 text-center">
             <CheckCircle2 className="h-6 w-6" style={{ color: PALETTE.yellow }} />
+            {/* Slightly meme-y empty-state copy. Crextio voice: terse,
+                confident, insider-y. The previous "You're caught up."
+                was correct but flat — the dashboard's most-rendered
+                empty state is exactly the place to deposit a crumb of
+                personality. */}
             <p className="text-[12px] font-semibold" style={{ color: '#FFFFFF' }}>
-              You&apos;re caught up.
+              Inbox zero. Touch grass.
             </p>
           </div>
         ) : (
@@ -192,18 +197,29 @@ function StuckDraftRow({
           {STATE_LABEL[draft.state] ?? draft.state} · {draft.daysSince}d cold
         </p>
       </div>
+      {/* The CTA is visually 24×24 (yellow chevron pill) but the
+          interactive hit-area is 44×44 via an invisible inset. WCAG
+          2.1 AA tap-target is 44px on touch — applying it here was
+          critical because the row is dense and a thumb miss-click on
+          the row's :hover-state used to scroll the panel instead of
+          activating the draft review link. */}
       <Link
         href={`/workspace/${workspaceId}/content/${draft.contentId}/outputs`}
         aria-label={`Review ${draft.title ?? 'draft'}`}
-        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4D93D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F0F0F]"
-        style={{
-          background: PALETTE.yellow,
-          transform: hovered ? 'translateX(4px) scale(1.06)' : 'translateX(0) scale(1)',
-          transition: 'transform 220ms cubic-bezier(0.2,0.9,0.25,1.18)',
-          boxShadow: hovered ? '0 6px 16px rgba(220,185,31,0.45)' : 'none',
-        }}
+        className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4D93D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F0F0F]"
       >
-        <ChevronRight className="h-3 w-3" style={{ color: PALETTE.ink }} />
+        <span
+          aria-hidden
+          className="grid h-6 w-6 place-items-center rounded-full"
+          style={{
+            background: PALETTE.yellow,
+            transform: hovered ? 'translateX(4px) scale(1.06)' : 'translateX(0) scale(1)',
+            transition: 'transform 220ms cubic-bezier(0.2,0.9,0.25,1.18)',
+            boxShadow: hovered ? '0 6px 16px rgba(220,185,31,0.45)' : 'none',
+          }}
+        >
+          <ChevronRight className="h-3 w-3" style={{ color: PALETTE.ink }} />
+        </span>
       </Link>
     </li>
   )
@@ -228,9 +244,14 @@ function FunnelLadderRow({
 
   const [hovered, setHovered] = React.useState(false)
 
+  // Imported-stage bar desaturated from full yellow to yellowSoft —
+  // matches the yellow-hierarchy discipline: only action surfaces
+  // (FeaturedCard, stuck-draft chevron) and the live-status pill hold
+  // full saturation. Funnel stages communicate progress, not action,
+  // so they sit a tier down.
   const fill =
     variant === 'yellow'
-      ? PALETTE.yellow
+      ? PALETTE.yellowSoft
       : variant === 'dark'
         ? PALETTE.charcoal
         : 'rgba(15, 15, 15, 0.22)'
@@ -289,7 +310,7 @@ function FunnelLadderRow({
             boxShadow:
               variant === 'yellow'
                 ? hovered
-                  ? 'inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 18px rgba(220,185,31,0.35)'
+                  ? 'inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 18px rgba(244,217,61,0.22)'
                   : 'inset 0 1px 0 rgba(255,255,255,0.45), 0 1px 2px rgba(15,15,15,0.05)'
                 : variant === 'dark'
                   ? hovered

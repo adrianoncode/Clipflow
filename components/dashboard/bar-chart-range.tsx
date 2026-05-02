@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 
 import {
@@ -10,22 +11,33 @@ import {
 } from '@/components/ui/editorial-motion'
 import { DASHBOARD_PALETTE as PALETTE } from '@/lib/dashboard/palette'
 
-// BarChartWeek — 7-day post velocity bars.
+// BarChartRange — adaptive volume bars across the dashboard's selected
+// range (7 / 30 / 90 days). Originally a fixed-7-day component
+// (BarChartWeek); renamed when adaptive bucketing landed in Phase 2 so
+// the name actually describes what it does.
+//
+// Renders whatever buckets the analytics layer hands over (7 daily,
+// 30 daily, 13 weekly) without per-range component branching.
 //
 // Mount: bars grow staggered (80ms between bars) from 0 → height. The
 // peak bar gets a softly-pulsing accent halo. Hover: bar glows yellow,
-// tooltip floats above with the day name + count. Reduced-motion users
-// see the static end-state with no glow.
-export function BarChartWeek({
+// tooltip floats above with the bucket date + count. Reduced-motion
+// users see the static end-state with no glow.
+export function BarChartRange({
   data,
   max,
   peakIndex,
   total,
+  rangeLabel,
 }: {
   data: Array<{ label: string; count: number; isoDay: string }>
   max: number
   peakIndex: number
   total: number
+  /** Free-form label for the period the data covers — e.g. "Last 7
+   *  days". Renders below the count, replacing the previous hard-
+   *  coded "posts this week" copy. */
+  rangeLabel: string
 }) {
   // Delay covers the parent <Reveal>'s 320ms fade-up so the bar grow
   // doesn't animate "behind the fog" — bars start to wake once their
@@ -56,8 +68,16 @@ export function BarChartWeek({
   }
 
   return (
-    <div
-      className="group flex flex-col justify-between gap-4 rounded-[24px] p-5 transition-all duration-200 hover:scale-[1.012]"
+    // Card wraps in a Link to the Library — drilling into "what was
+    // generated this period" lands on the actual content, not just
+    // another summary view. Mirrors ScheduleWeekCard's pattern where
+    // the entire card is the click-target so users don't have to find
+    // a small "Open" affordance. Bars stay hover-only (tooltips for
+    // information, no nested links to avoid Cmd-click ambiguity).
+    <Link
+      href="/library"
+      aria-label={`${total} posts ${rangeLabel.toLowerCase()} — open Library`}
+      className="group flex flex-col justify-between gap-4 rounded-[24px] p-5 transition-all duration-200 hover:scale-[1.012] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
       style={{
         background: PALETTE.cardCream,
         border: `1px solid ${PALETTE.border}`,
@@ -87,7 +107,7 @@ export function BarChartWeek({
             <span className="text-[11px] leading-tight" style={{ color: PALETTE.inkSoft }}>
               posts
               <br />
-              this week
+              {rangeLabel.toLowerCase()}
             </span>
           </div>
         </div>
@@ -100,7 +120,21 @@ export function BarChartWeek({
         </span>
       </div>
 
-      <div ref={containerRef} className="relative flex h-[88px] items-end gap-1.5">
+      <div
+        ref={containerRef}
+        className="relative flex h-[88px] items-end"
+        // Gap scales with bucket count: 6px @ ≤7, 3px @ 8-15, 1.5px @ 16+.
+        // Without this, 30-bar views eat 174px of horizontal real estate
+        // in gaps alone and the bars compress to slivers.
+        style={{
+          gap:
+            data.length <= 7
+              ? 6
+              : data.length <= 15
+                ? 3
+                : 1.5,
+        }}
+      >
         {data.map((d, i) => {
           const isPeak = i === peakIndex && d.count > 0
           const isHover = hoverIdx === i
@@ -121,7 +155,10 @@ export function BarChartWeek({
               key={d.isoDay}
               role="img"
               aria-label={cellLabel}
-              className="relative flex flex-1 cursor-pointer flex-col items-center gap-1.5"
+              // No `cursor-pointer` — cells aren't interactive (no
+              // onClick / no Link), only hover-tooltips. Pointer cursor
+              // would lie about clickability per Vercel WIG.
+              className="relative flex flex-1 flex-col items-center gap-1.5"
               onMouseEnter={(e) => handleActivate(i, e)}
               onMouseLeave={() => setHoverIdx(null)}
             >
@@ -129,7 +166,13 @@ export function BarChartWeek({
                 <span
                   className="absolute -top-5 rounded-full px-1.5 py-0.5 text-[9px] font-semibold tabular-nums transition-transform duration-200"
                   style={{
-                    background: PALETTE.yellow,
+                    // Peak number badge desaturated from full yellow
+                    // to yellowSoft — supporting-tier per the yellow-
+                    // hierarchy plan. Action surfaces (FeaturedCard
+                    // gradient, stuck-draft chevron, "Live" pulse pill)
+                    // hold full saturation; data-viz highlights step
+                    // down a tier so they read as "noted" not "alarm".
+                    background: PALETTE.yellowSoft,
                     color: PALETTE.ink,
                     transform: isHover ? 'scale(1.1)' : 'scale(1)',
                   }}
@@ -143,31 +186,37 @@ export function BarChartWeek({
                   style={{
                     height: `${heightPct}%`,
                     background: isHover
-                      ? PALETTE.yellow
+                      ? PALETTE.yellowSoft
                       : isPeak
-                        ? PALETTE.yellow
+                        ? PALETTE.yellowSoft
                         : PALETTE.charcoal,
                     minHeight: 4,
                     transition:
                       'background 180ms ease-out, box-shadow 220ms ease-out, transform 200ms ease-out',
                     transform: isHover ? 'translateY(-2px)' : 'translateY(0)',
                     boxShadow: isHover
-                      ? `0 6px 14px rgba(220,185,31,0.35)`
-                      : isPeak
-                        ? `0 0 0 0 rgba(220,185,31,0)`
-                        : 'none',
+                      ? `0 6px 14px rgba(244,217,61,0.22)`
+                      : 'none',
                   }}
                 />
               </div>
-              <span
-                className="text-[10px] font-semibold uppercase"
-                style={{
-                  color: isHover ? PALETTE.ink : PALETTE.inkSoft,
-                  transition: 'color 180ms ease-out',
-                }}
-              >
-                {d.label}
-              </span>
+              {/* Empty labels (sparse 30d markers) get a 1px-tall
+                  spacer so the bar bottoms align with their neighbours.
+                  Otherwise the bar with no label would visually bleed
+                  down into the next row. */}
+              {d.label ? (
+                <span
+                  className="text-[10px] font-semibold uppercase"
+                  style={{
+                    color: isHover ? PALETTE.ink : PALETTE.inkSoft,
+                    transition: 'color 180ms ease-out',
+                  }}
+                >
+                  {d.label}
+                </span>
+              ) : (
+                <span aria-hidden className="block h-[14px]" />
+              )}
             </div>
           )
         })}
@@ -186,6 +235,6 @@ export function BarChartWeek({
             )
           })()}
       </div>
-    </div>
+    </Link>
   )
 }

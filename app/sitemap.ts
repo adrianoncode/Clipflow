@@ -8,6 +8,7 @@ import {
   USE_CASES,
 } from '@/lib/landing/features'
 import { GUIDES } from '@/lib/landing/playbook'
+import { HELP_ARTICLES } from '@/lib/help/articles'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = 'https://clipflow.to'
@@ -55,18 +56,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: base, lastModified: now, changeFrequency: 'weekly', priority: 1.0 },
 
-    // Signup funnel — higher priority than login so crawlers weight the
-    // conversion page appropriately.
-    { url: `${base}/signup`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${base}/login`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
-
-    // On-page section anchors — indexable as deep-links so queries like
-    // "clipflow pricing" or "clipflow features" land directly on the
-    // right fold of the homepage.
-    { url: `${base}/#pricing`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${base}/#how-it-works`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
-    { url: `${base}/#features`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
-    { url: `${base}/#faq`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    // Auth pages (/signup, /login, /magic-link, /mfa) are intentionally
+    // excluded — they're session walls with no indexable content and
+    // are noindex'd via the (auth) layout. Letting them stay in the
+    // sitemap creates the "Submitted URL marked noindex" GSC warning.
+    //
+    // Hash-anchor URLs (`/#pricing` etc.) used to live here but Google
+    // ignores fragments — sitemap entries must resolve to unique URLs.
 
     // Comparison hub + one page per competitor — high-intent SEO pages
     // targeting "<competitor> alternative" and "clipflow vs <competitor>"
@@ -110,8 +106,39 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     ...playbookGuides,
 
-    // Legal
+    // Help center — every article is a real Q&A page that can rank for
+    // long-tail support queries ("how to schedule a tiktok post" etc.).
+    // Priority below playbook (0.7) because help articles are reactive
+    // troubleshooting content rather than authoritative guides.
+    {
+      url: `${base}/help`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    ...Object.keys(HELP_ARTICLES).map((slug) => ({
+      url: `${base}/help/${slug}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.4,
+    })),
+
+    // Changelog — refreshed every release, surfaces "what's new"
+    // queries from prospects evaluating activity.
+    {
+      url: `${base}/changelog`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.4,
+    },
+
+    // Legal — yearly cadence, low priority but indexable for trust
+    // signals (DMCA + Imprint are required by EU/US compliance and
+    // surface in "<brand> contact" queries).
     { url: `${base}/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
     { url: `${base}/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${base}/cookies`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${base}/dmca`, lastModified: now, changeFrequency: 'yearly', priority: 0.2 },
+    { url: `${base}/imprint`, lastModified: now, changeFrequency: 'yearly', priority: 0.2 },
   ]
 }

@@ -2,7 +2,16 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Terms of Service — Clipflow',
-  description: 'Terms and conditions for using the Clipflow platform.',
+  description:
+    'Terms and conditions for using the Clipflow platform — accounts, billing, BYOK API keys, and acceptable use.',
+  alternates: { canonical: 'https://clipflow.to/terms' },
+  openGraph: {
+    title: 'Terms of Service — Clipflow',
+    description:
+      'Terms and conditions for using the Clipflow platform — accounts, billing, BYOK API keys, and acceptable use.',
+    url: 'https://clipflow.to/terms',
+    type: 'article',
+  },
 }
 
 export default function TermsPage() {

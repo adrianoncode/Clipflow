@@ -13,8 +13,21 @@ export const metadata: Metadata = {
 }
 
 export default function CompareIndexPage() {
+  const breadcrumbs = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Clipflow', item: 'https://clipflow.to' },
+      { '@type': 'ListItem', position: 2, name: 'Compare', item: 'https://clipflow.to/compare' },
+    ],
+  }
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+      />
       <SmoothScroll />
       <div
         className="lv2-root"

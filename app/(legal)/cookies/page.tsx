@@ -3,7 +3,16 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Cookie Policy — Clipflow',
-  description: 'How Clipflow uses cookies and similar tracking technologies.',
+  description:
+    'How Clipflow uses cookies and similar tracking technologies. Essential cookies only — no third-party advertising trackers.',
+  alternates: { canonical: 'https://clipflow.to/cookies' },
+  openGraph: {
+    title: 'Cookie Policy — Clipflow',
+    description:
+      'How Clipflow uses cookies and similar tracking technologies. Essential cookies only.',
+    url: 'https://clipflow.to/cookies',
+    type: 'article',
+  },
 }
 
 export default function CookiePolicyPage() {

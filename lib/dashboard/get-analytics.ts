@@ -1,5 +1,10 @@
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
+import {
+  bucketSpec,
+  rangeToDays,
+  type DashboardRange,
+} from '@/lib/dashboard/range'
 
 export interface FunnelStage {
   key: 'imported' | 'outputs' | 'approved' | 'exported'
@@ -56,13 +61,37 @@ export interface PublishingStats {
   failed: number
 }
 
+export interface UpcomingPost {
+  id: string
+  platform: string
+  scheduledFor: string
+  contentTitle: string | null
+  outputId: string | null
+}
+
+export interface OutputBucket {
+  /** ISO date marking the START of the bucket (oldest first). For
+   *  daily buckets this is the day itself; for weekly buckets this
+   *  is Monday of the week. */
+  isoStart: string
+  /** Compact label for the chart axis. Daily: weekday-letter ("M").
+   *  Weekly: ISO week number ("W12"). */
+  label: string
+  count: number
+}
+
 export interface AnalyticsData {
   // Timeline
   contentByMonth: Array<{ month: string; count: number }>
   outputsByMonth: Array<{ month: string; count: number }>
-  /** Outputs created per day, last 7 days (oldest first). For the
-   *  dashboard's "Posts this week" bento card. */
-  outputsByDayLast7Days: Array<{ day: string; count: number }>
+  /** Output volume bucketed across the selected range. Bucket size
+   *  follows `bucketSpec(range)` — daily for 7d/30d, weekly for 90d.
+   *  Replaces the previous fixed `outputsByDayLast7Days` field. */
+  outputsByBucket: OutputBucket[]
+  /** The range used to compute this snapshot. Mirrored from input so
+   *  the client renders matching axis labels and the "Last Nd" header
+   *  without re-deriving from URL state. */
+  range: DashboardRange
 
   // Breakdowns
   platformBreakdown: Record<string, number>
@@ -79,8 +108,11 @@ export interface AnalyticsData {
 
   // ── Funnel, velocity, health ───────────────────────────────────
   funnel: FunnelStage[]
-  velocityContent: { thisWeek: number; lastWeek: number; deltaPct: number | null }
-  velocityOutputs: { thisWeek: number; lastWeek: number; deltaPct: number | null }
+  /** Imports volume comparison: this period vs the period before it.
+   *  Period length follows `range`. */
+  velocityContent: { thisPeriod: number; lastPeriod: number; deltaPct: number | null }
+  /** Outputs volume comparison: this period vs the period before it. */
+  velocityOutputs: { thisPeriod: number; lastPeriod: number; deltaPct: number | null }
   approvalRate: number
   stuckDrafts: StuckDraft[]
   platformCoverage: PlatformCoverage
@@ -96,6 +128,10 @@ export interface AnalyticsData {
   publishingStats: PublishingStats
   /** Whether workspace has an Upload-Post key connected. */
   hasPublishKey: boolean
+  /** Up to 2 next-up scheduled posts (status='scheduled'), sorted by
+   *  scheduled_for ascending. Powers the dashboard's Schedule preview
+   *  card so the user sees the actual queue, not just a counter. */
+  upcomingPosts: UpcomingPost[]
 }
 
 const SUPPORTED_PLATFORMS = ['tiktok', 'instagram_reels', 'youtube_shorts', 'linkedin'] as const
@@ -109,17 +145,31 @@ function pctChange(now: number, prev: number): number | null {
   return Math.round(((now - prev) / prev) * 100)
 }
 
-export async function getAnalytics(workspaceId: string): Promise<AnalyticsData> {
+export async function getAnalytics(
+  workspaceId: string,
+  range: DashboardRange = '7d',
+): Promise<AnalyticsData> {
   const supabase = createClient()
 
   const now = new Date()
   const sixMonthsAgo = new Date()
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
 
-  const weekAgo = new Date(now.getTime() - 7 * 86_400_000)
-  const twoWeeksAgo = new Date(now.getTime() - 14 * 86_400_000)
+  // Range-driven comparison windows. "this period" = last N days,
+  // "previous period" = the N days before that. Keeps velocity-delta
+  // semantics consistent at any range — 7d → week-over-week,
+  // 30d → month-over-month, 90d → quarter-over-quarter.
+  const windowDays = rangeToDays(range)
+  const periodAgo = new Date(now.getTime() - windowDays * 86_400_000)
+  const prevPeriodAgo = new Date(now.getTime() - 2 * windowDays * 86_400_000)
+  // Six-month source window for content fetches must always cover the
+  // 90-day case plus its previous-period comparison (180 days).
+  // sixMonthsAgo (which is exactly 6 months ≈ 183 days) already does.
+
   // Stuck drafts only look at rows aged 7+ days — no need to fetch full
-  // state history. 60-day window catches every possible candidate.
+  // state history. 60-day window catches every possible candidate
+  // regardless of dashboard range (drafts older than 60d already get
+  // truncated to "60d cold" anyway).
   const sixtyDaysAgo = new Date(now.getTime() - 60 * 86_400_000)
 
   // Single batched Promise.all — previously two extra sequential queries
@@ -215,21 +265,68 @@ export async function getAnalytics(workspaceId: string): Promise<AnalyticsData> 
     months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
   }
 
-  // Daily bucket for the last 7 days (rolling window ending today).
-  // Uses the same outputs array that the monthly bucket already iterated,
-  // so no extra query.
+  // ── Output bucket aggregation across the selected range ─────────
+  // Bucket strategy comes from `bucketSpec(range)`:
+  //   7d  → 7 daily buckets (label: weekday letter)
+  //   30d → 30 daily buckets (label: empty except every 5th = day-of-month)
+  //   90d → 13 weekly buckets (label: ISO week, "W12")
+  // Daily buckets share one map; weekly buckets compute on the fly.
   const dayKey = (iso: string): string => iso.slice(0, 10)
   const outputsByDayMap: Record<string, number> = {}
   for (const o of outputs) {
     const day = dayKey(o.created_at)
     outputsByDayMap[day] = (outputsByDayMap[day] ?? 0) + 1
   }
-  const last7Days: string[] = []
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date()
-    d.setHours(0, 0, 0, 0)
-    d.setDate(d.getDate() - i)
-    last7Days.push(d.toISOString().slice(0, 10))
+
+  const spec = bucketSpec(range)
+  const outputsByBucket: OutputBucket[] = []
+  if (spec.weekly) {
+    // 13 weekly buckets ending today. Week buckets aren't ISO-aligned —
+    // they're rolling 7-day windows ending on each "today minus 7n",
+    // so the rightmost bucket always reflects the freshest 7 days.
+    for (let w = spec.count - 1; w >= 0; w--) {
+      const bucketEnd = new Date(now)
+      bucketEnd.setHours(0, 0, 0, 0)
+      bucketEnd.setDate(bucketEnd.getDate() - w * 7)
+      const bucketStart = new Date(bucketEnd)
+      bucketStart.setDate(bucketStart.getDate() - 6)
+      let count = 0
+      for (let d = 0; d < 7; d++) {
+        const day = new Date(bucketStart)
+        day.setDate(day.getDate() + d)
+        count += outputsByDayMap[day.toISOString().slice(0, 10)] ?? 0
+      }
+      // Compact week label using the start-of-week month/day.
+      const label = bucketStart.toLocaleDateString(undefined, {
+        month: 'numeric',
+        day: 'numeric',
+      })
+      outputsByBucket.push({
+        isoStart: bucketStart.toISOString().slice(0, 10),
+        label,
+        count,
+      })
+    }
+  } else {
+    // Daily buckets, oldest first. For 7d we emit weekday-letter
+    // labels; for 30d we leave most labels blank and let the chart
+    // place sparse markers — the data layer just hands strings, the
+    // chart decides what to render.
+    for (let i = spec.count - 1; i >= 0; i--) {
+      const d = new Date(now)
+      d.setHours(0, 0, 0, 0)
+      d.setDate(d.getDate() - i)
+      const isoStart = d.toISOString().slice(0, 10)
+      const count = outputsByDayMap[isoStart] ?? 0
+      const label =
+        spec.count === 7
+          ? d.toLocaleDateString(undefined, { weekday: 'narrow' })
+          : // Every 5th day gets a short M/D label, others stay blank.
+            i % 5 === 0
+            ? d.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })
+            : ''
+      outputsByBucket.push({ isoStart, label, count })
+    }
   }
 
   // ── Platform + state breakdown ─────────────────────────────────
@@ -303,19 +400,22 @@ export async function getAnalytics(workspaceId: string): Promise<AnalyticsData> 
     },
   ]
 
-  // ── Velocity (this week vs last week) ───────────────────────────
-  const contentThisWeek = contentItems.filter(
-    (c) => new Date(c.created_at) >= weekAgo,
+  // ── Velocity (this period vs previous period of same length) ───
+  // Window length follows the dashboard range: 7d/30d/90d. The
+  // comparison is always rolling (ending today), not calendar-aligned —
+  // matches user intuition of "the last 30 days" vs "the 30 before that".
+  const contentThisPeriod = contentItems.filter(
+    (c) => new Date(c.created_at) >= periodAgo,
   ).length
-  const contentLastWeek = contentItems.filter((c) => {
+  const contentLastPeriod = contentItems.filter((c) => {
     const d = new Date(c.created_at)
-    return d >= twoWeeksAgo && d < weekAgo
+    return d >= prevPeriodAgo && d < periodAgo
   }).length
 
-  const outputsThisWeek = outputs.filter((o) => new Date(o.created_at) >= weekAgo).length
-  const outputsLastWeek = outputs.filter((o) => {
+  const outputsThisPeriod = outputs.filter((o) => new Date(o.created_at) >= periodAgo).length
+  const outputsLastPeriod = outputs.filter((o) => {
     const d = new Date(o.created_at)
-    return d >= twoWeeksAgo && d < weekAgo
+    return d >= prevPeriodAgo && d < periodAgo
   }).length
 
   // ── Approval rate ──────────────────────────────────────────────
@@ -390,6 +490,31 @@ export async function getAnalytics(workspaceId: string): Promise<AnalyticsData> 
         .in('id', outputIds)
     : { data: [] as Array<{ id: string; content_id: string }> }
   const contentIdForOutput = new Map((outputsForPosts ?? []).map(o => [o.id, o.content_id]))
+
+  // Top-2 upcoming scheduled posts (status='scheduled', future-dated).
+  // Sorted ascending so the soonest post is first — the dashboard's
+  // Schedule preview card renders these inline instead of forcing a
+  // /schedule round-trip just to see "what's next".
+  const nowIso = now.toISOString()
+  const upcomingPosts: UpcomingPost[] = scheduledPosts
+    .filter(
+      (p) =>
+        p.status === 'scheduled' && p.scheduled_for && p.scheduled_for >= nowIso,
+    )
+    .sort((a, b) =>
+      a.scheduled_for < b.scheduled_for ? -1 : a.scheduled_for > b.scheduled_for ? 1 : 0,
+    )
+    .slice(0, 2)
+    .map((p) => {
+      const contentId = p.output_id ? contentIdForOutput.get(p.output_id) ?? null : null
+      return {
+        id: p.id,
+        platform: p.platform,
+        scheduledFor: p.scheduled_for,
+        contentTitle: contentId ? contentTitleById.get(contentId) ?? null : null,
+        outputId: p.output_id ?? null,
+      }
+    })
 
   // Engagement aggregation
   let totalViews = 0
@@ -468,7 +593,8 @@ export async function getAnalytics(workspaceId: string): Promise<AnalyticsData> 
   return {
     contentByMonth: months.map((m) => ({ month: m, count: contentByMonthMap[m] ?? 0 })),
     outputsByMonth: months.map((m) => ({ month: m, count: outputsByMonthMap[m] ?? 0 })),
-    outputsByDayLast7Days: last7Days.map((d) => ({ day: d, count: outputsByDayMap[d] ?? 0 })),
+    outputsByBucket,
+    range,
     platformBreakdown,
     stateBreakdown,
     topContent,
@@ -479,14 +605,14 @@ export async function getAnalytics(workspaceId: string): Promise<AnalyticsData> 
 
     funnel,
     velocityContent: {
-      thisWeek: contentThisWeek,
-      lastWeek: contentLastWeek,
-      deltaPct: pctChange(contentThisWeek, contentLastWeek),
+      thisPeriod: contentThisPeriod,
+      lastPeriod: contentLastPeriod,
+      deltaPct: pctChange(contentThisPeriod, contentLastPeriod),
     },
     velocityOutputs: {
-      thisWeek: outputsThisWeek,
-      lastWeek: outputsLastWeek,
-      deltaPct: pctChange(outputsThisWeek, outputsLastWeek),
+      thisPeriod: outputsThisPeriod,
+      lastPeriod: outputsLastPeriod,
+      deltaPct: pctChange(outputsThisPeriod, outputsLastPeriod),
     },
     approvalRate,
     stuckDrafts: topStuck,
@@ -503,5 +629,6 @@ export async function getAnalytics(workspaceId: string): Promise<AnalyticsData> 
     engagementByPlatform,
     publishingStats,
     hasPublishKey,
+    upcomingPosts,
   }
 }

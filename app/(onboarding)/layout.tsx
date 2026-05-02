@@ -1,7 +1,19 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
 import { getUser } from '@/lib/auth/get-user'
+
+// Onboarding wizard is auth-gated and tied to a fresh signup. No SEO
+// value, and indexing it risks a "Welcome" page outranking the
+// marketing landing for brand searches.
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: true,
+    googleBot: { index: false, follow: true, noimageindex: true },
+  },
+}
 
 // Mirrors the auth shell so signup → onboarding feels like a single flow.
 // Remapping shadcn tokens lets nested Card/Input/Button components inherit

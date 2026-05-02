@@ -5,7 +5,18 @@ import { LayoutDashboard, Users, Building2, AlertOctagon } from 'lucide-react'
 import { isAdmin } from '@/lib/auth/is-admin'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Admin · Clipflow' }
+export const metadata = {
+  title: 'Admin · Clipflow',
+  // Admin tools must never be indexed — the route 404s for non-admins,
+  // but the meta tag is the belt-and-braces signal in case a stray
+  // crawler authenticates via residual session cookie.
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: { index: false, follow: false, noimageindex: true },
+  },
+}
 
 /**
  * Admin-only layout. Any non-admin visitor gets a 404 — we return

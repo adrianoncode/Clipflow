@@ -11,15 +11,23 @@ import type { MetadataRoute } from 'next'
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Clipflow',
+    name: 'Clipflow — One recording. A month of posts.',
     short_name: 'Clipflow',
     description:
-      'One video. Every platform. Turn videos into TikTok, Reels, Shorts, and LinkedIn posts in seconds.',
+      'Turn one recording into TikTok, Reels, Shorts & LinkedIn posts with auto-subtitles, AI reframe, and brand voice.',
     start_url: '/dashboard',
+    scope: '/',
     display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#7c3aed',
+    // Brand surface — paper background + charcoal chrome accent.
+    // Migrated from the legacy violet (#7c3aed) when the system moved
+    // to the Crextio charcoal+yellow palette. theme_color drives the
+    // status-bar tint on Android / iOS so it must reflect the actual
+    // brand chrome the user sees in-app.
+    background_color: '#FAF7F2',
+    theme_color: '#0F0F0F',
     orientation: 'portrait',
+    lang: 'en',
+    dir: 'ltr',
     categories: ['productivity', 'business', 'social'],
     icons: [
       {

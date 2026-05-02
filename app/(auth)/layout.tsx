@@ -1,4 +1,18 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+// Every page in the auth segment (login, signup, magic-link, mfa) is a
+// session wall — no SEO value, and indexing them risks a "Sign in" page
+// outranking the marketing landing for brand searches. Setting
+// `robots.index=false` here cascades to all child routes and is the
+// authoritative signal Google honours (robots.txt is just a crawl hint).
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: true,
+    googleBot: { index: false, follow: true, noimageindex: true },
+  },
+}
 
 // Matches the Clipflow landing palette (paper / plum / lime) so signup →
 // landing ↔ signup feels like the same product. The `.lv2-auth` scope
