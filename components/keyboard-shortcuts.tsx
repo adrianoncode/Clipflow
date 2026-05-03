@@ -56,7 +56,6 @@ export function KeyboardShortcuts({ workspaceId }: { workspaceId: string }) {
       switch (e.key) {
         case 'k': {
           e.preventDefault()
-          // Focus the global search input
           const search = document.querySelector<HTMLInputElement>('[data-global-search]')
           search?.focus()
           break
@@ -64,6 +63,16 @@ export function KeyboardShortcuts({ workspaceId }: { workspaceId: string }) {
         case 'n': {
           e.preventDefault()
           router.push(`/workspace/${workspaceId}/content/new`)
+          break
+        }
+        case 'd': {
+          e.preventDefault()
+          router.push('/dashboard')
+          break
+        }
+        case 'a': {
+          e.preventDefault()
+          router.push(`/workspace/${workspaceId}/agent`)
           break
         }
         case '/': {
@@ -93,30 +102,46 @@ export function KeyboardShortcuts({ workspaceId }: { workspaceId: string }) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="keyboard-shortcuts-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(15,15,15,0.45)', backdropFilter: 'blur(6px)' }}
       onClick={() => setShowHelp(false)}
     >
       <div
-        className="w-full max-w-sm rounded-2xl border border-border/50 bg-card p-6 shadow-2xl"
+        className="w-full max-w-sm overflow-hidden rounded-[20px] shadow-2xl"
+        style={{ background: '#FFFDF8', border: '1px solid rgba(15,15,15,0.08)' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 id="keyboard-shortcuts-title" className="mb-4 text-base font-bold">
-          Keyboard Shortcuts
-        </h3>
-        <div className="space-y-3">
+        <div className="border-b px-5 py-3.5" style={{ borderColor: 'rgba(15,15,15,0.08)' }}>
+          <p
+            className="text-[9px] font-semibold uppercase"
+            style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', letterSpacing: '0.22em', color: '#7A7468' }}
+          >
+            Shortcuts
+          </p>
+          <h3
+            id="keyboard-shortcuts-title"
+            className="mt-1"
+            style={{ fontFamily: 'var(--font-instrument-serif), Georgia, serif', fontSize: 22, color: '#0F0F0F', fontWeight: 400 }}
+          >
+            Keyboard shortcuts
+          </h3>
+        </div>
+        <div className="space-y-0 px-5 py-3">
           {[
             { keys: ['⌘', 'K'], desc: 'Search' },
-            { keys: ['⌘', 'N'], desc: 'New content' },
-            { keys: ['?'], desc: 'Show this help' },
-            { keys: ['Esc'], desc: 'Close this help' },
+            { keys: ['⌘', 'N'], desc: 'New import' },
+            { keys: ['⌘', 'D'], desc: 'Dashboard' },
+            { keys: ['⌘', 'A'], desc: 'AI Agent' },
+            { keys: ['?'], desc: 'This menu' },
           ].map((shortcut) => (
-            <div key={shortcut.desc} className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">{shortcut.desc}</span>
+            <div key={shortcut.desc} className="flex items-center justify-between py-2" style={{ borderBottom: '1px solid rgba(15,15,15,0.05)' }}>
+              <span className="text-[13px]" style={{ color: '#2A2A2A' }}>{shortcut.desc}</span>
               <div className="flex items-center gap-1">
                 {shortcut.keys.map((key) => (
                   <kbd
                     key={key}
-                    className="flex h-6 min-w-[24px] items-center justify-center rounded border border-border bg-muted px-1.5 text-[11px] font-medium text-muted-foreground"
+                    className="flex h-6 min-w-[24px] items-center justify-center rounded-md px-1.5 text-[11px] font-semibold tabular-nums"
+                    style={{ background: 'rgba(15,15,15,0.06)', color: '#0F0F0F', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
                   >
                     {key}
                   </kbd>
@@ -125,7 +150,9 @@ export function KeyboardShortcuts({ workspaceId }: { workspaceId: string }) {
             </div>
           ))}
         </div>
-        <p className="mt-4 text-xs text-muted-foreground/50">Press Esc or ⌘/ to close</p>
+        <div className="px-5 pb-4">
+          <p className="text-[11px]" style={{ color: '#7A7468' }}>Press Esc to close</p>
+        </div>
       </div>
     </div>
   )
