@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { MessageCircle, X, Send, Loader2, Sparkles } from 'lucide-react'
 
 import { readSseStream } from '@/lib/agent/sse-client'
@@ -26,6 +27,8 @@ interface AgentChatWidgetProps {
  * (per-workspace), so reopening the widget restores the thread.
  */
 export function AgentChatWidget({ workspaceId }: AgentChatWidgetProps) {
+  const pathname = usePathname()
+  const isOnAgentPage = pathname?.includes('/agent')
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [pendingMessage, setPendingMessage] = useState('')
@@ -329,6 +332,8 @@ export function AgentChatWidget({ workspaceId }: AgentChatWidgetProps) {
       window.localStorage.removeItem(`clipflow.agent.conv.${workspaceId}`)
     }
   }
+
+  if (isOnAgentPage) return null
 
   return (
     <>
