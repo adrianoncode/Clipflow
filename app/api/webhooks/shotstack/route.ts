@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { updateRender } from '@/lib/video/renders/update-render'
 import { updateHighlightRender } from '@/lib/highlights/update-highlight-render'
+import { wakeRunsWaitingOn } from '@/lib/agent/state'
 import { verifyEnvSecret } from '@/lib/security/verify-cron-secret'
 import { log } from '@/lib/log'
 
@@ -102,6 +103,21 @@ export async function POST(request: Request): Promise<NextResponse> {
       updateRender({ providerRenderId: renderId, status: 'failed', error }),
       updateHighlightRender({ renderId, status: 'failed', error }),
     ])
+  }
+
+  // Wake any parked agent runs that were waiting on this provider's
+  // render id. Phase 2 has no tool that parks on `render_complete`,
+  // but wiring it in now means future render-clip / render-caption
+  // tools resume cleanly without webhook changes.
+  if (status === 'done' || status === 'failed') {
+    try {
+      await wakeRunsWaitingOn({ kind: 'render_complete', id: renderId })
+    } catch (err) {
+      log.warn('shotstack webhook wake-runs failed', {
+        renderId,
+        err: err instanceof Error ? err.message : String(err),
+      })
+    }
   }
 
   return NextResponse.json({ received: true })

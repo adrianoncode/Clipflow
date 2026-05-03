@@ -6,6 +6,7 @@ import {
   type ZapCapWebhookPayload,
 } from '@/lib/captions/zapcap-client'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { wakeRunsWaitingOn } from '@/lib/agent/state'
 import { log } from '@/lib/log'
 
 /**
@@ -126,6 +127,17 @@ export async function POST(req: Request) {
         log.error('zapcap webhook update failed', updateError)
         // Still 200 — retry won't help once we have the URL.
       }
+      try {
+        await wakeRunsWaitingOn({
+          kind: 'render_complete',
+          id: row.id as string,
+        })
+      } catch (err) {
+        log.warn('zapcap webhook wake-runs failed', {
+          captionRenderId: row.id,
+          err: err instanceof Error ? err.message : String(err),
+        })
+      }
     } else if (isFailed) {
       await admin
         .from('caption_renders')
@@ -134,6 +146,17 @@ export async function POST(req: Request) {
           error: 'ZapCap render failed.',
         })
         .eq('id', row.id)
+      try {
+        await wakeRunsWaitingOn({
+          kind: 'render_complete',
+          id: row.id as string,
+        })
+      } catch (err) {
+        log.warn('zapcap webhook wake-runs (failed branch) failed', {
+          captionRenderId: row.id,
+          err: err instanceof Error ? err.message : String(err),
+        })
+      }
     }
   } else if (payload.notificationFor === 'renderProgress') {
     // Bump the row's updated_at so the polling fallback knows the

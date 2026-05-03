@@ -36,6 +36,7 @@ import { recordToolCall } from '@/lib/agent/telemetry/record-tool-call'
 import { computeCallCost } from '@/lib/agent/telemetry/cost'
 import { SYSTEM_PROMPT_CHAT } from '@/lib/agent/prompts/system-chat'
 import { SYSTEM_PROMPT_AUTOPILOT } from '@/lib/agent/prompts/system-autopilot'
+import type { AgentEvent, AgentEventListener } from '@/lib/agent/events'
 
 /**
  * Agent run loop. Provider-agnostic — talks to Anthropic, OpenAI, or
@@ -108,6 +109,14 @@ export interface RunChatTurnInput {
   userMessage: string
   /** Per-workspace overrides loaded from agent_settings. */
   budgetOverrides?: WorkspaceBudgetOverrides | null
+  /**
+   * Optional event sink — invoked synchronously as the loop progresses.
+   * Used by the SSE chat endpoint to stream tool calls and assistant
+   * text to the browser as they happen. Throws inside the listener are
+   * SWALLOWED (logged + ignored) to avoid crashing the loop on a
+   * stale/closed stream.
+   */
+  onEvent?: AgentEventListener
 }
 
 export async function runChatTurn(
@@ -132,6 +141,7 @@ export async function runChatTurn(
     systemPrompt: SYSTEM_PROMPT_CHAT,
     budget,
     allowedToolNames: null, // chat sees full toolbox
+    onEvent: input.onEvent,
   })
 }
 
@@ -188,6 +198,28 @@ interface CommonExecuteParams {
   systemPrompt: string
   budget: BudgetProfile
   allowedToolNames: string[] | null
+  onEvent?: AgentEventListener
+}
+
+/**
+ * Defensive wrapper around the optional event listener — listener
+ * exceptions never propagate into the loop. Stream consumers
+ * (browsers) close mid-run all the time; we treat that as a no-op and
+ * keep telemetry flowing to the DB.
+ */
+function emit(
+  listener: AgentEventListener | undefined,
+  event: AgentEvent,
+): void {
+  if (!listener) return
+  try {
+    listener(event)
+  } catch (err) {
+    log.warn('agent.run onEvent listener threw', {
+      eventType: event.type,
+      err: err instanceof Error ? err.message : String(err),
+    })
+  }
 }
 
 async function commonExecute(
@@ -217,6 +249,14 @@ async function commonExecute(
   })
   const handle = await RunHandle.open(runId)
   await handle.markRunning()
+
+  emit(params.onEvent, {
+    type: 'run_start',
+    runId,
+    conversationId: params.conversationId,
+    provider,
+    model,
+  })
 
   const acc = newBudgetAccumulator()
   const messages: NormalizedMessage[] = [...params.initialMessages]
@@ -249,6 +289,11 @@ async function commonExecute(
       if (!response.ok) {
         const errMsg = `${response.code}: ${response.message}`
         await handle.markFailed(acc, errMsg)
+        emit(params.onEvent, {
+          type: 'error',
+          code: 'anthropic_error',
+          message: errMsg,
+        })
         return {
           ok: false,
           runId,
@@ -281,12 +326,27 @@ async function commonExecute(
         .map((b) => b.text)
         .join('\n')
         .trim()
-      if (trailingText) lastAssistantText = trailingText
+      if (trailingText) {
+        lastAssistantText = trailingText
+        emit(params.onEvent, { type: 'assistant_text', text: trailingText })
+      }
 
       const toolUses = response.blocks.filter(
         (b): b is Extract<NormalizedBlock, { type: 'tool_use' }> =>
           b.type === 'tool_use',
       )
+
+      // Emit tool_use events upfront so the UI can render "calling X..."
+      // cards even before the result lands. Each tool_result event
+      // below is correlated by toolUseId.
+      for (const tu of toolUses) {
+        emit(params.onEvent, {
+          type: 'tool_use',
+          id: tu.id,
+          name: tu.name,
+          input: tu.input,
+        })
+      }
 
       accumulate(acc, {
         toolCalls: toolUses.length,
@@ -296,10 +356,18 @@ async function commonExecute(
       })
       assertWithinBudget(acc, params.budget)
       await handle.checkpointCost(acc)
+      emit(params.onEvent, {
+        type: 'cost_update',
+        costMicroUsd: acc.costMicroUsd.toString(),
+        toolsThisRun: acc.toolsThisRun,
+        inputTokens: acc.inputTokens,
+        outputTokens: acc.outputTokens,
+      })
 
       // Done? (no more tool calls = end of conversation turn)
       if (response.stopReason === 'end_turn' || toolUses.length === 0) {
         await handle.markComplete(acc)
+        emit(params.onEvent, { type: 'done', finalText: lastAssistantText })
         return {
           ok: true,
           runId,
@@ -316,12 +384,13 @@ async function commonExecute(
       // rendered with a hint. The model won't keep retrying.
       if (response.stopReason === 'refusal') {
         await handle.markComplete(acc)
+        const refusalText =
+          lastAssistantText || '(The model refused to respond to this request.)'
+        emit(params.onEvent, { type: 'done', finalText: refusalText })
         return {
           ok: true,
           runId,
-          finalText:
-            lastAssistantText ||
-            '(The model refused to respond to this request.)',
+          finalText: refusalText,
           messages,
           cost: acc,
           provider,
@@ -362,6 +431,15 @@ async function commonExecute(
           isError: dispatch.isError || undefined,
         })
 
+        emit(params.onEvent, {
+          type: 'tool_result',
+          toolUseId: tu.id,
+          toolName: tu.name,
+          output: dispatch.content,
+          isError: dispatch.isError,
+          latencyMs: dispatch.latencyMs,
+        })
+
         if (dispatch.parked) {
           parkedWaitingOn = dispatch.parked
           // Stop processing further tool_uses in this turn — the run
@@ -375,6 +453,11 @@ async function commonExecute(
       if (parkedWaitingOn) {
         messages.push({ role: 'user', blocks: toolResultBlocks })
         await handle.park(parkedWaitingOn, acc)
+        emit(params.onEvent, {
+          type: 'done',
+          finalText: lastAssistantText,
+          parked: { waitingOn: parkedWaitingOn },
+        })
         return {
           ok: true,
           runId,
@@ -403,6 +486,11 @@ async function commonExecute(
   } catch (err) {
     if (err instanceof BudgetExceededError) {
       await handle.markBudgetExceeded(acc, err.message)
+      emit(params.onEvent, {
+        type: 'error',
+        code: 'budget_exceeded',
+        message: err.message,
+      })
       return {
         ok: false,
         runId,
@@ -417,6 +505,7 @@ async function commonExecute(
       kind: params.kind,
     })
     await handle.markFailed(acc, msg).catch(() => {})
+    emit(params.onEvent, { type: 'error', code: 'unexpected', message: msg })
     return {
       ok: false,
       runId,
@@ -436,6 +525,8 @@ interface ToolDispatchOutput {
   isError: boolean
   /** Set when the tool returned `kind: 'parked'`. */
   parked?: WaitingOn
+  /** Wall-clock dispatch latency, surfaced via events for the UI. */
+  latencyMs: number
 }
 
 async function dispatchToolCall(params: {
@@ -447,38 +538,40 @@ async function dispatchToolCall(params: {
   const tool = getToolByName(params.toolUse.name)
   if (!tool) {
     const msg = `Unknown tool: ${params.toolUse.name}`
+    const latencyMs = Date.now() - start
     await recordToolCall({
       runId: params.runId,
       workspaceId: params.ctx.workspaceId,
       toolName: params.toolUse.name,
       input: params.toolUse.input,
       output: { error: msg },
-      latencyMs: Date.now() - start,
+      latencyMs,
       success: false,
       error: msg,
     })
-    return { content: { error: msg }, isError: true }
+    return { content: { error: msg }, isError: true, latencyMs }
   }
 
   // Per-tool role gate (defense in depth on top of context-builder).
   if (!isRoleAtOrAbove(params.ctx.role, tool.requiredRole)) {
     const msg = `Tool ${tool.name} requires role ${tool.requiredRole}; you are ${params.ctx.role}.`
+    const latencyMs = Date.now() - start
     await recordToolCall({
       runId: params.runId,
       workspaceId: params.ctx.workspaceId,
       toolName: tool.name,
       input: params.toolUse.input,
       output: { error: msg },
-      latencyMs: Date.now() - start,
+      latencyMs,
       success: false,
       error: msg,
     })
-    return { content: { error: msg }, isError: true }
+    return { content: { error: msg }, isError: true, latencyMs }
   }
 
   try {
     const result = await tool.handler(params.ctx, params.toolUse.input)
-    const latency = Date.now() - start
+    const latencyMs = Date.now() - start
     if (result.kind === 'ok') {
       await recordToolCall({
         runId: params.runId,
@@ -486,10 +579,10 @@ async function dispatchToolCall(params: {
         toolName: tool.name,
         input: params.toolUse.input,
         output: result.value,
-        latencyMs: latency,
+        latencyMs,
         success: true,
       })
-      return { content: result.value, isError: false }
+      return { content: result.value, isError: false, latencyMs }
     }
     if (result.kind === 'parked') {
       await recordToolCall({
@@ -498,7 +591,7 @@ async function dispatchToolCall(params: {
         toolName: tool.name,
         input: params.toolUse.input,
         output: { parked: result.waitingOn },
-        latencyMs: latency,
+        latencyMs,
         success: true,
       })
       return {
@@ -508,6 +601,7 @@ async function dispatchToolCall(params: {
         },
         isError: false,
         parked: result.waitingOn,
+        latencyMs,
       }
     }
     // error
@@ -517,30 +611,33 @@ async function dispatchToolCall(params: {
       toolName: tool.name,
       input: params.toolUse.input,
       output: { error: result.message },
-      latencyMs: latency,
+      latencyMs,
       success: false,
       error: result.message,
     })
     return {
       content: { error: result.message, retryable: result.retryable ?? false },
       isError: true,
+      latencyMs,
     }
   } catch (err) {
     const isPerm = err instanceof ToolPermissionError
     const msg = err instanceof Error ? err.message : String(err)
+    const latencyMs = Date.now() - start
     await recordToolCall({
       runId: params.runId,
       workspaceId: params.ctx.workspaceId,
       toolName: tool.name,
       input: params.toolUse.input,
       output: { error: msg },
-      latencyMs: Date.now() - start,
+      latencyMs,
       success: false,
       error: msg,
     })
     return {
       content: { error: msg, retryable: !isPerm },
       isError: true,
+      latencyMs,
     }
   }
 }

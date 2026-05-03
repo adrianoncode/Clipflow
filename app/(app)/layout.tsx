@@ -20,6 +20,7 @@ import { PostHogProvider } from '@/components/analytics/posthog-provider'
 import { SubscriptionStatusBanner } from '@/components/billing/subscription-status-banner'
 import { KeyboardShortcuts } from '@/components/keyboard-shortcuts'
 import { FeedbackWidget } from '@/components/feedback-widget'
+import { AgentChatWidget } from '@/components/agent/agent-chat-widget'
 import { AppSidebar } from '@/components/workspace/app-sidebar'
 import { AppTopbar } from '@/components/workspace/app-topbar'
 import { MobileNavProvider } from '@/components/workspace/mobile-nav-context'
@@ -83,6 +84,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
           <KeyboardShortcuts workspaceId={currentWorkspace.id} />
           <FeedbackWidget />
+          <AgentChatWidget workspaceId={currentWorkspace.id} />
 
           <AppSidebar
             currentWorkspaceId={currentWorkspace.id}

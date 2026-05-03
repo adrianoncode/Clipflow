@@ -2,6 +2,12 @@ import 'server-only'
 
 import listContent from '@/lib/agent/tools/list-content'
 import getContentStatus from '@/lib/agent/tools/get-content-status'
+import createContent from '@/lib/agent/tools/create-content'
+import startTranscription from '@/lib/agent/tools/start-transcription'
+import findHighlights from '@/lib/agent/tools/find-highlights'
+import generateDrafts from '@/lib/agent/tools/generate-drafts'
+import transitionState from '@/lib/agent/tools/transition-state'
+import schedulePost from '@/lib/agent/tools/schedule-post'
 import type { ToolDef } from '@/lib/agent/tools/types'
 
 /**
@@ -12,7 +18,18 @@ import type { ToolDef } from '@/lib/agent/tools/types'
  * `ToolDef`, then import + add to ALL_TOOLS below. The runtime
  * validation in `tools()` will catch duplicate names at module load.
  */
-const ALL_TOOLS: ToolDef[] = [listContent, getContentStatus]
+const ALL_TOOLS: ToolDef[] = [
+  // Read-only context tools (Phase 1)
+  listContent,
+  getContentStatus,
+  // Pipeline mutation tools (Phase 2)
+  createContent,
+  startTranscription,
+  findHighlights,
+  generateDrafts,
+  transitionState,
+  schedulePost,
+]
 
 /** Cached map view, validated once. */
 let _byName: Map<string, ToolDef> | null = null

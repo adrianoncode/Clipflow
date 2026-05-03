@@ -84,6 +84,54 @@ export async function buildAgentContext(params: {
 }
 
 /**
+ * Build an AgentContext WITHOUT a user JWT — used by the webhook /
+ * cron resume path where the original chat user isn't online. Trusts
+ * the caller to have validated `userId` came from a real prior run
+ * (we never accept this path from user input). RLS bypass is by
+ * service-role; we still re-check workspace membership against the
+ * `workspace_members` table so a removed user can't keep waking
+ * parked runs after losing access.
+ */
+export async function buildAgentContextForResume(params: {
+  workspaceId: string
+  userId: string
+  runKind: 'chat' | 'autopilot'
+}): Promise<BuildContextResult> {
+  if (!params.workspaceId) {
+    return { ok: false, status: 403, message: 'Workspace required.' }
+  }
+
+  const supabase = createClient()
+  // Membership re-check against the user the original run captured.
+  const { data } = await supabase
+    .from('workspace_members')
+    .select('role')
+    .eq('workspace_id', params.workspaceId)
+    .eq('user_id', params.userId)
+    .maybeSingle()
+
+  if (!data) {
+    return {
+      ok: false,
+      status: 403,
+      message:
+        'Resumed run’s user is no longer a member of this workspace.',
+    }
+  }
+
+  return {
+    ok: true,
+    ctx: {
+      workspaceId: params.workspaceId,
+      userId: params.userId,
+      role: data.role as WorkspaceRole,
+      supabase,
+      runKind: params.runKind,
+    },
+  }
+}
+
+/**
  * Re-validate that the user is still a member of the workspace and
  * fetch their CURRENT role (not the cached one). Call from inside any
  * mutating tool handler before doing work — covers mid-run role
