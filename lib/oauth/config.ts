@@ -3,7 +3,7 @@
  * Client IDs and secrets come from environment variables.
  */
 
-export type OAuthPlatform = 'tiktok' | 'instagram' | 'linkedin' | 'youtube'
+export type OAuthPlatform = 'tiktok' | 'instagram' | 'linkedin'
 
 export interface OAuthConfig {
   platform: OAuthPlatform
@@ -62,26 +62,6 @@ export function getOAuthConfig(platform: OAuthPlatform): OAuthConfig | null {
         tokenUrl: 'https://www.linkedin.com/oauth/v2/accessToken',
         scopes: ['openid', 'profile', 'w_member_social'],
         redirectUri: `${BASE_URL}/api/oauth/linkedin/callback`,
-      }
-    }
-
-    case 'youtube': {
-      // YouTube uses Google OAuth — same credentials as Google Cloud project
-      const clientId = process.env.GOOGLE_CLIENT_ID
-      const clientSecret = process.env.GOOGLE_CLIENT_SECRET
-      if (!clientId || !clientSecret) return null
-      return {
-        platform,
-        clientId,
-        clientSecret,
-        authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
-        tokenUrl: 'https://oauth2.googleapis.com/token',
-        scopes: [
-          'https://www.googleapis.com/auth/youtube.upload',
-          'https://www.googleapis.com/auth/youtube.readonly',
-          'https://www.googleapis.com/auth/userinfo.profile',
-        ],
-        redirectUri: `${BASE_URL}/api/oauth/youtube/callback`,
       }
     }
   }

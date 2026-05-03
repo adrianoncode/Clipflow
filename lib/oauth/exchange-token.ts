@@ -25,8 +25,6 @@ export async function exchangeCodeForToken(
       return exchangeInstagram(config, code)
     case 'linkedin':
       return exchangeLinkedIn(config, code)
-    case 'youtube':
-      return exchangeYouTube(config, code)
   }
 }
 
@@ -180,49 +178,3 @@ async function exchangeLinkedIn(
   }
 }
 
-/* ─── YouTube (Google) ──────────────────────────────────────── */
-
-async function exchangeYouTube(
-  config: OAuthConfig,
-  code: string,
-): Promise<{ ok: true; token: TokenResponse } | { ok: false; error: string }> {
-  try {
-    const res = await fetch(config.tokenUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: config.clientId,
-        client_secret: config.clientSecret,
-        code,
-        grant_type: 'authorization_code',
-        redirect_uri: config.redirectUri,
-      }),
-    })
-
-    const data = await res.json()
-    if (!res.ok || data.error) {
-      return { ok: false, error: data.error_description || data.error || `YouTube error ${res.status}` }
-    }
-
-    // Get YouTube channel info
-    const channelRes = await fetch(
-      'https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true',
-      { headers: { Authorization: `Bearer ${data.access_token}` } },
-    )
-    const channelData = await channelRes.json()
-    const channel = channelData.items?.[0]
-
-    return {
-      ok: true,
-      token: {
-        accessToken: data.access_token,
-        refreshToken: data.refresh_token ?? null,
-        expiresIn: data.expires_in ?? 3600,
-        platformUserId: channel?.id ?? '',
-        platformUsername: channel?.snippet?.title ?? 'YouTube Channel',
-      },
-    }
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : 'YouTube token exchange failed' }
-  }
-}
