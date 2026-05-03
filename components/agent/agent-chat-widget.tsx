@@ -59,6 +59,58 @@ export function AgentChatWidget({ workspaceId }: AgentChatWidgetProps) {
     )
   }, [conversationId, workspaceId])
 
+  // Load conversation history when panel opens with a saved conversationId.
+  useEffect(() => {
+    if (!open || !conversationId || messages.length > 0 || sending) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(
+          `/api/agent/conversations/${conversationId}/messages?workspaceId=${workspaceId}`,
+        )
+        if (!res.ok || cancelled) return
+        const { messages: rawMessages } = await res.json()
+        if (cancelled) return
+
+        const loaded: ChatMessage[] = []
+        for (const m of rawMessages as Array<Record<string, unknown>>) {
+          const role = m.role as 'user' | 'assistant'
+          const content = m.content as Record<string, unknown> | unknown[] | string
+          let text = ''
+          const toolCalls: ToolCall[] = []
+
+          if (typeof content === 'string') {
+            text = content
+          } else {
+            const blocks = Array.isArray(content)
+              ? content
+              : Array.isArray((content as Record<string, unknown>)?.blocks)
+                ? ((content as Record<string, unknown>).blocks as unknown[])
+                : []
+            for (const b of blocks) {
+              if (!b || typeof b !== 'object') continue
+              const block = b as Record<string, unknown>
+              if (block.type === 'text' && typeof block.text === 'string') {
+                text += (text ? '\n' : '') + block.text
+              } else if (block.type === 'tool_use') {
+                toolCalls.push({
+                  id: block.id as string,
+                  name: block.name as string,
+                  input: block.input,
+                  status: 'done',
+                })
+              }
+            }
+          }
+
+          loaded.push({ id: m.id as string, role, text, toolCalls })
+        }
+        if (!cancelled && loaded.length > 0) setMessages(loaded)
+      } catch { /* ignore — empty state is fine */ }
+    })()
+    return () => { cancelled = true }
+  }, [open, conversationId, workspaceId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Autoscroll to bottom on new messages.
   useEffect(() => {
     scrollerRef.current?.scrollTo({

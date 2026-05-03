@@ -49,6 +49,7 @@ const NAV: NavSection[] = [
       { id: 'dashboard', label: 'Dashboard', Icon: Home, href: () => '/dashboard' },
       { id: 'workflow', label: 'Workflow', Icon: WorkflowIcon, href: (id) => `/workspace/${id}` },
       { id: 'library', label: 'Library', Icon: Folder, href: () => '/library' },
+      { id: 'agent', label: 'AI Agent', Icon: Bot, href: (id) => `/workspace/${id}/agent` },
       { id: 'creators', label: 'Creators', Icon: Compass, href: (id) => `/workspace/${id}/research` },
     ],
   },
@@ -57,7 +58,6 @@ const NAV: NavSection[] = [
     items: [
       { id: 'brand', label: 'Brand Kit', Icon: Palette, href: () => '/settings/brand-kit' },
       { id: 'aikeys', label: 'AI Keys', Icon: KeyRound, href: () => '/settings/ai-keys' },
-      { id: 'agent', label: 'Agent', Icon: Bot, href: () => '/settings/agent' },
       { id: 'channels', label: 'Channels', Icon: Globe, href: () => '/settings/channels' },
       { id: 'settings', label: 'Settings', Icon: SettingsIcon, href: () => '/settings' },
     ],
@@ -300,7 +300,7 @@ function isItemActive(pathname: string, id: string, workspaceId: string): boolea
     case 'aikeys':
       return pathname.startsWith('/settings/ai-keys')
     case 'agent':
-      return pathname.startsWith('/settings/agent')
+      return pathname.includes('/agent')
     case 'channels':
       return pathname.startsWith('/settings/channels')
     case 'settings':
@@ -311,7 +311,6 @@ function isItemActive(pathname: string, id: string, workspaceId: string): boolea
           !pathname.startsWith('/settings/brand-voice') &&
           !pathname.startsWith('/settings/templates') &&
           !pathname.startsWith('/settings/ai-keys') &&
-          !pathname.startsWith('/settings/agent') &&
           !pathname.startsWith('/settings/channels'))
       )
     default:
