@@ -85,6 +85,19 @@ export function AgentChatWidget({ workspaceId }: AgentChatWidgetProps) {
     return () => document.removeEventListener('keydown', onKey)
   }, [open])
 
+  // Listen for prefill events from suggestion pills.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ message: string }>).detail
+      if (!detail?.message) return
+      setOpen(true)
+      setPendingMessage(detail.message)
+      setTimeout(() => inputRef.current?.focus(), 100)
+    }
+    window.addEventListener('clipflow:agent-prefill', handler)
+    return () => window.removeEventListener('clipflow:agent-prefill', handler)
+  }, [])
+
   // Cancel in-flight stream on unmount.
   useEffect(
     () => () => {

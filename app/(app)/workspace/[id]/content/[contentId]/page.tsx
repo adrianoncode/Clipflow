@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 
 import { ContentDetailView } from '@/components/content/content-detail-view'
 import { RealtimeStatusWatcher } from '@/components/content/realtime-status-watcher'
+import { AgentSuggestionPills } from '@/components/agent/agent-suggestion-pills'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getLongLivedSourceUrl, getSignedUrl } from '@/lib/content/get-signed-url'
 import { hasOutputs } from '@/lib/content/has-outputs'
@@ -10,6 +11,7 @@ import { getPlanFeatures } from '@/lib/billing/plans'
 import { listRenders } from '@/lib/video/renders/list-renders'
 import { getReviewLinksForContent } from '@/lib/review/get-review-links-for-content'
 import { getReviewCommentsForContent } from '@/lib/review/get-review-comments-for-content'
+import { getContentDetailSuggestions } from '@/lib/agent/suggestions'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -62,6 +64,7 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
     longLivedSourceUrl,
     currentPlan,
     outputCountResult,
+    highlightCountResult,
     renders,
     reviewLinks,
     reviewComments,
@@ -80,6 +83,12 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
           .eq('workspace_id', params.id)
       : Promise.resolve({ count: 0 }),
     item.status === 'ready'
+      ? supabase
+          .from('content_highlights')
+          .select('id', { count: 'exact', head: true })
+          .eq('content_id', params.contentId)
+      : Promise.resolve({ count: 0 }),
+    item.status === 'ready'
       ? listRenders({ workspaceId: params.id, contentId: params.contentId, limit: 12 })
       : Promise.resolve([]),
     getReviewLinksForContent(params.contentId, params.id),
@@ -87,13 +96,21 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
   ])
 
   const outputCount = hasExistingOutputs ? outputCountResult.count ?? 0 : 0
+  const highlightCount = highlightCountResult.count ?? 0
   const planFeatures = getPlanFeatures(currentPlan)
+
+  const agentSuggestions = getContentDetailSuggestions({
+    contentId: params.contentId,
+    title: item.title ?? 'Untitled',
+    hasTranscript: Boolean(item.transcript),
+    highlightCount,
+    outputCount,
+    hasApprovedOutputs: false,
+  })
 
   return (
     <>
       {isPolling ? (
-        // Realtime watcher replaces meta-refresh — no page flicker,
-        // router.refresh() fires only when status actually changes.
         <RealtimeStatusWatcher contentId={item.id} workspaceId={params.id} />
       ) : null}
       <ContentDetailView
@@ -109,6 +126,11 @@ export default async function ContentItemPage({ params }: ContentItemPageProps) 
         reviewComments={reviewComments}
         canCreateReviewLink={planFeatures.clientReviewLink}
       />
+      {agentSuggestions.length > 0 && (
+        <div className="mt-4">
+          <AgentSuggestionPills suggestions={agentSuggestions} />
+        </div>
+      )}
     </>
   )
 }

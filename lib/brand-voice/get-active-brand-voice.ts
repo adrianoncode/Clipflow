@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { log } from '@/lib/log'
 
 export interface BrandVoice {
@@ -31,6 +32,26 @@ export async function getActiveBrandVoice(workspaceId: string): Promise<BrandVoi
     return null
   }
   return data ?? null
+}
+
+/**
+ * Admin-client variant for contexts without a user JWT (cron, webhooks,
+ * autopilot resume). Same logic, bypasses RLS.
+ */
+export async function getActiveBrandVoiceAdmin(workspaceId: string): Promise<BrandVoice | null> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('brand_voices')
+    .select('id, workspace_id, name, tone, avoid, example_hook, is_active')
+    .eq('workspace_id', workspaceId)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (error) {
+    log.error('getActiveBrandVoiceAdmin failed', error, { workspaceId })
+    return null
+  }
+  return (data as BrandVoice | null) ?? null
 }
 
 /**

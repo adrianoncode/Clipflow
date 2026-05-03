@@ -4,6 +4,7 @@ import { Sparkles } from 'lucide-react'
 
 import { FindMomentsButton } from '@/components/highlights/find-moments-button'
 import { HighlightsList } from '@/components/highlights/highlights-list'
+import { AgentSuggestionPills } from '@/components/agent/agent-suggestion-pills'
 import { PageHeading } from '@/components/workspace/page-heading'
 import { requireWorkspaceMember } from '@/lib/auth/require-workspace-member'
 import {
@@ -13,6 +14,7 @@ import {
 import { getContentItem } from '@/lib/content/get-content-item'
 import { getLongLivedSourceUrl } from '@/lib/content/get-signed-url'
 import { listHighlights } from '@/lib/highlights/list-highlights'
+import { getHighlightsSuggestions } from '@/lib/agent/suggestions'
 import type { WordTiming } from '@/lib/highlights/caption-chunks'
 import { createClient } from '@/lib/supabase/server'
 
@@ -107,6 +109,16 @@ export default async function HighlightsPage({ params }: HighlightsPageProps) {
         wordTimings={wordTimings}
         captionRendersByHighlight={captionRendersByHighlight}
       />
+
+      {hasTranscript && (
+        <AgentSuggestionPills
+          suggestions={getHighlightsSuggestions(
+            params.contentId,
+            item.title ?? 'Untitled',
+            highlights.length,
+          )}
+        />
+      )}
     </div>
   )
 }

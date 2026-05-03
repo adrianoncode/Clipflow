@@ -12,6 +12,7 @@ import {
   Youtube,
 } from 'lucide-react'
 
+import { AgentSuggestionPills } from '@/components/agent/agent-suggestion-pills'
 import { SeoPanel } from '@/components/outputs/seo-panel'
 import { ThumbnailStudio } from '@/components/outputs/thumbnail-studio'
 import { getBrandKit } from '@/lib/brand-kit/get-brand-kit'
@@ -26,6 +27,7 @@ import { getOutputs } from '@/lib/content/get-outputs'
 import { getWorkspacePlan } from '@/lib/billing/get-subscription'
 import { getAiKeys } from '@/lib/ai/get-ai-keys'
 import { getWorkspaceTemplates } from '@/lib/templates/get-templates'
+import { getOutputsSuggestions } from '@/lib/agent/suggestions'
 import type { ContentKind } from '@/lib/supabase/types'
 
 /**
@@ -192,6 +194,14 @@ export default async function OutputsPage({ params }: OutputsPageProps) {
             defaultSub={`${kindCfg.label.toUpperCase()}${item.title ? '' : ' · Draft'}`}
             brandAccent={brandKit?.accentColor}
             brandName={brandKit?.introText ?? 'Clipflow'}
+          />
+
+          <AgentSuggestionPills
+            suggestions={getOutputsSuggestions(
+              params.contentId,
+              title,
+              outputs.length,
+            )}
           />
 
           {/* ── Next Steps — bridge to Pipeline & Schedule ── */}

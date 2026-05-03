@@ -37,6 +37,11 @@ import { computeCallCost } from '@/lib/agent/telemetry/cost'
 import { SYSTEM_PROMPT_CHAT } from '@/lib/agent/prompts/system-chat'
 import { SYSTEM_PROMPT_AUTOPILOT } from '@/lib/agent/prompts/system-autopilot'
 import type { AgentEvent, AgentEventListener } from '@/lib/agent/events'
+import {
+  getActiveBrandVoice,
+  getActiveBrandVoiceAdmin,
+  buildBrandVoiceInstruction,
+} from '@/lib/brand-voice/get-active-brand-voice'
 
 /**
  * Agent run loop. Provider-agnostic — talks to Anthropic, OpenAI, or
@@ -132,15 +137,19 @@ export async function runChatTurn(
     ...input.priorMessages,
     { role: 'user', blocks: [{ type: 'text', text: input.userMessage }] },
   ]
+
+  const voice = await getActiveBrandVoice(input.ctx.workspaceId)
+  const systemPrompt = SYSTEM_PROMPT_CHAT + buildBrandVoiceInstruction(voice)
+
   return commonExecute({
     ctx: input.ctx,
     kind: 'chat',
     conversationId: input.conversationId,
     trigger: { source: 'user_message' },
     initialMessages: messages,
-    systemPrompt: SYSTEM_PROMPT_CHAT,
+    systemPrompt,
     budget,
-    allowedToolNames: null, // chat sees full toolbox
+    allowedToolNames: null,
     onEvent: input.onEvent,
   })
 }
@@ -175,13 +184,17 @@ export async function runAutopilotRun(
       blocks: [{ type: 'text', text: input.trigger.instruction }],
     },
   ]
+
+  const voice = await getActiveBrandVoiceAdmin(input.ctx.workspaceId)
+  const systemPrompt = SYSTEM_PROMPT_AUTOPILOT + buildBrandVoiceInstruction(voice)
+
   return commonExecute({
     ctx: input.ctx,
     kind: 'autopilot',
     conversationId: null,
     trigger: { name: input.trigger.name, ...(input.trigger.payload ?? {}) },
     initialMessages: messages,
-    systemPrompt: SYSTEM_PROMPT_AUTOPILOT,
+    systemPrompt,
     budget,
     allowedToolNames: input.allowedToolNames ?? null,
   })
@@ -415,7 +428,7 @@ async function commonExecute(
 
       const toolResultBlocks: NormalizedBlock[] = []
       for (const tu of toolUses) {
-        const dispatch = await dispatchToolCall({
+        const dispatch = await dispatchToolCallWithRetry({
           ctx: params.ctx,
           runId,
           toolUse: tu,
@@ -517,6 +530,33 @@ async function commonExecute(
 }
 
 // ─── tool dispatch ──────────────────────────────────────────────────
+
+const RETRY_DELAYS_MS = [500, 1500]
+
+async function dispatchToolCallWithRetry(params: {
+  ctx: AgentContext
+  runId: string
+  toolUse: { id: string; name: string; input: unknown }
+}): Promise<ToolDispatchOutput> {
+  let result = await dispatchToolCall(params)
+
+  for (let attempt = 0; attempt < RETRY_DELAYS_MS.length; attempt++) {
+    if (!result.isError) break
+    const content = result.content as Record<string, unknown> | undefined
+    if (!content?.retryable) break
+
+    log.info('agent.tool retrying', {
+      runId: params.runId,
+      tool: params.toolUse.name,
+      attempt: attempt + 2,
+      delayMs: RETRY_DELAYS_MS[attempt],
+    })
+    await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]))
+    result = await dispatchToolCall(params)
+  }
+
+  return result
+}
 
 interface ToolDispatchOutput {
   /** Serialized output to put inside the tool_result content block. */
