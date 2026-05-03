@@ -93,6 +93,18 @@ export const RATE_LIMITS = {
   mediaJob: { limit: 30, windowMs: 60 * 60_000 },
   /** Research / scrape: 30 per hour per workspace */
   research: { limit: 30, windowMs: 60 * 60_000 },
+
+  // ── Agent (per workspace) ─────────────────────────────────────────
+  /** Agent chat turns: 20 per minute per workspace. Caps the chat
+   *  surface alone — autopilot has its own ceiling because the
+   *  failure modes are different (a runaway autopilot run is far
+   *  worse than a chatty user). */
+  agentChat: { limit: 20, windowMs: 60_000 },
+  /** Agent autopilot runs: 5 per hour per workspace. Tight ceiling
+   *  because each autopilot run can chain multiple AI calls; without
+   *  this, a misconfigured trigger could burn the workspace's BYOK
+   *  Anthropic quota in minutes. */
+  agentAutopilot: { limit: 5, windowMs: 60 * 60_000 },
 } as const
 
 /**

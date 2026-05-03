@@ -12,7 +12,7 @@ import { runOnePlatform } from '@/lib/outputs/run-one-platform'
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 import { triggerWebhooks } from '@/lib/webhooks/trigger-webhook'
 import { notifyOutputsGenerated } from '@/lib/notifications/triggers'
-import type { OutputPlatform } from '@/lib/supabase/types'
+import type { OutputPlatform } from '@/lib/platforms'
 
 export const maxDuration = 300
 
