@@ -30,7 +30,7 @@
     },
     {
       "path": "/api/cron/agent-tick",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 10 * * *"
     }
   ]
 }
