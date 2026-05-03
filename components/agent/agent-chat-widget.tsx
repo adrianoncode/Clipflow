@@ -399,7 +399,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
     <div className="space-y-2">
       {message.text ? (
         <div className="max-w-[90%] rounded-2xl rounded-bl-md border border-[#0F0F0F]/10 bg-white px-3.5 py-2 text-sm text-[#0F0F0F]">
-          {message.text}
+          <SimpleMarkdown text={message.text} />
         </div>
       ) : null}
       {message.toolCalls.length > 0 ? (
@@ -432,6 +432,56 @@ function EmptyState() {
       </div>
     </div>
   )
+}
+
+function SimpleMarkdown({ text }: { text: string }) {
+  const lines = text.split('\n')
+  const elements: React.ReactNode[] = []
+  let listItems: string[] = []
+
+  const flushList = () => {
+    if (listItems.length === 0) return
+    elements.push(
+      <ul key={`ul-${elements.length}`} className="my-1 list-disc pl-4 space-y-0.5">
+        {listItems.map((li, i) => (
+          <li key={i}>{inlineFormat(li)}</li>
+        ))}
+      </ul>,
+    )
+    listItems = []
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!
+    const bullet = line.match(/^[-*]\s+(.+)$/)
+    if (bullet) {
+      listItems.push(bullet[1]!)
+      continue
+    }
+    flushList()
+    if (line.trim() === '') {
+      elements.push(<br key={`br-${i}`} />)
+    } else {
+      elements.push(<p key={`p-${i}`} className="my-0">{inlineFormat(line)}</p>)
+    }
+  }
+  flushList()
+  return <div className="space-y-0.5">{elements}</div>
+}
+
+function inlineFormat(text: string): React.ReactNode {
+  const parts: React.ReactNode[] = []
+  let last = 0
+  const rx = /\*\*(.+?)\*\*|`([^`]+)`/g
+  let m: RegExpExecArray | null
+  while ((m = rx.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index))
+    if (m[1] != null) parts.push(<strong key={m.index}>{m[1]}</strong>)
+    else if (m[2] != null) parts.push(<code key={m.index} className="rounded bg-[#0F0F0F]/5 px-1 py-0.5 text-[11px]">{m[2]}</code>)
+    last = m.index + m[0].length
+  }
+  if (last < text.length) parts.push(text.slice(last))
+  return parts.length === 1 ? parts[0] : <>{parts}</>
 }
 
 function formatCost(micro: number): string {
