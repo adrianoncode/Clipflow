@@ -44,38 +44,62 @@ export function UpgradeGate({
   if (hasPlanAccess(currentPlan, requiredPlan)) return <>{children}</>
 
   return (
-    <div className="flex min-h-[320px] flex-col items-center justify-center gap-6 rounded-2xl border border-border/60 bg-muted/20 p-8 text-center">
-      {/* Lock icon */}
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-        <Lock className="h-6 w-6 text-muted-foreground" />
+    <div
+      className="flex min-h-[320px] flex-col items-center justify-center gap-6 rounded-[24px] p-8 text-center"
+      style={{
+        background: '#FFFDF8',
+        border: '1px solid rgba(15,15,15,0.06)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+      }}
+    >
+      <div
+        className="flex h-14 w-14 items-center justify-center rounded-2xl"
+        style={{ background: 'rgba(15,15,15,0.06)' }}
+      >
+        <Lock className="h-6 w-6" style={{ color: '#0F0F0F' }} />
       </div>
 
-      {/* Copy */}
-      <div className="max-w-sm space-y-1.5">
-        <h3 className="text-base font-semibold">{featureName}</h3>
+      <div className="max-w-sm space-y-2">
+        <p
+          className="text-[9px] font-semibold uppercase"
+          style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', letterSpacing: '0.22em', color: '#7A7468' }}
+        >
+          {planName(requiredPlan)} plan
+        </p>
+        <h3
+          style={{
+            fontFamily: 'var(--font-instrument-serif), Georgia, serif',
+            fontSize: 24,
+            fontWeight: 400,
+            color: '#0F0F0F',
+            letterSpacing: '-0.01em',
+          }}
+        >
+          {featureName}
+        </h3>
         {description && (
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className="text-[13px]" style={{ color: '#2A2A2A', lineHeight: 1.55 }}>{description}</p>
         )}
-        <p className="text-sm text-muted-foreground">
-          Available on the{' '}
-          <span className="font-semibold text-foreground">
-            {planName(requiredPlan)} plan
-          </span>{' '}
-          ({planPrice(requiredPlan)}) and above.
+        <p className="text-[12px]" style={{ color: '#7A7468' }}>
+          Unlock with {planName(requiredPlan)} · {planPrice(requiredPlan)}
         </p>
       </div>
 
-      {/* CTA */}
       <Link
-        href={`/billing?workspace_id=${workspaceId}&plan=${requiredPlan}`}
-        className="cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm"
+        href={`/billing?workspace_id=${workspaceId}&plan=${requiredPlan}&feature=${encodeURIComponent(featureName)}`}
+        className="inline-flex h-11 items-center gap-2 rounded-full px-6 text-[13px] font-bold transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_10px_22px_-6px_rgba(15,15,15,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2"
+        style={{
+          background: '#0F0F0F',
+          color: '#F4D93D',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.14), 0 8px 18px -6px rgba(15,15,15,0.45)',
+        }}
       >
         <Zap className="h-4 w-4" />
         Upgrade to {planName(requiredPlan)}
       </Link>
 
-      <p className="text-xs text-muted-foreground">
-        You are on the <span className="font-medium">{planName(currentPlan)}</span> plan.
+      <p className="text-[11px]" style={{ color: '#7A7468' }}>
+        Currently on <span className="font-semibold" style={{ color: '#0F0F0F' }}>{planName(currentPlan)}</span>
       </p>
     </div>
   )
@@ -93,17 +117,25 @@ export function UpgradeInline({
   if (hasPlanAccess(currentPlan, requiredPlan)) return null
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50/50 px-4 py-3">
+    <div
+      className="flex items-center justify-between gap-4 rounded-[16px] px-4 py-3"
+      style={{
+        background: '#FFFDF8',
+        border: '1px solid rgba(15,15,15,0.08)',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+      }}
+    >
       <div className="flex items-center gap-3">
-        <Lock className="h-4 w-4 shrink-0 text-amber-600" />
-        <p className="text-sm text-amber-800">
-          <span className="font-semibold">{featureName}</span> requires the{' '}
-          {planName(requiredPlan)} plan ({planPrice(requiredPlan)})
+        <Lock className="h-4 w-4 shrink-0" style={{ color: '#0F0F0F' }} />
+        <p className="text-[13px]" style={{ color: '#2A2A2A' }}>
+          <span className="font-semibold" style={{ color: '#0F0F0F' }}>{featureName}</span>{' '}
+          · {planName(requiredPlan)} {planPrice(requiredPlan)}
         </p>
       </div>
       <Link
-        href={`/billing?workspace_id=${workspaceId}&plan=${requiredPlan}`}
-        className="cf-btn-3d cf-btn-3d-primary shrink-0 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs"
+        href={`/billing?workspace_id=${workspaceId}&plan=${requiredPlan}&feature=${encodeURIComponent(featureName)}`}
+        className="shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-bold transition hover:scale-[1.02]"
+        style={{ background: '#0F0F0F', color: '#F4D93D' }}
       >
         <Zap className="h-3 w-3" />
         Upgrade
