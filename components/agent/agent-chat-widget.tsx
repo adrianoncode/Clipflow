@@ -28,7 +28,7 @@ interface AgentChatWidgetProps {
  */
 export function AgentChatWidget({ workspaceId }: AgentChatWidgetProps) {
   const pathname = usePathname()
-  const isOnAgentPage = pathname?.includes('/agent')
+  const isOnAgentPage = pathname?.match(/\/workspace\/[^/]+\/agent(\/|$)/)
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [pendingMessage, setPendingMessage] = useState('')

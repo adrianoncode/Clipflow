@@ -9,9 +9,11 @@ import {
   MessageCircle,
   Plus,
   Send,
+  Settings,
   Sparkles,
   Zap,
 } from 'lucide-react'
+import Link from 'next/link'
 
 import { readSseStream } from '@/lib/agent/sse-client'
 import { ToolCallCard, type ToolCall } from '@/components/agent/tool-call-card'
@@ -281,7 +283,7 @@ export function AgentPage({
   return (
     <div className="flex h-[calc(100vh-64px)] overflow-hidden">
       {/* ── Left: Conversation list ── */}
-      <div className="hidden w-[260px] shrink-0 flex-col border-r border-[#0F0F0F]/10 bg-[#FAFAF7] md:flex">
+      <div className="hidden w-[260px] shrink-0 flex-col border-r border-[#0F0F0F]/10 bg-[#FAFAF7] lg:flex">
         <div className="flex items-center justify-between border-b border-[#0F0F0F]/10 px-4 py-3">
           <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-[#0F0F0F]/60">
             Conversations
@@ -339,12 +341,21 @@ export function AgentPage({
                   Chat, automate pipeline steps, or let auto-pilot handle it
                 </p>
               </div>
-              {hasRunningRun && (
-                <span className="ml-auto flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-blue-600">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500" />
-                  Running
-                </span>
-              )}
+              <div className="ml-auto flex items-center gap-2">
+                {hasRunningRun && (
+                  <span className="flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-blue-600">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500" />
+                    Running
+                  </span>
+                )}
+                <Link
+                  href="/settings/agent"
+                  className="rounded-md p-1.5 text-[#0F0F0F]/40 transition hover:bg-[#0F0F0F]/5 hover:text-[#0F0F0F]/70"
+                  title="Auto-pilot settings"
+                >
+                  <Settings className="h-4 w-4" />
+                </Link>
+              </div>
             </div>
 
             {pendingWork.length > 0 && (
