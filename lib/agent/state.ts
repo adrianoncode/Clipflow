@@ -80,6 +80,35 @@ export interface RunRecord {
   waitingOn: WaitingOn | null
 }
 
+/**
+ * Create a chat conversation row. Required before `createRun` for any
+ * run with kind='chat' (the FK constraint + check enforces this). The
+ * debug route + the real chat route both call this on first turn.
+ */
+export async function createConversation(input: {
+  workspaceId: string
+  userId: string
+  title?: string
+}): Promise<string> {
+  const admin = agentDb()
+  const { data, error } = await admin
+    .from('agent_conversations')
+    .insert({
+      workspace_id: input.workspaceId,
+      user_id: input.userId,
+      title: input.title ?? 'New conversation',
+    })
+    .select('id')
+    .single()
+
+  if (error || !data) {
+    throw new Error(
+      `Failed to create agent conversation: ${error?.message ?? 'no row'}`,
+    )
+  }
+  return data.id as string
+}
+
 /** Insert a new run row in `queued` state. Returns the run ID. */
 export async function createRun(input: CreateRunInput): Promise<string> {
   const admin = agentDb()

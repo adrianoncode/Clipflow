@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { buildAgentContext } from '@/lib/agent/context'
 import { runChatTurn, runAutopilotRun } from '@/lib/agent/run'
+import { createConversation } from '@/lib/agent/state'
 
 /**
  * Dev-only smoke-test endpoint for the agent loop.
@@ -64,22 +65,31 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const result = isAutopilot
-    ? await runAutopilotRun({
-        ctx: ctxResult.ctx,
-        trigger: {
-          name: 'debug',
-          instruction: autopilotInstruction!,
-        },
-      })
-    : await runChatTurn({
-        ctx: ctxResult.ctx,
-        // Debug route fakes a conversation id per call. Real chat
-        // route will persist + reuse one across turns.
-        conversationId: crypto.randomUUID(),
-        priorMessages: [],
-        userMessage: message!,
-      })
+  let result
+  if (isAutopilot) {
+    result = await runAutopilotRun({
+      ctx: ctxResult.ctx,
+      trigger: {
+        name: 'debug',
+        instruction: autopilotInstruction!,
+      },
+    })
+  } else {
+    // Chat needs a real conversation row (FK constraint). Real chat
+    // route will reuse one across turns; debug creates a fresh one
+    // per request so each smoke test stays independent.
+    const conversationId = await createConversation({
+      workspaceId: ctxResult.ctx.workspaceId,
+      userId: ctxResult.ctx.userId,
+      title: 'debug smoke test',
+    })
+    result = await runChatTurn({
+      ctx: ctxResult.ctx,
+      conversationId,
+      priorMessages: [],
+      userMessage: message!,
+    })
+  }
 
   return NextResponse.json(serializeResult(result))
 }

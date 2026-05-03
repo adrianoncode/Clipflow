@@ -47,18 +47,28 @@ export interface OpenAiTool {
 }
 
 export function toOpenAiTools(tools: ToolDef[]): OpenAiTool[] {
-  return tools.map((t) => ({
-    type: 'function',
-    function: {
-      name: t.name,
-      description: t.description,
-      // Strict mode requires `additionalProperties: false` and all
-      // properties listed in `required`. Our schemas already follow
-      // this discipline (see tools/types.ts), so we can safely opt in.
-      parameters: stripUnsupportedKeysForOpenAi(t.schema),
-      strict: true,
-    },
-  }))
+  return tools.map((t) => {
+    // OpenAI strict mode requires `additionalProperties: false` AND
+    // every property listed in `required`. Tools with optional
+    // parameters (like list_content's `limit`) can't satisfy that, so
+    // we downgrade to non-strict for those — the tool's own
+    // parseInput() catches malformed input cleanly anyway. Only flip
+    // strict on when the tool's contract is fully required.
+    const propKeys = Object.keys(t.schema.properties ?? {})
+    const requiredKeys = t.schema.required ?? []
+    const allRequired =
+      propKeys.length > 0 && requiredKeys.length === propKeys.length
+
+    return {
+      type: 'function',
+      function: {
+        name: t.name,
+        description: t.description,
+        parameters: stripUnsupportedKeysForOpenAi(t.schema),
+        strict: allRequired,
+      },
+    }
+  })
 }
 
 /**
