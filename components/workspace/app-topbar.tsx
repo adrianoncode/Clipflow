@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Bell, Menu, Search } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { useMobileNav } from '@/components/workspace/mobile-nav-context'
 import { WorkspaceSwitcher } from '@/components/workspace/workspace-switcher'
@@ -144,15 +144,6 @@ export function AppTopbar({
 
       {/* ── Right: search + bell + avatar ───────────────────────────── */}
       <div className="flex items-center gap-2.5">
-        {/*
-          Search shell: focus-within mirrors the input focus to the
-          parent so the whole pill picks up the focus ring instead of
-          a thin keyboard ring on the bare input. The trigger (⌘K)
-          isn't wired yet — we keep it visible as an affordance hint
-          but mark the input as a no-op `type=search` form-less field
-          until the global palette ships. Until then it's purely a
-          placeholder, hence aria-disabled to tell AT it does nothing.
-        */}
         <div
           className="hidden h-8 items-center gap-2 rounded-full border px-3 transition-shadow focus-within:ring-2 focus-within:ring-[#0F0F0F] focus-within:ring-offset-2 sm:flex"
           style={{
@@ -166,12 +157,11 @@ export function AppTopbar({
           </label>
           <input
             id="topbar-search"
+            data-global-search
             type="search"
             name="q"
             placeholder="Search anything"
-            aria-disabled="true"
-            disabled
-            className="w-[200px] border-0 bg-transparent text-[12px] outline-none placeholder:text-[#7A7468] disabled:cursor-not-allowed"
+            className="w-[200px] border-0 bg-transparent text-[12px] outline-none placeholder:text-[#7A7468]"
             style={{ color: '#0F0F0F' }}
           />
           <kbd
@@ -188,22 +178,7 @@ export function AppTopbar({
           </kbd>
         </div>
 
-        {/*
-          Notifications surface isn't wired yet — disable the trigger
-          rather than render a fake button. Visual treatment matches
-          the active state with a muted alpha so the chrome still
-          reads as "this lives here, just not yet."
-        */}
-        <button
-          type="button"
-          aria-label="Notifications (coming soon)"
-          aria-disabled="true"
-          disabled
-          className="grid h-8 w-8 place-items-center rounded-full border transition-colors hover:bg-[rgba(15,15,15,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-          style={{ borderColor: 'rgba(15,15,15,0.14)' }}
-        >
-          <Bell className="h-3.5 w-3.5" aria-hidden style={{ color: '#0F0F0F' }} />
-        </button>
+        <NotificationBell />
 
         <Link
           href="/settings/profile"
@@ -217,6 +192,53 @@ export function AppTopbar({
           {initial}
         </Link>
       </div>
+    </div>
+  )
+}
+
+function NotificationBell() {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        aria-label="Notifications"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="grid h-8 w-8 place-items-center rounded-full border transition-colors hover:bg-[rgba(15,15,15,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2"
+        style={{ borderColor: 'rgba(15,15,15,0.14)' }}
+      >
+        <Bell className="h-3.5 w-3.5" aria-hidden style={{ color: '#0F0F0F' }} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div
+            className="absolute right-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-[16px] shadow-xl"
+            style={{ background: '#FFFDF8', border: '1px solid rgba(15,15,15,0.08)' }}
+          >
+            <div className="border-b px-4 py-3" style={{ borderColor: 'rgba(15,15,15,0.06)' }}>
+              <p
+                className="text-[9px] font-semibold uppercase"
+                style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', letterSpacing: '0.22em', color: '#7A7468' }}
+              >
+                Notifications
+              </p>
+            </div>
+            <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
+              <Bell className="h-5 w-5" style={{ color: 'rgba(15,15,15,0.2)' }} />
+              <p className="text-[13px] font-medium" style={{ color: '#0F0F0F' }}>
+                All clear
+              </p>
+              <p className="text-[11px]" style={{ color: '#7A7468' }}>
+                Notifications about drafts, scheduling, and agent activity appear here.
+              </p>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
