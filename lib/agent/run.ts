@@ -1,13 +1,12 @@
 import 'server-only'
 
 import { log } from '@/lib/log'
-import { getDecryptedAiKey } from '@/lib/ai/get-decrypted-ai-key'
-import { DEFAULT_MODELS } from '@/lib/ai/generate/models'
-import {
-  callAnthropicAgent,
-  type AnthropicMessage,
-  type ContentBlock,
-} from '@/lib/agent/anthropic-call'
+import { callAgentLlm } from '@/lib/agent/llm'
+import { resolveAgentProvider } from '@/lib/agent/llm/resolve-provider'
+import type {
+  NormalizedBlock,
+  NormalizedMessage,
+} from '@/lib/agent/llm/types'
 import {
   AUTOPILOT_BUDGET,
   CHAT_BUDGET,
@@ -32,36 +31,35 @@ import {
   type AgentRunKind,
   type WaitingOn,
 } from '@/lib/agent/state'
-import {
-  getToolByName,
-  getTools,
-  toAnthropicFormat,
-} from '@/lib/agent/tools'
+import { getToolByName, getTools } from '@/lib/agent/tools'
 import { recordToolCall } from '@/lib/agent/telemetry/record-tool-call'
 import { computeCallCost } from '@/lib/agent/telemetry/cost'
 import { SYSTEM_PROMPT_CHAT } from '@/lib/agent/prompts/system-chat'
 import { SYSTEM_PROMPT_AUTOPILOT } from '@/lib/agent/prompts/system-autopilot'
 
 /**
- * Agent run loop.
+ * Agent run loop. Provider-agnostic — talks to Anthropic, OpenAI, or
+ * Gemini via the unified `callAgentLlm` router. The provider is
+ * resolved per workspace at run start (via `resolveAgentProvider`).
  *
  * Two public entry points (`runChatTurn`, `runAutopilotRun`) wrap a
- * shared `executeToolLoop` so chat and autopilot stay technically
+ * shared `commonExecute` so chat and autopilot stay technically
  * separate (different prompts, budgets, telemetry tags) while sharing
- * the core Anthropic ↔ tool dispatch dance.
+ * the core LLM ↔ tool dispatch dance.
  *
  * The loop:
- *   1. Build initial messages (chat: existing history + new user
+ *   1. Resolve provider + decrypted key + model for the workspace.
+ *   2. Build initial messages (chat: existing history + new user
  *      message; autopilot: synthetic user message describing the
  *      trigger).
- *   2. Call Anthropic.
- *   3. Append assistant response to messages.
- *   4. If stop_reason='tool_use', execute each tool_use block, collect
+ *   3. Call the LLM router.
+ *   4. Append assistant response (text + tool_use blocks) to messages.
+ *   5. If stop_reason='tool_use', execute each tool_use block, collect
  *      results into a single user message with tool_result blocks,
- *      append, loop back to step 2.
- *   5. If stop_reason='end_turn' OR a tool returns 'parked', exit.
- *   6. After every Anthropic call: accumulate cost/tokens, assert
- *      within budget, checkpoint to agent_runs.
+ *      append, loop back to step 3.
+ *   6. If stop_reason='end_turn' OR a tool returns 'parked', exit.
+ *   7. After every LLM call: accumulate cost/tokens, assert within
+ *      budget, checkpoint to agent_runs.
  *
  * Errors:
  *   - BudgetExceededError → mark run 'budget_exceeded', surface to
@@ -69,18 +67,20 @@ import { SYSTEM_PROMPT_AUTOPILOT } from '@/lib/agent/prompts/system-autopilot'
  *   - ToolPermissionError → tool_result with is_error: true, model can
  *     try a different approach.
  *   - Other tool errors → same.
- *   - Anthropic errors → mark run 'failed', throw.
+ *   - LLM provider errors → mark run 'failed', return with
+ *     code='anthropic_error' (legacy name kept for compatibility —
+ *     covers all provider error classes).
  */
-
-const ANTHROPIC_PROVIDER = 'anthropic' as const
 
 export type AgentRunResult =
   | {
       ok: true
       runId: string
       finalText: string
-      messages: AnthropicMessage[]
+      messages: NormalizedMessage[]
       cost: BudgetAccumulator
+      provider: 'anthropic' | 'openai' | 'google'
+      model: string
       parked?: { waitingOn: WaitingOn }
     }
   | {
@@ -90,7 +90,7 @@ export type AgentRunResult =
         | 'no_key'
         | 'forbidden'
         | 'budget_exceeded'
-        | 'anthropic_error'
+        | 'anthropic_error' // generic provider error (kept name for compat)
         | 'tool_loop_runaway'
         | 'unexpected'
       message: string
@@ -103,13 +103,11 @@ export interface RunChatTurnInput {
   ctx: AgentContext
   conversationId: string
   /** Prior turns, oldest first. Empty array = first turn. */
-  priorMessages: AnthropicMessage[]
+  priorMessages: NormalizedMessage[]
   /** New user message (text only — chat UI doesn't send blocks yet). */
   userMessage: string
   /** Per-workspace overrides loaded from agent_settings. */
   budgetOverrides?: WorkspaceBudgetOverrides | null
-  /** Optional: workspace-overridden model. Falls back to platform default. */
-  model?: string | null
 }
 
 export async function runChatTurn(
@@ -121,9 +119,9 @@ export async function runChatTurn(
     )
   }
   const budget = resolveBudget('chat', input.budgetOverrides ?? null)
-  const messages: AnthropicMessage[] = [
+  const messages: NormalizedMessage[] = [
     ...input.priorMessages,
-    { role: 'user', content: input.userMessage },
+    { role: 'user', blocks: [{ type: 'text', text: input.userMessage }] },
   ]
   return commonExecute({
     ctx: input.ctx,
@@ -133,7 +131,6 @@ export async function runChatTurn(
     initialMessages: messages,
     systemPrompt: SYSTEM_PROMPT_CHAT,
     budget,
-    model: input.model ?? DEFAULT_MODELS.anthropic,
     allowedToolNames: null, // chat sees full toolbox
   })
 }
@@ -142,21 +139,15 @@ export async function runChatTurn(
 
 export interface RunAutopilotInput {
   ctx: AgentContext
-  /** What kicked this off — recorded on agent_runs.trigger and shown
-   *  to the model as the synthetic user message. */
   trigger: {
-    /** e.g. 'auto_highlights' */
     name: string
-    /** Free-form scope description — becomes the user message body. */
     instruction: string
-    /** Structured payload (content_id, etc.) merged into agent_runs.trigger. */
     payload?: Record<string, unknown>
   }
-  /** Tool subset for this trigger. null = full toolbox (chat-equivalent).
+  /** Tool subset for this trigger. null = full toolbox.
    *  Read-only tools are always available regardless. */
   allowedToolNames?: string[] | null
   budgetOverrides?: WorkspaceBudgetOverrides | null
-  model?: string | null
 }
 
 export async function runAutopilotRun(
@@ -168,8 +159,11 @@ export async function runAutopilotRun(
     )
   }
   const budget = resolveBudget('autopilot', input.budgetOverrides ?? null)
-  const messages: AnthropicMessage[] = [
-    { role: 'user', content: input.trigger.instruction },
+  const messages: NormalizedMessage[] = [
+    {
+      role: 'user',
+      blocks: [{ type: 'text', text: input.trigger.instruction }],
+    },
   ]
   return commonExecute({
     ctx: input.ctx,
@@ -179,7 +173,6 @@ export async function runAutopilotRun(
     initialMessages: messages,
     systemPrompt: SYSTEM_PROMPT_AUTOPILOT,
     budget,
-    model: input.model ?? DEFAULT_MODELS.anthropic,
     allowedToolNames: input.allowedToolNames ?? null,
   })
 }
@@ -191,33 +184,28 @@ interface CommonExecuteParams {
   kind: AgentRunKind
   conversationId: string | null
   trigger: Record<string, unknown>
-  initialMessages: AnthropicMessage[]
+  initialMessages: NormalizedMessage[]
   systemPrompt: string
   budget: BudgetProfile
-  model: string
   allowedToolNames: string[] | null
 }
 
 async function commonExecute(
   params: CommonExecuteParams,
 ): Promise<AgentRunResult> {
-  // Fetch BYOK Anthropic key for this workspace. This is the entry
-  // point where "no key" fails fast — don't even create a run row,
-  // since it would be empty.
-  const keyResult = await getDecryptedAiKey(
-    params.ctx.workspaceId,
-    ANTHROPIC_PROVIDER,
-  )
-  if (!keyResult.ok) {
+  // Pick provider + key + model for this workspace. Bails fast if no
+  // key is stored (clean error envelope, no run row created).
+  const resolved = await resolveAgentProvider(params.ctx.workspaceId)
+  if (!resolved.ok) {
     return {
       ok: false,
       runId: null,
-      code: keyResult.code === 'forbidden' ? 'forbidden' : 'no_key',
-      message: keyResult.message,
+      code: resolved.code === 'forbidden' ? 'forbidden' : 'no_key',
+      message: resolved.message,
     }
   }
 
-  const apiKey = keyResult.plaintext
+  const { provider, apiKey, model } = resolved
 
   // Create run + open handle (encapsulates optimistic-locked transitions).
   const runId = await createRun({
@@ -225,21 +213,20 @@ async function commonExecute(
     userId: params.ctx.userId,
     kind: params.kind,
     conversationId: params.conversationId,
-    trigger: params.trigger,
+    trigger: { ...params.trigger, provider, model },
   })
   const handle = await RunHandle.open(runId)
   await handle.markRunning()
 
   const acc = newBudgetAccumulator()
-  const messages: AnthropicMessage[] = [...params.initialMessages]
+  const messages: NormalizedMessage[] = [...params.initialMessages]
   const tools = getTools({ allow: params.allowedToolNames })
-  const anthropicTools = toAnthropicFormat(tools)
   let parkedWaitingOn: WaitingOn | null = null
   let lastAssistantText = ''
 
-  // Hard outer cap as a paranoia ceiling — each loop iteration is one
-  // Anthropic round-trip + zero-or-more tool calls. Budget caps below
-  // are the real gate; this just prevents an unbounded while(true).
+  // Hard outer cap as a paranoia ceiling — each iteration is one LLM
+  // round-trip + zero-or-more tool calls. Budget caps are the real
+  // gate; this just prevents an unbounded while(true).
   const MAX_ITERATIONS = 30
   let iter = 0
 
@@ -248,12 +235,13 @@ async function commonExecute(
       iter++
       resetTurn(acc)
 
-      const response = await callAnthropicAgent({
+      const response = await callAgentLlm({
+        provider,
         apiKey,
-        model: params.model,
+        model,
         system: params.systemPrompt,
         messages,
-        tools: anthropicTools,
+        tools,
         maxTokens: params.budget.maxTokensPerCall,
         temperature: params.kind === 'autopilot' ? 0.3 : 0.7,
       })
@@ -273,35 +261,37 @@ async function commonExecute(
       const cost = computeCallCost({
         model: response.model,
         usage: {
-          inputTokens: response.usage.input_tokens,
-          outputTokens: response.usage.output_tokens,
-          cacheCreationTokens: response.usage.cache_creation_input_tokens,
-          cacheReadTokens: response.usage.cache_read_input_tokens,
+          inputTokens: response.usage.inputTokens,
+          outputTokens: response.usage.outputTokens,
+          cacheCreationTokens: response.usage.cacheCreationTokens,
+          cacheReadTokens: response.usage.cacheReadTokens,
         },
       })
 
-      // Append assistant turn verbatim (must include tool_use blocks
-      // for the next user-side tool_result blocks to bind correctly).
-      messages.push({ role: 'assistant', content: response.content })
+      // Append assistant turn (text + tool_use blocks) to history.
+      // Required for multi-turn correctness — the next user turn's
+      // tool_result blocks must immediately follow the assistant
+      // turn that contains the matching tool_use blocks.
+      messages.push({ role: 'assistant', blocks: response.blocks })
 
-      // Capture trailing text so caller has something to show even
-      // when the model also calls tools in the same turn.
-      const trailingText = response.content
-        .filter((b): b is Extract<ContentBlock, { type: 'text' }> => b.type === 'text')
+      // Capture trailing text so caller has something to display
+      // even when the model also calls tools in the same turn.
+      const trailingText = response.blocks
+        .filter((b): b is Extract<NormalizedBlock, { type: 'text' }> => b.type === 'text')
         .map((b) => b.text)
         .join('\n')
         .trim()
       if (trailingText) lastAssistantText = trailingText
 
-      const toolUses = response.content.filter(
-        (b): b is Extract<ContentBlock, { type: 'tool_use' }> =>
+      const toolUses = response.blocks.filter(
+        (b): b is Extract<NormalizedBlock, { type: 'tool_use' }> =>
           b.type === 'tool_use',
       )
 
       accumulate(acc, {
         toolCalls: toolUses.length,
-        inputTokens: response.usage.input_tokens,
-        outputTokens: response.usage.output_tokens,
+        inputTokens: response.usage.inputTokens,
+        outputTokens: response.usage.outputTokens,
         costMicroUsd: cost,
       })
       assertWithinBudget(acc, params.budget)
@@ -316,12 +306,31 @@ async function commonExecute(
           finalText: lastAssistantText,
           messages,
           cost: acc,
+          provider,
+          model,
         }
       }
 
-      // Execute each tool_use block. We re-check membership ONCE
-      // before the batch, then per-tool role gating runs inside the
-      // dispatch (handlers can also call requireEditor / requireOwner).
+      // Refusal stops the loop, surfaced as a soft "ok" with the
+      // refusal text — same as end_turn from the user's POV, just
+      // rendered with a hint. The model won't keep retrying.
+      if (response.stopReason === 'refusal') {
+        await handle.markComplete(acc)
+        return {
+          ok: true,
+          runId,
+          finalText:
+            lastAssistantText ||
+            '(The model refused to respond to this request.)',
+          messages,
+          cost: acc,
+          provider,
+          model,
+        }
+      }
+
+      // Re-check membership ONCE before the tool batch — cheap and
+      // catches role downgrades that happen mid-run.
       const memberCheck = await assertStillMember(params.ctx)
       if (!memberCheck.ok) {
         const msg = `Membership lost mid-run: ${memberCheck.reason}`
@@ -335,7 +344,7 @@ async function commonExecute(
         }
       }
 
-      const toolResultBlocks: ContentBlock[] = []
+      const toolResultBlocks: NormalizedBlock[] = []
       for (const tu of toolUses) {
         const dispatch = await dispatchToolCall({
           ctx: params.ctx,
@@ -345,27 +354,26 @@ async function commonExecute(
 
         toolResultBlocks.push({
           type: 'tool_result',
-          tool_use_id: tu.id,
-          content: typeof dispatch.content === 'string'
-            ? dispatch.content
-            : JSON.stringify(dispatch.content),
-          is_error: dispatch.isError || undefined,
+          toolUseId: tu.id,
+          content:
+            typeof dispatch.content === 'string'
+              ? dispatch.content
+              : JSON.stringify(dispatch.content),
+          isError: dispatch.isError || undefined,
         })
 
         if (dispatch.parked) {
           parkedWaitingOn = dispatch.parked
-          // Stop processing further tool_uses in the same turn — the
-          // run is going to sleep and resume later. Anything after
-          // would be wasted work the resumed run would re-issue
-          // anyway based on fresh state.
+          // Stop processing further tool_uses in this turn — the run
+          // is going to sleep. Anything after would be wasted work
+          // the resumed run would re-issue based on fresh state.
           break
         }
       }
 
-      // If we parked, write tool_result blocks back so the resumed
-      // turn sees them, then park the run.
+      // Park if a tool requested it; otherwise continue with results.
       if (parkedWaitingOn) {
-        messages.push({ role: 'user', content: toolResultBlocks })
+        messages.push({ role: 'user', blocks: toolResultBlocks })
         await handle.park(parkedWaitingOn, acc)
         return {
           ok: true,
@@ -373,12 +381,13 @@ async function commonExecute(
           finalText: lastAssistantText,
           messages,
           cost: acc,
+          provider,
+          model,
           parked: { waitingOn: parkedWaitingOn },
         }
       }
 
-      // Otherwise: append tool results, loop again.
-      messages.push({ role: 'user', content: toolResultBlocks })
+      messages.push({ role: 'user', blocks: toolResultBlocks })
     }
 
     // Hit the iteration cap without a clean stop — treat as runaway.

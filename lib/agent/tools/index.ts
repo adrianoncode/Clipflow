@@ -51,20 +51,8 @@ export function getToolByName(name: string): ToolDef | null {
   return getRegistry().get(name) ?? null
 }
 
-/**
- * Anthropic API tool-list shape. Convert ToolDef[] → the array
- * Anthropic expects in the `tools` request param.
- */
-export interface AnthropicToolFormat {
-  name: string
-  description: string
-  input_schema: ToolDef['schema']
-}
-
-export function toAnthropicFormat(tools: ToolDef[]): AnthropicToolFormat[] {
-  return tools.map((t) => ({
-    name: t.name,
-    description: t.description,
-    input_schema: t.schema,
-  }))
-}
+// Provider-specific tool-format converters live in
+// `lib/agent/llm/tool-format.ts` (toAnthropicTools, toOpenAiTools,
+// toGeminiTools). The agent loop never imports those directly — the
+// router in `lib/agent/llm/index.ts` calls them inside the
+// per-provider adapters.

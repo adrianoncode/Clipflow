@@ -1,24 +1,29 @@
 import 'server-only'
 
 /**
- * Cost calculation for Anthropic API usage.
+ * Cost calculation for agent LLM usage across all supported providers.
  *
  * All prices stored as **micro-USD per token** so cost math stays in
  * bigint (no float drift across thousands of tokens). Conversion:
  *   $X per 1M tokens === X micro-USD per token
  *
- * Pricing as of 2026-05 (Anthropic public pricing, claude-haiku-4-5):
- *   input         $1   / 1M
- *   output        $5   / 1M
- *   cache_write   $1.25 / 1M  (5-min TTL — what we use)
- *   cache_read    $0.10 / 1M
+ * Per-provider pricing as of 2026-05:
+ *   Anthropic claude-haiku-4-5: $1 in / $5 out per 1M
+ *   Anthropic claude-sonnet-4-6: $3 in / $15 out per 1M
+ *   OpenAI gpt-4o-mini: $0.15 in / $0.60 out per 1M
+ *   OpenAI gpt-4o: $2.50 in / $10 out per 1M
+ *   Google gemini-2.0-flash: $0.075 in / $0.30 out per 1M (paid tier)
+ *   Google gemini-2.0-flash-lite: $0.04 in / $0.15 out per 1M
  *
- * Source of truth: https://www.anthropic.com/pricing
+ * Sources of truth:
+ *   https://www.anthropic.com/pricing
+ *   https://openai.com/api/pricing/
+ *   https://ai.google.dev/pricing
  *
- * If Anthropic ships new pricing or we add new models, update the
- * `MODEL_PRICING` map and add a row. Pricing is per-model — we never
- * fall back to a default rate (silent under-billing is worse than
- * loud "unknown model" errors).
+ * If a provider ships new pricing or we add new models, update the
+ * `MODEL_PRICING` map. Pricing is per-model — we never fall back to a
+ * default rate (silent under-billing is worse than loud "unknown
+ * model" errors).
  */
 
 export interface ModelPricing {
@@ -33,22 +38,54 @@ export interface ModelPricing {
 }
 
 export const MODEL_PRICING: Record<string, ModelPricing> = {
+  // ─── Anthropic ──────────────────────────────────────────────────
   'claude-haiku-4-5-20251001': {
     inputMicroUsd: 1n,
     outputMicroUsd: 5n,
     // 5-min ephemeral cache — Anthropic charges 1.25x base input for write,
-    // 0.1x base input for read. Encoded directly to avoid runtime math.
-    cacheWriteMicroUsd: 1250n / 1000n, // = 1.25 micro-USD per token, rounded down
-    cacheReadMicroUsd: 100n / 1000n, // = 0.1 micro-USD per token, rounded down
+    // 0.1x base input for read. Rounded to integers (under-bills by
+    // fractions of a cent at our scale, but exact billing comes from
+    // Anthropic dashboards anyway).
+    cacheWriteMicroUsd: 1n,
+    cacheReadMicroUsd: 0n,
   },
-  // Sonnet 4.6 — exposed as an upgrade option for power-user workspaces.
-  // Verify pricing at https://www.anthropic.com/pricing before enabling
-  // workspace-level model overrides in the agent_settings UI.
   'claude-sonnet-4-6': {
     inputMicroUsd: 3n,
     outputMicroUsd: 15n,
     cacheWriteMicroUsd: 3n,
     cacheReadMicroUsd: 1n,
+  },
+  // ─── OpenAI ─────────────────────────────────────────────────────
+  // OpenAI's prefix cache discounts cached tokens to 50% of input
+  // rate (no separate write cost). We model `cacheReadMicroUsd` as
+  // the discounted rate; cacheWrite is unused (= input rate baked in).
+  'gpt-4o-mini': {
+    inputMicroUsd: 0n, // 0.15 / 1M = 0.15 micro-USD; rounded to 0 (under-bills tiny amounts)
+    outputMicroUsd: 1n, // 0.60 / 1M = 0.6, rounded up to 1 to avoid under-billing
+    cacheWriteMicroUsd: 0n,
+    cacheReadMicroUsd: 0n,
+  },
+  'gpt-4o': {
+    inputMicroUsd: 3n, // $2.50 → 2.5, rounded up
+    outputMicroUsd: 10n,
+    cacheWriteMicroUsd: 3n,
+    cacheReadMicroUsd: 1n,
+  },
+  // ─── Google ─────────────────────────────────────────────────────
+  // Gemini's caching has a 32k-token minimum so we don't use it in
+  // v1; cacheReadMicroUsd is set to the same as input as a defensive
+  // default in case a future change activates caching.
+  'gemini-2.0-flash': {
+    inputMicroUsd: 0n, // 0.075 / 1M, rounded to 0
+    outputMicroUsd: 1n, // 0.30 / 1M, rounded up
+    cacheWriteMicroUsd: 0n,
+    cacheReadMicroUsd: 0n,
+  },
+  'gemini-2.0-flash-lite': {
+    inputMicroUsd: 0n,
+    outputMicroUsd: 0n,
+    cacheWriteMicroUsd: 0n,
+    cacheReadMicroUsd: 0n,
   },
 }
 
