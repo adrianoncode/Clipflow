@@ -509,7 +509,7 @@ export function SmartImportBox({
         <p>
           {mode === 'inline'
             ? 'Submitted items appear in Recent imports above — keep pasting.'
-            : 'You’ll be taken to the recording once it’s in.'}
+            : "You’ll be taken to your content once it’s in."}
         </p>
         <OtherSourcesDrawer workspaceId={workspaceId}>
           <button

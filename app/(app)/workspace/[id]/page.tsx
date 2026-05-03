@@ -59,8 +59,8 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
 
   const heroBody =
     items.length === 0
-      ? 'Every recording you import lands here as a row with a status pill — ready to slice into platform drafts.'
-      : `${items.length} recording${items.length === 1 ? '' : 's'} in this workspace · ${readyCount} ready, ${processingCount} processing.`
+      ? 'Every video you import lands here — ready to slice into platform drafts in under a minute.'
+      : `${items.length} video${items.length === 1 ? '' : 's'} in this workspace · ${readyCount} ready, ${processingCount} processing.`
 
   return (
     <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 pt-4 sm:pt-6">
@@ -80,7 +80,7 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
               fontFamily: 'var(--font-jetbrains-mono), monospace',
             }}
           >
-            {workspace.name} · Library
+            {workspace.name} · Content
           </p>
           <h1
             className="text-[clamp(38px,5.5vw,64px)] leading-[0.98]"
@@ -91,7 +91,7 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
               letterSpacing: '-0.02em',
             }}
           >
-            Your library.
+            Your content.
           </h1>
           <p className="mt-3 max-w-xl text-[13px] leading-relaxed" style={{ color: '#3A3A3A' }}>
             {heroBody}
@@ -108,7 +108,7 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
             }}
           >
             <Plus className="h-3.5 w-3.5" />
-            Import recording
+            Import video
           </Link>
         )}
       </section>
