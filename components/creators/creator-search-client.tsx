@@ -274,10 +274,27 @@ export function CreatorSearchClient({ workspaceId: _workspaceId }: CreatorSearch
           />
 
           {results.creators.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border/60 bg-muted/20 px-4 py-12 text-center">
-              <p className="text-sm font-semibold text-foreground">No creators matched.</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Try a broader keyword or switch platform.
+            <div
+              className="flex flex-col items-center gap-3 rounded-[20px] px-4 py-12 text-center"
+              style={{
+                background: '#FFFDF8',
+                border: '1px solid rgba(15,15,15,0.08)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+              }}
+            >
+              <Compass className="h-5 w-5" style={{ color: 'rgba(15,15,15,0.2)' }} />
+              <p
+                className="text-[15px]"
+                style={{
+                  fontFamily: 'var(--font-instrument-serif), Georgia, serif',
+                  color: '#0F0F0F',
+                  fontWeight: 400,
+                }}
+              >
+                No creators found.
+              </p>
+              <p className="max-w-xs text-[12px]" style={{ color: '#7A7468' }}>
+                Try a broader keyword, a different niche, or switch to another platform.
               </p>
             </div>
           ) : (

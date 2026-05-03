@@ -48,7 +48,12 @@ export function SettingsShell({ children }: { children: React.ReactNode }) {
         <button
           type="button"
           onClick={() => setNavOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg border border-border/60 bg-card px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-accent/40"
+          className="inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-[13px] font-semibold transition-colors hover:bg-[rgba(15,15,15,0.04)]"
+          style={{
+            border: '1px solid rgba(15,15,15,0.14)',
+            background: 'rgba(255,253,248,0.85)',
+            color: '#0F0F0F',
+          }}
           aria-label="Open settings menu"
         >
           <Menu className="h-4 w-4" />

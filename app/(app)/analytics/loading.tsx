@@ -1,5 +1,11 @@
 import { Skeleton } from '@/components/ui/skeleton'
 
+const CARD = {
+  background: '#FFFDF8',
+  border: '1px solid rgba(15,15,15,0.08)',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+} as const
+
 export default function AnalyticsLoading() {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 p-4 sm:p-8">
@@ -9,10 +15,9 @@ export default function AnalyticsLoading() {
         <Skeleton className="h-4 w-72 rounded" />
       </div>
 
-      {/* KPI row */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-border/50 bg-card p-5 space-y-3">
+          <div key={i} className="rounded-[20px] p-5 space-y-3" style={CARD}>
             <Skeleton className="h-3 w-20 rounded" />
             <Skeleton className="h-8 w-16 rounded" />
             <Skeleton className="h-1.5 w-full rounded-full" />
@@ -20,14 +25,12 @@ export default function AnalyticsLoading() {
         ))}
       </div>
 
-      {/* Chart placeholder */}
-      <div className="rounded-2xl border border-border/50 bg-card p-5 space-y-3">
+      <div className="rounded-[20px] p-5 space-y-3" style={CARD}>
         <Skeleton className="h-5 w-40 rounded" />
         <Skeleton className="h-56 w-full rounded-lg" />
       </div>
 
-      {/* Top content list */}
-      <div className="rounded-2xl border border-border/50 bg-card p-5 space-y-3">
+      <div className="rounded-[20px] p-5 space-y-3" style={CARD}>
         <Skeleton className="h-5 w-32 rounded" />
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3">

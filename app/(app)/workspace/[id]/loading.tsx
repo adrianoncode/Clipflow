@@ -1,22 +1,29 @@
 import { Skeleton } from '@/components/ui/skeleton'
 
+const CARD = {
+  background: '#FFFDF8',
+  border: '1px solid rgba(15,15,15,0.08)',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+} as const
+
 export default function WorkspaceLoading() {
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4 sm:p-8">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
-          <Skeleton className="h-8 w-32" />
-          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-3 w-20 rounded" />
+          <Skeleton className="h-10 w-44 rounded-xl" />
+          <Skeleton className="h-4 w-48 rounded" />
         </div>
-        <Skeleton className="h-9 w-28" />
+        <Skeleton className="h-9 w-28 rounded-full" />
       </div>
-      <div className="divide-y rounded-md border">
+      <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 px-4 py-3">
-            <Skeleton className="h-4 w-4 shrink-0" />
+          <div key={i} className="flex items-center gap-4 rounded-[20px] p-4" style={CARD}>
+            <Skeleton className="h-4 w-4 shrink-0 rounded" />
             <div className="flex-1 space-y-1">
-              <Skeleton className="h-4 w-48" />
-              <Skeleton className="h-3 w-32" />
+              <Skeleton className="h-4 w-48 rounded" />
+              <Skeleton className="h-3 w-32 rounded" />
             </div>
             <Skeleton className="h-5 w-16 rounded-full" />
           </div>

@@ -188,7 +188,7 @@ export function CalendarClient({
     if (views === undefined && likes === undefined) return null
 
     return (
-      <div className="mt-2 flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+      <div className="mt-2 flex flex-wrap gap-2 text-[10px]" style={{ color: '#7A7468' }}>
         {views !== undefined && (
           <span className="inline-flex items-center gap-0.5">
             <Eye className="h-3 w-3" /> {formatStatNum(views)}
@@ -220,18 +220,30 @@ export function CalendarClient({
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={goToPrevMonth}
-            className="flex h-8 w-8 items-center justify-center rounded-md border text-sm hover:bg-accent"
+            aria-label="Previous month"
+            className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[rgba(15,15,15,0.04)]"
+            style={{ border: '1px solid rgba(15,15,15,0.14)' }}
           >
-            &lsaquo;
+            <span style={{ color: '#0F0F0F', fontSize: 14 }}>&lsaquo;</span>
           </button>
-          <h1 className="text-xl font-semibold">
+          <h1
+            style={{
+              fontFamily: 'var(--font-instrument-serif), Georgia, serif',
+              fontSize: 24,
+              fontWeight: 400,
+              color: '#0F0F0F',
+              letterSpacing: '-0.01em',
+            }}
+          >
             {monthName} {year}
           </h1>
           <button
             onClick={goToNextMonth}
-            className="flex h-8 w-8 items-center justify-center rounded-md border text-sm hover:bg-accent"
+            aria-label="Next month"
+            className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[rgba(15,15,15,0.04)]"
+            style={{ border: '1px solid rgba(15,15,15,0.14)' }}
           >
-            &rsaquo;
+            <span style={{ color: '#0F0F0F', fontSize: 14 }}>&rsaquo;</span>
           </button>
           <button
             onClick={() => {
@@ -239,7 +251,12 @@ export function CalendarClient({
               setMonth(today.getMonth())
               setSelectedDay(null)
             }}
-            className="ml-1 rounded-md border px-3 py-1 text-xs font-medium hover:bg-accent"
+            className="ml-1 rounded-full px-3.5 py-1 text-[11px] font-bold transition-colors hover:scale-[1.02]"
+            style={{
+              background: '#F4D93D',
+              color: '#0F0F0F',
+              border: '1px solid rgba(15,15,15,0.10)',
+            }}
           >
             Today
           </button>
@@ -247,25 +264,43 @@ export function CalendarClient({
         </div>
         <Link
           href={`/workspace/${workspaceId}/schedule`}
-          className="cf-btn-3d cf-btn-3d-primary inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm"
+          className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-[13px] font-bold transition-all hover:scale-[1.02]"
+          style={{
+            background: '#0F0F0F',
+            color: '#F4D93D',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.14), 0 6px 14px -6px rgba(15,15,15,0.4)',
+          }}
         >
           + Schedule new
         </Link>
       </div>
 
       {isPending && (
-        <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-2 text-xs font-medium text-primary">
-          Updating schedule...
+        <div
+          className="rounded-[14px] px-4 py-2.5 text-[12px] font-semibold"
+          style={{
+            background: 'rgba(244,217,61,0.15)',
+            border: '1px solid rgba(244,217,61,0.3)',
+            color: '#0F0F0F',
+          }}
+        >
+          Updating schedule…
         </div>
       )}
 
-      {/* How-to hint for first-time users */}
       {unscheduledOutputs.length > 0 && scheduledPosts.length === 0 && (
-        <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/[0.04] px-4 py-3">
+        <div
+          className="flex items-center gap-3 rounded-[16px] px-4 py-3"
+          style={{
+            background: '#FFFDF8',
+            border: '1px solid rgba(15,15,15,0.08)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+          }}
+        >
           <span className="text-lg">👆</span>
-          <p className="text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground">How to schedule: </span>
-            Grab an approved output from the left panel and drag it onto any date in the calendar. It will be scheduled for 10:00 AM — you can reschedule by dragging it to another date.
+          <p className="text-[12px]" style={{ color: '#3A3A3A' }}>
+            <span className="font-semibold" style={{ color: '#0F0F0F' }}>How to schedule: </span>
+            Drag an approved draft from the sidebar onto any date. It schedules at 10:00 AM — drag to move.
           </p>
         </div>
       )}
@@ -273,11 +308,21 @@ export function CalendarClient({
       <div className="flex flex-col gap-6 xl:flex-row">
         {/* ── Unscheduled sidebar ─────────────────────────────────────── */}
         <div className="w-full shrink-0 xl:w-64">
-          <div className="rounded-lg border bg-card p-3">
-            <h2 className="mb-3 text-sm font-semibold">
+          <div
+            className="rounded-[20px] p-3.5"
+            style={{
+              background: '#FFFDF8',
+              border: '1px solid rgba(15,15,15,0.08)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+            }}
+          >
+            <h2 className="mb-3 text-[13px] font-semibold" style={{ color: '#0F0F0F' }}>
               Unscheduled
               {unscheduledOutputs.length > 0 && (
-                <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
+                <span
+                  className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold"
+                  style={{ background: '#F4D93D', color: '#0F0F0F' }}
+                >
                   {unscheduledOutputs.length}
                 </span>
               )}
@@ -298,7 +343,7 @@ export function CalendarClient({
             )}
 
             {unscheduledOutputs.length === 0 ? (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[12px]" style={{ color: '#7A7468' }}>
                 No approved drafts waiting. Approve drafts first, then drag them here to schedule.
               </p>
             ) : (
@@ -310,7 +355,11 @@ export function CalendarClient({
                     onDragStart={(e) =>
                       handleDragStart(e, 'output', output.id, output.platform)
                     }
-                    className="cursor-grab rounded-md border bg-background p-2.5 text-xs transition-all hover:shadow-sm active:cursor-grabbing active:shadow-md"
+                    className="cursor-grab rounded-[14px] p-2.5 text-[12px] transition-all hover:shadow-sm active:cursor-grabbing active:shadow-md"
+                    style={{
+                      background: '#FAF7F2',
+                      border: '1px solid rgba(15,15,15,0.06)',
+                    }}
                   >
                     <div className="mb-1 flex items-center gap-2">
                       <span
@@ -321,20 +370,23 @@ export function CalendarClient({
                       >
                         {PLATFORM_LABELS[output.platform] ?? output.platform}
                       </span>
-                      <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
+                      <span
+                        className="rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                        style={{ background: 'rgba(16,185,129,0.1)', color: '#059669' }}
+                      >
                         {output.latestState}
                       </span>
                     </div>
-                    <p className="font-medium text-foreground line-clamp-1">
+                    <p className="font-medium line-clamp-1" style={{ color: '#0F0F0F' }}>
                       {output.contentTitle ?? 'Untitled'}
                     </p>
                     {output.body && (
-                      <p className="mt-0.5 text-muted-foreground line-clamp-2">
+                      <p className="mt-0.5 line-clamp-2" style={{ color: '#7A7468' }}>
                         {output.body.slice(0, 80)}
-                        {output.body.length > 80 ? '...' : ''}
+                        {output.body.length > 80 ? '…' : ''}
                       </p>
                     )}
-                    <p className="mt-1.5 text-[10px] text-muted-foreground/50">
+                    <p className="mt-1.5 text-[10px]" style={{ color: 'rgba(15,15,15,0.3)' }}>
                       Drag onto a date to schedule
                     </p>
                   </li>
@@ -350,7 +402,15 @@ export function CalendarClient({
             {/* Day headers */}
             <div className="mb-1 grid grid-cols-7 gap-1">
               {DAY_LABELS.map((d) => (
-                <div key={d} className="py-1 text-center text-xs font-medium text-muted-foreground">
+                <div
+                  key={d}
+                  className="py-1 text-center text-[10px] font-semibold uppercase"
+                  style={{
+                    fontFamily: 'var(--font-jetbrains-mono), monospace',
+                    letterSpacing: '0.12em',
+                    color: '#7A7468',
+                  }}
+                >
                   {d}
                 </div>
               ))}
@@ -405,26 +465,39 @@ export function CalendarClient({
                       isCurrentMonth ? (e) => handleDrop(e, dayNumber) : undefined
                     }
                     className={[
-                      'relative min-h-[72px] rounded-md border p-1 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      'relative min-h-[72px] rounded-[14px] p-1.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2',
                       isCurrentMonth
-                        ? 'cursor-pointer hover:bg-accent/50'
+                        ? 'cursor-pointer hover:bg-[rgba(15,15,15,0.03)]'
                         : 'pointer-events-none opacity-0',
-                      todayCell ? 'bg-accent border-primary' : 'bg-background',
-                      isSelected ? 'ring-2 ring-primary' : '',
-                      isDragTarget
-                        ? 'ring-2 ring-primary bg-primary/5 border-primary'
-                        : '',
+                      isSelected ? 'ring-2 ring-[#0F0F0F]' : '',
+                      isDragTarget ? 'ring-2 ring-[#F4D93D]' : '',
                     ]
                       .filter(Boolean)
                       .join(' ')}
+                    style={{
+                      background: isDragTarget
+                        ? 'rgba(244,217,61,0.08)'
+                        : todayCell
+                          ? 'rgba(244,217,61,0.12)'
+                          : isCurrentMonth
+                            ? '#FFFDF8'
+                            : undefined,
+                      border: todayCell
+                        ? '1px solid rgba(244,217,61,0.5)'
+                        : isCurrentMonth
+                          ? '1px solid rgba(15,15,15,0.06)'
+                          : 'none',
+                    }}
                   >
                     {isCurrentMonth && (
                       <>
                         <span
-                          className={[
-                            'text-xs font-medium',
-                            todayCell ? 'font-bold text-primary' : 'text-foreground',
-                          ].join(' ')}
+                          className="text-[11px] tabular-nums"
+                          style={{
+                            fontFamily: 'var(--font-jetbrains-mono), monospace',
+                            fontWeight: todayCell ? 700 : 500,
+                            color: todayCell ? '#0F0F0F' : '#3A3A3A',
+                          }}
                         >
                           {dayNumber}
                         </span>
@@ -511,14 +584,29 @@ export function CalendarClient({
 
           {/* ── Detail side panel ──────────────────────────────────────── */}
           {selectedDay !== null && (
-            <div className="w-full rounded-lg border bg-card p-4 lg:w-72">
+            <div
+              className="w-full rounded-[20px] p-4 lg:w-72"
+              style={{
+                background: '#FFFDF8',
+                border: '1px solid rgba(15,15,15,0.08)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+              }}
+            >
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-semibold">
+                <h2
+                  style={{
+                    fontFamily: 'var(--font-instrument-serif), Georgia, serif',
+                    fontSize: 18,
+                    fontWeight: 400,
+                    color: '#0F0F0F',
+                  }}
+                >
                   {monthName} {selectedDay}
                 </h2>
                 <button
                   onClick={() => setSelectedDay(null)}
-                  className="text-xs text-muted-foreground hover:text-foreground"
+                  className="flex h-6 w-6 items-center justify-center rounded-full transition-colors hover:bg-[rgba(15,15,15,0.06)]"
+                  style={{ color: '#7A7468', fontSize: 14 }}
                 >
                   &times;
                 </button>
@@ -526,13 +614,14 @@ export function CalendarClient({
 
               {selectedPosts.length === 0 ? (
                 <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">No posts scheduled.</p>
-                  <p className="text-xs text-muted-foreground/60">
+                  <p className="text-[13px]" style={{ color: '#7A7468' }}>No posts scheduled.</p>
+                  <p className="text-[11px]" style={{ color: 'rgba(15,15,15,0.35)' }}>
                     Drag an approved output here to schedule it.
                   </p>
                   <Link
                     href={`/workspace/${workspaceId}/schedule`}
-                    className="inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-accent"
+                    className="inline-flex items-center gap-1 rounded-full px-3.5 py-1.5 text-[11px] font-bold transition hover:scale-[1.02]"
+                    style={{ background: '#0F0F0F', color: '#F4D93D' }}
                   >
                     + Schedule post
                   </Link>
@@ -548,7 +637,14 @@ export function CalendarClient({
                     const body = post.outputs?.body ?? ''
 
                     return (
-                      <li key={post.id} className="rounded-md border bg-background p-3 text-xs">
+                      <li
+                        key={post.id}
+                        className="rounded-[14px] p-3 text-[12px]"
+                        style={{
+                          background: '#FAF7F2',
+                          border: '1px solid rgba(15,15,15,0.06)',
+                        }}
+                      >
                         <div className="mb-1 flex items-center gap-2">
                           <span
                             className={[
@@ -558,23 +654,30 @@ export function CalendarClient({
                           >
                             {PLATFORM_LABELS[post.platform] ?? post.platform}
                           </span>
-                          <span className="text-muted-foreground">{time}</span>
+                          <span style={{ color: '#7A7468' }}>{time}</span>
                           <span
-                            className={[
-                              'ml-auto rounded px-1.5 py-0.5 text-[10px] font-medium',
-                              post.status === 'published'
-                                ? 'bg-green-100 text-green-700'
-                                : post.status === 'failed'
-                                  ? 'bg-red-100 text-red-700'
-                                  : 'bg-muted text-muted-foreground',
-                            ].join(' ')}
+                            className="ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                            style={{
+                              background:
+                                post.status === 'published'
+                                  ? 'rgba(16,185,129,0.1)'
+                                  : post.status === 'failed'
+                                    ? 'rgba(239,68,68,0.1)'
+                                    : 'rgba(15,15,15,0.06)',
+                              color:
+                                post.status === 'published'
+                                  ? '#059669'
+                                  : post.status === 'failed'
+                                    ? '#DC2626'
+                                    : '#7A7468',
+                            }}
                           >
                             {post.status}
                           </span>
                         </div>
-                        <p className="font-medium text-foreground line-clamp-1">{title}</p>
+                        <p className="font-medium line-clamp-1" style={{ color: '#0F0F0F' }}>{title}</p>
                         {body && (
-                          <p className="mt-1 text-muted-foreground line-clamp-2">{body}</p>
+                          <p className="mt-1 line-clamp-2" style={{ color: '#7A7468' }}>{body}</p>
                         )}
                         {renderPostStats(post)}
                       </li>
