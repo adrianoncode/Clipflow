@@ -229,7 +229,7 @@ export default async function PipelinePage({ params, searchParams }: PipelinePag
         }
       />
 
-      {/* Workflow-Flow-Strip removed — global CreateStepper above already
+      {/* Content-Flow-Strip removed — global CreateStepper above already
           shows where you are in the 6-step section, and the kanban columns
           themselves report state counts. The mini-stepper duplicated both. */}
 

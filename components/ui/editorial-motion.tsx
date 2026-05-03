@@ -533,7 +533,12 @@ function PillNumberLocal({
   )
 }
 
-export function KpiCountUp({ Icon, value, label, delta }: KpiData) {
+export function KpiCountUp({ iconNode, value, label, delta }: {
+  iconNode: React.ReactNode
+  value: number
+  label: string
+  delta?: number | null
+}) {
   return (
     <div className="flex flex-col items-start gap-0.5">
       <div className="flex items-end gap-2">
@@ -541,7 +546,7 @@ export function KpiCountUp({ Icon, value, label, delta }: KpiData) {
           className="grid h-7 w-7 shrink-0 place-items-center rounded-full"
           style={{ background: 'rgba(15,15,15,0.06)' }}
         >
-          <Icon className="h-3.5 w-3.5" style={{ color: '#0F0F0F' }} />
+          {iconNode}
         </span>
         <CountUp
           value={value}

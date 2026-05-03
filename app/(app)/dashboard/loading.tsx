@@ -1,20 +1,141 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { ArrowRight, Upload } from 'lucide-react'
 import { DASHBOARD_PALETTE as PALETTE } from '@/lib/dashboard/palette'
 
 /**
- * Dashboard loading state — mirrors the post-Phase-3 bento exactly.
+ * Dashboard loading state — shows structural skeleton shimmer that
+ * mirrors the real bento layout so the page feels like it's "filling
+ * in" rather than constructing from scratch.
  *
- * Generic shimmer-only skeletons "feel" lazy because the user sees
- * the layout flash from "nothing" to "everything" on load. By
- * rendering the same shape as the real dashboard (hero, narrative,
- * quota, range filter, pulse strip, 4-col bento with FeaturedCard
- * row-span-2 + Funnel row-span-2), the page reads as "loading the
- * data into a known surface" instead of "constructing a surface".
- *
- * No animation library — the shimmer keyframe lives in globals.css.
- * Keeping this static + paint-only ensures the loading state is the
- * cheapest possible thing to render.
+ * **Timeout fallback (4 s):** if data hasn't resolved after 4 seconds
+ * (slow connection, cold start, new user with empty DB that still
+ * takes time to query), the skeleton dissolves into a welcoming
+ * hero with a clear CTA. This ensures a new user never stares at
+ * grey blocks indefinitely.
  */
+const SKELETON_TIMEOUT_MS = 4_000
+const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
+
+/** Read the workspace ID from the client-side cookie, if set. */
+function readWorkspaceId(): string | null {
+  if (typeof document === 'undefined') return null
+  const match = document.cookie
+    .split('; ')
+    .find((c) => c.startsWith(`${CURRENT_WORKSPACE_COOKIE}=`))
+  return match ? decodeURIComponent(match.split('=')[1] ?? '') : null
+}
+
 export default function DashboardLoading() {
+  const [timedOut, setTimedOut] = useState(false)
+
+  useEffect(() => {
+    const id = setTimeout(() => setTimedOut(true), SKELETON_TIMEOUT_MS)
+    return () => clearTimeout(id)
+  }, [])
+
+  if (timedOut) {
+    return <TimeoutHero />
+  }
+
+  return <SkeletonDashboard />
+}
+
+// ── Timeout hero — welcoming fallback after skeleton expires ─────────
+function TimeoutHero() {
+  const workspaceId = readWorkspaceId()
+  const importHref = workspaceId
+    ? `/workspace/${workspaceId}/content/new`
+    : '/dashboard'
+
+  return (
+    <div className="min-h-full p-4 sm:p-8">
+      <div className="mx-auto flex w-full max-w-[1280px] flex-col items-center justify-center gap-8 py-16">
+        <div
+          className="relative w-full max-w-2xl overflow-hidden rounded-[28px] p-8 sm:p-12"
+          style={{
+            background: `linear-gradient(160deg, ${PALETTE.yellowSoft} 0%, ${PALETTE.yellow} 55%, ${PALETTE.yellowDeep} 100%)`,
+            border: `1px solid ${PALETTE.border}`,
+            boxShadow:
+              'inset 0 1px 0 rgba(255,255,255,0.55), 0 18px 46px -22px rgba(220,185,31,0.45)',
+          }}
+        >
+          {/* Inset border */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-3 rounded-[20px] border"
+            style={{ borderColor: 'rgba(15,15,15,0.16)' }}
+          />
+          {/* Noise texture */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 mix-blend-multiply"
+            style={{
+              opacity: 0.04,
+              backgroundImage:
+                "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")",
+              backgroundSize: '160px 160px',
+            }}
+          />
+
+          <div className="relative z-10 flex flex-col items-center gap-6 text-center">
+            <span
+              className="text-[10px] font-semibold uppercase"
+              style={{
+                color: 'rgba(15,15,15,0.6)',
+                fontFamily: 'var(--font-jetbrains-mono), monospace',
+                letterSpacing: '0.22em',
+              }}
+            >
+              — Almost there
+            </span>
+            <h2
+              className="m-0"
+              style={{
+                fontFamily: 'var(--font-instrument-serif), Georgia, serif',
+                fontSize: 'clamp(32px, 4.2vw, 48px)',
+                lineHeight: 1.05,
+                letterSpacing: '-0.022em',
+                color: PALETTE.ink,
+                fontWeight: 400,
+              }}
+            >
+              Welcome to Clipflow
+            </h2>
+            <p
+              className="m-0 max-w-[44ch] text-[14px]"
+              style={{ color: PALETTE.inkSoft, lineHeight: 1.55 }}
+            >
+              Your dashboard is still loading — but you can get started
+              right away. Import a video and let Clipflow turn it into a
+              month of posts.
+            </p>
+
+            <Link
+              href={importHref}
+              className="inline-flex h-12 items-center gap-2.5 rounded-full px-6 text-[14px] font-bold transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_10px_22px_-6px_rgba(15,15,15,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              style={{
+                background: PALETTE.ink,
+                color: '#FFFFFF',
+                boxShadow:
+                  'inset 0 1px 0 rgba(255,255,255,0.14), 0 8px 18px -6px rgba(15,15,15,0.45)',
+              }}
+            >
+              <Upload className="h-4 w-4" />
+              Import your first video
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Skeleton dashboard (same structural shimmer as before) ──────────
+function SkeletonDashboard() {
   return (
     <div className="min-h-full p-4 sm:p-8">
       <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-5">
@@ -66,9 +187,9 @@ export default function DashboardLoading() {
           </div>
         </section>
 
-        {/* Bento grid — FeaturedCard row-span-2 + 3 mid-tiles + Funnel row-span-2 */}
+        {/* Bento grid */}
         <section className="grid auto-rows-[220px] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {/* FeaturedCard placeholder (yellow gradient hint, row-span-2) */}
+          {/* FeaturedCard placeholder (yellow gradient, row-span-2) */}
           <div
             className="row-span-2 rounded-[24px] p-5"
             style={{
@@ -192,18 +313,14 @@ export default function DashboardLoading() {
   )
 }
 
+// ── Shimmer primitive ───────────────────────────────────────────────
 interface ShimmerProps {
   className?: string
-  /** "dark" → renders white-on-charcoal for the stuck-drafts panel. */
+  /** "dark" renders white-on-charcoal for the stuck-drafts panel. */
   tone?: 'light' | 'dark'
   style?: React.CSSProperties
 }
 
-/**
- * Single skeleton primitive — keeps the dashboard's loading.tsx
- * stand-alone so it doesn't depend on shadcn `Skeleton` or any other
- * loading util. Pulses are a CSS keyframe (in globals.css), no JS.
- */
 function Shimmer({ className = '', tone = 'light', style }: ShimmerProps) {
   return (
     <div

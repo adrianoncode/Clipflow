@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Shield, Zap } from 'lucide-react'
+import { ArrowRight, Shield, Zap } from 'lucide-react'
 
 import { OnboardingServicePicker } from '@/components/onboarding/service-picker'
 import { OnboardingStepper } from '@/components/onboarding/stepper'
@@ -69,13 +69,18 @@ export default async function OnboardingApiKeysPage() {
         />
       ) : null}
 
-      <div className="text-center">
+      {/* Skip option — visible but secondary */}
+      <div className="flex flex-col items-center gap-1.5 pt-2 text-center">
         <Link
           href="/onboarding/complete"
-          className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground"
         >
-          Skip for now — I&apos;ll add keys later in Settings
+          I&apos;ll do this later
+          <ArrowRight className="h-3.5 w-3.5" />
         </Link>
+        <p className="text-[11px] text-muted-foreground/70">
+          You can connect your AI provider anytime in Settings &rarr; AI Keys
+        </p>
       </div>
     </div>
   )

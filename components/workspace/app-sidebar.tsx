@@ -47,7 +47,7 @@ const NAV: NavSection[] = [
     section: 'Work',
     items: [
       { id: 'dashboard', label: 'Dashboard', Icon: Home, href: () => '/dashboard' },
-      { id: 'workflow', label: 'Workflow', Icon: WorkflowIcon, href: (id) => `/workspace/${id}` },
+      { id: 'workflow', label: 'Content', Icon: WorkflowIcon, href: (id) => `/workspace/${id}` },
       { id: 'library', label: 'Library', Icon: Folder, href: () => '/library' },
       { id: 'agent', label: 'AI Agent', Icon: Bot, href: (id) => `/workspace/${id}/agent` },
       { id: 'creators', label: 'Creators', Icon: Compass, href: (id) => `/workspace/${id}/research` },
@@ -271,7 +271,7 @@ export function AppSidebar({
 
 /**
  * Active state matches the *concept* the user is in, not just the URL.
- * Workflow covers every step + pipeline + schedule. Library is the
+ * Content covers every step + pipeline + schedule. Library is the
  * pipeline content list. Creators is research. Settings catches every
  * /settings/* sub-route except the ones promoted to top-level.
  */

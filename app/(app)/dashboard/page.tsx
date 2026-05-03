@@ -438,17 +438,15 @@ function EmptyDashboardHero({ workspaceId }: { workspaceId: string }) {
               fontWeight: 400,
             }}
           >
-            Let&rsquo;s make your first
-            <br />
-            month of posts.
+            Welcome to Clipflow
           </h2>
           <p
             className="m-0 max-w-[52ch] text-[14px]"
             style={{ color: PALETTE.inkSoft, lineHeight: 1.55 }}
           >
-            One recording becomes hooks, captions, carousels and clips on every
-            channel — usually in under four minutes. BYOK for AI, so you pay your
-            providers at cost.
+            One video becomes hooks, captions, carousels and clips for every
+            channel — usually in under four minutes. Bring your own AI keys,
+            so you pay providers at cost.
           </p>
         </div>
 
@@ -500,16 +498,16 @@ function EmptyDashboardHero({ workspaceId }: { workspaceId: string }) {
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href={`/workspace/${workspaceId}/content/new`}
-            className="inline-flex h-11 items-center gap-2 rounded-full px-5 text-[13px] font-bold transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_10px_22px_-6px_rgba(15,15,15,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            className="inline-flex h-12 items-center gap-2.5 rounded-full px-6 text-[14px] font-bold transition-all duration-200 hover:scale-[1.02] hover:shadow-[0_10px_22px_-6px_rgba(15,15,15,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F0F0F] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
             style={{
               background: PALETTE.ink,
-              color: PALETTE.yellow,
+              color: '#FFFFFF',
               boxShadow:
                 'inset 0 1px 0 rgba(255,255,255,0.14), 0 8px 18px -6px rgba(15,15,15,0.45)',
             }}
           >
             <Upload className="h-4 w-4" />
-            Import your first recording
+            Import your first video
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link

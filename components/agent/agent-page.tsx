@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   Bot,
   Clock,
@@ -51,10 +52,11 @@ export function AgentPage({
   recentRuns: _recentRuns,
   hasRunningRun,
 }: AgentPageProps) {
+  const searchParams = useSearchParams()
   const [conversations, setConversations] = useState(initialConversations)
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [pendingMessage, setPendingMessage] = useState('')
+  const [pendingMessage, setPendingMessage] = useState(searchParams.get('prefill') ?? '')
   const [sending, setSending] = useState(false)
   const [loadingHistory, setLoadingHistory] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -70,6 +72,12 @@ export function AgentPage({
       behavior: 'smooth',
     })
   }, [messages])
+
+  useEffect(() => {
+    if (searchParams.get('prefill')) {
+      setTimeout(() => inputRef.current?.focus(), 150)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     return () => { abortRef.current?.abort() }

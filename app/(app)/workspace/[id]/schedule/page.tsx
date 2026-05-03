@@ -74,6 +74,11 @@ export default async function SchedulePage({ params, searchParams }: SchedulePag
   const user = await getUser()
   if (!user) redirect('/login')
 
+  // Default to calendar view when no view param is specified
+  if (!searchParams.view) {
+    redirect(`/workspace/${params.id}/schedule?view=calendar`)
+  }
+
   const isCalendarView = searchParams.view === 'calendar'
   const isPlanView = searchParams.view === 'plan'
 

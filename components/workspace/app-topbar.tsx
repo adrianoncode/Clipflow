@@ -57,13 +57,13 @@ export function AppTopbar({
     if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname]!
     if (pathname.startsWith('/workspace/')) {
       const rest = pathname.split('/').slice(3).join('/')
-      if (!rest) return 'Workflow'
-      if (rest.startsWith('content')) return 'Workflow · Content'
+      if (!rest) return 'Content'
+      if (rest.startsWith('content')) return 'Content'
       if (rest.startsWith('pipeline')) return 'Library'
       if (rest.startsWith('schedule') || rest.startsWith('calendar')) return 'Schedule'
       if (rest.startsWith('research')) return 'Creators'
       if (rest.startsWith('members')) return 'Members'
-      return 'Workflow'
+      return 'Content'
     }
     return ''
   }, [pathname])

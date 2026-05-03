@@ -1,6 +1,7 @@
 'use client'
 
 import { Bot } from 'lucide-react'
+import { useParams } from 'next/navigation'
 
 export interface AgentSuggestion {
   label: string
@@ -12,6 +13,8 @@ interface AgentSuggestionPillsProps {
 }
 
 export function AgentSuggestionPills({ suggestions }: AgentSuggestionPillsProps) {
+  const params = useParams<{ id: string }>()
+
   if (suggestions.length === 0) return null
 
   return (
@@ -36,6 +39,14 @@ export function AgentSuggestionPills({ suggestions }: AgentSuggestionPillsProps)
           {s.label}
         </button>
       ))}
+      {params.id && (
+        <a
+          href={`/workspace/${params.id}/agent?prefill=${encodeURIComponent(suggestions[0]?.message ?? '')}`}
+          className="text-[11px] font-medium text-[#0F0F0F]/40 transition hover:text-[#0F0F0F]/70"
+        >
+          Open in Agent
+        </a>
+      )}
     </div>
   )
 }

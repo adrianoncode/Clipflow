@@ -143,16 +143,15 @@ export function OnboardingServicePicker({
         <p className="text-xs text-muted-foreground">
           {hasAnyLlm
             ? `${connected.size} of ${SERVICE_DIRECTORY.length} services connected`
-            : 'Connect at least one AI provider to continue'}
+            : 'No AI provider connected yet — you can still continue'}
         </p>
         <Link
           href="/onboarding/complete"
           className={
             hasAnyLlm
               ? 'cf-btn-3d cf-btn-3d-primary inline-flex h-10 items-center gap-2 rounded-lg px-5 text-sm'
-              : 'pointer-events-none inline-flex h-10 items-center gap-2 rounded-lg bg-muted px-5 text-sm font-medium text-muted-foreground'
+              : 'inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-card px-5 text-sm font-medium text-foreground transition-colors hover:bg-muted'
           }
-          aria-disabled={!hasAnyLlm}
         >
           Continue
           <ArrowRight className="h-4 w-4" />

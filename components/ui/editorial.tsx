@@ -13,7 +13,7 @@
  *   <Reveal> ……… fade+slide-up on mount, optional stagger by index
  *
  * They lift the inline patterns from the original Dashboard implementation
- * (which got reused via copy-paste across Library, Workflow, Schedule) into
+ * (which got reused via copy-paste across Library, Content, Schedule) into
  * one place — same look, less duplication, easier to evolve.
  */
 
@@ -163,7 +163,13 @@ export function Hero({
         <div className="flex flex-wrap items-end gap-7 sm:gap-10">
           {kpis.map((k, i) =>
             animated ? (
-              <KpiCountUp key={`${k.label}-${i}`} {...k} />
+              <KpiCountUp
+                key={`${k.label}-${i}`}
+                iconNode={<k.Icon className="h-3.5 w-3.5" style={{ color: '#0F0F0F' }} />}
+                value={k.value}
+                label={k.label}
+                delta={k.delta}
+              />
             ) : (
               <Kpi key={`${k.label}-${i}`} {...k} />
             ),

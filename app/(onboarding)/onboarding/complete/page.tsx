@@ -222,14 +222,26 @@ export default async function OnboardingCompletePage() {
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
         )}
-        <p>
-          <Link
-            href="/dashboard"
-            className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-          >
-            or explore the dashboard first →
-          </Link>
-        </p>
+        {currentWorkspace && (
+          <p>
+            <Link
+              href={`/workspace/${currentWorkspace.id}/agent`}
+              className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              or tell the AI Agent what to do →
+            </Link>
+          </p>
+        )}
+        {!currentWorkspace && (
+          <p>
+            <Link
+              href="/dashboard"
+              className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              or explore the dashboard first →
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   )

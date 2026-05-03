@@ -543,7 +543,7 @@ function EmptyState({ hasItems }: { hasItems: boolean }) {
       <p className="mt-2 text-[13px]" style={{ color: '#2A2A2A' }}>
         {hasItems
           ? 'Adjust the filter or search.'
-          : 'Import a recording in Workflow to populate the library.'}
+          : 'Import a recording in Content to populate the library.'}
       </p>
     </div>
   )

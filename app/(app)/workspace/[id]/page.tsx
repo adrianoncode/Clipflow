@@ -150,7 +150,7 @@ export default async function WorkspaceHomePage({ params, searchParams }: Worksp
         </div>
       )}
 
-      {/* ── Workflow shortcuts — show when user has ready content ── */}
+      {/* ── Content shortcuts — show when user has ready content ── */}
       {readyCount > 0 && (
         <div className="grid gap-3 sm:grid-cols-2">
           {firstReady && (
