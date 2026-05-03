@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { resumeRun } from '@/lib/agent/resume'
+import { runAutopilotSweep } from '@/lib/agent/autopilot'
 import { findStuckWaitingRuns, transitionStatus } from '@/lib/agent/state'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { verifyCronSecret } from '@/lib/security/verify-cron-secret'
@@ -18,10 +19,9 @@ import { log } from '@/lib/log'
  *   2. Picks up `queued` chat runs (set by webhook wake-ups but never
  *      processed inline) and resumes them.
  *
- * Cron is the FALLBACK — webhooks are the primary resume path. If
- * Phase 2.5 telemetry shows webhooks consistently miss, we'll
- * either tighten webhook reliability or switch to a queue (Inngest)
- * before Phase 3.
+ *   3. Runs the autopilot sweep: for each workspace with at least one
+ *      auto_* toggle ON, finds pending work (untranscribed content,
+ *      content without highlights, etc.) and kicks autopilot runs.
  *
  * Auth: standard `CRON_SECRET` via Authorization Bearer or
  * `?secret=` query param.
@@ -81,11 +81,20 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // ── Step 3: autopilot sweep ──────────────────────────────────────
+  let autopilot: Awaited<ReturnType<typeof runAutopilotSweep>> | null = null
+  try {
+    autopilot = await runAutopilotSweep()
+  } catch (err) {
+    log.error('agent-tick autopilot sweep crashed', err instanceof Error ? err : new Error(String(err)))
+  }
+
   return NextResponse.json({
     ok: true,
     timedOut,
     resumed,
     failed,
     queuedFound: (queued ?? []).length,
+    autopilot,
   })
 }
