@@ -2,9 +2,10 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Bell, Menu, Search } from 'lucide-react'
+import { Bell, Menu } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 
+import { GlobalSearch } from '@/components/workspace/global-search'
 import { useMobileNav } from '@/components/workspace/mobile-nav-context'
 import { WorkspaceSwitcher } from '@/components/workspace/workspace-switcher'
 import type { WorkspaceSummary } from '@/lib/auth/get-workspaces'
@@ -144,39 +145,7 @@ export function AppTopbar({
 
       {/* ── Right: search + bell + avatar ───────────────────────────── */}
       <div className="flex items-center gap-2.5">
-        <div
-          className="hidden h-8 items-center gap-2 rounded-full border px-3 transition-shadow focus-within:ring-2 focus-within:ring-[#0F0F0F] focus-within:ring-offset-2 sm:flex"
-          style={{
-            borderColor: 'rgba(15,15,15,0.14)',
-            background: 'rgba(255, 253, 248, 0.85)',
-          }}
-        >
-          <Search className="h-3 w-3" aria-hidden style={{ color: '#7A7468' }} />
-          <label htmlFor="topbar-search" className="sr-only">
-            Search
-          </label>
-          <input
-            id="topbar-search"
-            data-global-search
-            type="search"
-            name="q"
-            placeholder="Search anything"
-            className="w-[200px] border-0 bg-transparent text-[12px] outline-none placeholder:text-[#7A7468]"
-            style={{ color: '#0F0F0F' }}
-          />
-          <kbd
-            aria-hidden="true"
-            className="rounded border px-1.5 py-px text-[10px]"
-            style={{
-              borderColor: 'rgba(15,15,15,0.14)',
-              fontFamily: 'var(--font-jetbrains-mono), monospace',
-              color: '#7A7468',
-              background: '#FAF7F2',
-            }}
-          >
-            ⌘K
-          </kbd>
-        </div>
+        <GlobalSearch workspaceId={currentWorkspaceId} />
 
         <NotificationBell />
 
