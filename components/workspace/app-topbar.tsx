@@ -36,6 +36,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/settings/audit-log': 'Audit Log',
   '/settings/referrals': 'Referrals',
   '/settings/extension': 'Extension',
+  '/settings/agent': 'Auto-pilot',
 }
 
 export function AppTopbar({
@@ -62,6 +63,7 @@ export function AppTopbar({
       if (rest.startsWith('pipeline')) return 'Library'
       if (rest.startsWith('schedule') || rest.startsWith('calendar')) return 'Schedule'
       if (rest.startsWith('research')) return 'Creators'
+      if (rest.startsWith('agent')) return 'AI Agent'
       if (rest.startsWith('members')) return 'Members'
       return 'Content'
     }

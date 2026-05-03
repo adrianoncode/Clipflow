@@ -35,6 +35,8 @@ type NavItem = {
   label: string
   Icon: React.ComponentType<{ className?: string }>
   href: (workspaceId: string) => string
+  /** Hide this item until the workspace has content. */
+  needsContent?: boolean
 }
 
 type NavSection = {
@@ -48,17 +50,17 @@ const NAV: NavSection[] = [
     items: [
       { id: 'dashboard', label: 'Dashboard', Icon: Home, href: () => '/dashboard' },
       { id: 'workflow', label: 'Content', Icon: WorkflowIcon, href: (id) => `/workspace/${id}` },
-      { id: 'library', label: 'Library', Icon: Folder, href: () => '/library' },
+      { id: 'library', label: 'Library', Icon: Folder, href: () => '/library', needsContent: true },
       { id: 'agent', label: 'AI Agent', Icon: Bot, href: (id) => `/workspace/${id}/agent` },
-      { id: 'creators', label: 'Creators', Icon: Compass, href: (id) => `/workspace/${id}/research` },
+      { id: 'creators', label: 'Creators', Icon: Compass, href: (id) => `/workspace/${id}/research`, needsContent: true },
     ],
   },
   {
     section: 'Setup',
     items: [
-      { id: 'brand', label: 'Brand Kit', Icon: Palette, href: () => '/settings/brand-kit' },
+      { id: 'brand', label: 'Brand Kit', Icon: Palette, href: () => '/settings/brand-kit', needsContent: true },
       { id: 'aikeys', label: 'AI Keys', Icon: KeyRound, href: () => '/settings/ai-keys' },
-      { id: 'channels', label: 'Channels', Icon: Globe, href: () => '/settings/channels' },
+      { id: 'channels', label: 'Channels', Icon: Globe, href: () => '/settings/channels', needsContent: true },
       { id: 'settings', label: 'Settings', Icon: SettingsIcon, href: () => '/settings' },
     ],
   },
@@ -67,9 +69,13 @@ const NAV: NavSection[] = [
 export function AppSidebar({
   currentWorkspaceId,
   trialDaysLeft,
+  hasContent = true,
+  hasAiKeys = true,
 }: {
   currentWorkspaceId: string
   trialDaysLeft?: number | null
+  hasContent?: boolean
+  hasAiKeys?: boolean
 }) {
   const pathname = usePathname()
   const { open, setOpen } = useMobileNav()
@@ -170,7 +176,14 @@ export function AppSidebar({
 
       {/* ── Sections ───────────────────────────────────────────────── */}
       {NAV.map((section, sIdx) => {
-        const offset = NAV.slice(0, sIdx).reduce((a, b) => a + b.items.length, 0)
+        const visibleItems = section.items.filter(
+          (item) => !item.needsContent || hasContent,
+        )
+        if (visibleItems.length === 0) return null
+        const prevVisible = NAV.slice(0, sIdx).reduce(
+          (a, b) => a + b.items.filter((it) => !it.needsContent || hasContent).length,
+          0,
+        )
         return (
           <div key={section.section} className="flex flex-col gap-0.5">
             <span
@@ -183,9 +196,9 @@ export function AppSidebar({
             >
               {section.section}
             </span>
-            {section.items.map((item, i) => {
+            {visibleItems.map((item, i) => {
               const href = item.href(currentWorkspaceId)
-              const idx = offset + i + 1
+              const idx = prevVisible + i + 1
               const active = isItemActive(pathname, item.id, currentWorkspaceId)
               return (
                 <Link

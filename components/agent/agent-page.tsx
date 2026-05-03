@@ -397,11 +397,11 @@ export function AgentPage({
             )}
 
             {pendingWork.length === 0 && (
-              <div className="rounded-xl border border-dashed border-[#0F0F0F]/15 bg-[#FAFAF7] px-4 py-6 text-center">
+              <div className="rounded-xl border border-dashed border-[#0F0F0F]/15 bg-[#FAFAF7] px-4 py-5 text-center">
                 <Sparkles className="mx-auto mb-2 h-5 w-5 text-[#FFD33D]" />
                 <p className="text-sm font-medium text-[#0F0F0F]/80">All caught up</p>
                 <p className="mt-0.5 text-xs text-[#0F0F0F]/45">
-                  No pending pipeline work. Start a chat or import new content.
+                  Pipeline is clear. Type below to start a new task.
                 </p>
               </div>
             )}
@@ -422,9 +422,30 @@ export function AgentPage({
               <p className="text-sm font-medium text-[#0F0F0F]/60">
                 Tell Clipflow what to do
               </p>
-              <p className="mt-1 max-w-sm text-center text-xs text-[#0F0F0F]/40">
-                Try: &quot;find highlights in my latest content&quot;, &quot;generate drafts for everything with highlights&quot;, or paste a YouTube URL.
+              <p className="mb-4 mt-1 max-w-sm text-center text-xs text-[#0F0F0F]/40">
+                Start a conversation or pick a suggestion below.
               </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {[
+                  { label: 'Find highlights', message: 'Find the best highlights in my latest content' },
+                  { label: 'Draft LinkedIn posts', message: 'Generate 3 LinkedIn posts from my latest content' },
+                  { label: 'Repurpose a YouTube video', message: 'Import and process this YouTube video: ' },
+                  { label: 'Schedule my drafts', message: 'Schedule all approved drafts for this week with optimal timing' },
+                  { label: 'What can you do?', message: 'What tasks can you help me with?' },
+                ].map((s) => (
+                  <button
+                    key={s.label}
+                    type="button"
+                    onClick={() => {
+                      setPendingMessage(s.message)
+                      setTimeout(() => inputRef.current?.focus(), 50)
+                    }}
+                    className="rounded-full border border-[#0F0F0F]/12 bg-white px-3.5 py-2 text-[12px] font-medium text-[#0F0F0F]/70 shadow-sm transition hover:border-[#0F0F0F]/25 hover:bg-[#0F0F0F]/5 hover:text-[#0F0F0F]"
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 

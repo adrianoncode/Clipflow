@@ -396,7 +396,10 @@ export function AgentChatWidget({ workspaceId }: AgentChatWidgetProps) {
             className="flex-1 space-y-3 overflow-y-auto bg-[#FAFAF7] px-4 py-3"
           >
             {messages.length === 0 ? (
-              <EmptyState />
+              <EmptyState onSuggestion={(msg) => {
+                setPendingMessage(msg)
+                setTimeout(() => inputRef.current?.focus(), 50)
+              }} />
             ) : (
               messages.map((m) => <MessageBubble key={m.id} message={m} />)
             )}
@@ -489,16 +492,31 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   )
 }
 
-function EmptyState() {
+const WIDGET_SUGGESTIONS = [
+  { label: 'Find highlights', message: 'Find the best highlights in my latest content' },
+  { label: 'Draft LinkedIn posts', message: 'Generate 3 LinkedIn posts from my latest content' },
+  { label: 'Process a YouTube video', message: 'Import and process this YouTube video: ' },
+  { label: 'What can you do?', message: 'What tasks can you help me with?' },
+]
+
+function EmptyState({ onSuggestion }: { onSuggestion: (msg: string) => void }) {
   return (
-    <div className="rounded-xl border border-dashed border-[#0F0F0F]/20 bg-white/60 px-4 py-6 text-center">
+    <div className="rounded-xl border border-dashed border-[#0F0F0F]/20 bg-white/60 px-4 py-5 text-center">
       <MessageCircle className="mx-auto mb-2 h-5 w-5 text-[#0F0F0F]/40" aria-hidden />
-      <div className="mb-1 text-sm font-medium text-[#0F0F0F]">
+      <div className="mb-3 text-sm font-medium text-[#0F0F0F]">
         Tell Clipflow what to do.
       </div>
-      <div className="text-xs text-[#0F0F0F]/55">
-        Try: <span className="font-mono">find highlights in my latest content</span>,{' '}
-        or paste a YouTube URL.
+      <div className="flex flex-wrap justify-center gap-1.5">
+        {WIDGET_SUGGESTIONS.map((s) => (
+          <button
+            key={s.label}
+            type="button"
+            onClick={() => onSuggestion(s.message)}
+            className="rounded-full border border-[#0F0F0F]/12 bg-white px-3 py-1.5 text-[11px] font-medium text-[#0F0F0F]/70 transition hover:border-[#0F0F0F]/25 hover:bg-[#0F0F0F]/5 hover:text-[#0F0F0F]"
+          >
+            {s.label}
+          </button>
+        ))}
       </div>
     </div>
   )

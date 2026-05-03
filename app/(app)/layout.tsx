@@ -27,6 +27,8 @@ import { MobileNavProvider } from '@/components/workspace/mobile-nav-context'
 import { getProfile } from '@/lib/auth/get-profile'
 import { getWorkspaces } from '@/lib/auth/get-workspaces'
 import { getSubscription } from '@/lib/billing/get-subscription'
+import { getLatestContentId } from '@/lib/content/get-content-items'
+import { getAiKeys } from '@/lib/ai/get-ai-keys'
 
 const CURRENT_WORKSPACE_COOKIE = 'clipflow.current_workspace'
 
@@ -60,11 +62,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const currentWorkspace =
     workspaces.find((w) => w.id === cookieWorkspaceId) ?? personal
 
-  // Show the trial card in the sidebar only while the subscription is in
-  // a `trialing` state. `current_period_end` is the trial end-date during
-  // that window. Outside of trial we leave the slot empty rather than
-  // showing a synthetic "0 days" footer.
-  const subscription = await getSubscription(currentWorkspace.id)
+  // Parallel fetch: subscription (trial card), content existence
+  // (progressive sidebar), and AI key status. All cached, cheap.
+  const [subscription, latestContentId, aiKeys] = await Promise.all([
+    getSubscription(currentWorkspace.id),
+    getLatestContentId(currentWorkspace.id),
+    getAiKeys(currentWorkspace.id),
+  ])
+
+  const hasContent = latestContentId !== null
+  const hasAiKeys = aiKeys.length > 0
+
   let trialDaysLeft: number | null = null
   if (subscription.status === 'trialing' && subscription.current_period_end) {
     const ms = new Date(subscription.current_period_end).getTime() - Date.now()
@@ -89,6 +97,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <AppSidebar
             currentWorkspaceId={currentWorkspace.id}
             trialDaysLeft={trialDaysLeft}
+            hasContent={hasContent}
+            hasAiKeys={hasAiKeys}
           />
 
           <div className="flex min-w-0 flex-1 flex-col">
