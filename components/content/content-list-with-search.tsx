@@ -200,9 +200,9 @@ export function ContentListWithSearch({
     return (
       <EmptyState
         icon={Upload}
-        title="Your library starts with a recording."
-        description="Paste a YouTube link, upload an MP4, or drop in raw text. About a minute later it lands here as a row with a status pill, ready to slice into drafts."
-        actionLabel="Import your first recording"
+        title="Your content starts here."
+        description="Paste a YouTube link, upload a video, or drop in raw text. Clipflow transcribes it and generates platform-ready drafts in under a minute."
+        actionLabel="Import your first video"
         actionHref={`/workspace/${workspaceId}/content/new`}
         secondaryLabel="See the playbook →"
         secondaryHref="/playbook/your-first-24-hours-with-clipflow"

@@ -32,8 +32,8 @@ export function ContentList({ items, workspaceId }: ContentListProps) {
       <EmptyState
         icon={Upload}
         title="No content yet"
-        description="Paste a YouTube link, upload a video, or drop in a script. Clipflow transcribes it and spins out platform-ready drafts in about 30 seconds."
-        actionLabel="+ Import a video"
+        description="Paste a YouTube link, upload a video, or drop in raw text. Clipflow transcribes it and generates platform-ready drafts in under a minute."
+        actionLabel="Import a video"
         actionHref={`/workspace/${workspaceId}/content/new`}
       />
     )

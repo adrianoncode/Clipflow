@@ -272,7 +272,7 @@ export function LibraryClient({
 
       {/* ── Items: grid or list ─────────────────────────────────────── */}
       {filtered.length === 0 ? (
-        <EmptyState hasItems={items.length > 0} />
+        <EmptyState hasItems={items.length > 0} workspaceId={workspaceId} />
       ) : view === 'grid' ? (
         <div
           // The key forces a remount when filter/search/view changes,
@@ -520,7 +520,7 @@ function ItemList({
   )
 }
 
-function EmptyState({ hasItems }: { hasItems: boolean }) {
+function EmptyState({ hasItems, workspaceId }: { hasItems: boolean; workspaceId: string }) {
   return (
     <div
       className="grid place-items-center rounded-[24px] px-6 py-14 text-center"
@@ -538,13 +538,22 @@ function EmptyState({ hasItems }: { hasItems: boolean }) {
           color: '#0F0F0F',
         }}
       >
-        {hasItems ? 'No matches.' : 'Nothing here yet.'}
+        {hasItems ? 'No matches.' : 'Your generated posts live here.'}
       </p>
-      <p className="mt-2 text-[13px]" style={{ color: '#2A2A2A' }}>
+      <p className="mt-2 max-w-[44ch] text-[13px]" style={{ color: '#2A2A2A' }}>
         {hasItems
           ? 'Adjust the filter or search.'
-          : 'Import a recording in Content to populate the library.'}
+          : 'Import a video, generate drafts, and every platform-ready post appears in this library.'}
       </p>
+      {!hasItems && (
+        <a
+          href={`/workspace/${workspaceId}/content/new`}
+          className="mt-4 inline-flex h-9 items-center gap-2 rounded-full px-4 text-[13px] font-semibold text-white transition hover:scale-[1.02]"
+          style={{ background: '#0F0F0F' }}
+        >
+          Import a video
+        </a>
+      )}
     </div>
   )
 }
