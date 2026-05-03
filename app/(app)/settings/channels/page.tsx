@@ -14,7 +14,6 @@ import {
   FacebookLogo,
   InstagramLogo,
   LinkedInLogo,
-  PinterestLogo,
   ThreadsLogo,
   TikTokLogo,
   UploadPostLogo,
@@ -74,14 +73,6 @@ const DIRECT_CHANNELS: ChannelDef[] = [
     tileBg: 'bg-[#1877F2]',
     Logo: FacebookLogo,
     note: 'Push clips and link posts to a Facebook Page you manage.',
-  },
-  {
-    id: 'pinterest',
-    name: 'Pinterest',
-    provider: 'composio',
-    tileBg: 'bg-[#E60023]',
-    Logo: PinterestLogo,
-    note: 'Pin vertical clips to a board — auto-resized to 2:3 from the same source.',
   },
 ]
 
@@ -157,10 +148,9 @@ export default async function ChannelsPage({
   const hasUploadPost = publishServices.some((s) => connectedProviderSet.has(s.provider))
 
   // Total connection count for the hero status pill — includes every
-  // direct OAuth channel (LinkedIn, YouTube, Instagram, Facebook,
-  // Pinterest), Upload-Post if connected, and the X bring-your-own-keys
-  // connection. Reads as "X of N wired" — N grows when a new direct
-  // channel is added.
+  // direct OAuth channel (LinkedIn, YouTube, Instagram, Facebook),
+  // Upload-Post if connected, and the X bring-your-own-keys connection.
+  // Reads as "X of N wired" — N grows when a new direct channel is added.
   const totalChannels = DIRECT_CHANNELS.length + 1 /* Upload-Post */ + 1 /* X */
   const connectedCount =
     connectedChannelIds.size + (hasUploadPost ? 1 : 0) + (xConnection ? 1 : 0)

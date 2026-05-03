@@ -7,7 +7,8 @@ import {
   type VersionSource,
 } from '@/lib/outputs/record-version'
 import { createClient } from '@/lib/supabase/server'
-import type { Json, OutputPlatform } from '@/lib/supabase/types'
+import type { Json } from '@/lib/supabase/types'
+import type { OutputPlatform } from '@/lib/platforms'
 import { log } from '@/lib/log'
 
 export interface InsertOutputInput {

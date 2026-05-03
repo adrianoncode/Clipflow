@@ -12,7 +12,8 @@ import { getNicheInstruction } from '@/lib/niche/presets'
 import { getWorkspaceTemplates, type OutputTemplate } from '@/lib/templates/get-templates'
 import { insertOutputWithDraftState } from '@/lib/outputs/insert-output'
 import { renderOutputMarkdown } from '@/lib/outputs/render-markdown'
-import type { ContentKind, OutputPlatform } from '@/lib/supabase/types'
+import type { ContentKind } from '@/lib/supabase/types'
+import type { OutputPlatform } from '@/lib/platforms'
 
 export interface RunOnePlatformInput {
   platform: OutputPlatform

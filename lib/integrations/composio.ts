@@ -36,11 +36,9 @@ export const COMPOSIO_APP_SLUGS: Record<string, string> = {
   youtube:          'youtube',
   instagram:        'instagram',
   facebook:         'facebook',
-  pinterest:        'pinterest',
-  // Note: X (Twitter) deliberately excluded — Composio has no managed
-  // OAuth credentials for it because X's API is BYO ($100/mo Basic).
-  // Add custom-auth support if/when a user wants to bring their own
-  // X Dev app.
+  // X (Twitter) intentionally excluded — Composio has no managed OAuth
+  // credentials for it. Adding it requires bringing our own X Dev App
+  // ($100/mo Basic) and using `type: 'use_custom_auth'` here.
 }
 
 export function isComposioOAuth(integrationId: string): boolean {
@@ -66,7 +64,15 @@ async function getAuthConfigId(toolkit: string): Promise<string> {
   // Shape notes: Composio v3 responses sometimes wrap arrays under
   // `items`, sometimes `data` — both are tolerated via dual-read. The
   // `unknown` cast narrows one field at a time without `any` leaking.
-  type LooseList = { items?: Array<{ id?: string }>; data?: Array<{ id?: string }> }
+  //
+  // BUG FIX (2026-05-03): Composio's `authConfigs.list({ toolkit })`
+  // server-side filter is broken — it returns *all* auth configs across
+  // every toolkit. The previous code took `items[0]` blindly and cached
+  // it as the toolkit's auth config, so e.g. requesting `pinterest`
+  // would cache Facebook's config and redirect users into Facebook
+  // OAuth. Filter client-side by `toolkit.slug` to be safe.
+  type LooseListItem = { id?: string; toolkit?: { slug?: string } }
+  type LooseList = { items?: LooseListItem[]; data?: LooseListItem[] }
   type LooseCreate = { id?: string; authConfig?: { id?: string } }
 
   // Try listing first — we might already have one from a prior session.
@@ -75,7 +81,8 @@ async function getAuthConfigId(toolkit: string): Promise<string> {
     const items = existing?.items ?? existing?.data ?? []
     for (const item of items) {
       const id = item?.id
-      if (typeof id === 'string' && id.length > 0) {
+      const slug = item?.toolkit?.slug
+      if (typeof id === 'string' && id.length > 0 && slug === toolkit) {
         _authConfigCache.set(toolkit, id)
         return id
       }

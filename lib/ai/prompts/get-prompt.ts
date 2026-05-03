@@ -1,10 +1,9 @@
 import { buildInstagramReelsPrompt } from '@/lib/ai/prompts/instagram-reels'
 import { buildLinkedInPrompt } from '@/lib/ai/prompts/linkedin'
-import { buildPinterestPrompt } from '@/lib/ai/prompts/pinterest'
 import { buildTikTokPrompt } from '@/lib/ai/prompts/tiktok'
 import type { PromptBuilder } from '@/lib/ai/prompts/types'
 import { buildYouTubeShortsPrompt } from '@/lib/ai/prompts/youtube-shorts'
-import type { OutputPlatform } from '@/lib/supabase/types'
+import type { OutputPlatform } from '@/lib/platforms'
 
 /**
  * Returns the prompt builder for a given output platform. Single choke
@@ -21,7 +20,5 @@ export function getPromptBuilder(platform: OutputPlatform): PromptBuilder {
       return buildYouTubeShortsPrompt
     case 'linkedin':
       return buildLinkedInPrompt
-    case 'pinterest':
-      return buildPinterestPrompt
   }
 }

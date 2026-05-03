@@ -66,23 +66,11 @@ const LINKEDIN: BestTimeSlot[] = [
   { dayOfWeek: 4, hour: 12, minute: 0, rationale: 'Thursday lunch' },
 ]
 
-const PINTEREST: BestTimeSlot[] = [
-  // Pinterest is bimodal — early morning saves and late-evening
-  // discovery. Saturday is also a top day historically.
-  { dayOfWeek: 6, hour: 20, minute: 0, rationale: 'Saturday evening — strongest Pinterest day' },
-  { dayOfWeek: 0, hour: 20, minute: 0, rationale: 'Sunday evening — discovery peak' },
-  { dayOfWeek: 5, hour: 20, minute: 0, rationale: 'Friday evening' },
-  { dayOfWeek: 1, hour: 8, minute: 0, rationale: 'Monday morning — weekly planner saves' },
-  { dayOfWeek: 3, hour: 21, minute: 0, rationale: 'Wednesday late — bookmark-for-later' },
-  { dayOfWeek: 4, hour: 21, minute: 0, rationale: 'Thursday late' },
-]
-
 export const BEST_TIMES_BY_PLATFORM: Record<OutputPlatform, BestTimeSlot[]> = {
   tiktok: TIKTOK,
   instagram_reels: INSTAGRAM_REELS,
   youtube_shorts: YOUTUBE_SHORTS,
   linkedin: LINKEDIN,
-  pinterest: PINTEREST,
 }
 
 /**
@@ -96,5 +84,4 @@ export const DEFAULT_CADENCE_PER_WEEK: Record<OutputPlatform, number> = {
   instagram_reels: 3,
   youtube_shorts: 3,
   linkedin: 3,
-  pinterest: 5,
 }

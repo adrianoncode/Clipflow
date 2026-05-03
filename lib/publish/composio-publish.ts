@@ -21,7 +21,6 @@ export type ComposioPublishPlatform =
   | 'youtube'
   | 'instagram'
   | 'facebook'
-  | 'pinterest'
 
 export interface PublishContent {
   /** Public video URL (required for IG/YT/Reels, optional elsewhere) */
@@ -32,12 +31,6 @@ export interface PublishContent {
   title?: string
   /** Hashtags without the # prefix */
   tags?: string[]
-  /**
-   * Pinterest only — board the pin lands on. The user picks this in
-   * the schedule UI; we store the board id (not the name) so the API
-   * call is unambiguous.
-   */
-  pinterestBoardId?: string
 }
 
 export type PublishOneResult =
@@ -49,10 +42,6 @@ const ACTIONS = {
   youtube: 'YOUTUBE_UPLOAD_VIDEO',
   instagram: 'INSTAGRAM_MEDIA_PUBLISH',
   facebook: 'FACEBOOK_CREATE_PAGE_FEED_POST',
-  // Pinterest's create-pin action — the catalog name as of 2026-04.
-  // If Composio renames it, run `pnpm dlx tsx scripts/composio-actions.ts pinterest`
-  // to get the live action list.
-  pinterest: 'PINTEREST_CREATE_PIN',
 } as const satisfies Record<ComposioPublishPlatform, string>
 
 export async function publishViaComposio(
@@ -114,77 +103,7 @@ function buildParams(
         message: caption,
         ...(content.videoUrl ? { link: content.videoUrl } : {}),
       }
-    case 'pinterest':
-      if (!content.videoUrl) throw new Error('Pinterest publish needs videoUrl')
-      if (!content.pinterestBoardId) {
-        throw new Error('Pinterest publish needs pinterestBoardId — board picker not chosen')
-      }
-      return {
-        // Pinterest treats title + description as separate fields. The
-        // 'title' field is what shows in the pin grid; 'description'
-        // is what shows when expanded and what the recommender reads.
-        title: title.slice(0, 100),
-        description: caption,
-        board_id: content.pinterestBoardId,
-        media_source: {
-          source_type: 'video_url',
-          url: content.videoUrl,
-        },
-      }
   }
-}
-
-/**
- * Pinterest-specific helper — fetch the list of boards the connected
- * account owns. Used by the UI to render a board picker before
- * scheduling a pin. Returns an empty list on failure rather than
- * throwing, so the picker can show "couldn't load boards" gracefully.
- */
-export interface PinterestBoard {
-  id: string
-  name: string
-  pinCount?: number
-  privacy?: 'public' | 'protected' | 'secret'
-}
-
-export async function listPinterestBoards(
-  workspaceId: string,
-): Promise<PinterestBoard[]> {
-  const result = await executeComposioAction(
-    workspaceId,
-    'PINTEREST_LIST_BOARDS',
-    { page_size: 100 },
-  )
-  if (!result.ok) {
-    log.error(
-      'composio-publish: list pinterest boards failed',
-      new Error(result.error),
-      { workspaceId },
-    )
-    return []
-  }
-  const data = result.data as Record<string, unknown> | null
-  if (!data) return []
-  // Pinterest's typical shape: { items: [{ id, name, pin_count, privacy }] }
-  const items = (data.items ?? data.boards ?? []) as Array<Record<string, unknown>>
-  return items
-    .map((b) => ({
-      id: String(b.id ?? ''),
-      name: String(b.name ?? 'Untitled board'),
-      pinCount:
-        typeof b.pin_count === 'number'
-          ? b.pin_count
-          : typeof b.pinCount === 'number'
-            ? b.pinCount
-            : undefined,
-      privacy:
-        b.privacy === 'public' ||
-        b.privacy === 'protected' ||
-        b.privacy === 'secret'
-          ? (b.privacy as 'public' | 'protected' | 'secret')
-          : undefined,
-    }))
-    .filter((b) => b.id.length > 0)
 }
 
 function extractPostId(

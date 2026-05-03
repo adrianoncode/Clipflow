@@ -8,7 +8,7 @@ import {
 import { FormMessage } from '@/components/ui/form-message'
 import { OutputCard } from '@/components/outputs/output-card'
 import type { OutputRow } from '@/lib/content/get-outputs'
-import type { OutputPlatform } from '@/lib/supabase/types'
+import type { OutputPlatform } from '@/lib/platforms'
 import { OUTPUT_PLATFORMS, PLATFORM_LONG_LABELS as PLATFORM_LABELS } from '@/lib/platforms'
 
 const PLATFORM_ORDER: readonly OutputPlatform[] = OUTPUT_PLATFORMS

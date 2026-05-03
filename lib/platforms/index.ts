@@ -24,20 +24,15 @@ export const OUTPUT_PLATFORMS = [
   'instagram_reels',
   'youtube_shorts',
   'linkedin',
-  'pinterest',
 ] as const
 export type OutputPlatform = (typeof OUTPUT_PLATFORMS)[number]
 
 // ─── Publish platforms (Upload-Post account targets) ────────────────────
-// Pinterest goes through Composio (direct OAuth) rather than the
-// Upload-Post bundle, so it intentionally lives only in OUTPUT_PLATFORMS
-// — Upload-Post doesn't proxy Pinterest at all.
 export const PUBLISH_PLATFORMS = [
   'tiktok',
   'instagram',
   'youtube',
   'linkedin',
-  'pinterest',
 ] as const
 export type PublishPlatform = (typeof PUBLISH_PLATFORMS)[number]
 
@@ -67,7 +62,6 @@ export const PLATFORM_LABELS: Record<string, string> = {
   youtube: 'YouTube',
   youtube_shorts: 'Shorts',
   linkedin: 'LinkedIn',
-  pinterest: 'Pinterest',
 }
 
 /**
@@ -81,7 +75,6 @@ export const PLATFORM_LONG_LABELS: Record<string, string> = {
   youtube: 'YouTube',
   youtube_shorts: 'YouTube Shorts',
   linkedin: 'LinkedIn',
-  pinterest: 'Pinterest',
 }
 
 // ─── Colors ─────────────────────────────────────────────────────────────
@@ -93,9 +86,6 @@ export const PLATFORM_SOLID_COLORS: Record<string, string> = {
   youtube: 'bg-red-500 text-white',
   youtube_shorts: 'bg-red-500 text-white',
   linkedin: 'bg-blue-600 text-white',
-  // Pinterest brand red — slightly darker than the YouTube red so the
-  // two platforms still read as distinct in the kanban / mini-preview.
-  pinterest: 'bg-[#E60023] text-white',
 }
 
 /** Soft background for chip-style badges on light surfaces. */
@@ -106,7 +96,6 @@ export const PLATFORM_SOFT_COLORS: Record<string, string> = {
   youtube: 'bg-red-100 text-red-700',
   youtube_shorts: 'bg-red-100 text-red-700',
   linkedin: 'bg-blue-100 text-blue-700',
-  pinterest: 'bg-[#FCE7EB] text-[#9B0019]',
 }
 
 /** Dot-only / bar-only brand color (no text color). */
@@ -117,7 +106,6 @@ export const PLATFORM_DOT_COLORS: Record<string, string> = {
   youtube: 'bg-red-500',
   youtube_shorts: 'bg-red-500',
   linkedin: 'bg-blue-500',
-  pinterest: 'bg-[#E60023]',
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────
@@ -143,21 +131,17 @@ export function outputToPublishPlatform(p: OutputPlatform): PublishPlatform {
       return 'youtube'
     case 'linkedin':
       return 'linkedin'
-    case 'pinterest':
-      return 'pinterest'
   }
 }
 
 /**
- * Pinterest is the only output platform whose canonical aspect is
- * 2:3 vertical (1000×1500 pin) — every other platform we currently
- * target is 9:16 short-form. Reframe + render presets read this map
- * to know which dimensions to output.
+ * Canonical aspect ratio per output platform — every platform we
+ * currently target is 9:16 short-form. Reframe + render presets read
+ * this map to know which dimensions to output.
  */
 export const PLATFORM_ASPECT: Record<string, '9:16' | '2:3' | '1:1' | '16:9'> = {
   tiktok: '9:16',
   instagram_reels: '9:16',
   youtube_shorts: '9:16',
   linkedin: '9:16',
-  pinterest: '2:3',
 }

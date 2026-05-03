@@ -1,5 +1,5 @@
 import type { PromptOutput } from '@/lib/ai/generate/types'
-import type { OutputPlatform } from '@/lib/supabase/types'
+import type { OutputPlatform } from '@/lib/platforms'
 
 /**
  * Renders the structured PromptOutput as the human-readable markdown

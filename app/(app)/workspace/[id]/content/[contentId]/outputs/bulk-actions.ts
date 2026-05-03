@@ -10,7 +10,7 @@ import { pickGenerationProvider } from '@/lib/ai/pick-generation-provider'
 import { DEFAULT_MODELS } from '@/lib/ai/generate/models'
 import { getContentItem } from '@/lib/content/get-content-item'
 import { runOnePlatform } from '@/lib/outputs/run-one-platform'
-import type { OutputPlatform } from '@/lib/supabase/types'
+import type { OutputPlatform } from '@/lib/platforms'
 import { log } from '@/lib/log'
 
 export type BulkActionState =

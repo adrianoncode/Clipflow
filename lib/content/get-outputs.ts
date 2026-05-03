@@ -2,7 +2,8 @@ import { cache } from 'react'
 
 import { createClient } from '@/lib/supabase/server'
 import { log } from '@/lib/log'
-import type { Json, OutputPlatform, OutputState } from '@/lib/supabase/types'
+import type { Json, OutputState } from '@/lib/supabase/types'
+import type { OutputPlatform } from '@/lib/platforms'
 
 export interface OutputRow {
   id: string

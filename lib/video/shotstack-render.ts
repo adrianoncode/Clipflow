@@ -187,9 +187,8 @@ export interface RenderInput {
   resolution?: 'sd' | 'hd' | '1080'
   /** Aspect ratio */
   /**
-   * Output aspect ratio. 2:3 maps to a 1000×1500 vertical pin (Pinterest's
-   * preferred dimensions); other values map to standard short-form
-   * resolutions below.
+   * Output aspect ratio. Defaults to 9:16 short-form. 2:3 (1000×1500
+   * vertical) is kept for legacy DB rows; other values are reserved.
    */
   aspectRatio?: '16:9' | '9:16' | '1:1' | '2:3'
   /** Caption visual style — defaults to tiktok-bold */
@@ -395,9 +394,9 @@ export async function submitRender(input: RenderInput): Promise<
     ? { src: input.audioUrl, effect: 'fadeOut' }
     : undefined
 
-  // Determine output size. Pinterest's optimal pin is 1000×1500
-  // (2:3); 9:16 short-form is 1080×1920; everything else falls back
-  // to 1:1 (1080×1080) or 16:9 landscape (1920×1080).
+  // Determine output size. 9:16 short-form is 1080×1920; 2:3 (legacy
+  // vertical pin) is 1000×1500; everything else falls back to 1:1
+  // (1080×1080) or 16:9 landscape (1920×1080).
   const outputSize = input.aspectRatio === '9:16'
     ? { width: 1080, height: 1920 }
     : input.aspectRatio === '2:3'

@@ -18,7 +18,7 @@ import { StateTransitionPills } from '@/components/outputs/state-transition-pill
 import { HookAbTest } from '@/components/outputs/hook-ab-test'
 import { SchedulePostButton } from '@/components/scheduler/schedule-post-button'
 import type { OutputRow } from '@/lib/content/get-outputs'
-import type { OutputPlatform } from '@/lib/supabase/types'
+import type { OutputPlatform } from '@/lib/platforms'
 import type { AbHookVariant } from '@/app/(app)/workspace/[id]/content/[contentId]/outputs/ai-actions'
 import { PLATFORM_LONG_LABELS as PLATFORM_LABELS } from '@/lib/platforms'
 
@@ -28,7 +28,6 @@ const SCHEDULER_PLATFORM: Record<OutputPlatform, string> = {
   instagram_reels: 'instagram',
   youtube_shorts: 'youtube_shorts',
   linkedin: 'linkedin',
-  pinterest: 'pinterest',
 }
 
 const PLATFORM_DESCRIPTIONS: Record<OutputPlatform, string> = {
@@ -36,7 +35,6 @@ const PLATFORM_DESCRIPTIONS: Record<OutputPlatform, string> = {
   instagram_reels: 'Aesthetic short-form, caption-driven',
   youtube_shorts: 'Up to 60s, educational tone OK',
   linkedin: 'Text-first post, professional but human',
-  pinterest: '2:3 vertical pin, search-optimized title + description',
 }
 
 type SectionKey = 'hooks' | 'track' | 'schedule'

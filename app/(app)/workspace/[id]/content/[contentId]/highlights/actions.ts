@@ -447,10 +447,9 @@ async function submitHighlightRender(params: {
     wordTimings,
     fallbackSubtitleText: item.transcript,
     captionStyle,
-    // Pinterest pins are 2:3 vertical (1000×1500), every other
-    // platform short-form is 9:16. The DB column allows arbitrary
-    // strings so we narrow defensively here — invalid values fall
-    // back to 9:16 rather than tripping Shotstack.
+    // Every supported output platform is 9:16 short-form. The DB
+    // column allows arbitrary strings so we narrow defensively here —
+    // anything other than a 2:3 legacy row falls back to 9:16.
     aspectRatio: ((row.aspect_ratio as string) === '2:3' ? '2:3' : '9:16') as
       | '9:16'
       | '2:3',

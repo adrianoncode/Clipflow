@@ -81,8 +81,8 @@ export function pickCandidateSlots(
   rationale: string
 }> {
   // Group drafts by platform to know which platforms are even worth
-  // pulling slots for — no point suggesting 5 Pinterest slots if the
-  // user has zero approved Pinterest drafts.
+  // pulling slots for — no point suggesting Reels slots if the user
+  // has zero approved Reels drafts.
   const draftsByPlatform = new Map<OutputPlatform, ApprovedDraftPreview[]>()
   for (const d of drafts) {
     const arr = draftsByPlatform.get(d.platform) ?? []

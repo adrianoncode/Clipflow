@@ -16,7 +16,6 @@ describe('lib/platforms', () => {
       'instagram_reels',
       'youtube_shorts',
       'linkedin',
-      'pinterest',
     ])
   })
 
@@ -26,11 +25,10 @@ describe('lib/platforms', () => {
       'instagram',
       'youtube',
       'linkedin',
-      'pinterest',
     ])
   })
 
-  it('PLATFORM_LABELS has all 6 keys with short labels', () => {
+  it('PLATFORM_LABELS has short labels per platform', () => {
     expect(PLATFORM_LABELS.instagram_reels).toBe('Reels')
     expect(PLATFORM_LABELS.youtube_shorts).toBe('Shorts')
     expect(PLATFORM_LABELS.tiktok).toBe('TikTok')
